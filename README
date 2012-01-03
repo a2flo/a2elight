@@ -1,6 +1,34 @@
 
 Build Instructions:
- * TODO
+Linux:
+ * install gcc 4.6+ (with libstdc++) or clang 3.1+ (with libc++)
+ * install the opengl and opencl headers and libraries (you need a gl3.h with support for OpenGL 3.2+ and OpenCL headers with support for OpenCL 1.1+)
+ * clone the SDL and SDL_image repositories: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
+ * build both of them and install them to /usr
+ * install libxml2
+ * install freetype2
+ * install premake4 (if your distribution has no package for this, download it manually and copy premake4 to /usr/bin - http://industriousone.com/premake/download)
+ * depending on whether you're using gcc or clang do a "./premake.sh gcc" or "./premake.sh clang" (if you did all prior steps correctly, this shouldn't print any error)
+ * "make" (again, this shouldn't print any errors if you followed all previous steps correctly)
+ * run "./install.sh" (this will install a2elight to /usr/local/) or copy/link all files manually (*.so to /usr/local/lib and a2elight/src to /usr/local/include/a2elight)
+ * you're done and can now build freealbion (https://github.com/freealbion/freealbion)
+
+OS X:
+ * install Xcode 4.2 and a custom build clang 3.1+ or wait for the Xcode 4.3 release
+ * copy SDL.framework and SDL_image.framework from your Albion.app to /Library/Frameworks
+ * alternatively: clone SDL and SDL_image repositories and build it yourself: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
+ * open albion.xcodeproj and build it
+ * in Terminal do (but change /path/to/a2elight!):
+   * sudo ln -sf /path/to/a2elight/src /usr/local/include/a2elight
+   * sudo ln -sf /path/to/a2elight/lib/liba2elight.dylib /usr/local/lib/liba2elight.dylib
+   * sudo ln -sf /path/to/a2elight/lib/liba2elightd.dylib /usr/local/lib/liba2elightd.dylib
+ * you're done and can now build freealbion (https://github.com/freealbion/freealbion)
+
+Windows:
+ * TODO/WIP
+ * (install mingw+msys in C:/MinGW, install/build SDL, SDL_image, libxml2, freetype2, premake4)
+ * (run ./premake.sh gcc and hope for the best)
+
 
 Credits:
  * http://www.libsdl.org / SDL and SDL_image
