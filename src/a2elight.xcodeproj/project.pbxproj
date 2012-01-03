@@ -101,8 +101,6 @@
 /* Begin PBXFileReference section */
 		5C05F790123171DA00D122BF /* liba2elightd.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liba2elightd.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C05F792123171DA00D122BF /* a2e_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e_Prefix.pch; sourceTree = "<group>"; };
-		5C1C384514890FB0007FE587 /* premake.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = premake.sh; path = ../../premake.sh; sourceTree = "<group>"; };
-		5C1C384614890FB0007FE587 /* premake4.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = premake4.lua; path = ../../premake4.lua; sourceTree = "<group>"; };
 		5C27B7181241432C00EF25B9 /* a2e.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e.h; sourceTree = SOURCE_ROOT; };
 		5C2C9274140AA9D900AC808C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		5C32C6BA135526C300164662 /* atomics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = atomics.h; sourceTree = "<group>"; };
@@ -168,7 +166,6 @@
 		5C39763E123189750075C168 /* scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scene.h; sourceTree = "<group>"; };
 		5C397643123189750075C168 /* thread_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = thread_base.cpp; sourceTree = "<group>"; };
 		5C397644123189750075C168 /* thread_base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = thread_base.h; sourceTree = "<group>"; };
-		5C3BA0B5142CE00500CA7A42 /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = /Library/Frameworks/SDL_ttf.framework; sourceTree = "<absolute>"; };
 		5C3EC3D0123182960055330C /* a2e_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = a2e_version.h; sourceTree = SOURCE_ROOT; };
 		5C3EC3F2123182960055330C /* engine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = engine.cpp; sourceTree = SOURCE_ROOT; };
 		5C3EC3F3123182960055330C /* engine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = engine.h; sourceTree = SOURCE_ROOT; };
@@ -177,12 +174,12 @@
 		5C61BDA91231D32000FD3451 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		5C61BDAA1231D32000FD3451 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = /System/Library/Frameworks/OpenCL.framework; sourceTree = "<absolute>"; };
 		5C61BDAB1231D32000FD3451 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
-		5C61BDB01231D32B00FD3451 /* FTGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FTGL.framework; path = /Library/Frameworks/FTGL.framework; sourceTree = "<absolute>"; };
 		5C61BDB11231D32B00FD3451 /* lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = lua.framework; path = /Library/Frameworks/lua.framework; sourceTree = "<absolute>"; };
 		5C61BDB21231D32B00FD3451 /* SDL_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_image.framework; path = /Library/Frameworks/SDL_image.framework; sourceTree = "<absolute>"; };
-		5C61BDB31231D32B00FD3451 /* SDL_net.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_net.framework; path = /Library/Frameworks/SDL_net.framework; sourceTree = "<absolute>"; };
 		5C61BDEC1232A25500FD3451 /* logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = logger.cpp; sourceTree = "<group>"; };
 		5C61BDED1232A25500FD3451 /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
+		5C7A8FF614B398B2004AA18B /* premake.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = premake.sh; path = ../premake.sh; sourceTree = "<group>"; };
+		5C7A8FF714B398B2004AA18B /* premake4.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = premake4.lua; path = ../premake4.lua; sourceTree = "<group>"; };
 		5CA26A151455CD07002A6D9E /* event_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = event_objects.h; sourceTree = "<group>"; };
 		5CA3844013CA7D4A00AB1F24 /* atomics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = atomics.cpp; sourceTree = "<group>"; };
 		5CA3844313CA80E400AB1F24 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
@@ -249,8 +246,8 @@
 		5C05F78A123171DA00D122BF /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				5C1C384514890FB0007FE587 /* premake.sh */,
-				5C1C384614890FB0007FE587 /* premake4.lua */,
+				5C7A8FF614B398B2004AA18B /* premake.sh */,
+				5C7A8FF714B398B2004AA18B /* premake4.lua */,
 				5C05F792123171DA00D122BF /* a2e_Prefix.pch */,
 			);
 			name = "Other Sources";
@@ -260,12 +257,9 @@
 			isa = PBXGroup;
 			children = (
 				5C2C9274140AA9D900AC808C /* libxml2.dylib */,
-				5C3BA0B5142CE00500CA7A42 /* SDL_ttf.framework */,
 				5CA3844313CA80E400AB1F24 /* SDL.framework */,
-				5C61BDB01231D32B00FD3451 /* FTGL.framework */,
 				5C61BDB11231D32B00FD3451 /* lua.framework */,
 				5C61BDB21231D32B00FD3451 /* SDL_image.framework */,
-				5C61BDB31231D32B00FD3451 /* SDL_net.framework */,
 				5C61BDA81231D32000FD3451 /* AppKit.framework */,
 				5C61BDA91231D32000FD3451 /* Cocoa.framework */,
 				5C61BDAA1231D32000FD3451 /* OpenCL.framework */,
@@ -704,6 +698,8 @@
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = YES;
+				INSTALL_PATH = "@executable_path/../Resources";
+				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
@@ -776,6 +772,8 @@
 				GCC_WARN_UNUSED_LABEL = YES;
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = YES;
+				INSTALL_PATH = "@executable_path/../Resources";
+				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";

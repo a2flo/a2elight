@@ -1,0 +1,12 @@
+
+Build Instructions:
+ * TODO
+
+Credits:
+ * http://www.libsdl.org / SDL and SDL_image
+ * http://www.libpng.org / libpng, http://zlib.net / zlib
+ * http://www.xmlsoft.org / libxml2
+ * http://industriousone.com/premake / premake4
+ * http://www.mingw.org / mingw/msys environment
+ * clang/libc++ (http://llvm.org) and gcc/libstdc++ (http://gcc.gnu.org)
+ * Khronos (http://www.khronos.org) / Nvidia / AMD / Apple (OpenGL/OpenCL)
