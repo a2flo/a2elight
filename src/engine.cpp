@@ -22,7 +22,6 @@
 
 // dll main for windows dll export
 #ifdef __WINDOWS__
-#if 0
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
 	switch(ul_reason_for_call) {
 		case DLL_PROCESS_ATTACH:
@@ -33,12 +32,6 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserve
 	}
     return TRUE;
 }
-
-//! pseudo main function for proper linking with sdl 
-int main(int argc, char *argv[]) {
-	return 0;
-}
-#endif
 #endif // __WINDOWS__
 
 /*! this is used to set an absolute data path depending on call path (path from where the binary is called/started),
