@@ -700,18 +700,19 @@ void scene::light_and_material_pass() {
  *  @param model pointer to the model
  */
 void scene::add_model(a2emodel* model) {
-	models.insert(model);
+	models.push_back(model);
 }
 
 /*! removes a model from the scene
  *  @param model pointer to the model
  */
 void scene::delete_model(a2emodel* model) {
-	if(models.count(model) == 0) {
+	const auto iter = find(models.begin(), models.end(), model);
+	if(iter == models.end()) {
 		a2e_error("can't delete model: model doesn't exist!");
 		return;
 	}
-	models.erase(model);
+	models.erase(iter);
 }
 
 /*! adds a light to the scene
@@ -722,19 +723,21 @@ void scene::add_light(light* new_light) {
 	if(lights.size() == 0) scene::is_light = true;
 
 	// check if light already exists ...
-	if(lights.count(new_light) > 0) {
+	const auto iter = find(lights.begin(), lights.end(), new_light);
+	if(iter != lights.end()) {
 		a2e_error("light already exists in this scene!");
 		return;
 	}
-
-	lights.insert(new_light);
+	lights.push_back(new_light);
 }
 
 /*! delets a light of the scene
  *  @param del_light pointer to the light
  */
 void scene::delete_light(light* del_light) {
-	lights.erase(find(lights.begin(), lights.end(), del_light));
+	const auto iter = find(lights.begin(), lights.end(), del_light);
+	if(iter == lights.end()) return;
+	lights.erase(iter);
 
 	// disable light automatically if there are no lights any more
 	if(lights.size() == 0) scene::is_light = false;
@@ -820,9 +823,11 @@ void scene::set_eye_distance(float distance) {
 }
 
 void scene::add_particle_manager(particle_manager* pm) {
-	particle_managers.insert(pm);
+	particle_managers.push_back(pm);
 }
 
 void scene::delete_particle_manager(particle_manager* pm) {
-	particle_managers.erase(pm);
+	const auto iter = find(particle_managers.begin(), particle_managers.end(), pm);
+	if(iter == particle_managers.end()) return;
+	particle_managers.erase(iter);
 }

@@ -134,9 +134,9 @@ protected:
 	// vars
 	float3 position;
 
-	set<a2emodel*> models;
-	set<light*> lights;
-	set<particle_manager*> particle_managers;
+	vector<a2emodel*> models;
+	vector<light*> lights;
+	vector<particle_manager*> particle_managers;
 	
 	// <bbox*, <sub-object id, draw functor*>>
 	map<const extbbox*, pair<size_t, draw_callback*>> alpha_objects;
