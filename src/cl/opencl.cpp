@@ -618,6 +618,7 @@ void opencl::reload_kernels() {
 	check_compilation(add_kernel_file("PARTICLE SORT LOCAL", make_kernel_path("particle_sort.cl"), "bitonicSortLocal", lsl_str.c_str()) != NULL, "particle_sort.cl");
 	check_compilation(add_kernel_file("PARTICLE SORT MERGE GLOBAL", make_kernel_path("particle_sort.cl"), "bitonicMergeGlobal", lsl_str.c_str()) != NULL, "particle_sort.cl");
 	check_compilation(add_kernel_file("PARTICLE SORT MERGE LOCAL", make_kernel_path("particle_sort.cl"), "bitonicMergeLocal", lsl_str.c_str()) != NULL, "particle_sort.cl");
+	check_compilation(add_kernel_file("PARTICLE COMPUTE DISTANCES", make_kernel_path("particle_sort.cl"), "compute_distances", lsl_str.c_str()) != NULL, "particle_sort.cl");
 	
 	// TODO: make tile size dependent on #cores
 	/*check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=4 -DA2E_IR_TILE_SIZE_Y=4") != NULL, "ir_lighting.cl");*/

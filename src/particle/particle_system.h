@@ -35,7 +35,7 @@
 class light;
 class A2E_API particle_system {
 public:
-	particle_system();
+	particle_system(engine* e);
 	~particle_system();
 	
 	enum class EMITTER_TYPE : unsigned int {
@@ -96,11 +96,24 @@ public:
 	void set_blend_mode(const gfx::BLEND_MODE mode);
 	const gfx::BLEND_MODE& get_blend_mode() const;
 	
-	void set_visible(bool state);
+	void set_visible(const bool state);
 	bool is_visible() const;
 	
-	void set_active(bool state);
+	void set_active(const bool state);
 	bool is_active() const;
+	
+	void set_sorting(const bool state);
+	bool is_sorting() const;
+	
+	//! sorting is distributed over multiple frames/steps (~step_size global items per step)
+	void set_reentrant_sorting(const bool state, const size_t& step_size);
+	size_t get_reentrant_sorting_size() const;
+	bool is_reentrant_sorting() const;
+	
+	//! whether to render the buffer that is currently being sorted (default: false)
+	//! only applies to reentrant sorting!
+	void set_render_intermediate_sorted_buffer(const bool state);
+	bool is_render_intermediate_sorted_buffer() const;
 	
 	void set_lights(const vector<light*>& lights);
 	const vector<light*> get_lights() const;
@@ -127,13 +140,20 @@ public:
 		opencl::buffer_object* ocl_pos_time_buffer;
 		opencl::buffer_object* ocl_dir_buffer;
 		opencl::buffer_object* ocl_indices[2];
+		opencl::buffer_object* ocl_distances;
 		GLuint ocl_gl_pos_time_vbo;
 		GLuint ocl_gl_dir_vbo;
 		cl::NDRange ocl_range_global;
+		
+		// vars for reentrant sorting
+		bool reentrant_complete;
+		unsigned int reentrant_cur_size;
+		unsigned int reentrant_cur_stride;
 	};
 	internal_particle_data* get_internal_particle_data();
 		
 protected:
+	engine* e;
 	EMITTER_TYPE type;
 	LIGHTING_TYPE lighting_type;
 	unsigned long long int spawn_rate;	// should be a multiple of 25
@@ -150,6 +170,10 @@ protected:
 	float2 size;
 	bool visible;
 	bool active;
+	bool sorting;
+	bool rentrant_sorting;
+	bool render_intermediate_sorted_buffer;
+	size_t sorting_step_size;
 	gfx::BLEND_MODE blend_mode;
 	vector<light*> lights;
 	GLuint lights_ubo;

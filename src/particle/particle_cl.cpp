@@ -33,6 +33,8 @@ particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
 	compute_range_local = cl->compute_local_kernel_range(1);
 	cl->use_kernel("PARTICLE SORT MERGE GLOBAL");
 	sort_range_local = cl->compute_local_kernel_range(1);
+	cl->use_kernel("PARTICLE COMPUTE DISTANCES");
+	compute_distances_local = cl->compute_local_kernel_range(1);
 	
 	// find least common multiple of all local kernel sizes (will then be used for making sure that particle count is always a multiple of this)
 	local_lcm = core::lcm(core::lcm(init_range_local[0], respawn_range_local[0]), compute_range_local[0]);
@@ -104,6 +106,7 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	if(glIsBuffer(pdata->particle_indices_vbo[1])) glDeleteBuffers(1, &pdata->particle_indices_vbo[1]);
 	if(pdata->ocl_pos_time_buffer != NULL) cl->delete_buffer(pdata->ocl_pos_time_buffer);
 	if(pdata->ocl_dir_buffer != NULL) cl->delete_buffer(pdata->ocl_dir_buffer);
+	if(pdata->ocl_distances != NULL) cl->delete_buffer(pdata->ocl_distances);
 	
 	// compute new particle count
 	compute_particle_count(ps);
@@ -161,6 +164,9 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	delete [] particle_indices;
+	
+	// create distances buffer for sorting
+	pdata->ocl_distances = cl->create_buffer(opencl::BT_READ_WRITE, pdata->particle_count * sizeof(float), NULL);
 	
 	a2e_debug("particle count: %u", ps->get_internal_particle_data()->particle_count);
 }
@@ -253,8 +259,18 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 		updated = true;
 	}
 	
+	// don't wait for another update when using reentrant sorting (and it's not complete yet)
+	if(ps->is_reentrant_sorting() && !pdata->reentrant_complete) {
+		sort_particle_system(ps);
+	}
+	
 	if(updated) {
-		//sort_particle_system(ps);
+		// only start sorting when there is an update
+		if(ps->is_sorting() &&
+		   // sort here when not using reentrant sorting or when reentrant sorting has completed
+		   (!ps->is_reentrant_sorting() || (ps->is_reentrant_sorting() && pdata->reentrant_complete))) {
+			sort_particle_system(ps);
+		}
 		
 		// release everything that has been acquired before
 		cl->release_gl_object(pdata->ocl_pos_time_buffer);
@@ -264,11 +280,6 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 
 void particle_manager_cl::sort_particle_system(particle_system* ps) {
 	particle_system::internal_particle_data* pdata = ps->get_internal_particle_data();
-	
-	// note: at this point, we have already acquired ocl_pos_time_buffer and ocl_dir_buffer,
-	// so only both indicies buffers must be acquired
-	cl->acquire_gl_object(pdata->ocl_indices[0]);
-	cl->acquire_gl_object(pdata->ocl_indices[1]);
 	
 	// nvidia bitonic merge sort:
 	static bool debug_lsize = false;
@@ -283,34 +294,94 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		cl->use_kernel("PARTICLE SORT MERGE LOCAL");
 		wgs = cl->get_kernel_work_group_size();
 		a2e_debug("PARTICLE SORT MERGE LOCAL wgs: %u", wgs);
+		a2e_debug("PARTICLE SORT local_size_limit: %u", cl->get_active_device()->max_wg_size);
 	}
 	
-	//
-	pdata->particle_indices_swap = 1 - pdata->particle_indices_swap; // swap
-	const float4 camera_pos(-*e->get_position(), 1.0f);
-	unsigned int arg_num = 0;
 	const unsigned int local_size_limit = (unsigned int)cl->get_active_device()->max_wg_size; // TODO: actually use the compiled/build value
+	const bool reentrant_sorting = ps->is_reentrant_sorting();
+	const size_t reentrant_sorting_size = ps->get_reentrant_sorting_size();
+	unsigned int arg_num = 0;
+	size_t overall_global_size = 0;
 	
-	cl->use_kernel("PARTICLE SORT LOCAL");
-	cl->set_kernel_argument(arg_num++, pdata->ocl_pos_time_buffer);
-	cl->set_kernel_argument(arg_num++, camera_pos);
-	cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
-	cl->set_kernel_argument(arg_num++, pdata->ocl_indices[1 - pdata->particle_indices_swap]);
-	cl::NDRange sort_local1_local(local_size_limit / 2);
-	cl::NDRange sort_local1_global(pdata->particle_count / 2);
-	cl->set_kernel_range(sort_local1_global, sort_local1_local);
-	cl->run_kernel();
+	static size_t reentry_counter = 0;
+	if(!reentrant_sorting || pdata->reentrant_complete) {
+		reentry_counter = 0;
+		// note: at this point, we have already acquired ocl_pos_time_buffer and ocl_dir_buffer,
+		// so only both indicies buffers must be acquired
+		cl->acquire_gl_object(pdata->ocl_indices[0]);
+		cl->acquire_gl_object(pdata->ocl_indices[1]);
+		
+		//
+		float4 camera_pos(-*e->get_position(), 1.0f);
+		pdata->particle_indices_swap = 1 - pdata->particle_indices_swap; // swap
+		
+		// compute particle distances
+		cl->use_kernel("PARTICLE COMPUTE DISTANCES");
+		cl->set_kernel_argument(arg_num++, pdata->ocl_pos_time_buffer);
+		cl->set_kernel_argument(arg_num++, camera_pos);
+		cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
+		cl::NDRange compute_distances_global(pdata->particle_count);
+		cl->set_kernel_range(compute_distances_global, compute_distances_local);
+		cl->run_kernel();
+		
+		// first sorting step
+		arg_num = 0;
+		cl->use_kernel("PARTICLE SORT LOCAL");
+		cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
+		cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
+		cl->set_kernel_argument(arg_num++, pdata->ocl_indices[1 - pdata->particle_indices_swap]);
+		cl::NDRange sort_local1_local(local_size_limit / 2);
+		cl::NDRange sort_local1_global(pdata->particle_count / 2);
+		cl->set_kernel_range(sort_local1_global, sort_local1_local);
+		cl->run_kernel();
+		
+		// this is not need any more, release it
+		cl->release_gl_object(pdata->ocl_indices[1 - pdata->particle_indices_swap]);
+		
+		// set loop vars
+		pdata->reentrant_complete = false;
+		pdata->reentrant_cur_size = 2 * local_size_limit;
+		pdata->reentrant_cur_stride = 0;
+		
+		//
+		overall_global_size += sort_local1_global[0];
+		if(reentrant_sorting &&
+		   overall_global_size > reentrant_sorting_size) {
+			if(ps->is_render_intermediate_sorted_buffer()) {
+				cl->release_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
+			}
+			return;
+		}
+	}
+	else {
+		reentry_counter++;
+		// new sorting step, acquire indices buffer again
+		if(!ps->is_render_intermediate_sorted_buffer()) { // this is still acquired when we're not rendering the buffer
+			cl->acquire_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
+		}
+	}
 	
-	// this is not need any more, release it
-	cl->release_gl_object(pdata->ocl_indices[1 - pdata->particle_indices_swap]);
-	
-	for(unsigned int size = 2 * local_size_limit; size <= pdata->particle_count; size <<= 1) {
-		for(unsigned int stride = size / 2; stride > 0; stride >>= 1) {
+	for(unsigned int size = pdata->reentrant_cur_size; size <= pdata->particle_count; size <<= 1) {
+		pdata->reentrant_cur_size = size;
+		if(pdata->reentrant_cur_stride == 0) {
+			pdata->reentrant_cur_stride = size / 2;
+		}
+		
+		for(unsigned int stride = pdata->reentrant_cur_stride; stride > 0; stride >>= 1) {
+			//
+			pdata->reentrant_cur_stride = stride;
+			if(reentrant_sorting &&
+			   overall_global_size > reentrant_sorting_size) {
+				if(ps->is_render_intermediate_sorted_buffer()) {
+					cl->release_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
+				}
+				return;
+			}
+			
 			if(stride >= local_size_limit) {
 				cl->use_kernel("PARTICLE SORT MERGE GLOBAL");
 				arg_num = 0;
-				cl->set_kernel_argument(arg_num++, pdata->ocl_pos_time_buffer);
-				cl->set_kernel_argument(arg_num++, camera_pos);
+				cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
 				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
 				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
 				cl->set_kernel_argument(arg_num++, (unsigned int)pdata->particle_count);
@@ -322,12 +393,12 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 				cl::NDRange merge_global_local(local_size_limit / 2);
 				cl->set_kernel_range(merge_global_global, merge_global_local);
 				cl->run_kernel();
+				overall_global_size += merge_global_global[0];
 			}
 			else {
 				cl->use_kernel("PARTICLE SORT MERGE LOCAL");
 				arg_num = 0;
-				cl->set_kernel_argument(arg_num++, pdata->ocl_pos_time_buffer);
-				cl->set_kernel_argument(arg_num++, camera_pos);
+				cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
 				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
 				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
 				cl->set_kernel_argument(arg_num++, (unsigned int)pdata->particle_count);
@@ -338,8 +409,15 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 				cl::NDRange merge_local_global(pdata->particle_count / 2);
 				cl->set_kernel_range(merge_local_global, merge_local_local);
 				cl->run_kernel();
+				overall_global_size += merge_local_global[0];
 				break;
 			}
+		}
+		pdata->reentrant_cur_stride = 0;
+		
+		if((size << 1) > pdata->particle_count) {
+			pdata->reentrant_cur_size = 0;
+			pdata->reentrant_complete = true;
 		}
 	}
 	
@@ -357,9 +435,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_system::internal_particle_data* pdata = ps->get_internal_particle_data();
 	
 	glEnable(GL_BLEND);
-	// TODO: choose blend mode
-	//g->set_blend_mode(ps->get_blend_mode());
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	g->set_blend_mode(ps->get_blend_mode());
 	glDepthMask(GL_FALSE);
 	
 	// point -> gs: quad
@@ -417,10 +493,20 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_draw->attribute_array("in_vertex", pdata->ocl_gl_pos_time_vbo, 4);
 	particle_draw->attribute_array("in_aux", pdata->ocl_gl_dir_vbo, 4);
 	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_indices_vbo[pdata->particle_indices_swap]);
-	// TODO: use the "unsorted" (or previously sorted) indices buffer, so that one buffer can be sorted
-	// independently/asynchronously from the buffer that is currently bound to gl for rendering
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_indices_vbo[1 - pdata->particle_indices_swap]);
+	if(!ps->is_sorting() ||
+	   (ps->is_sorting() && !ps->is_reentrant_sorting()) ||
+	   (ps->is_reentrant_sorting() && ps->is_render_intermediate_sorted_buffer())) {
+		// std: use active indices buffer
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_indices_vbo[pdata->particle_indices_swap]);
+	}
+	else if(ps->is_reentrant_sorting() && !ps->is_render_intermediate_sorted_buffer()) {
+		// use previously sorted indices buffer
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_indices_vbo[1 - pdata->particle_indices_swap]);
+	}
+	else {
+		assert(false && "invalid particle system state");
+	}
+	
 	glDrawElements(GL_POINTS, (GLsizei)pdata->particle_count, GL_UNSIGNED_INT, NULL);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	

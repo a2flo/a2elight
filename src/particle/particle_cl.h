@@ -65,6 +65,7 @@ protected:
 	cl::NDRange respawn_range_local;
 	cl::NDRange compute_range_local;
 	cl::NDRange sort_range_local;
+	cl::NDRange compute_distances_local;
 	unsigned long long int local_lcm;
 	unsigned int kernel_seed;
 	

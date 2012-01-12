@@ -77,7 +77,7 @@ particle_system* particle_manager_base::init(const particle_system::EMITTER_TYPE
 											 const float3 gravity,
 											 const float4 color,
 											 const float2 size) {
-	particle_system* ps = new particle_system();
+	particle_system* ps = new particle_system(e);
 	ps->set_type(type);
 	ps->set_lighting_type(ltype);
 	ps->set_spawn_rate(spawn_rate);

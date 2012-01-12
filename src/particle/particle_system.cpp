@@ -20,9 +20,13 @@
 
 /*! there is no function currently
  */
-particle_system::particle_system() {
+particle_system::particle_system(engine* e_) : e(e_) {
 	visible = true;
 	active = true;
+	sorting = false;
+	rentrant_sorting = false;
+	render_intermediate_sorted_buffer = false;
+	sorting_step_size = 0;
 	
 	type = EMITTER_TYPE::BOX;
 	lighting_type = LIGHTING_TYPE::NONE;
@@ -60,15 +64,29 @@ particle_system::particle_system() {
 	data.ocl_dir_buffer = NULL;
 	data.ocl_indices[0] = NULL;
 	data.ocl_indices[1] = NULL;
+	data.ocl_distances = NULL;
 	data.ocl_gl_pos_time_vbo = 0;
 	data.ocl_gl_dir_vbo = 0;
 	data.ocl_range_global.set(0);
+	
+	// vars for reentrant sorting
+	data.reentrant_complete = true;
+	data.reentrant_cur_size = 0;
+	data.reentrant_cur_stride = 0;
 }
 
 /*! there is no function currently
  */
 particle_system::~particle_system() {
 	glDeleteBuffers(1, &lights_ubo);
+	
+	if(glIsBuffer(data.ocl_gl_pos_time_vbo)) glDeleteBuffers(1, &data.ocl_gl_pos_time_vbo);
+	if(glIsBuffer(data.ocl_gl_dir_vbo)) glDeleteBuffers(1, &data.ocl_gl_dir_vbo);
+	if(glIsBuffer(data.particle_indices_vbo[0])) glDeleteBuffers(1, &data.particle_indices_vbo[0]);
+	if(glIsBuffer(data.particle_indices_vbo[1])) glDeleteBuffers(1, &data.particle_indices_vbo[1]);
+	if(data.ocl_pos_time_buffer != NULL) e->get_opencl()->delete_buffer(data.ocl_pos_time_buffer);
+	if(data.ocl_dir_buffer != NULL) e->get_opencl()->delete_buffer(data.ocl_dir_buffer);
+	if(data.ocl_distances != NULL) e->get_opencl()->delete_buffer(data.ocl_distances);
 }
 
 void particle_system::set_type(particle_system::EMITTER_TYPE type_) {
@@ -206,7 +224,7 @@ const extbbox& particle_system::get_bounding_box() const {
 	return bbox;
 }
 
-void particle_system::set_visible(bool state) {
+void particle_system::set_visible(const bool state) {
 	visible = state;
 }
 
@@ -234,7 +252,7 @@ const GLuint particle_system::get_lights_ubo() const {
 	return lights_ubo;
 }
 
-void particle_system::set_active(bool state) {
+void particle_system::set_active(const bool state) {
 	active = state;
 }
 
@@ -248,4 +266,37 @@ void particle_system::set_aux_data(void* aux_data_) {
 
 void* particle_system::get_aux_data() const {
 	return aux_data;
+}
+
+void particle_system::set_sorting(const bool state) {
+	sorting = state;
+	set_blend_mode(sorting ? gfx::BLEND_MODE::BM_PRE_MUL : gfx::BLEND_MODE::BM_ADD);
+}
+
+bool particle_system::is_sorting() const {
+	return sorting;
+}
+
+void particle_system::set_reentrant_sorting(const bool state, const size_t& step_size) {
+	rentrant_sorting = state;
+	sorting_step_size = step_size;
+	if(rentrant_sorting && !sorting) {
+		set_sorting(true);
+	}
+}
+
+size_t particle_system::get_reentrant_sorting_size() const {
+	return sorting_step_size;
+}
+
+bool particle_system::is_reentrant_sorting() const {
+	return rentrant_sorting;
+}
+
+void particle_system::set_render_intermediate_sorted_buffer(const bool state) {
+	render_intermediate_sorted_buffer = state;
+}
+
+bool particle_system::is_render_intermediate_sorted_buffer() const {
+	return render_intermediate_sorted_buffer;
 }
