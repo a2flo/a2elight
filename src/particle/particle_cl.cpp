@@ -335,7 +335,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		cl->set_kernel_range(sort_local1_global, sort_local1_local);
 		cl->run_kernel();
 		
-		// this is not need any more, release it
+		// this is not needed any more, release it
 		cl->release_gl_object(pdata->ocl_indices[1 - pdata->particle_indices_swap]);
 		
 		// set loop vars
@@ -356,7 +356,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 	else {
 		reentry_counter++;
 		// new sorting step, acquire indices buffer again
-		if(!ps->is_render_intermediate_sorted_buffer()) { // this is still acquired when we're not rendering the buffer
+		if(ps->is_render_intermediate_sorted_buffer()) { // this is still acquired when we're not rendering the buffer
 			cl->acquire_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
 		}
 	}
