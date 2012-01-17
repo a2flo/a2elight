@@ -32,7 +32,7 @@
 class A2E_API event : public thread_base {
 public:
 	event();
-	~event();
+	virtual ~event();
 
 	void handle_events();
 	
