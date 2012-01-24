@@ -85,8 +85,9 @@ particle_system* particle_manager::add_particle_system(const particle_system::EM
 													   const float3 angle,
 													   const float3 gravity,
 													   const float4 color,
-													   const float2 size) {
-	return pm->add_particle_system(type, ltype, tex, spawn_rate, living_time, energy, position, position_offset, extents, direction, angle, gravity, color, size);
+													   const float2 size,
+													   void* aux_data) {
+	return pm->add_particle_system(type, ltype, tex, spawn_rate, living_time, energy, position, position_offset, extents, direction, angle, gravity, color, size, aux_data);
 }
 
 void particle_manager::delete_particle_system(particle_system* ps) {

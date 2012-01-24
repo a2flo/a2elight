@@ -76,7 +76,8 @@ particle_system* particle_manager_base::init(const particle_system::EMITTER_TYPE
 											 const float3 angle,
 											 const float3 gravity,
 											 const float4 color,
-											 const float2 size) {
+											 const float2 size,
+											 void* aux_data) {
 	particle_system* ps = new particle_system(e);
 	ps->set_type(type);
 	ps->set_lighting_type(ltype);
@@ -92,6 +93,7 @@ particle_system* particle_manager_base::init(const particle_system::EMITTER_TYPE
 	ps->set_gravity(gravity);
 	ps->set_color(color);
 	ps->set_size(size);
+	ps->set_aux_data(aux_data);
 	particle_systems.insert(ps);
 	return ps;
 }

@@ -51,7 +51,8 @@ public:
 												 const float3 angle,
 												 const float3 gravity,
 												 const float4 color,
-												 const float2 size);
+												 const float2 size,
+												 void* aux_data);
 	virtual void reset_particle_system(particle_system* ps);
 	virtual void run_particle_system(particle_system* ps);
 	virtual void sort_particle_system(particle_system* ps);

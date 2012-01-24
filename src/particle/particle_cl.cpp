@@ -66,8 +66,9 @@ particle_system* particle_manager_cl::add_particle_system(const particle_system:
 														  const float3 angle,
 														  const float3 gravity,
 														  const float4 color,
-														  const float2 size) {
-	particle_system* ps = init(type, ltype, tex, spawn_rate, living_time, energy, position, position_offset, extents, direction, angle, gravity, color, size);
+														  const float2 size,
+														  void* aux_data) {
+	particle_system* ps = init(type, ltype, tex, spawn_rate, living_time, energy, position, position_offset, extents, direction, angle, gravity, color, size, aux_data);
 	
 	reset_particle_system(ps);
 	
@@ -514,4 +515,5 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	
 	glDepthMask(GL_TRUE);
 	g->set_blend_mode(gfx::BM_DEFAULT);
+	glDisable(GL_BLEND);
 }

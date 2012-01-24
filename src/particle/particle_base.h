@@ -54,7 +54,8 @@ public:
 												 const float3 angle,
 												 const float3 gravity,
 												 const float4 color,
-												 const float2 size) = 0;
+												 const float2 size,
+												 void* aux_data) = 0;
 	virtual void delete_particle_system(particle_system* ps);
 	virtual void reset_particle_system(particle_system* ps) = 0;
 	virtual void run_particle_system(particle_system* ps) = 0;
@@ -82,7 +83,8 @@ protected:
 								  const float3 angle,
 								  const float3 gravity,
 								  const float4 color,
-								  const float2 size);
+								  const float2 size,
+								  void* aux_data);
 	virtual void reset_particle_count(particle_system* ps) = 0;
 	virtual void compute_particle_count(particle_system* ps);
 	
