@@ -880,11 +880,6 @@ void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
 }
 
 void opencl::write_buffer(opencl::buffer_object* buffer_obj, const void* src, const size_t offset, const size_t size) {
-	if(cur_kernel == NULL) {
-		a2e_error("can't write buffer - no kernel currently in use!");
-		return;
-	}
-	
 	size_t write_size = size;
 	if(write_size == 0) {
 		if(buffer_obj->size == 0) {
@@ -907,48 +902,33 @@ void opencl::write_buffer(opencl::buffer_object* buffer_obj, const void* src, co
 	
 	try {
 		queues[active_device->device]->enqueueWriteBuffer(*buffer_obj->buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0),
-																	  write_offset, write_size, src);
+														  write_offset, write_size, src);
 	}
 	__HANDLE_CL_EXCEPTION("write_buffer")
 }
 
 void opencl::write_image2d(opencl::buffer_object* buffer_obj, const void* src, size2 origin, size2 region) {
-	if(cur_kernel == NULL) {
-		a2e_error("can't write buffer - no kernel currently in use!");
-		return;
-	}
-	
 	try {
 		size3 origin3(origin.x, origin.y, 0); // origin z must be 0 for 2d images
 		size3 region3(region.x, region.y, 1); // depth must be 1 for 2d images
 		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0),
-																	 (cl::size_t<3>&)origin3, (cl::size_t<3>&)region3, 0, 0, (void*)src);
+														 (cl::size_t<3>&)origin3, (cl::size_t<3>&)region3, 0, 0, (void*)src);
 	}
 	__HANDLE_CL_EXCEPTION("write_image2d")
 }
 
 void opencl::write_image3d(opencl::buffer_object* buffer_obj, const void* src, size3 origin, size3 region) {
-	if(cur_kernel == NULL) {
-		a2e_error("can't write buffer - no kernel currently in use!");
-		return;
-	}
-	
 	try {
 		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0),
-																	 (cl::size_t<3>&)origin, (cl::size_t<3>&)region, 0, 0, (void*)src);
+														 (cl::size_t<3>&)origin, (cl::size_t<3>&)region, 0, 0, (void*)src);
 	}
 	__HANDLE_CL_EXCEPTION("write_buffer")
 }
 
 void opencl::read_buffer(void* dst, opencl::buffer_object* buffer_obj) {
-	if(cur_kernel == NULL) {
-		a2e_error("can't read buffer - no kernel currently in use!");
-		return;
-	}
-	
 	try {
 		queues[active_device->device]->enqueueReadBuffer(*buffer_obj->buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_READ) > 0),
-																	 0, buffer_obj->size, dst);
+														 0, buffer_obj->size, dst);
 	}
 	__HANDLE_CL_EXCEPTION("read_buffer")
 }
@@ -1048,12 +1028,10 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 }
 
 void opencl::finish() {
-	if(cur_kernel == NULL) return;
 	queues[active_device->device]->finish();
 }
 
 void opencl::flush() {
-	if(cur_kernel == NULL) return;
 	queues[active_device->device]->flush();
 }
 

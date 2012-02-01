@@ -146,7 +146,6 @@ void a2ematerial::load_material(const string& filename) {
 					case NONE:
 						cur_material->mat = new material_object();
 						break;
-					default: a2e_error("unknown material type \"%s\"!", type); return;
 				}
 				
 				switch(cur_material->lm_type) {
@@ -280,9 +279,6 @@ void a2ematerial::load_material(const string& filename) {
 								else if(cur_material->lm_type == LM_ASHIKHMIN_SHIRLEY) {
 									((ashikhmin_shirley_model*)cur_material->model)->anisotropic_texture = tex;
 								}
-								break;
-							default:
-								assert(false && "invalid texture_type");
 								break;
 						}
 					}

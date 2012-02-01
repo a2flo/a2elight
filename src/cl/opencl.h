@@ -105,9 +105,9 @@ public:
 	
 	//! buffer types/flags (associated kernel => buffer has been set as a kernel argument, at least once and the latest one for an index)
 	enum EBUFFER_TYPE {
-		BT_READ_WRITE		= 1,	//!< enum read and write buffer
-		BT_READ				= 2,	//!< enum read only buffer
-		BT_WRITE			= 3,	//!< enum write only buffer
+		BT_READ_WRITE		= 1,	//!< enum read and write buffer (kernel POV)
+		BT_READ				= 2,	//!< enum read only buffer (kernel POV)
+		BT_WRITE			= 3,	//!< enum write only buffer (kernel POV)
 		BT_INITIAL_COPY		= 4,	//!< enum the specified data will be copied to the buffer at creation time
 		BT_COPY_ON_USE		= 8,	//!< enum the specified data will be copied to the buffer each time an associated kernel is being used (that is right before kernel execution)
 		BT_USE_HOST_MEMORY	= 16,	//!< enum buffer memory will be allocated in host memory

@@ -487,9 +487,6 @@ void gfx::draw_fade_rectangle(gfx::rect* rectangle, unsigned int color1, unsigne
 						  1.0f - float((color2 >> 24) & 0xFF) / 255.0f);
 		}
 		break;
-		default:
-			assert(false && "invalid fade type");
-			break;
 	}
 	primitive_draw_colored(points, sizeof(pnt)*4, 2, GL_UNSIGNED_INT,
 						   colors, 4,
@@ -722,9 +719,6 @@ void gfx::set_blend_mode(BLEND_MODE mode) {
 		case BM_DEFAULT:
 		case BM_ALPHA:
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			break;
-		default:
-			assert(false && "invalid blend mode");
 			break;
 	}
 }

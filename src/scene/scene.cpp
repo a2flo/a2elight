@@ -644,6 +644,8 @@ void scene::light_and_material_pass() {
 						  cur_aa == rtt::TAA_SSAA_2_FXAA);
 	const bool is_ssaa_fxaa = (cur_aa == rtt::TAA_SSAA_4_3_FXAA ||
 							   cur_aa == rtt::TAA_SSAA_2_FXAA);
+	const bool is_post_processing = !pp_handlers.empty();
+	
 	if(is_fxaa) {
 		//
 		r->start_draw(fxaa_buffer);
@@ -658,7 +660,7 @@ void scene::light_and_material_pass() {
 		r->stop_draw();
 		
 		//
-		if(is_ssaa_fxaa) {
+		if(is_ssaa_fxaa || is_post_processing) {
 			// render to scene buffer again (-> correct filtering!)
 			r->start_draw(scene_buffer);
 			r->start_2d_draw();
@@ -683,7 +685,14 @@ void scene::light_and_material_pass() {
 		else e->stop_2d_draw();
 	}
 	
-	if(!is_fxaa || is_ssaa_fxaa) {
+	// apply post processing
+	if(is_post_processing) {
+		for(auto pph : pp_handlers) {
+			(*pph)(scene_buffer);
+		}
+	}
+	
+	if(!is_fxaa || is_ssaa_fxaa || is_post_processing) {
 		// draw to back buffer
 		e->start_2d_draw();
 		static const gfx::rect fs_rect(0, 0, e->get_width(), e->get_height());
@@ -830,4 +839,22 @@ void scene::delete_particle_manager(particle_manager* pm) {
 	const auto iter = find(particle_managers.begin(), particle_managers.end(), pm);
 	if(iter == particle_managers.end()) return;
 	particle_managers.erase(iter);
+}
+
+void scene::add_post_processing(post_processing_handler* pph) {
+	if(pph == NULL) return;
+	const auto iter = find(pp_handlers.begin(), pp_handlers.end(), pph);
+	if(iter != pp_handlers.end()) {
+		return; // already in container
+	}
+	pp_handlers.push_back(pph);
+}
+
+void scene::delete_post_processing(const post_processing_handler* pph) {
+	if(pph == NULL) return;
+	const auto iter = find(pp_handlers.begin(), pp_handlers.end(), pph);
+	if(iter == pp_handlers.end()) {
+		return; // already in container
+	}
+	pp_handlers.erase(iter);
 }

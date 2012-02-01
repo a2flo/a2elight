@@ -39,6 +39,7 @@ using namespace std;
 #define AtomicGet(a) SDL_AtomicGet(a)
 #define AtomicClear(a) SDL_AtomicSet(a, 0)
 #define AtomicTestThenSet(a) SDL_AtomicCAS(a, 0, 1)
+#define AtomicCAS(a, old, new) SDL_AtomicCAS(a, old, new)
 #define AtomicSet(a, val) SDL_AtomicSet(a, val)
 #define AtomicOR(a, val) __sync_fetch_and_or(&(a)->value, val)
 #define AtomicAND(a, val) __sync_fetch_and_and(&(a)->value, val)

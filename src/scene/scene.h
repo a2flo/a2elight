@@ -111,6 +111,11 @@ public:
 	void delete_alpha_object(const extbbox* bbox);
 	void delete_alpha_objects(const size_t count, const extbbox** bboxes);
 	
+	// post-processing
+	typedef functor<void, rtt::fbo*> post_processing_handler;
+	void add_post_processing(post_processing_handler* pph);
+	void delete_post_processing(const post_processing_handler* pph);
+	
 	// for debugging purposes:
 	const rtt::fbo* _get_g_buffer(const size_t type = 0) const { return frames[cur_frame].g_buffer[type]; }
 	const rtt::fbo* _get_l_buffer(const size_t type = 0) const { return frames[cur_frame].l_buffer[type]; }
@@ -180,6 +185,8 @@ protected:
 	};
 	frame_buffers frames[A2E_CONCURRENT_FRAMES];
 	size_t cur_frame;
+	
+	vector<post_processing_handler*> pp_handlers;
 
 	// hdr buffer
 	rtt::fbo* blur_buffer1;
