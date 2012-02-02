@@ -104,7 +104,7 @@ solution "albion2"
 	end
 	
 	if(os.is("linux") or os.is("bsd") or win_unixenv) then
-		links { "z", "freetype", "OpenCL" }
+		links { "OpenCL" }
 		libdirs { os.findlib("GL"), os.findlib("xml2"), os.findlib("OpenCL") }
 		if(not win_unixenv) then
 			links { "GL", "SDL_image", "Xxf86vm", "xml2" }
@@ -119,9 +119,9 @@ solution "albion2"
 			linkoptions { "`sdl-config --libs | sed -E 's/(-lmingw32|-mwindows)//g'`" }
 		elseif(mingw) then
 			-- link against windows opengl libs on mingw
-			links { "opengl32", "SDL_image", "libxml2" }
-			buildoptions { "`sdl-config --cflags | sed -E 's/-Dmain=SDL_main//g'`" }
-			linkoptions { "`sdl-config --libs`" }
+			links { "opengl32", "SDL2_image", "libxml2" }
+			buildoptions { "`sdl2-config --cflags | sed -E 's/-Dmain=SDL_main//g'`" }
+			linkoptions { "`sdl2-config --libs`" }
 		end
 
 		if(gcc_compat) then
