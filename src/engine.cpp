@@ -295,8 +295,11 @@ void engine::init(const char* ico) {
 	config.flags |= SDL_WINDOW_INPUT_FOCUS;
 	config.flags |= SDL_WINDOW_MOUSE_FOCUS;
 
+	int2 windows_pos(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	if(config.fullscreen) {
 		config.flags |= SDL_WINDOW_FULLSCREEN;
+		config.flags |= SDL_WINDOW_BORDERLESS;
+		windows_pos.set(0, 0);
 		a2e_debug("fullscreen enabled");
 	}
 	else a2e_debug("fullscreen disabled");
@@ -320,7 +323,7 @@ void engine::init(const char* ico) {
 	if(ico != NULL) load_ico(ico);
 
 	// create screen
-	config.wnd = SDL_CreateWindow("A2E", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (unsigned int)config.width, (unsigned int)config.height, config.flags);
+	config.wnd = SDL_CreateWindow("A2E", windows_pos.x, windows_pos.y, (unsigned int)config.width, (unsigned int)config.height, config.flags);
 	if(config.wnd == NULL) {
 		a2e_error("can't create window: %s", SDL_GetError());
 		exit(1);
