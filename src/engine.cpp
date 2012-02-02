@@ -378,21 +378,9 @@ void engine::init(const char* ico) {
 	}
 	else a2e_debug("video driver: %s", SDL_GetCurrentVideoDriver());
 	
-	// enable key repeat
-	if((SDL_EnableKeyRepeat((int)config.key_repeat, SDL_DEFAULT_REPEAT_INTERVAL))) {
-		a2e_debug("setting keyboard repeat failed: %s", SDL_GetError());
-		exit(1);
-	}
-	else {
-		a2e_debug("keyboard repeat set");
-	}
-	
 	e->set_ldouble_click_time((unsigned int)config.ldouble_click_time);
 	e->set_rdouble_click_time((unsigned int)config.rdouble_click_time);
 	e->set_mdouble_click_time((unsigned int)config.mdouble_click_time);
-	
-	// enable unicode key input
-	SDL_EnableUNICODE(1);
 	
 	// initialize ogl
 	init_gl();

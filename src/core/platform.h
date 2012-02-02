@@ -92,7 +92,6 @@
 #include <SDL/SDL_platform.h>
 #include <SDL/SDL_syswm.h>
 #include <SDL_image/SDL_image.h>
-#include <SDL_net/SDL_net.h>
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
 #include <sys/types.h>
@@ -106,18 +105,16 @@
 #include <SDL/SDL_platform.h>
 #include <SDL/SDL_syswm.h>
 #include <SDL/SDL_image.h>
-#include <SDL/SDL_net.h>
 #include <GL/gl3.h>
 #include <GL/wglext.h>
 
 #elif defined(MINGW)
-#include <SDL/SDL.h>
-#include <SDL/SDL_thread.h>
-#include <SDL/SDL_cpuinfo.h>
-#include <SDL/SDL_platform.h>
-#include <SDL/SDL_syswm.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_net.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_thread.h>
+#include <SDL2/SDL_cpuinfo.h>
+#include <SDL2/SDL_platform.h>
+#include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_image.h>
 #define GL3_PROTOTYPES
 #include <GL/gl3.h>
 
@@ -126,7 +123,6 @@
 #include <SDL_thread.h>
 #include <SDL_cpuinfo.h>
 #include <SDL_image.h>
-#include <SDL_net.h>
 #include <SDL_platform.h>
 #include <SDL_syswm.h>
 #include <GL/gl3.h>

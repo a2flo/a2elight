@@ -143,7 +143,7 @@ a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_
 			internal_format = GL_RGBA8;
 		}
 		
-		SDL_Surface* new_surface = SDL_ConvertSurface(tex_surface, &new_pformat, SDL_HWSURFACE);
+		SDL_Surface* new_surface = SDL_ConvertSurface(tex_surface, &new_pformat, 0);
 		if(new_surface == NULL) {
 			a2e_error("BGR(A)->RGB(A) surface conversion failed!");
 		}

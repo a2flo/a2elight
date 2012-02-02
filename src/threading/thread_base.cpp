@@ -216,14 +216,8 @@ void thread_base::finish() {
 	// wait a few ms
 	SDL_Delay(200);
 	
-	// if thread status is still running (or != finished), kill the thread
-	if(get_thread_status() != thread_base::FINISHED) {
-		SDL_KillThread(thread_obj);
-	}
-	else {
-		// if it's finished, wait (this is presumably better than kill)
-		SDL_WaitThread(thread_obj, NULL);
-	}
+	// wait (this is presumably better than kill)
+	SDL_WaitThread(thread_obj, NULL);
 	
 	set_thread_status(thread_base::FINISHED);
 }

@@ -26,7 +26,11 @@ using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 // SDL 1.3+ atomic functions
+#if !defined(MINGW)
 #include <SDL/SDL_atomic.h>
+#else
+#include <SDL2/SDL_atomic.h>
+#endif
 
 // check if atomics and sdl 1.3 are available
 #if !defined(_SDL_atomic_h_ ) || (SDL_MAJOR_VERSION == 1 && SDL_MINOR_VERSION < 3)
