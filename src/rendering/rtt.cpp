@@ -114,19 +114,19 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target
 }
 
 rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* target, texture_object::TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count, rtt::DEPTH_TYPE depth_type) {
-	buffers.push_back(*new rtt::fbo*());
-	buffers.back() = new rtt::fbo();
-	buffers.back()->width = width;
-	buffers.back()->height = height;
-	buffers.back()->draw_width = width;
-	buffers.back()->draw_height = height;
-	buffers.back()->attachment_count = attachment_count;
-	buffers.back()->tex_id = new unsigned int[buffers.back()->attachment_count];
-	buffers.back()->auto_mipmap = new bool[buffers.back()->attachment_count];
-	buffers.back()->target = new GLenum[buffers.back()->attachment_count];
-	buffers.back()->anti_aliasing = new rtt::TEXTURE_ANTI_ALIASING[buffers.back()->attachment_count];
-	buffers.back()->depth_type = depth_type;
-	buffers.back()->samples = 0;
+	rtt::fbo* buffer = new rtt::fbo();
+	buffers.push_back(buffer);
+	buffer->width = width;
+	buffer->height = height;
+	buffer->draw_width = width;
+	buffer->draw_height = height;
+	buffer->attachment_count = attachment_count;
+	buffer->tex_id = new unsigned int[buffer->attachment_count];
+	buffer->auto_mipmap = new bool[buffer->attachment_count];
+	buffer->target = new GLenum[buffer->attachment_count];
+	buffer->anti_aliasing = new rtt::TEXTURE_ANTI_ALIASING[buffer->attachment_count];
+	buffer->depth_type = depth_type;
+	buffer->samples = 0;
 	
 	//
 	const size_t max_tex_size = exts->get_max_texture_size();
@@ -134,10 +134,10 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 	size2 orig_resolution = size2(width, height);
 	size2 cur_resolution = orig_resolution;
 	float ssaa = 0.0f;
-	for(unsigned int i = 0; i < buffers.back()->attachment_count; i++) {
-		buffers.back()->anti_aliasing[i] = taa[i];
+	for(unsigned int i = 0; i < buffer->attachment_count; i++) {
+		buffer->anti_aliasing[i] = taa[i];
 		
-		float ssaa_factor = get_anti_aliasing_scale(buffers.back()->anti_aliasing[i]);
+		float ssaa_factor = get_anti_aliasing_scale(buffer->anti_aliasing[i]);
 		if(ssaa_factor <= 1.0f) continue;
 		
 		//
@@ -169,85 +169,85 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		const float2 ssaa_res = get_resolution_for_scale(ssaa, size2(width, height));
 		width = (unsigned int)ssaa_res.x;
 		height = (unsigned int)ssaa_res.y;
-		buffers.back()->width = width;
-		buffers.back()->height = height;
-		buffers.back()->draw_width = width;
-		buffers.back()->draw_height = height;
+		buffer->width = width;
+		buffer->height = height;
+		buffer->draw_width = width;
+		buffer->draw_height = height;
 	}
 	
 	// check if a color or stencil should be created
 	if(format[0] != GL_STENCIL_INDEX) {
 		// color buffer
-		buffers.back()->color = true;
-		buffers.back()->stencil = false;
+		buffer->color = true;
+		buffer->stencil = false;
 		
-		glGenFramebuffers(1, &buffers.back()->fbo_id);
-		glBindFramebuffer(GL_FRAMEBUFFER, buffers.back()->fbo_id);
+		glGenFramebuffers(1, &buffer->fbo_id);
+		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 		
-		glGenTextures(attachment_count, buffers.back()->tex_id);
-		for(unsigned int i = 0; i < buffers.back()->attachment_count; i++) {
-			buffers.back()->target[i] = target[i];
-			glBindTexture(buffers.back()->target[i], buffers.back()->tex_id[i]);
+		glGenTextures(attachment_count, buffer->tex_id);
+		for(unsigned int i = 0; i < buffer->attachment_count; i++) {
+			buffer->target[i] = target[i];
+			glBindTexture(buffer->target[i], buffer->tex_id[i]);
 			
-			glTexParameteri(buffers.back()->target[i], GL_TEXTURE_MAG_FILTER, (filtering[i] == 0 ? GL_NEAREST : GL_LINEAR));
-			glTexParameteri(buffers.back()->target[i], GL_TEXTURE_MIN_FILTER, filter[filtering[i]]);
-			glTexParameteri(buffers.back()->target[i], GL_TEXTURE_WRAP_S, wrap_s[i]);
-			glTexParameteri(buffers.back()->target[i], GL_TEXTURE_WRAP_T, wrap_t[i]);
+			glTexParameteri(buffer->target[i], GL_TEXTURE_MAG_FILTER, (filtering[i] == 0 ? GL_NEAREST : GL_LINEAR));
+			glTexParameteri(buffer->target[i], GL_TEXTURE_MIN_FILTER, filter[filtering[i]]);
+			glTexParameteri(buffer->target[i], GL_TEXTURE_WRAP_S, wrap_s[i]);
+			glTexParameteri(buffer->target[i], GL_TEXTURE_WRAP_T, wrap_t[i]);
 			if(exts->is_anisotropic_filtering_support() && filtering[i] >= texture_object::TF_BILINEAR) {
-				glTexParameteri(buffers.back()->target[i], GL_TEXTURE_MAX_ANISOTROPY_EXT, exts->get_max_anisotropic_filtering());
+				glTexParameteri(buffer->target[i], GL_TEXTURE_MAX_ANISOTROPY_EXT, exts->get_max_anisotropic_filtering());
 			}
 			
-			switch(buffers.back()->target[i]) {
+			switch(buffer->target[i]) {
 				case GL_TEXTURE_1D:
-					glTexImage1D(buffers.back()->target[i], 0, internal_format[i], width, 0, format[i], type[i], NULL);
+					glTexImage1D(buffer->target[i], 0, internal_format[i], width, 0, format[i], type[i], NULL);
 					break;
 				case GL_TEXTURE_2D:
-					glTexImage2D(buffers.back()->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], NULL);
+					glTexImage2D(buffer->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], NULL);
 					break;
 				/*case GL_TEXTURE_3D:
 					// TODO: tex3d
-					glTexImage3D(buffers.back()->target[i], 0, internal_format[i], width, height, 1, 0, format[i], type[i], NULL);
+					glTexImage3D(buffer->target[i], 0, internal_format[i], width, height, 1, 0, format[i], type[i], NULL);
 					break;*/
 				case GL_TEXTURE_2D_MULTISAMPLE:
-					glTexImage2DMultisample(buffers.back()->target[i], (GLsizei)get_sample_count(buffers.back()->anti_aliasing[0]), internal_format[i], width, height, false);
+					glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), internal_format[i], width, height, false);
 					break;
 				/*case GL_TEXTURE_3D_MULTISAMPLE:
 					// TODO: tex3d
-					glTexImage3DMultisample(buffers.back()->target[i], samp, internal_format[i], width, height, 1, false);
+					glTexImage3DMultisample(buffer->target[i], samp, internal_format[i], width, height, 1, false);
 					break;*/
 				default:
-					glTexImage2D(buffers.back()->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], NULL);
+					glTexImage2D(buffer->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], NULL);
 					break;
 			}
 			
 			if(filtering[i] > texture_object::TF_LINEAR) {
-				buffers.back()->auto_mipmap[i] = true;
-				//glGenerateMipmap(buffers.back()->target[i]);
+				buffer->auto_mipmap[i] = true;
+				//glGenerateMipmap(buffer->target[i]);
 			}
-			else buffers.back()->auto_mipmap[i] = false;
+			else buffer->auto_mipmap[i] = false;
 			
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffers.back()->target[i], buffers.back()->tex_id[i], 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex_id[i], 0);
 			
 #if A2E_DEBUG
 			// TODO: fbo/texture checking
 			GLint check_internal_format = 0, check_type = 0, check_size = 0;
-			glGetTexLevelParameteriv(buffers.back()->target[i], 0, GL_TEXTURE_INTERNAL_FORMAT, &check_internal_format);
-			glGetTexLevelParameteriv(buffers.back()->target[i], 0, GL_TEXTURE_RED_TYPE, &check_type);
-			glGetTexLevelParameteriv(buffers.back()->target[i], 0, GL_TEXTURE_RED_SIZE, &check_size);
+			glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_INTERNAL_FORMAT, &check_internal_format);
+			glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_TYPE, &check_type);
+			glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_SIZE, &check_size);
 			//a2e_debug("FBO: iformat: %X, type: %X, size: %d", check_internal_format, check_type, check_size);
 #endif
 		}
 		
-		current_buffer = buffers.back();
+		current_buffer = buffer;
 		check_fbo(current_buffer);
 		
 		if(depth_type != rtt::DT_NONE) {
 			// TODO: ?, this is currently a restriction
 			/*if(depth_type == rtt::DT_TEXTURE_2D) {
-				buffers.back()->anti_aliasing[0] = rtt::TAA_NONE;
+				buffer->anti_aliasing[0] = rtt::TAA_NONE;
 			}*/
 			
-			switch(buffers.back()->anti_aliasing[0]) {
+			switch(buffer->anti_aliasing[0]) {
 				case rtt::TAA_NONE:
 				case rtt::TAA_SSAA_2:
 				case rtt::TAA_SSAA_4:
@@ -255,13 +255,13 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 				case rtt::TAA_SSAA_4_3_FXAA:
 				case rtt::TAA_SSAA_2_FXAA:
 					if(depth_type == rtt::DT_RENDERBUFFER) {
-						glGenRenderbuffers(1, &buffers.back()->depth_buffer);
-						glBindRenderbuffer(GL_RENDERBUFFER, buffers.back()->depth_buffer);
+						glGenRenderbuffers(1, &buffer->depth_buffer);
+						glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
 						glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 					}
 					else if(depth_type == rtt::DT_TEXTURE_2D) {
-						glGenTextures(1, &buffers.back()->depth_buffer);
-						glBindTexture(GL_TEXTURE_2D, buffers.back()->depth_buffer);
+						glGenTextures(1, &buffer->depth_buffer);
+						glBindTexture(GL_TEXTURE_2D, buffer->depth_buffer);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -274,7 +274,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 #else
 						glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 #endif
-						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffers.back()->depth_buffer, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer->depth_buffer, 0);
 					}
 					
 					check_fbo(current_buffer);
@@ -285,42 +285,42 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 				case rtt::TAA_MSAA_16:
 				case rtt::TAA_MSAA_32:
 				case rtt::TAA_MSAA_64: {
-					GLsizei samples = (GLsizei)get_sample_count(buffers.back()->anti_aliasing[0]);
+					GLsizei samples = (GLsizei)get_sample_count(buffer->anti_aliasing[0]);
 
-					buffers.back()->resolve_buffer = new GLuint[attachment_count];
-					glGenFramebuffers(attachment_count, buffers.back()->resolve_buffer);
+					buffer->resolve_buffer = new GLuint[attachment_count];
+					glGenFramebuffers(attachment_count, buffer->resolve_buffer);
 					for(size_t i = 0; i < attachment_count; i++) {
-						glBindFramebuffer(GL_FRAMEBUFFER, buffers.back()->resolve_buffer[i]);
-						glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)(GL_COLOR_ATTACHMENT0+i), target[i], buffers.back()->tex_id[i], 0);
+						glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[i]);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)(GL_COLOR_ATTACHMENT0+i), target[i], buffer->tex_id[i], 0);
 					}
 					check_fbo(current_buffer);
 					
-					glBindFramebuffer(GL_FRAMEBUFFER, buffers.back()->fbo_id);
+					glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 
-					glGenRenderbuffers(1, &buffers.back()->color_buffer);
-					glBindRenderbuffer(GL_RENDERBUFFER, buffers.back()->color_buffer);
-					glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format[0], buffers.back()->width, buffers.back()->height);
-					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffers.back()->color_buffer);
+					glGenRenderbuffers(1, &buffer->color_buffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
+					glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format[0], buffer->width, buffer->height);
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
 					check_fbo(current_buffer);
 					
 					if(depth_type == rtt::DT_RENDERBUFFER) {
-						glGenRenderbuffers(1, &buffers.back()->depth_buffer);
-						glBindRenderbuffer(GL_RENDERBUFFER, buffers.back()->depth_buffer);
-						glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT24, buffers.back()->width, buffers.back()->height);
-						glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffers.back()->depth_buffer);
+						glGenRenderbuffers(1, &buffer->depth_buffer);
+						glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
+						glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT24, buffer->width, buffer->height);
+						glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
 					}
 					else if(depth_type == rtt::DT_TEXTURE_2D) {
-						buffers.back()->samples = samples;
+						buffer->samples = samples;
 
-						glGenTextures(1, &buffers.back()->depth_buffer);
-						glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffers.back()->depth_buffer);
+						glGenTextures(1, &buffer->depth_buffer);
+						glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer);
 						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 						
 						glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH_COMPONENT24, width, height, false);
-						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, buffers.back()->depth_buffer, 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer, 0);
 					}
 					
 					check_fbo(current_buffer);
@@ -333,7 +333,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 				case rtt::TAA_CSAA_32:
 				case rtt::TAA_CSAA_32Q: {
 					int color_samples, coverage_samples;
-					switch(buffers.back()->anti_aliasing[0]) {
+					switch(buffer->anti_aliasing[0]) {
 						case rtt::TAA_CSAA_8:
 							color_samples = 4;
 							coverage_samples = 8;
@@ -358,26 +358,26 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 							break;
 					}
 					
-					glGenRenderbuffers(1, &buffers.back()->depth_buffer);
-					glGenRenderbuffers(1, &buffers.back()->color_buffer);
+					glGenRenderbuffers(1, &buffer->depth_buffer);
+					glGenRenderbuffers(1, &buffer->color_buffer);
 
-					buffers.back()->resolve_buffer = new GLuint[1];
-					glGenFramebuffers(1, &buffers.back()->resolve_buffer[0]);
+					buffer->resolve_buffer = new GLuint[1];
+					glGenFramebuffers(1, &buffer->resolve_buffer[0]);
 					
-					glBindFramebuffer(GL_FRAMEBUFFER, buffers.back()->resolve_buffer[0]);
-					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffers.back()->tex_id[0], 0);
+					glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[0]);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->tex_id[0], 0);
 					check_fbo(current_buffer);
 					
-					glBindFramebuffer(GL_FRAMEBUFFER, buffers.back()->fbo_id);
-					glBindRenderbuffer(GL_RENDERBUFFER, buffers.back()->color_buffer);
+					glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
+					glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
 					
-					glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, format[0], buffers.back()->width, buffers.back()->height);
-					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffers.back()->color_buffer);
+					glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, format[0], buffer->width, buffer->height);
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
 					check_fbo(current_buffer);
 					
-					glBindRenderbuffer(GL_RENDERBUFFER, buffers.back()->depth_buffer);
-					glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, GL_DEPTH_COMPONENT24, buffers.back()->width, buffers.back()->height);
-					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffers.back()->depth_buffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
+					glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, GL_DEPTH_COMPONENT24, buffer->width, buffer->height);
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
 					check_fbo(current_buffer);
 					break;
 				}
@@ -392,30 +392,30 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 	else  {
 		// stencil buffer
 		// TODO: this is defined per spec standard, but doesn't work on current graphic cards
-		buffers.back()->color = false;
-		buffers.back()->stencil = true;
+		buffer->color = false;
+		buffer->stencil = true;
 		
-		glGenFramebuffers(1, &buffers.back()->fbo_id);
-		glBindFramebuffer(GL_FRAMEBUFFER, buffers.back()->fbo_id);
-		glGenRenderbuffers(1, &buffers.back()->stencil_buffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, buffers.back()->stencil_buffer);
+		glGenFramebuffers(1, &buffer->fbo_id);
+		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
+		glGenRenderbuffers(1, &buffer->stencil_buffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, buffer->stencil_buffer);
 		glRenderbufferStorage(GL_RENDERBUFFER, internal_format[0], width, height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffers.back()->stencil_buffer);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->stencil_buffer);
 		
-		check_fbo(buffers.back());
+		check_fbo(buffer);
 		
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	
-	return buffers.back();
+	return buffer;
 }
 
 void rtt::delete_buffer(rtt::fbo* buffer) {
 	glDeleteTextures(buffer->attachment_count, buffer->tex_id);
 	glDeleteFramebuffers(1, &buffer->fbo_id);
 	delete buffer;
-	buffers.remove(buffer);
+	remove(buffers.begin(), buffers.end(), buffer);
 }
 
 void rtt::start_draw(rtt::fbo* buffer) {

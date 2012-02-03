@@ -110,7 +110,7 @@ protected:
 	gfx* g;
 	ext* exts;
 
-	list<fbo*> buffers;
+	vector<fbo*> buffers;
 	fbo* current_buffer;
 
 	unsigned int filter[4];
