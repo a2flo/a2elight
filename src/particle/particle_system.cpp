@@ -31,14 +31,14 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	type = EMITTER_TYPE::BOX;
 	lighting_type = LIGHTING_TYPE::NONE;
 	
-	aux_data = NULL;
+	aux_data = nullptr;
 	
 	// only gen if ltype == POINT is set?
 	glGenBuffers(1, &lights_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, lights_ubo);
 	glBufferData(GL_UNIFORM_BUFFER,
 				 (sizeof(float4) * 2) * A2E_MAX_PARTICLE_LIGHTS,
-				 NULL, GL_STATIC_DRAW);
+				 nullptr, GL_STATIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	
 	bbox.min.set(0.0f, 0.0f, 0.0f);
@@ -60,11 +60,11 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	data.particle_indices_swap = 0;
 	
 	// for opencl computed particle systems
-	data.ocl_pos_time_buffer = NULL;
-	data.ocl_dir_buffer = NULL;
-	data.ocl_indices[0] = NULL;
-	data.ocl_indices[1] = NULL;
-	data.ocl_distances = NULL;
+	data.ocl_pos_time_buffer = nullptr;
+	data.ocl_dir_buffer = nullptr;
+	data.ocl_indices[0] = nullptr;
+	data.ocl_indices[1] = nullptr;
+	data.ocl_distances = nullptr;
 	data.ocl_gl_pos_time_vbo = 0;
 	data.ocl_gl_dir_vbo = 0;
 	data.ocl_range_global.set(0);
@@ -84,9 +84,9 @@ particle_system::~particle_system() {
 	if(glIsBuffer(data.ocl_gl_dir_vbo)) glDeleteBuffers(1, &data.ocl_gl_dir_vbo);
 	if(glIsBuffer(data.particle_indices_vbo[0])) glDeleteBuffers(1, &data.particle_indices_vbo[0]);
 	if(glIsBuffer(data.particle_indices_vbo[1])) glDeleteBuffers(1, &data.particle_indices_vbo[1]);
-	if(data.ocl_pos_time_buffer != NULL) e->get_opencl()->delete_buffer(data.ocl_pos_time_buffer);
-	if(data.ocl_dir_buffer != NULL) e->get_opencl()->delete_buffer(data.ocl_dir_buffer);
-	if(data.ocl_distances != NULL) e->get_opencl()->delete_buffer(data.ocl_distances);
+	if(data.ocl_pos_time_buffer != nullptr) e->get_opencl()->delete_buffer(data.ocl_pos_time_buffer);
+	if(data.ocl_dir_buffer != nullptr) e->get_opencl()->delete_buffer(data.ocl_dir_buffer);
+	if(data.ocl_distances != nullptr) e->get_opencl()->delete_buffer(data.ocl_distances);
 }
 
 void particle_system::set_type(particle_system::EMITTER_TYPE type_) {

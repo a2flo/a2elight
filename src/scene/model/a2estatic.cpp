@@ -21,20 +21,20 @@
 /*! a2estatic constructor
  */
 a2estatic::a2estatic(engine* e, shader* s, scene* sce) : a2emodel(e, s, sce) {
-	vertices = NULL;
-	tex_coords = NULL;
-	indices = NULL;
+	vertices = nullptr;
+	tex_coords = nullptr;
+	indices = nullptr;
 	vertex_count = 0;
-	index_count = NULL;
-	min_index = NULL;
-	max_index = NULL;
-	vbo_indices_ids = NULL;
+	index_count = nullptr;
+	min_index = nullptr;
+	max_index = nullptr;
+	vbo_indices_ids = nullptr;
 	
-	normals = NULL;
-	binormals = NULL;
-	tangents = NULL;
+	normals = nullptr;
+	binormals = nullptr;
+	tangents = nullptr;
 	
-	normal_list = NULL;
+	normal_list = nullptr;
 }
 
 /*! a2estatic destructor
@@ -42,33 +42,33 @@ a2estatic::a2estatic(engine* e, shader* s, scene* sce) : a2emodel(e, s, sce) {
 a2estatic::~a2estatic() {
 	a2e_debug("deleting a2estatic object");
 
-	if(vertices != NULL) { delete [] vertices; }
-	if(tex_coords != NULL) { delete [] tex_coords; }
-	if(indices != NULL) { // no additional delete for tex_indices needed, b/c it points to the same data as indices
+	if(vertices != nullptr) { delete [] vertices; }
+	if(tex_coords != nullptr) { delete [] tex_coords; }
+	if(indices != nullptr) { // no additional delete for tex_indices needed, b/c it points to the same data as indices
 	    for(unsigned int i = 0; i < object_count; i++) {
 	        delete [] indices[i];
 	    }
 	    delete [] indices;
     }
-	if(index_count != NULL) { delete [] index_count; }
-	if(min_index != NULL) { delete [] min_index; }
-	if(max_index != NULL) { delete [] max_index; }
+	if(index_count != nullptr) { delete [] index_count; }
+	if(min_index != nullptr) { delete [] min_index; }
+	if(max_index != nullptr) { delete [] max_index; }
 
-	if(normals != NULL) { delete [] normals; }
-	if(binormals != NULL) { delete [] binormals; }
-	if(tangents != NULL) { delete [] tangents; }
+	if(normals != nullptr) { delete [] normals; }
+	if(binormals != nullptr) { delete [] binormals; }
+	if(tangents != nullptr) { delete [] tangents; }
 	
-	if(normal_list != NULL) {
+	if(normal_list != nullptr) {
 		delete [] normal_list;
 	}
 	
-	if(model_vertices != NULL) { delete [] model_vertices; }
-	if(model_vertex_count != NULL) { delete [] model_vertex_count; }
+	if(model_vertices != nullptr) { delete [] model_vertices; }
+	if(model_vertex_count != nullptr) { delete [] model_vertex_count; }
 
 	// delete vbos
 	if(glIsBuffer(vbo_vertices_id)) { glDeleteBuffers(1, &vbo_vertices_id); }
 	if(glIsBuffer(vbo_tex_coords_id)) { glDeleteBuffers(1, &vbo_tex_coords_id); }
-	if(vbo_indices_ids != NULL) {
+	if(vbo_indices_ids != nullptr) {
 		if(glIsBuffer(vbo_indices_ids[0])) { glDeleteBuffers(object_count, vbo_indices_ids); }
 		delete [] vbo_indices_ids;
 	}

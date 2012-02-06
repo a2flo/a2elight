@@ -94,12 +94,12 @@ opencl::opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool
 	
 	buffer = new stringstream(stringstream::in | stringstream::out);
 	
-	context = NULL;
-	cur_kernel = NULL;
-	active_device = NULL;
+	context = nullptr;
+	cur_kernel = nullptr;
+	active_device = nullptr;
 	
-	fastest_cpu = NULL;
-	fastest_gpu = NULL;
+	fastest_cpu = nullptr;
+	fastest_gpu = nullptr;
 	
 	// TODO: this currently doesn't work if there are spaces inside the path and surrounding
 	// the path by "" doesn't work either, probably a bug in the apple implementation -- or clang?
@@ -145,7 +145,7 @@ opencl::~opencl() {
 	
 	destroy_kernels();
 	
-	if(context != NULL) delete context;
+	if(context != nullptr) delete context;
 	
 	internal_devices.clear();
 	devices.clear();
@@ -160,7 +160,7 @@ void opencl::destroy_kernels() {
 		delete k.second;
 	}
 	kernels.clear();
-	cur_kernel = NULL;
+	cur_kernel = nullptr;
 }
 
 void opencl::init(bool use_platform_devices, const size_t platform_index) {
@@ -187,7 +187,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			0 };
 		
 		// create a context with all platform devices (this works fine since 10.7)
-		context = new cl::Context(internal_devices, cl_properties, clLogMessagesToStdoutAPPLE, NULL, &ierr);
+		context = new cl::Context(internal_devices, cl_properties, clLogMessagesToStdoutAPPLE, nullptr, &ierr);
 		
 #else
 		SDL_SysWMinfo wm_info;
@@ -215,10 +215,10 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 #endif
 		
 		if(use_platform_devices) {
-			context = new cl::Context(internal_devices, cl_properties, NULL, NULL, &ierr);
+			context = new cl::Context(internal_devices, cl_properties, nullptr, nullptr, &ierr);
 		}
 		else {
-			context = new cl::Context(CL_DEVICE_TYPE_ALL, cl_properties, NULL, NULL, &ierr);
+			context = new cl::Context(CL_DEVICE_TYPE_ALL, cl_properties, nullptr, nullptr, &ierr);
 		}
 #endif
 		
@@ -258,16 +258,16 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 
 			devices.back()->vendor_type = CLV_UNKNOWN;
 			string vendor_str = core::str_to_lower(devices.back()->vendor);
-			if(strstr(vendor_str.c_str(), "nvidia") != NULL) {
+			if(strstr(vendor_str.c_str(), "nvidia") != nullptr) {
 				devices.back()->vendor_type = CLV_NVIDIA;
 			}
-			else if(strstr(vendor_str.c_str(), "ati") != NULL) {
+			else if(strstr(vendor_str.c_str(), "ati") != nullptr) {
 				devices.back()->vendor_type = CLV_ATI;
 			}
-			else if(strstr(vendor_str.c_str(), "amd") != NULL) {
+			else if(strstr(vendor_str.c_str(), "amd") != nullptr) {
 				devices.back()->vendor_type = CLV_AMD;
 			}
-			else if(strstr(vendor_str.c_str(), "intel") != NULL) {
+			else if(strstr(vendor_str.c_str(), "intel") != nullptr) {
 				devices.back()->vendor_type = CLV_INTEL;
 			}
 			
@@ -276,7 +276,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 				cpu_counter++;
 				dev_type_str += "CPU ";
 				
-				if(fastest_cpu == NULL) {
+				if(fastest_cpu == nullptr) {
 					fastest_cpu = devices.back();
 					fastest_cpu_score = devices.back()->units * devices.back()->clock;
 				}
@@ -292,7 +292,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 				gpu_counter++;
 				dev_type_str += "GPU ";
 				
-				if(fastest_gpu == NULL) {
+				if(fastest_gpu == nullptr) {
 					fastest_gpu = devices.back();
 					fastest_gpu_score = devices.back()->units * devices.back()->clock;
 				}
@@ -331,8 +331,8 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		//active_device = devices[0];
 		set_active_device(opencl::FASTEST_GPU);
 		
-		if(fastest_cpu != NULL) a2e_debug("fastest CPU device: %s %s (score: %u)", fastest_cpu->vendor.c_str(), fastest_cpu->name.c_str(), fastest_cpu_score);
-		if(fastest_gpu != NULL) a2e_debug("fastest GPU device: %s %s (score: %u)", fastest_gpu->vendor.c_str(), fastest_gpu->name.c_str(), fastest_gpu_score);
+		if(fastest_cpu != nullptr) a2e_debug("fastest CPU device: %s %s (score: %u)", fastest_cpu->vendor.c_str(), fastest_cpu->name.c_str(), fastest_cpu_score);
+		if(fastest_gpu != nullptr) a2e_debug("fastest GPU device: %s %s (score: %u)", fastest_gpu->vendor.c_str(), fastest_gpu->name.c_str(), fastest_gpu_score);
 		
 		load_internal_kernels();
 	}
@@ -402,17 +402,17 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 
 bool opencl::is_cpu_support() {
 	// if a fastest cpu exists, we do have cpu support
-	return (fastest_cpu != NULL);
+	return (fastest_cpu != nullptr);
 }
 
 bool opencl::is_gpu_support() {
 	// if a fastest gpu exists, we do have gpu support
-	return (fastest_gpu != NULL);
+	return (fastest_gpu != nullptr);
 }
 
 opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const char* file_name, const string& func_name, const char* additional_options) {
 	if(!f->open_file(file_name, file_io::OT_READ)) {
-		return NULL;
+		return nullptr;
 	}
 	
 	core::reset(buffer);
@@ -426,7 +426,7 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const c
 	
 //#ifdef __APPLE__
 	// work around caching bug and modify source on each load, TODO: check if this still exists (still present in 10.6.2)
-	kernel_data = "#define __" + core::str_to_upper(func_name) +  "_BUILD_TIME__ " + uint2string((unsigned int)time(NULL)) + "\n" + kernel_data;
+	kernel_data = "#define __" + core::str_to_upper(func_name) +  "_BUILD_TIME__ " + uint2string((unsigned int)time(nullptr)) + "\n" + kernel_data;
 //#endif
 	
 	return add_kernel_src(identifier, kernel_data, func_name, additional_options);
@@ -441,7 +441,7 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 			return kernels[identifier];
 		}
 		
-		if(additional_options != NULL && strlen(additional_options) > 0) {
+		if(additional_options != nullptr && strlen(additional_options) > 0) {
 			options += (additional_options[0] != ' ' ? " " : "") + string(additional_options);
 		}
 		
@@ -535,7 +535,7 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 }
 
 void opencl::log_program_binary(const kernel_object* kernel, const string& options) {
-	if(kernel == NULL) return;
+	if(kernel == nullptr) return;
 	
 	try {
 		// if the device is a nvidia gpu (and we are using the nvidia driver), log the ptx data
@@ -547,7 +547,7 @@ void opencl::log_program_binary(const kernel_object* kernel, const string& optio
 		for(size_t i = 0; i < program_sizes.size(); i++) {
 			program_binaries[i] = new unsigned char[program_sizes[i]+1];
 		}
-		clGetProgramInfo((*kernel->program)(), CL_PROGRAM_BINARIES, program_sizes.size()*sizeof(unsigned char*), &program_binaries[0], NULL);
+		clGetProgramInfo((*kernel->program)(), CL_PROGRAM_BINARIES, program_sizes.size()*sizeof(unsigned char*), &program_binaries[0], nullptr);
 		
 		string kernel_name = kernel->kernel->getInfo<CL_KERNEL_FUNCTION_NAME>();
 		for(vector<device_object*>::iterator diter = devices.begin(); diter != devices.end(); diter++) {
@@ -602,9 +602,9 @@ void opencl::reload_kernels() {
 	destroy_kernels();
 	
 	successful_internal_compilation = true;
-	check_compilation(add_kernel_file("PARTICLE INIT", make_kernel_path("particle_spawn.cl"), "particle_init", " -DA2E_PARTICLE_INIT") != NULL, "particle_spawn.cl");
-	check_compilation(add_kernel_file("PARTICLE RESPAWN", make_kernel_path("particle_spawn.cl"), "particle_respawn") != NULL, "particle_spawn.cl");
-	check_compilation(add_kernel_file("PARTICLE COMPUTE", make_kernel_path("particle_compute.cl"), "particle_compute") != NULL, "particle_compute.cl");
+	check_compilation(add_kernel_file("PARTICLE INIT", make_kernel_path("particle_spawn.cl"), "particle_init", " -DA2E_PARTICLE_INIT") != nullptr, "particle_spawn.cl");
+	check_compilation(add_kernel_file("PARTICLE RESPAWN", make_kernel_path("particle_spawn.cl"), "particle_respawn") != nullptr, "particle_spawn.cl");
+	check_compilation(add_kernel_file("PARTICLE COMPUTE", make_kernel_path("particle_compute.cl"), "particle_compute") != nullptr, "particle_compute.cl");
 	
 	// figure out which sorting local size we can use
 	// a local size of 1024 can be used on fermi+ gpus
@@ -615,14 +615,14 @@ void opencl::reload_kernels() {
 		}
 	}
 	const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
-	check_compilation(add_kernel_file("PARTICLE SORT LOCAL", make_kernel_path("particle_sort.cl"), "bitonicSortLocal", lsl_str.c_str()) != NULL, "particle_sort.cl");
-	check_compilation(add_kernel_file("PARTICLE SORT MERGE GLOBAL", make_kernel_path("particle_sort.cl"), "bitonicMergeGlobal", lsl_str.c_str()) != NULL, "particle_sort.cl");
-	check_compilation(add_kernel_file("PARTICLE SORT MERGE LOCAL", make_kernel_path("particle_sort.cl"), "bitonicMergeLocal", lsl_str.c_str()) != NULL, "particle_sort.cl");
-	check_compilation(add_kernel_file("PARTICLE COMPUTE DISTANCES", make_kernel_path("particle_sort.cl"), "compute_distances", lsl_str.c_str()) != NULL, "particle_sort.cl");
+	check_compilation(add_kernel_file("PARTICLE SORT LOCAL", make_kernel_path("particle_sort.cl"), "bitonicSortLocal", lsl_str.c_str()) != nullptr, "particle_sort.cl");
+	check_compilation(add_kernel_file("PARTICLE SORT MERGE GLOBAL", make_kernel_path("particle_sort.cl"), "bitonicMergeGlobal", lsl_str.c_str()) != nullptr, "particle_sort.cl");
+	check_compilation(add_kernel_file("PARTICLE SORT MERGE LOCAL", make_kernel_path("particle_sort.cl"), "bitonicMergeLocal", lsl_str.c_str()) != nullptr, "particle_sort.cl");
+	check_compilation(add_kernel_file("PARTICLE COMPUTE DISTANCES", make_kernel_path("particle_sort.cl"), "compute_distances", lsl_str.c_str()) != nullptr, "particle_sort.cl");
 	
 	// TODO: make tile size dependent on #cores
-	/*check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=4 -DA2E_IR_TILE_SIZE_Y=4") != NULL, "ir_lighting.cl");*/
-	check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16") != NULL, "ir_lighting.cl");
+	/*check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=4 -DA2E_IR_TILE_SIZE_Y=4") != nullptr, "ir_lighting.cl");*/
+	check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16") != nullptr, "ir_lighting.cl");
 	
 	if(successful_internal_compilation) a2e_debug("internal kernels loaded successfully!");
 	else {
@@ -641,7 +641,7 @@ void opencl::load_internal_kernels() {
 void opencl::use_kernel(const string& identifier) {
 	if(kernels.count(identifier) == 0) {
 		a2e_error("kernel \"%s\" doesn't exist!", identifier.c_str());
-		cur_kernel = NULL;
+		cur_kernel = nullptr;
 		return;
 	}
 	cur_kernel = kernels[identifier];
@@ -657,9 +657,9 @@ opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, vo
 		if(type & opencl::BT_DELETE_AFTER_USE) vtype |= opencl::BT_DELETE_AFTER_USE;
 		if(type & opencl::BT_BLOCK_ON_READ) vtype |= opencl::BT_BLOCK_ON_READ;
 		if(type & opencl::BT_BLOCK_ON_WRITE) vtype |= opencl::BT_BLOCK_ON_WRITE;
-		if(data != NULL && (type & opencl::BT_INITIAL_COPY) && !(vtype & opencl::BT_USE_HOST_MEMORY)) vtype |= opencl::BT_INITIAL_COPY;
-		if(data != NULL && (type & opencl::BT_COPY_ON_USE)) vtype |= opencl::BT_COPY_ON_USE;
-		if(data != NULL && (type & opencl::BT_READ_BACK_RESULT)) vtype |= opencl::BT_READ_BACK_RESULT;
+		if(data != nullptr && (type & opencl::BT_INITIAL_COPY) && !(vtype & opencl::BT_USE_HOST_MEMORY)) vtype |= opencl::BT_INITIAL_COPY;
+		if(data != nullptr && (type & opencl::BT_COPY_ON_USE)) vtype |= opencl::BT_COPY_ON_USE;
+		if(data != nullptr && (type & opencl::BT_READ_BACK_RESULT)) vtype |= opencl::BT_READ_BACK_RESULT;
 		
 		cl_mem_flags flags = 0;
 		switch((EBUFFER_TYPE)(type & 0x03)) {
@@ -679,8 +679,8 @@ opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, vo
 				break;
 		}
 		if((vtype & opencl::BT_INITIAL_COPY) && !(vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_COPY_HOST_PTR;
-		if(data != NULL && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_USE_HOST_PTR;
-		if(data == NULL && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_ALLOC_HOST_PTR;
+		if(data != nullptr && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_USE_HOST_PTR;
+		if(data == nullptr && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_ALLOC_HOST_PTR;
 		
 		buffers.back()->type = vtype;
 		buffers.back()->flags = flags;
@@ -688,32 +688,32 @@ opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, vo
 		return buffers.back();
 	}
 	__HANDLE_CL_EXCEPTION("create_buffer_object")
-	return NULL;
+	return nullptr;
 }
 
 opencl::buffer_object* opencl::create_buffer(opencl::BUFFER_TYPE type, size_t size, void* data) {
 	if(size == 0) {
-		return NULL;
+		return nullptr;
 	}
 	
 	try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
-		if(buffer_obj == NULL) return NULL;
+		if(buffer_obj == nullptr) return nullptr;
 		
 		buffer_obj->size = size;
 		buffer_obj->buffer = new cl::Buffer(*context, buffer_obj->flags, size,
-											((buffer_obj->type & opencl::BT_INITIAL_COPY) || (buffer_obj->type & opencl::BT_USE_HOST_MEMORY) ? data : NULL),
+											((buffer_obj->type & opencl::BT_INITIAL_COPY) || (buffer_obj->type & opencl::BT_USE_HOST_MEMORY) ? data : nullptr),
 											&ierr);
 		return buffer_obj;
 	}
 	__HANDLE_CL_EXCEPTION("create_buffer")
-	return NULL;
+	return nullptr;
 }
 
 opencl::buffer_object* opencl::create_image2d_buffer(opencl::BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data) {
 	try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
-		if(buffer_obj == NULL) return NULL;
+		if(buffer_obj == nullptr) return nullptr;
 		
 		buffer_obj->format.image_channel_order = channel_order;
 		buffer_obj->format.image_channel_data_type = channel_type;
@@ -723,13 +723,13 @@ opencl::buffer_object* opencl::create_image2d_buffer(opencl::BUFFER_TYPE type, c
 		return buffer_obj;
 	}
 	__HANDLE_CL_EXCEPTION("create_image2d_buffer")
-	return NULL;
+	return nullptr;
 }
 
 opencl::buffer_object* opencl::create_image3d_buffer(opencl::BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data) {
 	try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
-		if(buffer_obj == NULL) return NULL;
+		if(buffer_obj == nullptr) return nullptr;
 		
 		buffer_obj->format.image_channel_order = channel_order;
 		buffer_obj->format.image_channel_data_type = channel_type;
@@ -739,7 +739,7 @@ opencl::buffer_object* opencl::create_image3d_buffer(opencl::BUFFER_TYPE type, c
 		return buffer_obj;
 	}
 	__HANDLE_CL_EXCEPTION("create_image3d_buffer")
-	return NULL;
+	return nullptr;
 }
 
 opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuint ogl_buffer) {
@@ -774,13 +774,13 @@ opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuin
 		
 		buffers.back()->type = vtype;
 		buffers.back()->ogl_buffer = ogl_buffer;
-		buffers.back()->data = NULL;
+		buffers.back()->data = nullptr;
 		buffers.back()->size = 0;
 		buffers.back()->buffer = new cl::BufferGL(*context, flags, ogl_buffer, &ierr);
 		return buffers.back();
 	}
 	__HANDLE_CL_EXCEPTION("create_ogl_buffer")
-	return NULL;
+	return nullptr;
 }
 
 opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target) {
@@ -815,13 +815,13 @@ opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type, GLuin
 		
 		buffers.back()->type = vtype;
 		buffers.back()->ogl_buffer = texture;
-		buffers.back()->data = NULL;
+		buffers.back()->data = nullptr;
 		buffers.back()->size = 0;
 		buffers.back()->image_buffer = new cl::Image2DGL(*context, flags, target, 0, texture, &ierr);
 		return buffers.back();
 	}
 	__HANDLE_CL_EXCEPTION("create_ogl_image2d_buffer")
-	return NULL;
+	return nullptr;
 }
 
 opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer) {
@@ -856,13 +856,13 @@ opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type,
 		
 		buffers.back()->type = vtype;
 		buffers.back()->ogl_buffer = renderbuffer;
-		buffers.back()->data = NULL;
+		buffers.back()->data = nullptr;
 		buffers.back()->size = 0;
 		buffers.back()->buffer = new cl::BufferRenderGL(*context, flags, renderbuffer, &ierr);
 		return buffers.back();
 	}
 	__HANDLE_CL_EXCEPTION("create_ogl_image2d_renderbuffer")
-	return NULL;
+	return nullptr;
 }
 
 void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
@@ -874,8 +874,8 @@ void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
 		}
 	}
 	buffer_obj->associated_kernels.clear();
-	if(buffer_obj->buffer != NULL) delete buffer_obj->buffer;
-	if(buffer_obj->image_buffer != NULL) delete buffer_obj->image_buffer;
+	if(buffer_obj->buffer != nullptr) delete buffer_obj->buffer;
+	if(buffer_obj->image_buffer != nullptr) delete buffer_obj->image_buffer;
 	buffers.erase(find(buffers.begin(), buffers.end(), buffer_obj));
 }
 
@@ -936,13 +936,13 @@ void opencl::read_buffer(void* dst, opencl::buffer_object* buffer_obj) {
 void opencl::set_active_device(opencl::OPENCL_DEVICE dev) {
 	switch(dev) {
 		case FASTEST_GPU:
-			if(fastest_gpu != NULL) {
+			if(fastest_gpu != nullptr) {
 				active_device = fastest_gpu;
 				return;
 			}
 			break;
 		case FASTEST_CPU:
-			if(fastest_cpu != NULL) {
+			if(fastest_cpu != nullptr) {
 				active_device = fastest_cpu;
 				return;
 			}
@@ -969,7 +969,7 @@ void opencl::set_active_device(opencl::OPENCL_DEVICE dev) {
 		}
 	}
 	
-	if(active_device != NULL) {
+	if(active_device != nullptr) {
 		a2e_error("can't use device %u - keeping current one (%u)!", dev, active_device->type);
 	}
 	else {
@@ -979,7 +979,7 @@ void opencl::set_active_device(opencl::OPENCL_DEVICE dev) {
 }
 
 void opencl::set_kernel_range(const cl::NDRange& global, const cl::NDRange& local) {
-	if(cur_kernel == NULL) return;
+	if(cur_kernel == nullptr) return;
 	
 	memcpy(cur_kernel->global, global, sizeof(cl::NDRange));
 	memcpy(cur_kernel->local, local, sizeof(cl::NDRange));
@@ -1001,7 +1001,7 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 			if((biter->second->type & opencl::BT_COPY_ON_USE) != 0) write_buffer(biter->second, biter->second->data);
 			if((biter->second->type & opencl::BT_OPENGL_BUFFER) != 0 &&
 			   !biter->second->manual_gl_sharing) {
-				gl_objects.push_back(*(biter->second->buffer != NULL ? (cl::Memory*)biter->second->buffer : (cl::Memory*)biter->second->image_buffer));
+				gl_objects.push_back(*(biter->second->buffer != nullptr ? (cl::Memory*)biter->second->buffer : (cl::Memory*)biter->second->image_buffer));
 				kernel_obj->has_ogl_buffers = true;
 			}
 		}
@@ -1047,8 +1047,8 @@ void opencl::run_kernel(const char* kernel_identifier) {
 }
 
 bool opencl::set_kernel_argument(unsigned int index, opencl::buffer_object* arg) {
-	if((arg->buffer != NULL && set_kernel_argument(index, (*arg->buffer)())) ||
-	   (arg->image_buffer != NULL && set_kernel_argument(index, *(cl::Memory*)arg->image_buffer))) {
+	if((arg->buffer != nullptr && set_kernel_argument(index, (*arg->buffer)())) ||
+	   (arg->image_buffer != nullptr && set_kernel_argument(index, *(cl::Memory*)arg->image_buffer))) {
 		cur_kernel->buffer_args[index] = arg;
 		arg->associated_kernels[cur_kernel].push_back(index);
 		return true;
@@ -1082,7 +1082,7 @@ opencl::device_object* opencl::get_device(opencl::OPENCL_DEVICE device) {
 			}
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 opencl::device_object* opencl::get_active_device() {
@@ -1099,11 +1099,11 @@ void* opencl::map_buffer(opencl::buffer_object* buffer_obj, EBUFFER_TYPE access_
 			default: break;
 		}
 		
-		void* map_ptr = NULL;
-		if(buffer_obj->buffer != NULL) {
+		void* map_ptr = nullptr;
+		if(buffer_obj->buffer != nullptr) {
 			map_ptr = queues[active_device->device]->enqueueMapBuffer(*buffer_obj->buffer, blocking, map_flags, 0, buffer_obj->size);
 		}
-		else if(buffer_obj->image_buffer != NULL) {
+		else if(buffer_obj->image_buffer != nullptr) {
 			size_t row_pitch, slice_pitch;
 			map_ptr = queues[active_device->device]->enqueueMapImage(*buffer_obj->image_buffer, blocking, map_flags,
 																				 (cl::size_t<3>&)buffer_obj->origin,
@@ -1112,19 +1112,19 @@ void* opencl::map_buffer(opencl::buffer_object* buffer_obj, EBUFFER_TYPE access_
 		}
 		else {
 			a2e_error("unknown buffer object!");
-			return NULL;
+			return nullptr;
 		}
 		return map_ptr;
 	}
 	__HANDLE_CL_EXCEPTION("map_buffer")
-	return NULL;
+	return nullptr;
 }
 
 void opencl::unmap_buffer(opencl::buffer_object* buffer_obj, void* map_ptr) {
 	try {
-		void* buffer_ptr = NULL;
-		if(buffer_obj->buffer != NULL) buffer_ptr = buffer_obj->buffer;
-		else if(buffer_obj->image_buffer != NULL) buffer_ptr = buffer_obj->image_buffer;
+		void* buffer_ptr = nullptr;
+		if(buffer_obj->buffer != nullptr) buffer_ptr = buffer_obj->buffer;
+		else if(buffer_obj->image_buffer != nullptr) buffer_ptr = buffer_obj->image_buffer;
 		else {
 			a2e_error("unknown buffer object!");
 			return;
@@ -1142,7 +1142,7 @@ bool opencl::has_vendor_device(OPENCL_VENDOR vendor_type) {
 }
 
 size_t opencl::get_kernel_work_group_size() {
-	if(cur_kernel == NULL || active_device == NULL) return 0;
+	if(cur_kernel == nullptr || active_device == nullptr) return 0;
 	
 	try {
 		return cur_kernel->kernel->getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(*active_device->device);
@@ -1157,7 +1157,7 @@ cl::NDRange opencl::compute_local_kernel_range(const unsigned int dimensions) {
 		a2e_error("invalid dimensions number %d!", dimensions);
 		return local;
 	}
-	if(cur_kernel == NULL || active_device == NULL) {
+	if(cur_kernel == nullptr || active_device == nullptr) {
 		dimensions == 1 ? local.set(1) : (dimensions == 2 ? local.set(1, 1) : local.set(1, 1, 1));
 		return local;
 	}
@@ -1226,7 +1226,7 @@ void opencl::set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool stat
 
 void opencl::acquire_gl_object(buffer_object* gl_buffer_obj) {
 	vector<cl::Memory> gl_objects;
-	gl_objects.push_back(*(gl_buffer_obj->buffer != NULL ?
+	gl_objects.push_back(*(gl_buffer_obj->buffer != nullptr ?
 						   (cl::Memory*)gl_buffer_obj->buffer :
 						   (cl::Memory*)gl_buffer_obj->image_buffer));
 	queues[active_device->device]->enqueueAcquireGLObjects(&gl_objects);
@@ -1234,7 +1234,7 @@ void opencl::acquire_gl_object(buffer_object* gl_buffer_obj) {
 
 void opencl::release_gl_object(buffer_object* gl_buffer_obj) {
 	vector<cl::Memory> gl_objects;
-	gl_objects.push_back(*(gl_buffer_obj->buffer != NULL ?
+	gl_objects.push_back(*(gl_buffer_obj->buffer != nullptr ?
 						   (cl::Memory*)gl_buffer_obj->buffer :
 						   (cl::Memory*)gl_buffer_obj->image_buffer));
 	queues[active_device->device]->enqueueReleaseGLObjects(&gl_objects);

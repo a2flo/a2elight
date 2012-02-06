@@ -107,7 +107,7 @@ a2e_texture texman::check_texture(const string& filename, GLsizei width, GLsizei
 a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t) {
 	// create a sdl surface and load the texture
 	SDL_Surface* tex_surface = IMG_Load(filename.c_str());
-	if(tex_surface == NULL) {
+	if(tex_surface == nullptr) {
 		a2e_error("error loading texture file \"%s\" - %s!", filename, SDL_GetError());
 		return dummy_texture;
 	}
@@ -144,7 +144,7 @@ a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_
 		}
 		
 		SDL_Surface* new_surface = SDL_ConvertSurface(tex_surface, &new_pformat, 0);
-		if(new_surface == NULL) {
+		if(new_surface == nullptr) {
 			a2e_error("BGR(A)->RGB(A) surface conversion failed!");
 		}
 		else {
@@ -166,7 +166,7 @@ a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_
 a2e_texture texman::add_texture(const string& filename, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type) {
 	// create a sdl surface and load the texture
 	SDL_Surface* tex_surface = IMG_Load(filename.c_str());
-	if(tex_surface == NULL) {
+	if(tex_surface == nullptr) {
 		a2e_error("error loading texture file \"%s\" - %s!", filename, SDL_GetError());
 		return dummy_texture;
 	}
@@ -186,7 +186,7 @@ a2e_texture texman::add_texture(const string& filename, GLint internal_format, G
 }
 
 a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type, a2e_texture* tex) {
-	a2e_texture ret_tex(tex == NULL ? make_a2e_texture() : *tex);
+	a2e_texture ret_tex(tex == nullptr ? make_a2e_texture() : *tex);
 	
 	ret_tex->texture_type = GL_TEXTURE_2D;
 	ret_tex->width = width;
@@ -239,7 +239,7 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 		return dummy_texture;
 	}
 	
-	a2e_texture ret_tex(tex == NULL ? make_a2e_texture() : *tex);
+	a2e_texture ret_tex(tex == nullptr ? make_a2e_texture() : *tex);
 	
 	ret_tex->texture_type = GL_TEXTURE_CUBE_MAP;
 	ret_tex->width = width;

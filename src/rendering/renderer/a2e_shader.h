@@ -154,7 +154,7 @@ public:
 	//
 	void load_a2e_shader_includes();
 	a2e_shader_object* get_a2e_shader(const string& identifier, const size_t num = 0) {
-		if(a2e_shaders.count(identifier) == 0) return NULL;
+		if(a2e_shaders.count(identifier) == 0) return nullptr;
 		return a2e_shaders[identifier].at(num);
 	}
 	

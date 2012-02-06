@@ -58,7 +58,7 @@ public:
 										 const float3 gravity,
 										 const float4 color,
 										 const float2 size,
-										 void* aux_data = NULL);
+										 void* aux_data = nullptr);
 	void delete_particle_system(particle_system* ps);
 	particle_manager_base* get_manager();
 	void set_manager(particle_manager_base* pm);

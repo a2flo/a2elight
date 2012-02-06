@@ -46,9 +46,9 @@ public:
 	~engine();
 	
 	// graphic control functions
-	void init(const char* ico = NULL);
+	void init(const char* ico = nullptr);
 	void init(bool console, unsigned int width = 640, unsigned int height = 480,
-			  bool fullscreen = false, bool vsync = false, const char* ico = NULL);
+			  bool fullscreen = false, bool vsync = false, const char* ico = nullptr);
 	void set_width(unsigned int width);
 	void set_height(unsigned int height);
 	void start_draw();
@@ -266,7 +266,7 @@ protected:
 		disabled_extensions(""), force_device(""), force_vendor(""),
 		inferred_scale(4),
 		opencl_platform(0), clear_cache(false),
-		wnd(NULL), ctx(NULL), flags(0)
+		wnd(nullptr), ctx(nullptr), flags(0)
 		{}
 	};
 	engine_config config;

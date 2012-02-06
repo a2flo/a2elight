@@ -55,8 +55,8 @@ a2ematerial::~a2ematerial() {
 			default: break;
 		}
 
-		if(mat_iter->mat != NULL) delete mat_iter->mat;
-		if(mat_iter->model != NULL) delete mat_iter->model;
+		if(mat_iter->mat != nullptr) delete mat_iter->mat;
+		if(mat_iter->model != nullptr) delete mat_iter->model;
 	}
 	materials.clear();
 
@@ -83,26 +83,26 @@ void a2ematerial::load_material(const string& filename) {
 		return;
 	}
 	
-	xmlDoc* doc = xmlReadMemory(mat_data.c_str(), (unsigned int)mat_data.size(), NULL, (const char*)"UTF-8", 0);
+	xmlDoc* doc = xmlReadMemory(mat_data.c_str(), (unsigned int)mat_data.size(), nullptr, (const char*)"UTF-8", 0);
 	xmlNode* root = xmlDocGetRootElement(doc);
 	
 	size_t object_count = 0;
 	size_t object_id = 0;
-	a2ematerial::material* cur_material = NULL;
-	xmlNode* cur_node = NULL;
+	a2ematerial::material* cur_material = nullptr;
+	xmlNode* cur_node = nullptr;
 	stack<xmlNode*> node_stack;
 	node_stack.push(root);
 	while(!node_stack.empty()) {
 		cur_node = node_stack.top();
 		node_stack.pop();
 
-		if(cur_node->next != NULL) node_stack.push(cur_node->next);
+		if(cur_node->next != nullptr) node_stack.push(cur_node->next);
 
 		if(cur_node->type == XML_ELEMENT_NODE) {
 			xmlElement* cur_elem = (xmlElement*)cur_node;
 			string node_name = (const char*)cur_elem->name;
 
-			if(cur_node->children != NULL) node_stack.push(cur_node->children);
+			if(cur_node->children != nullptr) node_stack.push(cur_node->children);
 
 			if(node_name == "a2e_material") {
 				size_t version = x->get_attribute<size_t>(cur_elem->attributes, "version");
@@ -352,7 +352,7 @@ void a2ematerial::load_material(const string& filename) {
 			}
 			else if(node_name == "object") {
 				size_t material_id = x->get_attribute<size_t>(cur_elem->attributes, "material_id");
-				const material* mat = NULL;
+				const material* mat = nullptr;
 				try {
 					mat = &get_material(material_id);
 				}
@@ -432,14 +432,14 @@ float4 a2ematerial::get_color(const string& color_str) {
 const a2ematerial::object_mapping* a2ematerial::get_object_mapping(const size_t& object_id) const {
 	if(mapping.count(object_id) == 0) {
 		a2e_error("no object with an id #%d exists!", object_id);
-		return NULL;
+		return nullptr;
 	}
 	return mapping.find(object_id)->second;
 }
 
 a2ematerial::MATERIAL_TYPE a2ematerial::get_material_type(const size_t& object_id) const {
 	const object_mapping* obj = get_object_mapping(object_id);
-	if(obj == NULL) {
+	if(obj == nullptr) {
 		return a2ematerial::NONE;
 	}
 	return obj->mat->mat_type;
@@ -447,7 +447,7 @@ a2ematerial::MATERIAL_TYPE a2ematerial::get_material_type(const size_t& object_i
 
 a2ematerial::LIGHTING_MODEL a2ematerial::get_lighting_model_type(const size_t& object_id) const {
 	const object_mapping* obj = get_object_mapping(object_id);
-	if(obj == NULL) {
+	if(obj == nullptr) {
 		return a2ematerial::LM_NONE;
 	}
 	return obj->mat->lm_type;
@@ -455,21 +455,21 @@ a2ematerial::LIGHTING_MODEL a2ematerial::get_lighting_model_type(const size_t& o
 
 const a2ematerial::lighting_model* a2ematerial::get_lighting_model(const size_t& object_id) const {
 	const object_mapping* obj = get_object_mapping(object_id);
-	if(obj == NULL) {
-		return NULL;
+	if(obj == nullptr) {
+		return nullptr;
 	}
 	return obj->mat->model;
 }
 
 bool a2ematerial::is_blending(const size_t& object_id) const {
 	const object_mapping* obj = get_object_mapping(object_id);
-	if(obj == NULL) return false;
+	if(obj == nullptr) return false;
 	return obj->blending;
 }
 
 bool a2ematerial::is_parallax_occlusion(const size_t& object_id) const {
 	const object_mapping* obj = get_object_mapping(object_id);
-	if(obj == NULL) return false;
+	if(obj == nullptr) return false;
 	
 	if(obj->mat->mat_type != a2ematerial::PARALLAX) {
 		a2e_error("object #%d is not associated to a parallax-mapping material!", object_id);
@@ -481,7 +481,7 @@ bool a2ematerial::is_parallax_occlusion(const size_t& object_id) const {
 
 void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const size_t texture_mask) const {
 	const object_mapping* obj = get_object_mapping(object_id);
-	if(obj == NULL) return;
+	if(obj == nullptr) return;
 	
 	material* mat = obj->mat;
 	switch(mat->mat_type) {
@@ -506,7 +506,7 @@ void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const
 
 void a2ematerial::disable_textures(const size_t& object_id, const size_t texture_mask) const {
 	const object_mapping* obj = get_object_mapping(object_id);
-	if(obj == NULL) return;
+	if(obj == nullptr) return;
 	
 	// ignore texture_mask for the moment, since this only disables textures
 	switch(obj->mat->mat_type) {

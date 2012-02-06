@@ -107,7 +107,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	a2e_shd->identifier = identifier;
 	
 	// create an xml doc from the read data
-	xmlDoc* doc = xmlReadMemory(shader_data.c_str(), (unsigned int)shader_data.size(), NULL, (const char*)"UTF-8", 0);
+	xmlDoc* doc = xmlReadMemory(shader_data.c_str(), (unsigned int)shader_data.size(), nullptr, (const char*)"UTF-8", 0);
 	xmlNode* root = xmlDocGetRootElement(doc);
 	
 	// parsing time
@@ -121,7 +121,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 				if(version != A2E_SHADER_VERSION) {
 					a2e_error("wrong version %u in shader %s - should be %u!",
 							 version, filename.c_str(), A2E_SHADER_VERSION);
-					if(doc != NULL) xmlFreeDoc(doc);
+					if(doc != nullptr) xmlFreeDoc(doc);
 					xmlCleanupParser();
 					return false;
 				}
@@ -212,14 +212,14 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	}
 	
 	xmlError* err = xmlGetLastError(); // get error before cleanup
-	if(err != NULL) {
+	if(err != nullptr) {
 		a2e_error("parsing error in a2e-shader file %s!", filename.c_str());
 		a2e_error("XML-ERROR: %s\n\rDomain: %d\n\rCode: %d\n\rError-Level: %d\n\rFile: %s (line %d)\n\rAdditional Information: %s %s %s %d %d",
 				  err->message, err->domain, err->code, err->level, err->file, err->line, err->str1, err->str2, err->str3, err->int1, err->int2);
 		return false;
 	}
 	
-	if(doc != NULL) xmlFreeDoc(doc);
+	if(doc != nullptr) xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
 	if(!valid_shader) {
@@ -243,7 +243,7 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 		xmlNode* cur_node = node_stack.back();
 		node_stack.pop_back();
 		
-		while(cur_node != NULL) {
+		while(cur_node != nullptr) {
 			string node_name = (const char*)cur_node->name;
 			
 			if(node_name == "preprocessor" ||
@@ -641,7 +641,7 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		
 		ext::GLSL_VERSION max_glsl_version = std::max(std::max(vertex_shd->version, fragment_shd->version), geometry_shd->version);
 		shader_object* obj = shader_obj->add_shader_src(shd->identifier, option, max_glsl_version, shd->vs_program[option].c_str(), shd->gs_program[option].c_str(), shd->fs_program[option].c_str());
-		if(obj == NULL) ret = false;
+		if(obj == nullptr) ret = false;
 		else obj->a2e_shader = true;
 	}
 	

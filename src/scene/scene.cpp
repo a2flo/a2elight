@@ -19,7 +19,7 @@
 #include "scene.h"
 #include "particle/particle.h"
 
-static opencl* _cl = NULL;
+static opencl* _cl = nullptr;
 static map<string, size_t> _timer_bucket;
 static map<string, size_t> _timer_bucket_count;
 void _start_timer();
@@ -37,18 +37,18 @@ void _stop_timer(const string& name) {
 scene::scene(engine* e_) {
 	scene::is_light = false;
 	
-	_dbg_projs = NULL;
+	_dbg_projs = nullptr;
 	_dbg_proj_count = 0;
 	
 	_cl = e_->get_opencl();
 	
 	//
-	blur_buffer1 = NULL;
-	blur_buffer2 = NULL;
-	blur_buffer3 = NULL;
-	average_buffer = NULL;
-	exposure_buffer[0] = NULL;
-	exposure_buffer[1] = NULL;
+	blur_buffer1 = nullptr;
+	blur_buffer2 = nullptr;
+	blur_buffer3 = nullptr;
+	average_buffer = nullptr;
+	exposure_buffer[0] = nullptr;
+	exposure_buffer[1] = nullptr;
 
 	// get classes
 	scene::e = e_;
@@ -189,29 +189,29 @@ scene::~scene() {
 	// if hdr is supported, than fbo's are supported too, so we don't need an extra delete in the "hdr fbo delete branch"
 	if(e->get_init_mode() == engine::GRAPHICAL) {
 		for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
-			if(frames[i].scene_buffer != NULL) r->delete_buffer(frames[i].scene_buffer);
-			if(frames[i].fxaa_buffer != NULL) r->delete_buffer(frames[i].fxaa_buffer);
-			if(frames[i].g_buffer[0] != NULL) r->delete_buffer(frames[i].g_buffer[0]);
-			if(frames[i].l_buffer[0] != NULL) r->delete_buffer(frames[i].l_buffer[0]);
-			if(frames[i].g_buffer[1] != NULL) r->delete_buffer(frames[i].g_buffer[1]);
-			if(frames[i].l_buffer[1] != NULL) r->delete_buffer(frames[i].l_buffer[1]);
+			if(frames[i].scene_buffer != nullptr) r->delete_buffer(frames[i].scene_buffer);
+			if(frames[i].fxaa_buffer != nullptr) r->delete_buffer(frames[i].fxaa_buffer);
+			if(frames[i].g_buffer[0] != nullptr) r->delete_buffer(frames[i].g_buffer[0]);
+			if(frames[i].l_buffer[0] != nullptr) r->delete_buffer(frames[i].l_buffer[0]);
+			if(frames[i].g_buffer[1] != nullptr) r->delete_buffer(frames[i].g_buffer[1]);
+			if(frames[i].l_buffer[1] != nullptr) r->delete_buffer(frames[i].l_buffer[1]);
 			
 #if defined(A2E_INFERRED_RENDERING_CL)
-			if(frames[i].cl_normal_nuv_buffer[0] != NULL) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[0]);
-			if(frames[i].cl_depth_buffer[0] != NULL) cl->delete_buffer(frames[i].cl_depth_buffer[0]);
-			if(frames[i].cl_light_buffer[0] != NULL) cl->delete_buffer(frames[i].cl_light_buffer[0]);
-			if(frames[i].cl_normal_nuv_buffer[1] != NULL) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[1]);
-			if(frames[i].cl_depth_buffer[1] != NULL) cl->delete_buffer(frames[i].cl_depth_buffer[1]);
-			if(frames[i].cl_light_buffer[1] != NULL) cl->delete_buffer(frames[i].cl_light_buffer[1]);
+			if(frames[i].cl_normal_nuv_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[0]);
+			if(frames[i].cl_depth_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_depth_buffer[0]);
+			if(frames[i].cl_light_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[0]);
+			if(frames[i].cl_normal_nuv_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[1]);
+			if(frames[i].cl_depth_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_depth_buffer[1]);
+			if(frames[i].cl_light_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[1]);
 #endif
 		}
 		
-		if(blur_buffer1 != NULL) r->delete_buffer(blur_buffer1);
-		if(blur_buffer2 != NULL) r->delete_buffer(blur_buffer2);
-		if(blur_buffer3 != NULL) r->delete_buffer(blur_buffer3);
-		if(average_buffer != NULL) r->delete_buffer(average_buffer);
-		if(exposure_buffer[0] != NULL) r->delete_buffer(exposure_buffer[0]);
-		if(exposure_buffer[1] != NULL) r->delete_buffer(exposure_buffer[1]);
+		if(blur_buffer1 != nullptr) r->delete_buffer(blur_buffer1);
+		if(blur_buffer2 != nullptr) r->delete_buffer(blur_buffer2);
+		if(blur_buffer3 != nullptr) r->delete_buffer(blur_buffer3);
+		if(average_buffer != nullptr) r->delete_buffer(average_buffer);
+		if(exposure_buffer[0] != nullptr) r->delete_buffer(exposure_buffer[0]);
+		if(exposure_buffer[1] != nullptr) r->delete_buffer(exposure_buffer[1]);
 		
 		delete light_sphere;
 	}
@@ -378,7 +378,7 @@ void scene::delete_alpha_object(const extbbox* bbox) {
 		delete alpha_objects[bbox].second; // delete functor
 		alpha_objects.erase(bbox);
 		// O(n) ... TODO: improve this
-		for(auto objiter = sorted_alpha_objects.cbegin(); objiter != sorted_alpha_objects.cend(); objiter++) {
+		for(auto objiter = sorted_alpha_objects.begin(); objiter != sorted_alpha_objects.end(); objiter++) {
 			if(objiter->first == bbox) {
 				sorted_alpha_objects.erase(objiter);
 				break;
@@ -547,7 +547,7 @@ void scene::light_and_material_pass() {
 					
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, light_sphere->get_vbo_indices(0));
 					
-					glDrawElements(GL_TRIANGLES, (GLsizei)light_sphere->get_index_count(0) * 3, GL_UNSIGNED_INT, NULL);
+					glDrawElements(GL_TRIANGLES, (GLsizei)light_sphere->get_index_count(0) * 3, GL_UNSIGNED_INT, nullptr);
 					
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 				}
@@ -839,7 +839,7 @@ void scene::delete_particle_manager(particle_manager* pm) {
 }
 
 void scene::add_post_processing(post_processing_handler* pph) {
-	if(pph == NULL) return;
+	if(pph == nullptr) return;
 	const auto iter = find(pp_handlers.begin(), pp_handlers.end(), pph);
 	if(iter != pp_handlers.end()) {
 		return; // already in container
@@ -848,7 +848,7 @@ void scene::add_post_processing(post_processing_handler* pph) {
 }
 
 void scene::delete_post_processing(const post_processing_handler* pph) {
-	if(pph == NULL) return;
+	if(pph == nullptr) return;
 	const auto iter = find(pp_handlers.begin(), pp_handlers.end(), pph);
 	if(iter == pp_handlers.end()) {
 		return; // already in container

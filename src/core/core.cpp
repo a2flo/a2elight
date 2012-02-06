@@ -326,7 +326,7 @@ void core::system(const string& cmd, string& output) {
 	memset(&buffer, 0, buffer_size+1);
 	
 	FILE* sys_pipe = popen(cmd.c_str(), "r");
-	while(fgets(buffer, buffer_size, sys_pipe) != NULL) {
+	while(fgets(buffer, buffer_size, sys_pipe) != nullptr) {
 		output += buffer;
 		memset(buffer, 0, buffer_size); // size+1 is always 0
 	}
@@ -356,22 +356,22 @@ float core::rand(const float& min, const float& max) {
 #else
 // TODO: this is only a mingw/gcc workaround for now (remove when not needed any longer)
 int core::rand(const int& max) {
-	srand(time(NULL));
+	srand(time(nullptr));
 	return (::rand() >> 1) % max;
 }
 
 int core::rand(const int& min, const int& max) {
-	srand(time(NULL));
+	srand(time(nullptr));
 	return ((::rand() >> 1) % (max-min)) + min;
 }
 
 float core::rand(const float& max) {
-	srand(time(NULL));
+	srand(time(nullptr));
 	return (float(::rand()) / float(RAND_MAX)) * max; // not really correct, but okay for now
 }
 
 float core::rand(const float& min, const float& max) {
-	srand(time(NULL));
+	srand(time(nullptr));
 	return ((float(::rand()) / float(RAND_MAX)) * max) + min; // not really correct, but okay for now
 }
 #endif

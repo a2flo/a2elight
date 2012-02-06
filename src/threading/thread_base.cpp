@@ -20,7 +20,7 @@
 
 #if !defined(GCC_LEGACY)
 
-thread_base::thread_base() : thread_obj(NULL), thread_lock(), thread_status(thread_base::INIT), thread_delay(50) {
+thread_base::thread_base() : thread_obj(nullptr), thread_lock(), thread_status(thread_base::INIT), thread_delay(50) {
 	thread_should_finish_flag.value = 0;
 	this->lock(); // lock thread, so start (or unlock) must be called before the thread starts running
 	thread_obj = new std::thread(&thread_base::_thread_run, this);
@@ -158,7 +158,7 @@ const size_t thread_base::get_thread_delay() {
 // workaround for gcc 4.6 (use old sdl based thread solution)
 // TODO: remove this at a later point
 
-thread_base::thread_base() : thread_obj(NULL), thread_lock(NULL), thread_status(thread_base::INIT), thread_delay(50) {
+thread_base::thread_base() : thread_obj(nullptr), thread_lock(nullptr), thread_status(thread_base::INIT), thread_delay(50) {
 	thread_should_finish_flag.value = 0;
 	thread_lock = SDL_CreateMutex();
 	this->lock(); // lock thread, so start (or unlock) must be called before the thread starts running
@@ -217,7 +217,7 @@ void thread_base::finish() {
 	SDL_Delay(200);
 	
 	// wait (this is presumably better than kill)
-	SDL_WaitThread(thread_obj, NULL);
+	SDL_WaitThread(thread_obj, nullptr);
 	
 	set_thread_status(thread_base::FINISHED);
 }

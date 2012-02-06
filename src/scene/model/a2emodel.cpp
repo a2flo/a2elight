@@ -31,21 +31,21 @@ a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
 	scale.set(1.0f, 1.0f, 1.0f);
 	phys_scale.set(1.0f, 1.0f, 1.0f);
 	rotation.set(0.0f, 0.0f, 0.0f);
-	sub_bboxes = NULL;
+	sub_bboxes = nullptr;
 	
-	model_vertices = NULL;
-	model_tex_coords = NULL;
-	model_indices = NULL;
-	model_vertex_count = NULL;
-	model_index_count = NULL;
+	model_vertices = nullptr;
+	model_tex_coords = nullptr;
+	model_indices = nullptr;
+	model_vertex_count = nullptr;
+	model_index_count = nullptr;
 	object_count = 0;
-	object_names = NULL;
+	object_names = nullptr;
 	
 	collision_model = false;
 	col_vertex_count = 0;
 	col_index_count = 0;
-	col_vertices = NULL;
-	col_indices = NULL;
+	col_vertices = nullptr;
+	col_indices = nullptr;
 	
 	draw_wireframe = false;
 	is_visible = true;
@@ -63,10 +63,10 @@ a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
 	draw_tangents_vbo = 0;
 	draw_indices_vbo = 0;
 	
-	g_buffer = NULL;
-	l_buffer = NULL;
-	g_buffer_alpha = NULL;
-	l_buffer_alpha = NULL;
+	g_buffer = nullptr;
+	l_buffer = nullptr;
+	g_buffer_alpha = nullptr;
+	l_buffer_alpha = nullptr;
 	id = _create_model_id();
 	
 	// get classes
@@ -76,7 +76,7 @@ a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
 	a2emodel::t = e->get_texman();
 	a2emodel::exts = e->get_ext();
 	a2emodel::ocl = e->get_opencl();
-	a2emodel::material = NULL;
+	a2emodel::material = nullptr;
 }
 
 /*! a2emodel destructor
@@ -84,7 +84,7 @@ a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
 a2emodel::~a2emodel() {
 	a2e_debug("deleting a2emodel object");
 	
-	if(object_names != NULL) { delete [] object_names; }
+	if(object_names != nullptr) { delete [] object_names; }
 	delete_sub_bboxes();
 	
 	is_sub_object_transparent.clear();
@@ -93,7 +93,7 @@ a2emodel::~a2emodel() {
 }
 
 void a2emodel::delete_sub_bboxes() {
-	if(sub_bboxes != NULL) {
+	if(sub_bboxes != nullptr) {
 		for(unsigned int i = 0; i < object_count; i++) {
 			if(is_sub_object_transparent[i]) {
 				sce->delete_alpha_object(&sub_bboxes[i]);
@@ -299,7 +299,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	if(attr_array_mask & VA_TANGENT) shd->attribute_array("tangent", draw_tangents_vbo, 3);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, draw_indices_vbo);
-	glDrawElements(GL_TRIANGLES, (GLsizei)draw_index_count, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, (GLsizei)draw_index_count, GL_UNSIGNED_INT, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	material->disable_textures(sub_object_num);
@@ -572,7 +572,7 @@ extbbox* a2emodel::get_bounding_box() {
 /*! returns the bounding box of the model
  */
 extbbox* a2emodel::get_bounding_box(const size_t& sub_object) {
-	if(sub_bboxes == NULL || sub_object >= object_count) return NULL;
+	if(sub_bboxes == nullptr || sub_object >= object_count) return nullptr;
 	return &sub_bboxes[sub_object];
 }
 

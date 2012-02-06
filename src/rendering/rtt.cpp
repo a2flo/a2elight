@@ -50,7 +50,7 @@ rtt::rtt(engine* e_, gfx* g_, ext* exts_, unsigned int screen_width_, unsigned i
 	rtt::g = g_;
 	rtt::exts = exts_;
 
-	current_buffer = NULL;
+	current_buffer = nullptr;
 
 	filter[0] = GL_NEAREST;
 	filter[1] = GL_LINEAR;
@@ -199,14 +199,14 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			
 			switch(buffer->target[i]) {
 				case GL_TEXTURE_1D:
-					glTexImage1D(buffer->target[i], 0, internal_format[i], width, 0, format[i], type[i], NULL);
+					glTexImage1D(buffer->target[i], 0, internal_format[i], width, 0, format[i], type[i], nullptr);
 					break;
 				case GL_TEXTURE_2D:
-					glTexImage2D(buffer->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], NULL);
+					glTexImage2D(buffer->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], nullptr);
 					break;
 				/*case GL_TEXTURE_3D:
 					// TODO: tex3d
-					glTexImage3D(buffer->target[i], 0, internal_format[i], width, height, 1, 0, format[i], type[i], NULL);
+					glTexImage3D(buffer->target[i], 0, internal_format[i], width, height, 1, 0, format[i], type[i], nullptr);
 					break;*/
 				case GL_TEXTURE_2D_MULTISAMPLE:
 					glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), internal_format[i], width, height, false);
@@ -216,7 +216,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 					glTexImage3DMultisample(buffer->target[i], samp, internal_format[i], width, height, 1, false);
 					break;*/
 				default:
-					glTexImage2D(buffer->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], NULL);
+					glTexImage2D(buffer->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], nullptr);
 					break;
 			}
 			

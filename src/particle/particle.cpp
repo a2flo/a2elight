@@ -31,7 +31,7 @@ particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), cl(
 	// no hw/sw support at all
 	else {
 		a2e_error("no hardware or software support (install an opencl gpu or cpu driver)!");
-		pm = NULL;
+		pm = nullptr;
 	}
 }
 
@@ -40,7 +40,7 @@ particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), cl(
 particle_manager::~particle_manager() {
 	a2e_debug("deleting particle_manager object");
 
-	if(pm != NULL) delete pm;
+	if(pm != nullptr) delete pm;
 
 	a2e_debug("particle_manager object deleted");
 }
@@ -66,7 +66,7 @@ particle_manager_base* particle_manager::get_manager() {
 }
 
 void particle_manager::set_manager(particle_manager_base* pm_) {
-	if(pm != NULL) {
+	if(pm != nullptr) {
 		delete pm;
 	}
 	pm = pm_;

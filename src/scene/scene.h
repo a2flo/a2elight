@@ -172,14 +172,14 @@ protected:
 		opencl::buffer_object* cl_light_buffer[2];
 #endif
 		frame_buffers() :
-		scene_buffer(NULL), fxaa_buffer(NULL)
+		scene_buffer(nullptr), fxaa_buffer(nullptr)
 		{
-			g_buffer[0] = g_buffer[1] = NULL;
-			l_buffer[0] = l_buffer[1] = NULL;
+			g_buffer[0] = g_buffer[1] = nullptr;
+			l_buffer[0] = l_buffer[1] = nullptr;
 #if defined(A2E_INFERRED_RENDERING_CL)
-			cl_normal_nuv_buffer[0] = cl_normal_nuv_buffer[1] = NULL;
-			cl_depth_buffer[0] = cl_depth_buffer[1] = NULL;
-			cl_light_buffer[0] = cl_light_buffer[1] = NULL;
+			cl_normal_nuv_buffer[0] = cl_normal_nuv_buffer[1] = nullptr;
+			cl_depth_buffer[0] = cl_depth_buffer[1] = nullptr;
+			cl_light_buffer[0] = cl_light_buffer[1] = nullptr;
 #endif
 		}
 	};

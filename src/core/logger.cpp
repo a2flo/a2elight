@@ -24,7 +24,7 @@
 fstream logger::log_file(A2E_LOG_FILENAME, fstream::out);
 atomic_t logger::err_counter;
 SDL_SpinLock logger::slock;
-const config* logger::conf = NULL;
+const config* logger::conf = nullptr;
 
 void logger::init() {
 	logger::err_counter.value = 0;

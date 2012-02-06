@@ -130,12 +130,12 @@ public:
 	void finish();
 	void flush();
 	
-	kernel_object* add_kernel_file(const string& identifier, const char* file_name, const string& func_name, const char* additional_options = NULL);
-	kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const char* additional_options = NULL);
+	kernel_object* add_kernel_file(const string& identifier, const char* file_name, const string& func_name, const char* additional_options = nullptr);
+	kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const char* additional_options = nullptr);
 	
-	buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = NULL);
-	buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = NULL);
-	buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = NULL);
+	buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr);
+	buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
+	buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr);
 	buffer_object* create_ogl_buffer(BUFFER_TYPE type, GLuint ogl_buffer);
 	buffer_object* create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target = GL_TEXTURE_2D);
 	buffer_object* create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer);
@@ -172,10 +172,10 @@ public:
 		bool has_ogl_buffers;
 		string kernel_name;
 		
-		kernel_object() : kernel(), program(), global(NULL), local(NULL), arg_count(0), args_passed(), buffer_args(), has_ogl_buffers(false), kernel_name("") {}
+		kernel_object() : kernel(), program(), global(nullptr), local(nullptr), arg_count(0), args_passed(), buffer_args(), has_ogl_buffers(false), kernel_name("") {}
 		~kernel_object() {
-			if(global != NULL) delete global;
-			if(local != NULL) delete local;
+			if(global != nullptr) delete global;
+			if(local != nullptr) delete local;
 			for(auto& ba : buffer_args) {
 				ba.second->associated_kernels.erase(this);
 			}
@@ -198,7 +198,7 @@ public:
 		size3 region;
 		map<kernel_object*, vector<unsigned int> > associated_kernels; // kernels + argument numbers
 		
-		buffer_object() : buffer(NULL), image_buffer(NULL), ogl_buffer(0), manual_gl_sharing(false), data(NULL), size(0), type(0), format(0, 0), associated_kernels() {}
+		buffer_object() : buffer(nullptr), image_buffer(nullptr), ogl_buffer(0), manual_gl_sharing(false), data(nullptr), size(0), type(0), format(0, 0), associated_kernels() {}
 	};
 	
 	struct device_object {
@@ -221,7 +221,7 @@ public:
 		size3 max_img_3d;
 		bool img_support;
 		
-		device_object() : device(NULL), type((OPENCL_DEVICE)0), units(0), clock(0), mem_size(0), internal_type(0), name(""), vendor(""), version(""), driver_version(""), extensions("") {}
+		device_object() : device(nullptr), type((OPENCL_DEVICE)0), units(0), clock(0), mem_size(0), internal_type(0), name(""), vendor(""), version(""), driver_version(""), extensions("") {}
 	};
 
 	inline const char* make_kernel_path(const char* file_name) {
@@ -240,7 +240,7 @@ protected:
 	
 	stringstream* buffer;
 	
-	buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = NULL);
+	buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr);
 	void load_internal_kernels();
 	void destroy_kernels();
 	void check_compilation(const bool ret, const string& filename);

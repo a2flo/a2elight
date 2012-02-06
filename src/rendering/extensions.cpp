@@ -172,7 +172,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	max_texture_image_units = 0;
 	max_samples = 0;
 	max_multisample_coverage_modes = 0;
-	multisample_coverage_modes = NULL;
+	multisample_coverage_modes = nullptr;
 	max_draw_buffers = 0;
 	
 	if(imode == 0) {
@@ -182,7 +182,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 		}
 		else {
 			const char* cvendor_string = (const char*)glGetString(GL_VENDOR);
-			if(cvendor_string != NULL) {
+			if(cvendor_string != nullptr) {
 				vendor_str = cvendor_string;
 			}
 		}
@@ -220,7 +220,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 		if(*ext_checks[i].flag == true) continue; // already supported by another extension
 		*ext_checks[i].flag = true;
 		for(size_t j = 0; j < _a2e_max_ext_checks; j++) {
-			if(ext_checks[i].exts[j] == NULL) break;
+			if(ext_checks[i].exts[j] == nullptr) break;
 			if(!is_ext_supported(ext_checks[i].exts[j])) {
 				*ext_checks[i].flag = false;
 				if(imode == 0) {
@@ -273,10 +273,10 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 
 		// get renderer string and make it lower case
 		const char* gl_renderer_str = (const char*)glGetString(GL_RENDERER);
-		if(gl_renderer_str == NULL) {
-			a2e_error("gl renderer str is NULL - invalid opengl context?");
+		if(gl_renderer_str == nullptr) {
+			a2e_error("gl renderer str is nullptr - invalid opengl context?");
 		}
-		string renderer_str = (*force_device == "") ? (gl_renderer_str == NULL ? "" : gl_renderer_str) : force_device->c_str();
+		string renderer_str = (*force_device == "") ? (gl_renderer_str == nullptr ? "" : gl_renderer_str) : force_device->c_str();
 		core::str_to_lower_inplace(renderer_str);
 		if(vendor == ext::GCV_NVIDIA) {
 			if(renderer_str.find("geforce 8") != string::npos) {
@@ -366,7 +366,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 /*! delete everything
  */
 ext::~ext() {
-	if(multisample_coverage_modes != NULL) delete [] multisample_coverage_modes;
+	if(multisample_coverage_modes != nullptr) delete [] multisample_coverage_modes;
 }
 
 /*! returns true if the extension (ext_name) is supported by the graphics adapter

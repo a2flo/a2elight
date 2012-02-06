@@ -87,7 +87,7 @@ public:
 			}
 		}
 		a2e_error("element has no attribute named %s!", attr_name);
-		return (T)NULL;
+		return (T)nullptr;
 	}
 	bool is_attribute(const xmlAttribute* attr, const char* attr_name) {
 		for(const xmlAttr* cur_attr = (const xmlAttr*)attr; cur_attr; cur_attr = (const xmlAttr*)cur_attr->next) {

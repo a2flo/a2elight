@@ -20,14 +20,14 @@
 #include "engine.h"
 #include "shader.h"
 
-static gl3shader simple_shd = NULL;
+static gl3shader simple_shd = nullptr;
 
 /*! there is no function currently
  */
 gfx::gfx(engine* e_) {
 	gfx::e = e_;
-	gfx::exts = NULL;
-	gfx::shd = NULL;
+	gfx::exts = nullptr;
+	gfx::shd = nullptr;
 	
 	vbo_fullscreen_triangle = 0;
 	vbo_fullscreen_quad = 0;
@@ -86,7 +86,7 @@ void gfx::_init_shader() {
 
 void gfx::draw_fullscreen_triangle() const {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_fullscreen_triangle);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glDisableVertexAttribArray(0);
@@ -95,10 +95,10 @@ void gfx::draw_fullscreen_triangle() const {
 
 void gfx::draw_textured_fullscreen_triangle() const {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_fullscreen_triangle);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_fullscreen_triangle);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray(1);
 	
 	glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -110,7 +110,7 @@ void gfx::draw_textured_fullscreen_triangle() const {
 
 void gfx::draw_fullscreen_quad() const {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_fullscreen_quad);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray(0);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glDisableVertexAttribArray(0);
@@ -142,7 +142,7 @@ void gfx::primitive_draw(void* data, const size_t& size,
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_primitive);
 	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STREAM_DRAW);
 	glVertexAttribPointer((GLuint)simple_shd->get_attribute_position("in_vertex"),
-						  vertex_size, vertex_type, GL_FALSE, 0, NULL);
+						  vertex_size, vertex_type, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray((GLuint)simple_shd->get_attribute_position("in_vertex"));
 	
 	glDrawArrays(primitive_type, 0, count);
@@ -159,13 +159,13 @@ void gfx::primitive_draw_colored(void* data, const size_t& size,
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_primitive);
 	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STREAM_DRAW);
 	glVertexAttribPointer((GLuint)simple_shd->get_attribute_position("in_vertex"),
-						  vertex_size, vertex_type, GL_FALSE, 0, NULL);
+						  vertex_size, vertex_type, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray((GLuint)simple_shd->get_attribute_position("in_vertex"));
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
 	glBufferData(GL_ARRAY_BUFFER, color_count*sizeof(float4), colors, GL_STREAM_DRAW);
 	glVertexAttribPointer((GLuint)simple_shd->get_attribute_position("in_color"),
-						  4, GL_FLOAT, GL_FALSE, 0, NULL);
+						  4, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray((GLuint)simple_shd->get_attribute_position("in_color"));
 	
 	glDrawArrays(primitive_type, 0, count);
@@ -275,13 +275,13 @@ void gfx::textured_depth_color_rectangle(const gfx::rect& rectangle,
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_primitive);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float3)*4, verts, GL_STREAM_DRAW);
 	glVertexAttribPointer((GLuint)simple_shd->get_attribute_position("in_vertex"),
-						  3, GL_FLOAT, GL_FALSE, 0, NULL);
+						  3, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray((GLuint)simple_shd->get_attribute_position("in_vertex"));
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_coords);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(coord)*4, rect_coords, GL_STREAM_DRAW);
 	glVertexAttribPointer((GLuint)simple_shd->get_attribute_position("in_tex_coord"),
-						  2, GL_FLOAT, GL_FALSE, 0, NULL);
+						  2, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray((GLuint)simple_shd->get_attribute_position("in_tex_coord"));
 	
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

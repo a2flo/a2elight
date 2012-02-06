@@ -22,7 +22,7 @@ event::event() : thread_base(),
 #if !defined(GCC_LEGACY)
 user_queue_lock()
 #else
-user_queue_lock(NULL)
+user_queue_lock(nullptr)
 #endif
 {
 	mouse_down_state[0] = mouse_down_state[1] = mouse_down_state[2] =

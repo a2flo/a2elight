@@ -40,7 +40,7 @@ particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
 	local_lcm = core::lcm(core::lcm(init_range_local[0], respawn_range_local[0]), compute_range_local[0]);
 	cl->use_kernel("PARTICLE INIT");
 	
-	kernel_seed = (unsigned int)time(NULL);
+	kernel_seed = (unsigned int)time(nullptr);
 }
 
 /*! there is no function currently
@@ -105,9 +105,9 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	if(glIsBuffer(pdata->ocl_gl_dir_vbo)) glDeleteBuffers(1, &pdata->ocl_gl_dir_vbo);
 	if(glIsBuffer(pdata->particle_indices_vbo[0])) glDeleteBuffers(1, &pdata->particle_indices_vbo[0]);
 	if(glIsBuffer(pdata->particle_indices_vbo[1])) glDeleteBuffers(1, &pdata->particle_indices_vbo[1]);
-	if(pdata->ocl_pos_time_buffer != NULL) cl->delete_buffer(pdata->ocl_pos_time_buffer);
-	if(pdata->ocl_dir_buffer != NULL) cl->delete_buffer(pdata->ocl_dir_buffer);
-	if(pdata->ocl_distances != NULL) cl->delete_buffer(pdata->ocl_distances);
+	if(pdata->ocl_pos_time_buffer != nullptr) cl->delete_buffer(pdata->ocl_pos_time_buffer);
+	if(pdata->ocl_dir_buffer != nullptr) cl->delete_buffer(pdata->ocl_dir_buffer);
+	if(pdata->ocl_distances != nullptr) cl->delete_buffer(pdata->ocl_distances);
 	
 	// compute new particle count
 	compute_particle_count(ps);
@@ -167,7 +167,7 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	delete [] particle_indices;
 	
 	// create distances buffer for sorting
-	pdata->ocl_distances = cl->create_buffer(opencl::BT_READ_WRITE, pdata->particle_count * sizeof(float), NULL);
+	pdata->ocl_distances = cl->create_buffer(opencl::BT_READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
 	
 	a2e_debug("particle count: %u", ps->get_internal_particle_data()->particle_count);
 }
@@ -213,7 +213,7 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 	// delete old particles and create new ones
 	if(SDL_GetTicks() - pdata->reinit_timer > 40) { // do this 25 times every second (1000 / 25 = 40)
 		// update seed
-		kernel_seed = (unsigned int)time(NULL);
+		kernel_seed = (unsigned int)time(nullptr);
 		
 		cl->acquire_gl_object(pdata->ocl_pos_time_buffer);
 		cl->acquire_gl_object(pdata->ocl_dir_buffer);
@@ -508,7 +508,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 		assert(false && "invalid particle system state");
 	}
 	
-	glDrawElements(GL_POINTS, (GLsizei)pdata->particle_count, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_POINTS, (GLsizei)pdata->particle_count, GL_UNSIGNED_INT, nullptr);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	particle_draw->disable();

@@ -69,7 +69,7 @@ public:
 		LIGHTING_MODEL lm_type;
 		lighting_model* model;
 		
-		material() : id(-1), mat_type(NONE), mat(NULL), lm_type(LM_PHONG), model(NULL) {}
+		material() : id(-1), mat_type(NONE), mat(nullptr), lm_type(LM_PHONG), model(nullptr) {}
 	};
 	
 	//// lighting models
@@ -95,13 +95,13 @@ public:
 		a2e_texture anisotropic_texture;
 		float isotropic_roughness;
 		float2 anisotropic_roughness;
-		ward_model() : lighting_model(), type(WT_ISOTROPIC), isotropic_texture(NULL), anisotropic_texture(NULL), isotropic_roughness(1.0f), anisotropic_roughness(1.0f, 1.0f) {}
+		ward_model() : lighting_model(), type(WT_ISOTROPIC), isotropic_texture(nullptr), anisotropic_texture(nullptr), isotropic_roughness(1.0f), anisotropic_roughness(1.0f, 1.0f) {}
 	};
 	
 	struct ashikhmin_shirley_model : public lighting_model {
 		a2e_texture anisotropic_texture;
 		float2 anisotropic_roughness;
-		ashikhmin_shirley_model() : lighting_model(), anisotropic_texture(NULL), anisotropic_roughness(1.0f, 1.0f) {}
+		ashikhmin_shirley_model() : lighting_model(), anisotropic_texture(nullptr), anisotropic_roughness(1.0f, 1.0f) {}
 	};
 	
 	//// material types
@@ -111,13 +111,13 @@ public:
 	struct diffuse_material : public material_object {
 		a2e_texture diffuse_texture;
 		a2e_texture specular_texture;
-		diffuse_material() : material_object(), diffuse_texture(NULL), specular_texture(NULL) {}
+		diffuse_material() : material_object(), diffuse_texture(nullptr), specular_texture(nullptr) {}
 	};
 	struct parallax_material : public diffuse_material {
 		a2e_texture height_texture;
 		a2e_texture normal_texture;
 		bool parallax_occlusion;
-		parallax_material() : diffuse_material(), height_texture(NULL), normal_texture(NULL), parallax_occlusion(false) {}
+		parallax_material() : diffuse_material(), height_texture(nullptr), normal_texture(nullptr), parallax_occlusion(false) {}
 	};
 
 	//// functions
@@ -150,7 +150,7 @@ protected:
 	struct object_mapping {
 		material* mat;
 		bool blending;
-		object_mapping() : mat(NULL), blending(false) {}
+		object_mapping() : mat(nullptr), blending(false) {}
 		object_mapping(material* mat_, bool blending_) : mat(mat_), blending(blending_) {}
 	};
 	const object_mapping* get_object_mapping(const size_t& object_id) const;

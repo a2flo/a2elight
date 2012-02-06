@@ -632,17 +632,17 @@ void shader_gl3::attribute_array(const char* name, const GLuint& buffer, const G
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glEnableVertexAttribArray((GLuint)location);
 	if(size <= 4) {
-		glVertexAttribPointer((GLuint)location, size, type, normalized, stride, NULL);
+		glVertexAttribPointer((GLuint)location, size, type, normalized, stride, nullptr);
 	}
 	else if(size == 9) {
-		glVertexAttribPointer((GLuint)location, 3, type, normalized, 36, NULL);
+		glVertexAttribPointer((GLuint)location, 3, type, normalized, 36, nullptr);
 		glEnableVertexAttribArray((GLuint)location+1);
 		glVertexAttribPointer((GLuint)location+1, 3, type, normalized, 36, (void*)12);
 		glEnableVertexAttribArray((GLuint)location+2);
 		glVertexAttribPointer((GLuint)location+2, 3, type, normalized, 36, (void*)24);
 	}
 	else if(size == 16) {
-		glVertexAttribPointer((GLuint)location, 4, type, normalized, 64, NULL);
+		glVertexAttribPointer((GLuint)location, 4, type, normalized, 64, nullptr);
 		glEnableVertexAttribArray((GLuint)location+1);
 		glVertexAttribPointer((GLuint)location+1, 4, type, normalized, 64, (void*)16);
 		glEnableVertexAttribArray((GLuint)location+2);

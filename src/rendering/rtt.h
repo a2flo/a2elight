@@ -88,8 +88,8 @@ public:
 		GLenum* target;
 		TEXTURE_ANTI_ALIASING* anti_aliasing;
 
-		fbo() : fbo_id(0), attachment_count(0), tex_id(NULL), width(0), height(0), draw_width(0), draw_height(0), color_buffer(0), depth_buffer(0), stencil_buffer(0),
-			resolve_buffer(NULL), color(false), depth_type(DT_NONE), samples(0), stencil(false), auto_mipmap(NULL), target(NULL), anti_aliasing(NULL) {}
+		fbo() : fbo_id(0), attachment_count(0), tex_id(nullptr), width(0), height(0), draw_width(0), draw_height(0), color_buffer(0), depth_buffer(0), stencil_buffer(0),
+			resolve_buffer(nullptr), color(false), depth_type(DT_NONE), samples(0), stencil(false), auto_mipmap(nullptr), target(nullptr), anti_aliasing(nullptr) {}
 	};
 
 	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum target = GL_TEXTURE_2D, texture_object::TEXTURE_FILTERING filtering = texture_object::TF_POINT, TEXTURE_ANTI_ALIASING taa = TAA_NONE, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT, GLint internal_format = GL_RGBA8, GLenum format = GL_RGBA, GLenum type = GL_UNSIGNED_BYTE, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = rtt::DT_NONE);

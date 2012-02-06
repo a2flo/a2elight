@@ -72,16 +72,16 @@ engine::~engine() {
 	}
 	cursors.clear();
 
-	if(c != NULL) delete c;
-	if(f != NULL) delete f;
-	if(e != NULL) delete e;
-	if(g != NULL) delete g;
-	if(t != NULL) delete t;
-	if(exts != NULL) delete exts;
-	if(x != NULL) delete x;
-	if(u != NULL) delete u;
-	if(ocl != NULL) delete ocl;
-	if(shd != NULL) delete shd;
+	if(c != nullptr) delete c;
+	if(f != nullptr) delete f;
+	if(e != nullptr) delete e;
+	if(g != nullptr) delete g;
+	if(t != nullptr) delete t;
+	if(exts != nullptr) delete exts;
+	if(x != nullptr) delete x;
+	if(u != nullptr) delete u;
+	if(ocl != nullptr) delete ocl;
+	if(shd != nullptr) delete shd;
 
 	a2e_debug("engine object deleted");
 	
@@ -142,16 +142,16 @@ void engine::create() {
 	kernelpath = "kernels/";
 	cursor_visible = true;
 	
-	c = NULL;
-	f = NULL;
-	e = NULL;
-	g = NULL;
-	t = NULL;
-	exts = NULL;
-	x = NULL;
-	u = NULL;
-	ocl = NULL;
-	shd = NULL;
+	c = nullptr;
+	f = nullptr;
+	e = nullptr;
+	g = nullptr;
+	t = nullptr;
+	exts = nullptr;
+	x = nullptr;
+	u = nullptr;
+	ocl = nullptr;
+	shd = nullptr;
 	
 	fps = 0;
 	fps_counter = 0;
@@ -160,9 +160,9 @@ void engine::create() {
 	frame_time_sum = 0;
 	frame_time_counter = 0;
 	new_fps_count = false;
-	standard_cursor = NULL;
-	cursor_data = NULL;
-	cursor_mask = NULL;
+	standard_cursor = nullptr;
+	cursor_data = nullptr;
+	cursor_mask = nullptr;
 	
 	u = new unicode();
 	f = new file_io();
@@ -170,7 +170,7 @@ void engine::create() {
 	x = new xml(this);
 	e = new event();
 	g = new gfx(this);
-	ocl = NULL;
+	ocl = nullptr;
 	
 	AtomicSet(&reload_shaders_flag, 0);
 	AtomicSet(&reload_kernels_flag, 0);
@@ -320,11 +320,11 @@ void engine::init(const char* ico) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 	// ... load icon before SDL_SetVideoMode
-	if(ico != NULL) load_ico(ico);
+	if(ico != nullptr) load_ico(ico);
 
 	// create screen
 	config.wnd = SDL_CreateWindow("A2E", windows_pos.x, windows_pos.y, (unsigned int)config.width, (unsigned int)config.height, config.flags);
-	if(config.wnd == NULL) {
+	if(config.wnd == nullptr) {
 		a2e_error("can't create window: %s", SDL_GetError());
 		exit(1);
 	}
@@ -333,7 +333,7 @@ void engine::init(const char* ico) {
 		a2e_debug("video mode set: w%u h%u", config.width, config.height);
 	}
 	config.ctx = SDL_GL_CreateContext(config.wnd);
-	if(config.ctx == NULL) {
+	if(config.ctx == nullptr) {
 		a2e_error("can't create opengl context: %s", SDL_GetError());
 		exit(1);
 	}
@@ -376,7 +376,7 @@ void engine::init(const char* ico) {
 	a2e_debug("renderer: %s", glGetString(GL_RENDERER));
 	a2e_debug("version: %s", glGetString(GL_VERSION));
 	
-	if(SDL_GetCurrentVideoDriver() == NULL) {
+	if(SDL_GetCurrentVideoDriver() == nullptr) {
 		a2e_error("couldn't get video driver: %s!", SDL_GetError());
 	}
 	else a2e_debug("video driver: %s", SDL_GetCurrentVideoDriver());
@@ -460,7 +460,7 @@ void engine::init(const char* ico) {
 	cursors["STANDARD"] = standard_cursor;
 
 	// seed
-	const unsigned int rseed = ((unsigned int)time(NULL)/SDL_GetTicks())*((unsigned int)time(NULL)%SDL_GetTicks());
+	const unsigned int rseed = ((unsigned int)time(nullptr)/SDL_GetTicks())*((unsigned int)time(nullptr)%SDL_GetTicks());
 	srand(rseed >> 1);
 	
 	// init/create shaders, init gfx
@@ -949,12 +949,12 @@ bool engine::is_new_fps_count() {
 SDL_Cursor* engine::add_cursor(const char* name, const char** raw_data, unsigned int xsize, unsigned int ysize, unsigned int hotx, unsigned int hoty) {
 	if(cursors.count(name)) {
 		a2e_error("cursor with such a name (%s) already exists!", name);
-		return NULL;
+		return nullptr;
 	}
 
 	if((xsize != 16 || ysize != 16) && (xsize != 32 || ysize != 32)) {
 		a2e_error("invalid cursor size (%ux%u) - must be either 16x16 or 32x32!", xsize, ysize);
-		return NULL;
+		return nullptr;
 	}
 
 	if(xsize == 16) {
@@ -1006,7 +1006,7 @@ void engine::set_cursor(SDL_Cursor* cursor) {
 SDL_Cursor* engine::get_cursor(const char* name) {
 	if(!cursors.count(name)) {
 		a2e_error("no cursor with such a name (%s) exists!", name);
-		return NULL;
+		return nullptr;
 	}
 	return cursors[name];
 }
