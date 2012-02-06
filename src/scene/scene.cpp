@@ -265,8 +265,8 @@ void scene::sort_alpha_objects() {
 	const size_t obj_count = sorted_alpha_objects.size();
 	float3 (*bbox_corners)[8] = new float3[obj_count][8];
 	size_t cur_obj = 0;
-	for(auto obj_iter = sorted_alpha_objects.begin(); obj_iter != sorted_alpha_objects.end(); obj_iter++, cur_obj++) {
-		const extbbox& box = *(obj_iter->first);
+	for(const auto& obj_iter : sorted_alpha_objects) {
+		const extbbox& box = *(obj_iter.first);
 		
 		// compute bbox corners and transform them
 		float3 corners[8] = {
@@ -283,6 +283,7 @@ void scene::sort_alpha_objects() {
 		for(size_t i = 0; i < 8; i++) {
 			bbox_corners[cur_obj][i] = (corners[i] * box.mview) + box.pos;
 		}
+		cur_obj++;
 	}
 	
 	// third, project corners onto current near plane
@@ -344,9 +345,9 @@ void scene::sort_alpha_objects() {
 			// else, check which bbox is the closest and assign ids
 			// TODO: dependency list + resolving?
 			size_t mask_id = 1;
-			for(auto inter_iter = intersections.begin(); inter_iter != intersections.end(); inter_iter++) {
-				if(*inter_iter < i) mask_id++;
-				else if(*inter_iter > i) {
+			for(const auto& inter_iter : intersections) {
+				if(inter_iter < i) mask_id++;
+				else if(inter_iter > i) {
 					sorted_alpha_objects[i].second = std::min(mask_id, (size_t)A2E_MAX_MASK_ID);
 					break;
 				}
@@ -377,7 +378,7 @@ void scene::delete_alpha_object(const extbbox* bbox) {
 		delete alpha_objects[bbox].second; // delete functor
 		alpha_objects.erase(bbox);
 		// O(n) ... TODO: improve this
-		for(auto objiter = sorted_alpha_objects.begin(); objiter != sorted_alpha_objects.end(); objiter++) {
+		for(auto objiter = sorted_alpha_objects.cbegin(); objiter != sorted_alpha_objects.cend(); objiter++) {
 			if(objiter->first == bbox) {
 				sorted_alpha_objects.erase(objiter);
 				break;
@@ -411,8 +412,8 @@ void scene::geometry_pass() {
 	glDrawBuffers(1, draw_buffers);
 	
 	// render models (opaque)
-	for(auto iter = models.begin(); iter != models.end(); iter++) {
-		if((*iter)->get_visible()) (*iter)->draw(DRAW_MODE::GEOMETRY_PASS);
+	for(auto& iter : models) {
+		if(iter->get_visible()) iter->draw(DRAW_MODE::GEOMETRY_PASS);
 	}
 	
 	// render skybox
@@ -426,8 +427,8 @@ void scene::geometry_pass() {
 	}
 	
 	// render callbacks (opaque)
-	for(map<string, draw_handler*>::iterator draw_iter = draw_callbacks.begin(); draw_iter != draw_callbacks.end(); draw_iter++) {
-		draw_iter->second->draw(DRAW_MODE::GEOMETRY_PASS);
+	for(auto& draw_iter : draw_callbacks) {
+		draw_iter.second->draw(DRAW_MODE::GEOMETRY_PASS);
 	}
 	
 	// render/draw particle managers (TODO: PARTICLE TODO)
@@ -442,14 +443,14 @@ void scene::geometry_pass() {
 	r->clear();
 	glDrawBuffers(2, draw_buffers);
 	
-	for(auto iter = sorted_alpha_objects.rbegin(); iter != sorted_alpha_objects.rend(); iter++) {
+	for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
 		const pair<size_t, draw_callback*>& obj = alpha_objects[iter->first];
 		(*obj.second)(DRAW_MODE::GEOMETRY_ALPHA_PASS, obj.first, iter->second);
 	}
 	
 	// render callbacks (alpha)
-	for(map<string, draw_handler*>::iterator draw_iter = draw_callbacks.begin(); draw_iter != draw_callbacks.end(); draw_iter++) {
-		draw_iter->second->draw(DRAW_MODE::GEOMETRY_ALPHA_PASS);
+	for(auto& draw_iter : draw_callbacks) {
+		draw_iter.second->draw(DRAW_MODE::GEOMETRY_ALPHA_PASS);
 	}
 	
 	r->stop_draw();
@@ -595,11 +596,11 @@ void scene::light_and_material_pass() {
 	else r->clear();
 	
 	// render models (opaque)
-	for(auto iter = models.begin(); iter != models.end(); iter++) {
-		if((*iter)->get_visible()) {
-			(*iter)->set_ir_buffers(frames[0].g_buffer[0], frames[0].l_buffer[0],
-									frames[0].g_buffer[1], frames[0].l_buffer[1]);
-			(*iter)->draw(DRAW_MODE::MATERIAL_PASS);
+	for(auto& iter : models) {
+		if(iter->get_visible()) {
+			iter->set_ir_buffers(frames[0].g_buffer[0], frames[0].l_buffer[0],
+								 frames[0].g_buffer[1], frames[0].l_buffer[1]);
+			iter->draw(DRAW_MODE::MATERIAL_PASS);
 		}
 	}
 	
@@ -616,7 +617,7 @@ void scene::light_and_material_pass() {
 		// render models (transparent/alpha)
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // pre-multiplied alpha blending
-		for(auto iter = sorted_alpha_objects.rbegin(); iter != sorted_alpha_objects.rend(); iter++) {
+		for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
 			const pair<size_t, draw_callback*>& obj = alpha_objects[iter->first];
 			(*obj.second)(DRAW_MODE::MATERIAL_ALPHA_PASS, obj.first, iter->second);
 		}
@@ -687,7 +688,7 @@ void scene::light_and_material_pass() {
 	
 	// apply post processing
 	if(is_post_processing) {
-		for(auto pph : pp_handlers) {
+		for(auto& pph : pp_handlers) {
 			(*pph)(scene_buffer);
 		}
 	}
@@ -744,11 +745,9 @@ void scene::add_light(light* new_light) {
  *  @param del_light pointer to the light
  */
 void scene::delete_light(light* del_light) {
-	const auto iter = find(lights.begin(), lights.end(), del_light);
-	if(iter == lights.end()) return;
-	lights.erase(iter);
+	remove(lights.begin(), lights.end(), del_light);
 
-	// disable light automatically if there are no lights any more
+	// disable lighting automatically if there are no lights left
 	if(lights.size() == 0) scene::is_light = false;
 }
 
@@ -836,9 +835,7 @@ void scene::add_particle_manager(particle_manager* pm) {
 }
 
 void scene::delete_particle_manager(particle_manager* pm) {
-	const auto iter = find(particle_managers.begin(), particle_managers.end(), pm);
-	if(iter == particle_managers.end()) return;
-	particle_managers.erase(iter);
+	remove(particle_managers.begin(), particle_managers.end(), pm);
 }
 
 void scene::add_post_processing(post_processing_handler* pph) {

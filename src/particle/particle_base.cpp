@@ -56,10 +56,7 @@ void particle_manager_base::run() {
 /*! deletes the specified particle system
  */
 void particle_manager_base::delete_particle_system(particle_system* ps) {
-	// TODO: delete?
-	auto psystem = particle_systems.find(ps);
-	if(psystem == end(particle_systems)) return;
-	particle_systems.erase(psystem);
+	particle_systems.erase(ps);
 	delete ps;
 }
 

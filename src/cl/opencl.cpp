@@ -609,7 +609,7 @@ void opencl::reload_kernels() {
 	// figure out which sorting local size we can use
 	// a local size of 1024 can be used on fermi+ gpus
 	size_t local_size_limit = std::max((size_t)512, devices[0]->max_wg_size); // default to 512
-	for(const auto device : devices) {
+	for(const auto& device : devices) {
 		if(device->max_wg_size < local_size_limit) {
 			local_size_limit = device->max_wg_size;
 		}

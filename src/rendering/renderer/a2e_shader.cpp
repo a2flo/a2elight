@@ -156,8 +156,8 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 						}
 						else {
 							// check if options list contains '#'
-							auto std_option = find(options.begin(), options.end(), "#");
-							if(std_option == options.end()) {
+							const auto std_option = find(options.cbegin(), options.cend(), "#");
+							if(std_option == options.cend()) {
 								// no default option, delete it
 								a2e_shd->remove_option("#");
 							}

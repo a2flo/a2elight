@@ -96,8 +96,8 @@ shader_gl3::shader_gl3(const shader_object& shd_obj_) : basic_shader(shd_obj_) {
 
 void shader_gl3::disable() {
 	// disable all set vertex attribute arrays
-	for(set<size_t>::iterator vattr_iter = active_vertex_attribs.begin(); vattr_iter != active_vertex_attribs.end(); vattr_iter++) {
-		glDisableVertexAttribArray((GLuint)*vattr_iter);
+	for(const auto& vattr_iter : active_vertex_attribs) {
+		glDisableVertexAttribArray((GLuint)vattr_iter);
 	}
 	if(!active_vertex_attribs.empty()) {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -136,7 +136,7 @@ void shader_gl3::use(const string& option) {
 	}
 #endif
 	const shader_object::internal_shader_object* int_shd_obj = shd_obj.options.find(option)->second;
-	auto piter = find(shd_obj.programs.begin(), shd_obj.programs.end(), int_shd_obj);
+	const auto piter = find(shd_obj.programs.cbegin(), shd_obj.programs.cend(), int_shd_obj);
 	cur_program = piter - shd_obj.programs.begin();
 	use(cur_program);
 }

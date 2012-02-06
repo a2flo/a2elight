@@ -92,8 +92,8 @@ void shader::reload_shaders() {
 	// load/compile external shaders
 	map<string, string> extshaders = external_shaders; // add_a2e_shader will modify external_shaders (-> invalid iter), so copy it
 	size_t err_shd_cnt = 0;
-	for(auto ext_shd_iter = extshaders.begin(); ext_shd_iter != extshaders.end(); ext_shd_iter++) {
-		if(!add_a2e_shader(ext_shd_iter->first, ext_shd_iter->second)) err_shd_cnt++;
+	for(const auto& ext_shd : extshaders) {
+		if(!add_a2e_shader(ext_shd.first, ext_shd.second)) err_shd_cnt++;
 	}
 	if(err_shd_cnt == 0) a2e_debug("external shaders compiled successfully!");
 	else a2e_debug("failed to compile %u external!", err_shd_cnt);

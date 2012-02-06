@@ -255,7 +255,7 @@ void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 	prev_events[type] = obj;
 	
 	// call internal event handlers directly
-	const auto& range = internal_handlers.equal_range(type);
+	const auto range = internal_handlers.equal_range(type);
 	for(auto iter = range.first; iter != range.second; iter++) {
 		// ignore return value for now (TODO: actually use this?)
 		iter->second(type, obj);
@@ -281,7 +281,7 @@ void event::handle_user_events() {
 		user_event_queue_processing.pop();
 		
 		// call user event handlers
-		const auto& range = handlers.equal_range(evt.first);
+		const auto range = handlers.equal_range(evt.first);
 		for(auto iter = range.first; iter != range.second; iter++) {
 			iter->second(evt.first, evt.second);
 		}
