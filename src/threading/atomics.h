@@ -26,7 +26,7 @@ using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 // SDL 1.3+ atomic functions
-#if !defined(MINGW)
+#if defined(__APPLE__)
 #include <SDL/SDL_atomic.h>
 #else
 #include <SDL2/SDL_atomic.h>
