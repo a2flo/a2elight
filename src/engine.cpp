@@ -390,10 +390,10 @@ void engine::init(const char* ico) {
 #endif
 	
 	// enable multi-threaded opengl context when on os x
-#ifdef __APPLE__
+#if defined(__APPLE__) && 0
 	CGLError cgl_err = CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
 	if(cgl_err != kCGLNoError) {
-		a2e_error("unable to set multi-threaded opengl context!");
+		a2e_error("unable to set multi-threaded opengl context (%X)!", cgl_err);
 	}
 	else {
 		a2e_debug("multi-threaded opengl context enabled!");

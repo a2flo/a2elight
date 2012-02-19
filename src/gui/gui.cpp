@@ -86,7 +86,7 @@ bool gui::key_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 
 bool gui::mouse_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 	if(!get_mouse_input()) return false;
-	cout << "mouse event: " << (unsigned int)type << endl;
+	//cout << "mouse event: " << (unsigned int)type << endl;
 	return false;
 }
 

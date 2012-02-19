@@ -107,45 +107,29 @@ solution "albion2"
 		links { "OpenCL" }
 		libdirs { os.findlib("GL"), os.findlib("xml2"), os.findlib("OpenCL") }
 		if(not win_unixenv) then
-			links { "GL", "SDL_image", "Xxf86vm", "xml2" }
-			libdirs { os.findlib("SDL"), os.findlib("SDL_image"), os.findlib("Xxf86vm") }
-			buildoptions { "`sdl-config --cflags`" }
-			linkoptions { "`sdl-config --libs`" }
+			links { "GL", "SDL2_image", "Xxf86vm", "xml2" }
+			libdirs { os.findlib("SDL2"), os.findlib("SDL2_image"), os.findlib("Xxf86vm") }
+			buildoptions { "`sdl2-config --cflags`" }
+			linkoptions { "`sdl2-config --libs`" }
 		elseif(cygwin) then
 			-- link against windows opengl libs on cygwin
-			links { "opengl32", "SDL_image.dll", "xml2" }
+			links { "opengl32", "SDL2_image.dll", "xml2" }
 			libdirs { "/lib/w32api" }
-			buildoptions { "`sdl-config --cflags | sed -E 's/-Dmain=SDL_main//g'`" }
-			linkoptions { "`sdl-config --libs | sed -E 's/(-lmingw32|-mwindows)//g'`" }
+			buildoptions { "`sdl2-config --cflags | sed -E 's/-Dmain=SDL_main//g'`" }
+			linkoptions { "`sdl2-config --libs | sed -E 's/(-lmingw32|-mwindows)//g'`" }
 		elseif(mingw) then
 			-- link against windows opengl libs on mingw
 			links { "opengl32", "SDL2_image", "libxml2" }
 			buildoptions { "`sdl2-config --cflags | sed -E 's/-Dmain=SDL_main//g'`" }
 			linkoptions { "`sdl2-config --libs`" }
 		end
+		includedirs { "/usr/include/SDL2", "/usr/local/include/SDL2" }
 
 		if(gcc_compat) then
 			if(not mingw) then
 				defines { "_GLIBCXX__PTHREADS" }
 			end
 			defines { "_GLIBCXX_USE_NANOSLEEP" }
-		end
-		
-		-- find all necessary headers (in case they aren't in /usr/include)
-		local include_files = { "SDL.h", "SDL_image.h" }
-		for i = 1, table.maxn(include_files) do
-			if((not os.isfile("/usr/include/"..include_files[i])) and
-			   (not os.isfile("/usr/local/include/"..include_files[i]))) then
-			   -- search in /usr/include and /usr/local/include
-				local include_path = find_include(include_files[i], "/usr/include/")
-				if(include_path == "") then
-					include_path = find_include(include_files[i], "/usr/local/include/")
-				end
-				
-				if(include_path ~= "") then
-					includedirs { path.getdirectory(include_path) }
-				end
-			end
 		end
 	end
 
@@ -192,6 +176,8 @@ project "a2elight"
 				  "src/cl/",
 				  "src/core/",
 				  "src/gui/",
+				  "src/gui/objects/",
+				  "src/gui/style/",
 				  "src/particle/",
 				  "src/rendering/",
 				  "src/rendering/renderer/",

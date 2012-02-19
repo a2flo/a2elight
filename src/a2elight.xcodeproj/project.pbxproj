@@ -189,7 +189,7 @@
 		5C61BDEC1232A25500FD3451 /* logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = logger.cpp; sourceTree = "<group>"; };
 		5C61BDED1232A25500FD3451 /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
 		5C7A8FF614B398B2004AA18B /* premake.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = premake.sh; path = ../premake.sh; sourceTree = "<group>"; };
-		5C7A8FF714B398B2004AA18B /* premake4.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = premake4.lua; path = ../premake4.lua; sourceTree = "<group>"; };
+		5C7A8FF714B398B2004AA18B /* premake4.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = premake4.lua; path = ../premake4.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		5CA26A151455CD07002A6D9E /* event_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = event_objects.h; sourceTree = "<group>"; };
 		5CA3844013CA7D4A00AB1F24 /* atomics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = atomics.cpp; sourceTree = "<group>"; };
 		5CA3844313CA80E400AB1F24 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };

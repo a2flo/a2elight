@@ -186,7 +186,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		
 		glGenTextures(attachment_count, buffer->tex_id);
 		for(unsigned int i = 0; i < buffer->attachment_count; i++) {
-#if !defined(A2E_IOS)
+#if defined(A2E_IOS)
 			if(i > 0) {
 				a2e_error("too many FBO attachments - only one is allowed on iOS!");
 				break;
