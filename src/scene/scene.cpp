@@ -20,17 +20,6 @@
 #include "particle/particle.h"
 
 static opencl* _cl = nullptr;
-static map<string, size_t> _timer_bucket;
-static map<string, size_t> _timer_bucket_count;
-void _start_timer();
-void _stop_timer(const string& name);
-
-#if 1
-void _start_timer() {
-}
-void _stop_timer(const string& name) {
-}
-#endif
 
 /*! scene constructor
  */
@@ -227,21 +216,15 @@ scene::~scene() {
 void scene::draw() {
 	//cout << "######" << endl;
 	
-	_start_timer();
 	// scene setup (lights, run particle systems, ...)
 	setup_scene();
-	_stop_timer("setup");
 	
-	_start_timer();
 	// sort transparency/alpha objects (+assign mask ids)
 	sort_alpha_objects();
-	_stop_timer("sorting");
 	
 	// TODO: stereo rendering
 	
-	_start_timer();
 	geometry_pass();
-	_stop_timer("geometry pass");
 	
 	light_and_material_pass();
 }
@@ -457,8 +440,6 @@ void scene::geometry_pass() {
 }
 
 void scene::light_and_material_pass() {
-	_start_timer();
-	
 	//
 	rtt::fbo* scene_buffer = frames[0].scene_buffer;
 	rtt::fbo* fxaa_buffer = frames[0].fxaa_buffer;
@@ -531,9 +512,10 @@ void scene::light_and_material_pass() {
 					const float radius = li->get_radius();
 					// TODO: add max distance config setting
 					const float half_far_plane = e->get_near_far_plane().y - 0.1f;
-					const float ls_radius = (radius < 0.0f || radius > half_far_plane ? half_far_plane : radius); // clamp to 499.9 (2*r=far plane)
+					float ls_radius = (radius < 0.0f || radius > half_far_plane ? half_far_plane : radius); // clamp to 499.9 (2*r=far plane)
 					// radius + 1, b/c we have to account for the near plane (= 1.0)
-					if(float3(cam_position - li->get_position()).length() <= (ls_radius + 1.0f)) {
+					const float light_dist = (cam_position - li->get_position()).length() - 1.0f;
+					if(light_dist <= ls_radius) {
 						glFrontFace(GL_CW);
 						glDepthFunc(GL_GREATER);
 					}
@@ -579,7 +561,6 @@ void scene::light_and_material_pass() {
 #else // defined(A2E_INFERRED_RENDERING_CL)
 	/////////////////////////////////////////////////////
 #endif
-	_start_timer();
 	
 	/////////////////////////////////////////////////////
 	// model material pass
@@ -635,8 +616,6 @@ void scene::light_and_material_pass() {
 	}
 	
 	r->stop_draw();
-	_stop_timer("material pass");
-	_start_timer();
 	
 	// FXAA
 	const auto cur_aa = e->get_anti_aliasing();
@@ -702,8 +681,6 @@ void scene::light_and_material_pass() {
 								   scene_buffer->tex_id[0]);
 		e->stop_2d_draw();
 	}
-	
-	_stop_timer("fxaa+composite");
 }
 
 /*! adds a model to the scene

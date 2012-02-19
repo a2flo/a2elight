@@ -129,4 +129,15 @@ template<> struct compile_time_check<false> {};
 #define A2E_ARRAY_LENGTH(array) (sizeof(array)/sizeof(array[0]))
 #define A2E_TO_STR(x) #x
 
+class A2E_API a2e_exception : public exception {
+protected:
+	string error_str;
+public:
+	a2e_exception(const string& error_str_) : error_str(error_str_) {}
+	~a2e_exception() throw() {}
+    virtual const char* what() const throw () {
+		return error_str.c_str();
+	}
+};
+
 #endif

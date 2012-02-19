@@ -616,7 +616,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-stdlib=libc++";
-				SDKROOT = macosx;
+				SDKROOT = macosx10.7;
 				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 			};
 			name = Debug;
@@ -642,7 +642,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = "-stdlib=libc++";
-				SDKROOT = macosx;
+				SDKROOT = macosx10.7;
 				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 			};
 			name = Release;
@@ -706,7 +706,6 @@
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = liba2elightd;
-				SDKROOT = macosx;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",
@@ -720,6 +719,8 @@
 					"-Wno-ignored-qualifiers",
 					"-Wunreachable-code",
 					"-Wdangling-else",
+					"-Wshift-overflow",
+					"-Wvexing-parse",
 				);
 			};
 			name = Debug;
@@ -780,7 +781,6 @@
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = liba2elight;
-				SDKROOT = macosx;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",
@@ -794,6 +794,8 @@
 					"-Wno-ignored-qualifiers",
 					"-Wunreachable-code",
 					"-Wdangling-else",
+					"-Wshift-overflow",
+					"-Wvexing-parse",
 				);
 			};
 			name = Release;

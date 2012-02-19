@@ -398,7 +398,7 @@ const a2ematerial::material& a2ematerial::get_material(const size_t& material_id
 		}
 	}
 	a2e_error("no material with an id #%d exists!", material_id);
-	throw runtime_error("material doesn't exist!");
+	throw a2e_exception("material doesn't exist!");
 }
 
 a2ematerial::material& a2ematerial::get_material(const size_t& material_id) {
@@ -408,7 +408,7 @@ a2ematerial::material& a2ematerial::get_material(const size_t& material_id) {
 		}
 	}
 	a2e_error("no material with an id #%d exists!", material_id);
-	throw runtime_error("material doesn't exist!");
+	throw a2e_exception("material doesn't exist!");
 }
 
 float4 a2ematerial::get_color(const string& color_str) {

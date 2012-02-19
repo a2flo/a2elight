@@ -606,12 +606,17 @@ void opencl::reload_kernels() {
 	check_compilation(add_kernel_file("PARTICLE RESPAWN", make_kernel_path("particle_spawn.cl"), "particle_respawn") != nullptr, "particle_spawn.cl");
 	check_compilation(add_kernel_file("PARTICLE COMPUTE", make_kernel_path("particle_compute.cl"), "particle_compute") != nullptr, "particle_compute.cl");
 	
-	// figure out which sorting local size we can use
+	// figure out which sorting local size we can use and if we have local atomics support
 	// a local size of 1024 can be used on fermi+ gpus
 	size_t local_size_limit = std::max((size_t)512, devices[0]->max_wg_size); // default to 512
+	bool local_atomics_support = true;
 	for(const auto& device : devices) {
 		if(device->max_wg_size < local_size_limit) {
 			local_size_limit = device->max_wg_size;
+		}
+		if(device->extensions.find("cl_khr_local_int32_base_atomics") == string::npos ||
+		   device->extensions.find("cl_khr_local_int32_extended_atomics") == string::npos) {
+			local_atomics_support = false;
 		}
 	}
 	const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
@@ -622,7 +627,9 @@ void opencl::reload_kernels() {
 	
 	// TODO: make tile size dependent on #cores
 	/*check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=4 -DA2E_IR_TILE_SIZE_Y=4") != nullptr, "ir_lighting.cl");*/
-	check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16") != nullptr, "ir_lighting.cl");
+	string ir_lighting_flags = " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16";
+	if(local_atomics_support) ir_lighting_flags += " -DA2E_LOCAL_ATOMICS";
+	check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", ir_lighting_flags.c_str()) != nullptr, "ir_lighting.cl");
 	
 	if(successful_internal_compilation) a2e_debug("internal kernels loaded successfully!");
 	else {
