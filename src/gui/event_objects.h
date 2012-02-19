@@ -26,21 +26,23 @@ enum class EVENT_TYPE : unsigned int {
 	MOUSE_LEFT_CLICK,
 	MOUSE_LEFT_DOUBLE_CLICK,
 	MOUSE_LEFT_HOLD,
-	MOUSE_LEFT_MOVE,
 	
 	MOUSE_RIGHT_DOWN,
 	MOUSE_RIGHT_UP,
 	MOUSE_RIGHT_CLICK,
 	MOUSE_RIGHT_DOUBLE_CLICK,
 	MOUSE_RIGHT_HOLD,
-	MOUSE_RIGHT_MOVE,
 	
 	MOUSE_MIDDLE_DOWN,
 	MOUSE_MIDDLE_UP,
 	MOUSE_MIDDLE_CLICK,
 	MOUSE_MIDDLE_DOUBLE_CLICK,
 	MOUSE_MIDDLE_HOLD,
-	MOUSE_MIDDLE_MOVE,
+	
+	MOUSE_MOVE,
+	
+	MOUSE_WHEEL_UP,
+	MOUSE_WHEEL_DOWN,
 	
 	KEY_DOWN,
 	KEY_UP,
@@ -90,27 +92,43 @@ template<EVENT_TYPE event_type, EVENT_TYPE down_event_type, EVENT_TYPE up_event_
 	up(*(shared_ptr<mouse_event_base<up_event_type>>*)&up_evt) {}
 };
 
+template<EVENT_TYPE event_type> struct mouse_move_event_base : public mouse_event_base<event_type> {
+	const ipnt move;
+	mouse_move_event_base(const unsigned int& time_,
+						  const ipnt& position_,
+						  const ipnt& move_)
+	: mouse_event_base<event_type>(time_, position_), move(move_) {}
+};
+
+template<EVENT_TYPE event_type> struct mouse_wheel_event_base : public event_object_base<event_type> {
+	const unsigned int amount;
+	mouse_wheel_event_base(const unsigned int& time_, const unsigned int& amount_)
+	: event_object_base<event_type>(time_), amount(amount_) {}
+};
+
 // mouse event typedefs
 typedef mouse_event_base<EVENT_TYPE::MOUSE_LEFT_DOWN> mouse_left_down_event;
 typedef mouse_event_base<EVENT_TYPE::MOUSE_LEFT_UP> mouse_left_up_event;
 typedef mouse_event_base<EVENT_TYPE::MOUSE_LEFT_HOLD> mouse_left_hold_event;
-typedef mouse_event_base<EVENT_TYPE::MOUSE_LEFT_MOVE> mouse_left_move_event;
 typedef mouse_click_event<EVENT_TYPE::MOUSE_LEFT_CLICK, EVENT_TYPE::MOUSE_LEFT_DOWN, EVENT_TYPE::MOUSE_LEFT_UP> mouse_left_click_event;
 typedef mouse_click_event<EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK, EVENT_TYPE::MOUSE_LEFT_DOWN, EVENT_TYPE::MOUSE_LEFT_UP> mouse_left_double_click_event;
 
 typedef mouse_event_base<EVENT_TYPE::MOUSE_RIGHT_DOWN> mouse_right_down_event;
 typedef mouse_event_base<EVENT_TYPE::MOUSE_RIGHT_UP> mouse_right_up_event;
 typedef mouse_event_base<EVENT_TYPE::MOUSE_RIGHT_HOLD> mouse_right_hold_event;
-typedef mouse_event_base<EVENT_TYPE::MOUSE_RIGHT_MOVE> mouse_right_move_event;
 typedef mouse_click_event<EVENT_TYPE::MOUSE_RIGHT_CLICK, EVENT_TYPE::MOUSE_RIGHT_DOWN, EVENT_TYPE::MOUSE_RIGHT_UP> mouse_right_click_event;
 typedef mouse_click_event<EVENT_TYPE::MOUSE_RIGHT_DOUBLE_CLICK, EVENT_TYPE::MOUSE_RIGHT_DOWN, EVENT_TYPE::MOUSE_RIGHT_UP> mouse_right_double_click_event;
 
 typedef mouse_event_base<EVENT_TYPE::MOUSE_MIDDLE_DOWN> mouse_middle_down_event;
 typedef mouse_event_base<EVENT_TYPE::MOUSE_MIDDLE_UP> mouse_middle_up_event;
 typedef mouse_event_base<EVENT_TYPE::MOUSE_MIDDLE_HOLD> mouse_middle_hold_event;
-typedef mouse_event_base<EVENT_TYPE::MOUSE_MIDDLE_MOVE> mouse_middle_move_event;
 typedef mouse_click_event<EVENT_TYPE::MOUSE_MIDDLE_CLICK, EVENT_TYPE::MOUSE_MIDDLE_DOWN, EVENT_TYPE::MOUSE_MIDDLE_UP> mouse_middle_click_event;
 typedef mouse_click_event<EVENT_TYPE::MOUSE_MIDDLE_DOUBLE_CLICK, EVENT_TYPE::MOUSE_MIDDLE_DOWN, EVENT_TYPE::MOUSE_MIDDLE_UP> mouse_middle_double_click_event;
+
+typedef mouse_move_event_base<EVENT_TYPE::MOUSE_MOVE> mouse_move_event;
+
+typedef mouse_wheel_event_base<EVENT_TYPE::MOUSE_WHEEL_UP> mouse_wheel_up_event;
+typedef mouse_wheel_event_base<EVENT_TYPE::MOUSE_WHEEL_DOWN> mouse_wheel_down_event;
 
 // key events
 template<EVENT_TYPE event_type> struct key_event : public event_object_base<event_type> {

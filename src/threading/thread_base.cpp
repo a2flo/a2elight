@@ -20,7 +20,7 @@
 
 #if !defined(GCC_LEGACY)
 
-thread_base::thread_base() : thread_obj(NULL), thread_lock(), thread_status(thread_base::INIT), thread_delay(50) {
+thread_base::thread_base(const string name) : thread_name(name), thread_obj(NULL), thread_lock(), thread_status(thread_base::INIT), thread_delay(50) {
 	thread_should_finish_flag.value = 0;
 	this->lock(); // lock thread, so start (or unlock) must be called before the thread starts running
 	thread_obj = new std::thread(&thread_base::_thread_run, this);

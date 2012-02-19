@@ -41,7 +41,7 @@ particle_system::particle_system() {
 	bbox.max.set(0.0f, 0.0f, 0.0f);
 	bbox.pos.set(0.0f, 0.0f, 0.0f);
 	
-	blend_mode = gfx::BM_ADD;
+	blend_mode = gfx::BLEND_MODE::ADD;
 	
 	// init data
 	data.particle_count = 0;

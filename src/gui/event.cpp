@@ -18,7 +18,7 @@
 
 #include "event.h"
 
-event::event() : thread_base(),
+event::event() : thread_base("event"),
 #if !defined(GCC_LEGACY)
 user_queue_lock()
 #else
@@ -198,6 +198,33 @@ void event::handle_events() {
 				break;
 			}
 		}
+		else if(event_type == SDL_MOUSEMOTION ||
+				event_type == SDL_MOUSEWHEEL) {
+			switch (event_type) {
+				case SDL_MOUSEMOTION: {
+					const int2 abs_pos = int2(event_handle.motion.x, event_handle.motion.y);
+					const int2 rel_move = int2(event_handle.motion.xrel, event_handle.motion.yrel);
+					handle_event(EVENT_TYPE::MOUSE_MOVE,
+								 make_shared<mouse_move_event>(cur_ticks, abs_pos, rel_move));
+				}
+				break;
+				case SDL_MOUSEWHEEL:
+					if(event_handle.wheel.y > 0) {
+						handle_event(EVENT_TYPE::MOUSE_WHEEL_UP,
+									 make_shared<mouse_wheel_up_event>(
+										cur_ticks,
+										event_handle.wheel.y));
+					}
+					else if(event_handle.wheel.y < 0) {
+						const unsigned int abs_wheel_move = (unsigned int)abs(event_handle.wheel.y);
+						handle_event(EVENT_TYPE::MOUSE_WHEEL_DOWN,
+									 make_shared<mouse_wheel_down_event>(
+										cur_ticks,
+										abs_wheel_move));
+					}
+					break;
+			}
+		}
 		else {
 			// key, etc. event handling
 			switch(event_type) {
@@ -255,7 +282,7 @@ void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 	prev_events[type] = obj;
 	
 	// call internal event handlers directly
-	const auto& range = internal_handlers.equal_range(type);
+	const auto range = internal_handlers.equal_range(type);
 	for(auto iter = range.first; iter != range.second; iter++) {
 		// ignore return value for now (TODO: actually use this?)
 		iter->second(type, obj);
@@ -281,7 +308,7 @@ void event::handle_user_events() {
 		user_event_queue_processing.pop();
 		
 		// call user event handlers
-		const auto& range = handlers.equal_range(evt.first);
+		const auto range = handlers.equal_range(evt.first);
 		for(auto iter = range.first; iter != range.second; iter++) {
 			iter->second(evt.first, evt.second);
 		}

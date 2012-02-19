@@ -28,7 +28,7 @@
 
 class thread_base {
 public:
-	thread_base();
+	thread_base(const string name = "unknown");
 	virtual ~thread_base();
 	
 	enum THREAD_STATUS {
@@ -56,6 +56,7 @@ public:
 	const size_t get_thread_delay();
 	
 protected:
+	const string thread_name;
 	thread* thread_obj;
 	recursive_mutex thread_lock;
 	THREAD_STATUS thread_status;
