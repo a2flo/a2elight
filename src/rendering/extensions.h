@@ -22,8 +22,12 @@
 #include "global.h"
 
 #include "core/core.h"
-#ifndef A2E_EXTENSIONS_DONT_INCLUDE_GL_FUNCS
+#if !(defined(A2E_EXTENSIONS_DONT_INCLUDE_GL_FUNCS) || defined(A2E_IOS))
 #include "rendering/gl_funcs.h"
+#endif
+
+#if defined(A2E_IOS)
+#include "rendering/gles_compat.h"
 #endif
 
 #ifndef __APPLE__
@@ -65,7 +69,8 @@ public:
 	enum GRAPHIC_CARD_VENDOR {
 		GCV_UNKNOWN,
 		GCV_NVIDIA,
-		GCV_ATI
+		GCV_ATI,
+		GCV_POWERVR
 	};
 
 	// these are only the most important and widely used models
@@ -83,7 +88,9 @@ public:
 		GC_RADEON_HD4,
 		GC_RADEON_HD5,
 		GC_RADEON_HD6,
-		GC_RADEON_HD7
+		GC_RADEON_HD7,
+		GC_SGX_535,
+		GC_SGX_543,
 	};
 	static const GRAPHIC_CARD min_generic_card = GC_GENERIC_SM4;
 	static const GRAPHIC_CARD max_generic_card = GC_GENERIC_SM5;
@@ -91,6 +98,8 @@ public:
 	static const GRAPHIC_CARD max_nvidia_card = GC_GEFORCE_GK100;
 	static const GRAPHIC_CARD min_ati_card = GC_RADEON_HD2;
 	static const GRAPHIC_CARD max_ati_card = GC_RADEON_HD7;
+	static const GRAPHIC_CARD min_powervr_card = GC_SGX_535;
+	static const GRAPHIC_CARD max_powervr_card = GC_SGX_543;
 
 	GRAPHIC_CARD_VENDOR get_vendor();
 	GRAPHIC_CARD get_graphic_card();
@@ -101,6 +110,7 @@ public:
 	
 	enum OPENGL_VERSION {
 		OPENGL_UNKNOWN,
+		OPENGL_ES_2_0,
 		OPENGL_3_0,
 		OPENGL_3_1,
 		OPENGL_3_2,
@@ -112,6 +122,7 @@ public:
 	
 	enum GLSL_VERSION {
 		GLSL_NO_VERSION,	// used when none is applicable
+		GLSL_ES_100,		// opengl es 2.0
 		GLSL_150,			// opengl 3.2
 		GLSL_330,			// opengl 3.3
 		GLSL_400,			// opengl 4.0

@@ -66,7 +66,7 @@ rtt::rtt(engine* e_, gfx* g_, ext* exts_, unsigned int screen_width_, unsigned i
 rtt::~rtt() {
 	a2e_debug("deleting rtt object");
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 
 	for(rtt::fbo* buffer : buffers) {
 		glDeleteTextures(buffer->attachment_count, buffer->tex_id);
@@ -186,6 +186,13 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		
 		glGenTextures(attachment_count, buffer->tex_id);
 		for(unsigned int i = 0; i < buffer->attachment_count; i++) {
+#if !defined(A2E_IOS)
+			if(i > 0) {
+				a2e_error("too many FBO attachments - only one is allowed on iOS!");
+				break;
+			}
+#endif
+			
 			buffer->target[i] = target[i];
 			glBindTexture(buffer->target[i], buffer->tex_id[i]);
 			
@@ -198,25 +205,29 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			}
 			
 			switch(buffer->target[i]) {
+#if !defined(A2E_IOS)
 				case GL_TEXTURE_1D:
-					glTexImage1D(buffer->target[i], 0, internal_format[i], width, 0, format[i], type[i], nullptr);
+					glTexImage1D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, 0, format[i], type[i], nullptr);
 					break;
+#endif
 				case GL_TEXTURE_2D:
-					glTexImage2D(buffer->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], nullptr);
+					glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
 					break;
 				/*case GL_TEXTURE_3D:
 					// TODO: tex3d
 					glTexImage3D(buffer->target[i], 0, internal_format[i], width, height, 1, 0, format[i], type[i], nullptr);
 					break;*/
+#if !defined(A2E_IOS)
 				case GL_TEXTURE_2D_MULTISAMPLE:
-					glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), internal_format[i], width, height, false);
+					glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), texman::convert_internal_format(internal_format[i]), width, height, false);
 					break;
+#endif
 				/*case GL_TEXTURE_3D_MULTISAMPLE:
 					// TODO: tex3d
 					glTexImage3DMultisample(buffer->target[i], samp, internal_format[i], width, height, 1, false);
 					break;*/
 				default:
-					glTexImage2D(buffer->target[i], 0, internal_format[i], width, height, 0, format[i], type[i], nullptr);
+					glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
 					break;
 			}
 			
@@ -228,6 +239,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex_id[i], 0);
 			
+#if !defined(A2E_IOS)
 #if A2E_DEBUG
 			// TODO: fbo/texture checking
 			GLint check_internal_format = 0, check_type = 0, check_size = 0;
@@ -235,6 +247,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_TYPE, &check_type);
 			glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_SIZE, &check_size);
 			//a2e_debug("FBO: iformat: %X, type: %X, size: %d", check_internal_format, check_type, check_size);
+#endif
 #endif
 		}
 		
@@ -270,9 +283,9 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 						
 						// apparently opencl/opengl depth texture sharing only works with a float format
 #if !defined(A2E_INFERRED_RENDERING_CL)
-						glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
+						glTexImage2D(GL_TEXTURE_2D, 0, texman::convert_internal_format(GL_DEPTH_COMPONENT24), width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
 #else
-						glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+						glTexImage2D(GL_TEXTURE_2D, 0, texman::convert_internal_format(GL_DEPTH_COMPONENT32F), width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 #endif
 						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer->depth_buffer, 0);
 					}
@@ -309,6 +322,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 						glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT24, buffer->width, buffer->height);
 						glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
 					}
+#if !defined(A2E_IOS)
 					else if(depth_type == rtt::DT_TEXTURE_2D) {
 						buffer->samples = samples;
 
@@ -318,14 +332,16 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-						
-						glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH_COMPONENT24, width, height, false);
+
+						glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texman::convert_internal_format(GL_DEPTH_COMPONENT24), width, height, false);
 						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer, 0);
 					}
+#endif
 					
 					check_fbo(current_buffer);
 				}
 				break;
+#if !defined(A2E_IOS)
 				case rtt::TAA_CSAA_8:
 				case rtt::TAA_CSAA_8Q:
 				case rtt::TAA_CSAA_16:
@@ -379,15 +395,16 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 					glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, GL_DEPTH_COMPONENT24, buffer->width, buffer->height);
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
 					check_fbo(current_buffer);
-					break;
 				}
+				break;
+#endif
 				default:
 					break;
 			}
 		}
 		
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	}
 	else  {
 		// stencil buffer
@@ -405,7 +422,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		check_fbo(buffer);
 		
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	}
 	
 	return buffer;
@@ -435,7 +452,13 @@ void rtt::start_draw(rtt::fbo* buffer) {
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
 		}
 		else if(buffer->depth_type == DT_TEXTURE_2D) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, (buffer->samples == 0 ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE), buffer->depth_buffer, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+#if !defined(A2E_IOS)
+								   (buffer->samples == 0 ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE),
+#else
+								   GL_TEXTURE_2D,
+#endif
+								   buffer->depth_buffer, 0);
 		}
 		else glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
 	}
@@ -448,7 +471,7 @@ void rtt::start_draw(rtt::fbo* buffer) {
 void rtt::stop_draw() {
 	check_fbo(current_buffer);
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	if(current_buffer->anti_aliasing[0] != rtt::TAA_NONE &&
 	   current_buffer->anti_aliasing[0] != rtt::TAA_SSAA_2 &&
 	   current_buffer->anti_aliasing[0] != rtt::TAA_SSAA_4 &&
@@ -457,15 +480,19 @@ void rtt::stop_draw() {
 	   current_buffer->anti_aliasing[0] != rtt::TAA_SSAA_2_FXAA) {
 		if(current_buffer->depth_type == DT_RENDERBUFFER ||
 		   current_buffer->depth_type == DT_TEXTURE_2D) {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 		
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, current_buffer->fbo_id);
 			for(size_t i = 0; i < current_buffer->attachment_count; i++) {
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_buffer->resolve_buffer[i]);
+#if !defined(A2E_IOS)
 				glBlitFramebuffer(0, 0, current_buffer->width, current_buffer->height, 0, 0, current_buffer->width, current_buffer->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#else
+				// TODO: implement framebuffer blitting on iOS
+#endif
 			}
 		
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 		}
 	}
 	
@@ -518,6 +545,10 @@ void rtt::check_fbo(rtt::fbo* buffer) {
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 			a2e_error("missing framebuffer attachement (%u)!", status);
 			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+			a2e_error("incomplete framebuffer multisample (%u)!", status);
+			break;
+#if !defined(A2E_IOS)
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
 			a2e_error("incomplete framebuffer draw buffer (%u)!", status);
 			break;
@@ -527,9 +558,7 @@ void rtt::check_fbo(rtt::fbo* buffer) {
 		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
 			a2e_error("incomplete framebuffer layer targets (%u)!", status);
 			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-			a2e_error("incomplete framebuffer multisample (%u)!", status);
-			break;
+#endif
 		default:
 			a2e_error("unknown framebuffer error (%u)!", status);
 			break;

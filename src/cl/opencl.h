@@ -24,6 +24,8 @@
 #include "core/core.h"
 #include "core/vector2.h"
 
+#if !defined(A2E_NO_OPENCL)
+
 // necessary for now (when compiling with opencl 1.2+ headers)
 #define CL_USE_DEPRECATED_OPENCL_1_1_APIS 1
 
@@ -33,9 +35,11 @@
 #include <OpenCL/cl_platform.h>
 #include <OpenCL/cl_ext.h>
 #include <OpenCL/cl_gl.h>
+#if !defined(A2E_IOS)
 #include <OpenGL/CGLContext.h>
 #include <OpenGL/CGLCurrent.h>
 #include <OpenGL/CGLDevice.h>
+#endif
 #else
 #include <CL/cl.h>
 #include <CL/cl_platform.h>
@@ -295,5 +299,22 @@ template<typename T> bool opencl::set_kernel_argument(unsigned int index, T arg)
 	}
 	return false;
 }
+
+#else
+
+class opencl {
+public:
+	opencl& operator=(const opencl&) = delete;
+	opencl(const opencl&) = delete;
+	opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache) {}
+	~opencl() {}
+	
+	bool is_supported() { return false; }
+	bool is_cpu_support() { return false; }
+	bool is_gpu_support() { return false; }
+	
+};
+
+#endif // A2E_NO_OPENCL
 
 #endif // __OPENCL_H__

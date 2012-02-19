@@ -31,7 +31,7 @@
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
 
-class A2E_API __attribute__((packed)) bbox {
+class A2E_API __attribute__((packed, aligned(4))) bbox {
 public:
 	float3 min;
 	float3 max;

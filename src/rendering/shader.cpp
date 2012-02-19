@@ -49,8 +49,6 @@ shader::shader(engine* e_) {
 	else {
 		a2e_debug("internal shaders compiled successfully!");
 	}
-	
-	noise_texture = e->get_texman()->add_texture(e->data_path("noise.png"), texture_object::TF_TRILINEAR);
 }
 
 /*! delete everything
@@ -103,6 +101,7 @@ void shader::reload_shaders() {
 }
 
 void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned int src_attachment, unsigned int dest_attachment) {
+#if !defined(A2E_IOS)
 	if((src_buffer->target[src_attachment] != GL_TEXTURE_2D && src_buffer->target[src_attachment] != GL_TEXTURE_RECTANGLE) ||
 	   (dest_buffer->target[dest_attachment] != GL_TEXTURE_2D && dest_buffer->target[dest_attachment] != GL_TEXTURE_RECTANGLE)) {
 		a2e_error("non-2D buffers aren't allowed to be copied at the moment!");
@@ -121,8 +120,11 @@ void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned i
 					  GL_COLOR_BUFFER_BIT | ((src_buffer->depth_type != rtt::DT_NONE && dest_buffer->depth_type != rtt::DT_NONE) ? GL_DEPTH_BUFFER_BIT : 0),
 					  GL_NEAREST);
 	
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+#else
+	// TODO: implement framebuffer blitting on iOS
+#endif
 }
 
 /*! adds a shader object
@@ -202,11 +204,12 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	glGetShaderiv(shd_obj.vertex_shader, GL_COMPILE_STATUS, &success);
 	if(!success) {
 		glGetShaderInfoLog(shd_obj.vertex_shader, A2E_SHADER_LOG_SIZE, nullptr, info_log);
-		a2e_error("Error in vertex shader \"%s/s\" compilation!", identifier, option);
+		a2e_error("Error in vertex shader \"%s/%s\" compilation!", identifier, option);
 		log_pretty_print(info_log, vs_text);
 		return 0;
 	}
 	
+#if !defined(A2E_IOS)
 	// create the geometry shader object
 	if(gs_text != nullptr && strcmp(gs_text, "") != 0) {
 		shd_obj.geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
@@ -221,6 +224,12 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		}
 	}
 	else shd_obj.geometry_shader = 0;
+#else
+	if(gs_text != nullptr && strcmp(gs_text, "") != 0) {
+		a2e_error("geometry shaders are not supported in OpenGL ES 2.0!");
+	}
+	shd_obj.geometry_shader = 0;
+#endif
 	
 	// create the fragment shader object
 	shd_obj.fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -291,8 +300,9 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	glUseProgram(shd_obj.program);
 	
 	// bind frag data locations (frag_color, frag_color_2, frag_color_3, ...)
-	const unsigned int max_draw_buffers = exts->get_max_draw_buffers();
 	bool fd_relink = false;
+#if !defined(A2E_IOS)
+	const unsigned int max_draw_buffers = exts->get_max_draw_buffers();
 	for(unsigned int i = 0; i < max_draw_buffers; i++) {
 		string name = "frag_color";
 		if(i >= 1) name += "_"+uint2string(i+1);
@@ -305,6 +315,9 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 			fd_relink = true;
 		}
 	}
+#else
+	// TODO: what todo on iOS?
+#endif
 	if(fd_relink) {
 		// program must be linked again after the frag data locations were modified
 		// (double-linkage sucks, but there's no other way in opengl 3.2 ...)
@@ -333,19 +346,24 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 #endif
 	
 	// grab number and names of all attributes and uniforms and get their locations (needs to be done before validation, b/c we have to set sampler locations)
-	GLint attr_count = 0, uni_count = 0, uni_block_count = 0, max_attr_len = 0, max_uni_len = 0, max_uni_block_len = 0;
+	GLint attr_count = 0, uni_count = 0, max_attr_len = 0, max_uni_len = 0;
 	GLint var_location = 0;
 	GLint var_size = 0;
 	GLenum var_type = 0;
+	
 	glGetProgramiv(shd_obj.program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_attr_len);
 	glGetProgramiv(shd_obj.program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_uni_len);
-	glGetProgramiv(shd_obj.program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &max_uni_block_len);
 	glGetProgramiv(shd_obj.program, GL_ACTIVE_ATTRIBUTES, &attr_count);
 	glGetProgramiv(shd_obj.program, GL_ACTIVE_UNIFORMS, &uni_count);
-	glGetProgramiv(shd_obj.program, GL_ACTIVE_UNIFORM_BLOCKS, &uni_block_count);
 	max_attr_len+=2;
 	max_uni_len+=2;
+	
+#if !defined(A2E_IOS)
+	GLint uni_block_count = 0, max_uni_block_len = 0;
+	glGetProgramiv(shd_obj.program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &max_uni_block_len);
+	glGetProgramiv(shd_obj.program, GL_ACTIVE_UNIFORM_BLOCKS, &uni_block_count);
 	max_uni_block_len+=2;
+#endif
 		
 	// note: this may report weird attribute/uniform names (and locations), if uniforms/attributes are optimized away by the compiler
 	
@@ -395,7 +413,11 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		
 		// if the uniform is a sampler, add it to the sampler mapping (with increasing id/num)
 		// also: use shader_gl3 here, because we can't use shader_base directly w/o instantiating it
+#if !defined(A2E_IOS)
 		if(shader_gl3::is_gl_sampler_type(var_type)) {
+#else
+		if(shader_gles2::is_gl_sampler_type(var_type)) {
+#endif
 			shd_obj.samplers.insert(make_pair(uniform_name, shd_obj.samplers.size()));
 			
 			// while we are at it, also set the sampler location to a dummy value (this has to be done to satisfy program validation)
@@ -404,6 +426,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	}
 	delete [] uni_name;
 	
+#if !defined(A2E_IOS)
 	GLchar* uni_block_name = new GLchar[max_uni_block_len];
 	if(print_debug_info) a2e_log("GL_ACTIVE_UNIFORM_BLOCKS: %u", uni_block_count);
 	for(GLint block = 0; block < uni_block_count; block++) {
@@ -428,6 +451,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		// TODO: handle samplers?
 	}
 	delete [] uni_block_name;
+#endif
 	
 	// validate the program object
 	glValidateProgram(shd_obj.program);
@@ -496,8 +520,10 @@ bool shader::load_internal_shaders() {
 		// misc/postprocess/hdr/...
 		"BLURLINE3", "misc/blurline3.a2eshd",
 		"BLURLINE5", "misc/blurline5.a2eshd",
+#if !defined(A2E_IOS)
 		"LUMA", "misc/luma.a2eshd",
 		"FXAA", "misc/fxaa3.a2eshd",
+#endif
 		"SIMPLE", "misc/simple.a2eshd", // basically a replacement for fixed-function shading/drawing
 		//"DOWNSAMPLE", "misc/downsample.a2eshd",
 		"BLEND", "misc/blend.a2eshd",
@@ -509,8 +535,10 @@ bool shader::load_internal_shaders() {
 		"IR_MP_DIFFUSE", "inferred/mp_diffuse.a2eshd",
 		"IR_MP_PARALLAX", "inferred/mp_parallax.a2eshd",
 		
+#if !defined(A2E_IOS)
 		// particle
 		"PARTICLE_DRAW_OPENCL", "particle/particle_draw_ocl.a2eshd",
+#endif
 	};
 	
 	const size_t count = A2E_ARRAY_LENGTH(internal_shaders)/2;
@@ -551,10 +579,6 @@ bool shader::is_gui_shader_rendering() {
 	return gui_shader_rendering;
 }
 
-a2e_texture& shader::get_noise_texture() {
-	return noise_texture;
-}
-
 a2e_shader* shader::get_a2e_shader() {
 	return a2e_shd;
 }
@@ -591,4 +615,8 @@ template <> ret_type shader::get_shader(const string& identifier) const { \
 } \
 ret_type shader::get_##ret_type(const string& identifier) const { return get_shader<ret_type>(identifier); }
 
+#if !defined(A2E_IOS)
 make_get_shader(gl3shader, shader_gl3, ext::GLSL_150, ext::GLSL_330);
+#else
+make_get_shader(gl3shader, shader_gles2, ext::GLSL_ES_100, ext::GLSL_330);
+#endif

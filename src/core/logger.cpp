@@ -19,7 +19,11 @@
 
 #include "logger.h"
 
+#if !defined(A2E_IOS)
 #define A2E_LOG_FILENAME "log.txt"
+#else
+#define A2E_LOG_FILENAME "/Documents/log.txt"
+#endif
 
 fstream logger::log_file(A2E_LOG_FILENAME, fstream::out);
 atomic_t logger::err_counter;

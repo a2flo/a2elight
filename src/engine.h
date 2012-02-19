@@ -59,8 +59,8 @@ public:
 	void stop_2d_draw();
 	void push_ogl_state();
 	void pop_ogl_state();
-	bool init_gl();
-	bool resize_window();
+	void init_gl();
+	void resize_window();
 	void swap();
 	const string get_version() const;
 	
@@ -207,6 +207,7 @@ protected:
 	// actual engine constructor
 	void create();
 	void load_ico(const char* ico);
+	void make_current();
 	
 	struct engine_config {
 		// screen
@@ -323,6 +324,10 @@ protected:
 	unsigned char cursor_mask16[2*16];
 	unsigned char cursor_data32[4*32];
 	unsigned char cursor_mask32[4*32];
+	
+	// window event handlers
+	event::handler* window_handler;
+	bool window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	
 	// misc
 	atomic_t reload_shaders_flag;

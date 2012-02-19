@@ -67,7 +67,13 @@ public:
 		ext::GLSL_VERSION version;
 		SHADER_PREPROCESSING preprocessing;
 		
-		a2e_shader_code() : preprocessor(""), variables(""), program(""), version(ext::GLSL_150), preprocessing(SP_NONE) {}
+		a2e_shader_code() : preprocessor(""), variables(""), program(""),
+#if !defined(A2E_IOS)
+		version(ext::GLSL_150),
+#else
+		version(ext::GLSL_ES_100),
+#endif
+		preprocessing(SP_NONE) {}
 		a2e_shader_code& operator=(const a2e_shader_code& shd_code) {
 			this->preprocessor = shd_code.preprocessor;
 			this->variables = shd_code.variables;
@@ -179,6 +185,8 @@ protected:
 	map<string, vector<a2e_shader_object*> > a2e_shaders;
 	
 	map<string, bool> conditions;
+	
+	void make_glsl_es_compat(a2e_shader_object* shd, const string& option);
 	
 };
 

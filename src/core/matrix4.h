@@ -31,7 +31,7 @@ typedef matrix4<bool> matrix4b;
 
 template <typename T> class vector4;
 
-template <typename T> class A2E_API __attribute__((packed)) matrix4 {
+template <typename T> class A2E_API __attribute__((packed, aligned(4))) matrix4 {
 public:
 	T data[16];
 	

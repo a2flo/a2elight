@@ -244,6 +244,13 @@ void event::handle_events() {
 				case SDL_TEXTINPUT:
 					// TODO: !
 					break;
+				case SDL_WINDOWEVENT:
+					if(event_handle.window.event == SDL_WINDOWEVENT_RESIZED) {
+						const size2 new_size(event_handle.window.data1, event_handle.window.data2);
+						handle_event(EVENT_TYPE::WINDOW_RESIZE,
+									 make_shared<window_resize_event>(cur_ticks, new_size));
+					}
+					break;
 				case SDL_QUIT:
 					handle_event(EVENT_TYPE::QUIT, make_shared<quit_event>(cur_ticks));
 					break;

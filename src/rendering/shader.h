@@ -29,7 +29,11 @@
 #include "rendering/renderer/a2e_shader.h"
 #include "rendering/renderer/shader_object.h"
 #include "rendering/renderer/shader_base.h"
+#if !defined(A2E_IOS)
 #include "rendering/renderer/gl3/shader_gl3.h"
+#else
+#include "rendering/renderer/gles2/shader_gles2.h"
+#endif
 
 /*! @class shader
  *  @brief shader class
@@ -60,7 +64,6 @@ public:
 	void set_gui_shader_rendering(bool state);
 	bool is_gui_shader_rendering();
 
-	a2e_texture& get_noise_texture();
 	a2e_shader* get_a2e_shader();
 
 	//! reloads all internal and external shaders that were added via add_a2e_shader
@@ -75,7 +78,6 @@ protected:
 	xml* x;
 	a2e_shader* a2e_shd;
 
-	a2e_texture noise_texture;
 	GLenum copy_draw_buffer[1];
 	bool gui_shader_rendering;
 	

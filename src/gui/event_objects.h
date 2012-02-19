@@ -50,6 +50,7 @@ enum class EVENT_TYPE : unsigned int {
 	KEY_HOLD,
 	
 	QUIT,
+	WINDOW_RESIZE,
 	
 	// TODO: add code for these:
 	// TOUCH, GESTURE, ...
@@ -144,5 +145,11 @@ typedef key_event<EVENT_TYPE::KEY_HOLD> key_hold_event;
 
 // misc
 typedef event_object_base<EVENT_TYPE::QUIT> quit_event;
+
+template<EVENT_TYPE event_type> struct window_resize_event_base : public event_object_base<event_type> {
+	const size2 size;
+	window_resize_event_base(const unsigned int& time_, const size2& size_) : event_object_base<event_type>(time_), size(size_) {}
+};
+typedef window_resize_event_base<EVENT_TYPE::WINDOW_RESIZE> window_resize_event;
 
 #endif

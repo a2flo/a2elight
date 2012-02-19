@@ -56,7 +56,13 @@ struct shader_object {
 	ext::GLSL_VERSION glsl_version;
 	bool a2e_shader;
 	
-	shader_object(const string& shd_name) : name(shd_name), programs(), options(), glsl_version(ext::GLSL_150), a2e_shader(false) {}
+	shader_object(const string& shd_name) : name(shd_name), programs(), options(),
+#if !defined(A2E_IOS)
+	glsl_version(ext::GLSL_150),
+#else
+	glsl_version(ext::GLSL_ES_100),
+#endif
+	a2e_shader(false) {}
 	~shader_object() {
 		for(auto& prog : programs) {
 			delete prog;

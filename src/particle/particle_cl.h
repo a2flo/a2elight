@@ -19,6 +19,8 @@
 #ifndef __PARTICLE_CL_H__
 #define __PARTICLE_CL_H__
 
+#if !defined(A2E_NO_OPENCL)
+
 #include "global.h"
 
 #include "core/core.h"
@@ -71,5 +73,7 @@ protected:
 	unsigned int kernel_seed;
 	
 };
+
+#endif
 
 #endif

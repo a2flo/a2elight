@@ -211,6 +211,9 @@
 		5CA9BB5814F18153004B7851 /* gui_color_scheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_color_scheme.h; sourceTree = "<group>"; };
 		5CA9BB5914F18153004B7851 /* gui_theme.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_theme.cpp; sourceTree = "<group>"; };
 		5CA9BB5A14F18153004B7851 /* gui_theme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_theme.h; sourceTree = "<group>"; };
+		5CA9BB6514F1830B004B7851 /* shader_gles2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = shader_gles2.cpp; sourceTree = "<group>"; };
+		5CA9BB6614F1830B004B7851 /* shader_gles2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shader_gles2.h; sourceTree = "<group>"; };
+		5CA9BB6814F183E2004B7851 /* gles_compat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gles_compat.h; sourceTree = "<group>"; };
 		5CBF520A123458FD00971741 /* texture_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture_object.h; sourceTree = "<group>"; };
 		5CD79ED612E3D16600CE2BE5 /* basic_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = basic_math.h; sourceTree = "<group>"; };
 		5CDC19EF142F8A4A00FE031C /* vector4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vector4.cpp; sourceTree = "<group>"; };
@@ -364,6 +367,7 @@
 				5C397619123189750075C168 /* renderer */,
 				5C397613123189750075C168 /* extensions.cpp */,
 				5C397614123189750075C168 /* extensions.h */,
+				5CA9BB6814F183E2004B7851 /* gles_compat.h */,
 				5C397615123189750075C168 /* gfx.cpp */,
 				5C397616123189750075C168 /* gfx.h */,
 				5C397617123189750075C168 /* gl_funcs.cpp */,
@@ -382,6 +386,7 @@
 		5C397619123189750075C168 /* renderer */ = {
 			isa = PBXGroup;
 			children = (
+				5CA9BB6414F1830B004B7851 /* gles2 */,
 				5C39761F123189750075C168 /* gl3 */,
 				5C397625123189750075C168 /* shader_base.h */,
 				5C397626123189750075C168 /* shader_object.h */,
@@ -471,6 +476,15 @@
 				5CA9BB5A14F18153004B7851 /* gui_theme.h */,
 			);
 			path = style;
+			sourceTree = "<group>";
+		};
+		5CA9BB6414F1830B004B7851 /* gles2 */ = {
+			isa = PBXGroup;
+			children = (
+				5CA9BB6514F1830B004B7851 /* shader_gles2.cpp */,
+				5CA9BB6614F1830B004B7851 /* shader_gles2.h */,
+			);
+			path = gles2;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

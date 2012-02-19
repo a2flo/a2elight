@@ -126,16 +126,20 @@ void a2emodel::pre_draw_setup(const ssize_t sub_object_num) {
 	mvpm = mvm * *e->get_projection_matrix();
 	
 	// if the wireframe flag is set, draw the model in wireframe mode
+#if !defined(A2E_IOS)
 	if(draw_wireframe) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
+#endif
 }
 
 void a2emodel::post_draw_setup(const ssize_t sub_object_num) {
 	// reset to filled mode
+#if !defined(A2E_IOS)
 	if(draw_wireframe) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+#endif
 }
 
 /*! draws the model/object (all variables have to be set by the derived class beforehand)
