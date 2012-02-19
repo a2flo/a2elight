@@ -19,6 +19,7 @@
 #include "a2e_version.h"
 #include "rendering/shader.h"
 #include "cl/opencl.h"
+#include "gui/gui.h"
 
 // dll main for windows dll export
 #ifdef __WINDOWS__
@@ -82,6 +83,7 @@ engine::~engine() {
 	if(u != nullptr) delete u;
 	if(ocl != nullptr) delete ocl;
 	if(shd != nullptr) delete shd;
+	if(ui != nullptr) delete ui;
 
 	a2e_debug("engine object deleted");
 	
@@ -152,6 +154,7 @@ void engine::create() {
 	u = nullptr;
 	ocl = nullptr;
 	shd = nullptr;
+	ui = nullptr;
 	
 	fps = 0;
 	fps_counter = 0;
@@ -170,6 +173,7 @@ void engine::create() {
 	x = new xml(this);
 	e = new event();
 	g = new gfx(this);
+	ui = new gui(this);
 	ocl = nullptr;
 	
 	AtomicSet(&reload_shaders_flag, 0);
@@ -217,19 +221,6 @@ void engine::create() {
 		
 		string anti_aliasing_str = config_doc.get<string>("config.graphic.anti_aliasing", "");
 		if(anti_aliasing_str == "NONE") config.anti_aliasing = rtt::TAA_NONE;
-		/*else if(anti_aliasing_str == "MSAA1") config.anti_aliasing = rtt::TAA_MSAA_1;
-		else if(anti_aliasing_str == "MSAA2") config.anti_aliasing = rtt::TAA_MSAA_2;
-		else if(anti_aliasing_str == "MSAA4") config.anti_aliasing = rtt::TAA_MSAA_4;
-		else if(anti_aliasing_str == "MSAA8") config.anti_aliasing = rtt::TAA_MSAA_8;
-		else if(anti_aliasing_str == "MSAA16") config.anti_aliasing = rtt::TAA_MSAA_16;
-		else if(anti_aliasing_str == "MSAA32") config.anti_aliasing = rtt::TAA_MSAA_32;
-		else if(anti_aliasing_str == "MSAA64") config.anti_aliasing = rtt::TAA_MSAA_64;
-		else if(anti_aliasing_str == "CSAA8") config.anti_aliasing = rtt::TAA_CSAA_8;
-		else if(anti_aliasing_str == "CSAA8Q") config.anti_aliasing = rtt::TAA_CSAA_8Q;
-		else if(anti_aliasing_str == "CSAA16") config.anti_aliasing = rtt::TAA_CSAA_16;
-		else if(anti_aliasing_str == "CSAA16Q") config.anti_aliasing = rtt::TAA_CSAA_16Q;
-		else if(anti_aliasing_str == "CSAA32") config.anti_aliasing = rtt::TAA_CSAA_32;
-		else if(anti_aliasing_str == "CSAA32Q") config.anti_aliasing = rtt::TAA_CSAA_32Q;*/
 		else if(anti_aliasing_str == "FXAA") config.anti_aliasing = rtt::TAA_FXAA;
 		else if(anti_aliasing_str == "2xSSAA") config.anti_aliasing = rtt::TAA_SSAA_2;
 		//else if(anti_aliasing_str == "4xSSAA") config.anti_aliasing = rtt::TAA_SSAA_4;
@@ -343,7 +334,7 @@ void engine::init(const char* ico) {
 	ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), f, config.wnd, config.clear_cache); // use absolute path
 	
 	// enable multi-threaded opengl context when on os x
-/*#ifdef __APPLE__
+#ifdef __APPLE__
 	CGLError cgl_err = CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
 	if(cgl_err != kCGLNoError) {
 		a2e_error("unable to set multi-threaded opengl context!");
@@ -351,7 +342,7 @@ void engine::init(const char* ico) {
 	else {
 		a2e_debug("multi-threaded opengl context enabled!");
 	}
-#endif*/
+#endif
 	
 	// make an early clear
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -403,17 +394,6 @@ void engine::init(const char* ico) {
 	supported_aa_modes.push_back(rtt::TAA_SSAA_4);
 	supported_aa_modes.push_back(rtt::TAA_SSAA_4_3_FXAA);
 	supported_aa_modes.push_back(rtt::TAA_SSAA_2_FXAA);
-	/*if(exts->get_max_samples() >= 1) supported_aa_modes.push_back(rtt::TAA_MSAA_1);
-	if(exts->get_max_samples() >= 2) supported_aa_modes.push_back(rtt::TAA_MSAA_2);
-	if(exts->get_max_samples() >= 4) supported_aa_modes.push_back(rtt::TAA_MSAA_4);
-	if(exts->is_fbo_multisample_coverage_mode_support(8, 4)) supported_aa_modes.push_back(rtt::TAA_CSAA_8);
-	if(exts->is_fbo_multisample_coverage_mode_support(8, 8)) supported_aa_modes.push_back(rtt::TAA_CSAA_8Q);
-	if(exts->get_max_samples() >= 8) supported_aa_modes.push_back(rtt::TAA_MSAA_8);
-	if(exts->is_fbo_multisample_coverage_mode_support(16, 4)) supported_aa_modes.push_back(rtt::TAA_CSAA_16);
-	if(exts->is_fbo_multisample_coverage_mode_support(16, 8)) supported_aa_modes.push_back(rtt::TAA_CSAA_16Q);
-	if(exts->get_max_samples() >= 16) supported_aa_modes.push_back(rtt::TAA_MSAA_16);
-	if(exts->get_max_samples() >= 32) supported_aa_modes.push_back(rtt::TAA_MSAA_32);
-	if(exts->get_max_samples() >= 64) supported_aa_modes.push_back(rtt::TAA_MSAA_64);*/
 	
 	bool chosen_aa_mode_supported = false;
 	for(vector<rtt::TEXTURE_ANTI_ALIASING>::iterator aaiter = supported_aa_modes.begin(); aaiter != supported_aa_modes.end(); aaiter++) {
@@ -508,7 +488,6 @@ void engine::start_draw() {
 	static GLuint global_vao = 0;
 	if(!vao_init) {
 		vao_init = true;
-		
 		glGenVertexArrays(1, &global_vao);
 	}
 	glBindVertexArray(global_vao);
@@ -824,6 +803,12 @@ opencl* engine::get_opencl() {
  */
 shader* engine::get_shader() {
 	return engine::shd;
+}
+
+/*! returns the gui class
+ */
+gui* engine::get_gui() {
+	return engine::ui;
 }
 
 /*! sets the data path

@@ -93,6 +93,16 @@
 		5CA73B491466A34200B1B268 /* particle_cl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA73B411466A34200B1B268 /* particle_cl.h */; };
 		5CA73B4A1466A34200B1B268 /* particle_system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA73B421466A34200B1B268 /* particle_system.cpp */; };
 		5CA73B4B1466A34200B1B268 /* particle_system.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA73B431466A34200B1B268 /* particle_system.h */; };
+		5CA9BB4E14F18146004B7851 /* a2eui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB4A14F18146004B7851 /* a2eui.cpp */; };
+		5CA9BB4F14F18146004B7851 /* a2eui.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB4B14F18146004B7851 /* a2eui.h */; };
+		5CA9BB5014F18146004B7851 /* gui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB4C14F18146004B7851 /* gui.cpp */; };
+		5CA9BB5114F18146004B7851 /* gui.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB4D14F18146004B7851 /* gui.h */; };
+		5CA9BB5B14F18153004B7851 /* gui_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB5414F18153004B7851 /* gui_object.cpp */; };
+		5CA9BB5C14F18153004B7851 /* gui_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5514F18153004B7851 /* gui_object.h */; };
+		5CA9BB5D14F18153004B7851 /* gui_color_scheme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB5714F18153004B7851 /* gui_color_scheme.cpp */; };
+		5CA9BB5E14F18153004B7851 /* gui_color_scheme.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5814F18153004B7851 /* gui_color_scheme.h */; };
+		5CA9BB5F14F18153004B7851 /* gui_theme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB5914F18153004B7851 /* gui_theme.cpp */; };
+		5CA9BB6014F18153004B7851 /* gui_theme.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5A14F18153004B7851 /* gui_theme.h */; };
 		5CBF520B123458FD00971741 /* texture_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CBF520A123458FD00971741 /* texture_object.h */; };
 		5CD79ED712E3D16600CE2BE5 /* basic_math.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CD79ED612E3D16600CE2BE5 /* basic_math.h */; };
 		5CDC19F0142F8A4A00FE031C /* vector4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC19EF142F8A4A00FE031C /* vector4.cpp */; };
@@ -191,6 +201,16 @@
 		5CA73B411466A34200B1B268 /* particle_cl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = particle_cl.h; sourceTree = "<group>"; };
 		5CA73B421466A34200B1B268 /* particle_system.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = particle_system.cpp; sourceTree = "<group>"; };
 		5CA73B431466A34200B1B268 /* particle_system.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = particle_system.h; sourceTree = "<group>"; };
+		5CA9BB4A14F18146004B7851 /* a2eui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = a2eui.cpp; sourceTree = "<group>"; };
+		5CA9BB4B14F18146004B7851 /* a2eui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = a2eui.h; sourceTree = "<group>"; };
+		5CA9BB4C14F18146004B7851 /* gui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui.cpp; sourceTree = "<group>"; };
+		5CA9BB4D14F18146004B7851 /* gui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui.h; sourceTree = "<group>"; };
+		5CA9BB5414F18153004B7851 /* gui_object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_object.cpp; sourceTree = "<group>"; };
+		5CA9BB5514F18153004B7851 /* gui_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_object.h; sourceTree = "<group>"; };
+		5CA9BB5714F18153004B7851 /* gui_color_scheme.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_color_scheme.cpp; sourceTree = "<group>"; };
+		5CA9BB5814F18153004B7851 /* gui_color_scheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_color_scheme.h; sourceTree = "<group>"; };
+		5CA9BB5914F18153004B7851 /* gui_theme.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_theme.cpp; sourceTree = "<group>"; };
+		5CA9BB5A14F18153004B7851 /* gui_theme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_theme.h; sourceTree = "<group>"; };
 		5CBF520A123458FD00971741 /* texture_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture_object.h; sourceTree = "<group>"; };
 		5CD79ED612E3D16600CE2BE5 /* basic_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = basic_math.h; sourceTree = "<group>"; };
 		5CDC19EF142F8A4A00FE031C /* vector4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vector4.cpp; sourceTree = "<group>"; };
@@ -321,6 +341,12 @@
 		5C3975C4123189750075C168 /* gui */ = {
 			isa = PBXGroup;
 			children = (
+				5CA9BB5314F18153004B7851 /* objects */,
+				5CA9BB5614F18153004B7851 /* style */,
+				5CA9BB4A14F18146004B7851 /* a2eui.cpp */,
+				5CA9BB4B14F18146004B7851 /* a2eui.h */,
+				5CA9BB4C14F18146004B7851 /* gui.cpp */,
+				5CA9BB4D14F18146004B7851 /* gui.h */,
 				5C3975C7123189750075C168 /* event.cpp */,
 				5C3975C8123189750075C168 /* event.h */,
 				5CA26A151455CD07002A6D9E /* event_objects.h */,
@@ -427,6 +453,26 @@
 			path = particle;
 			sourceTree = SOURCE_ROOT;
 		};
+		5CA9BB5314F18153004B7851 /* objects */ = {
+			isa = PBXGroup;
+			children = (
+				5CA9BB5414F18153004B7851 /* gui_object.cpp */,
+				5CA9BB5514F18153004B7851 /* gui_object.h */,
+			);
+			path = objects;
+			sourceTree = "<group>";
+		};
+		5CA9BB5614F18153004B7851 /* style */ = {
+			isa = PBXGroup;
+			children = (
+				5CA9BB5714F18153004B7851 /* gui_color_scheme.cpp */,
+				5CA9BB5814F18153004B7851 /* gui_color_scheme.h */,
+				5CA9BB5914F18153004B7851 /* gui_theme.cpp */,
+				5CA9BB5A14F18153004B7851 /* gui_theme.h */,
+			);
+			path = style;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -482,6 +528,11 @@
 				5CA73B471466A34200B1B268 /* particle_base.h in Headers */,
 				5CA73B491466A34200B1B268 /* particle_cl.h in Headers */,
 				5CA73B4B1466A34200B1B268 /* particle_system.h in Headers */,
+				5CA9BB4F14F18146004B7851 /* a2eui.h in Headers */,
+				5CA9BB5114F18146004B7851 /* gui.h in Headers */,
+				5CA9BB5C14F18153004B7851 /* gui_object.h in Headers */,
+				5CA9BB5E14F18153004B7851 /* gui_color_scheme.h in Headers */,
+				5CA9BB6014F18153004B7851 /* gui_theme.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -586,6 +637,11 @@
 				5CA73B461466A34200B1B268 /* particle_base.cpp in Sources */,
 				5CA73B481466A34200B1B268 /* particle_cl.cpp in Sources */,
 				5CA73B4A1466A34200B1B268 /* particle_system.cpp in Sources */,
+				5CA9BB4E14F18146004B7851 /* a2eui.cpp in Sources */,
+				5CA9BB5014F18146004B7851 /* gui.cpp in Sources */,
+				5CA9BB5B14F18153004B7851 /* gui_object.cpp in Sources */,
+				5CA9BB5D14F18153004B7851 /* gui_color_scheme.cpp in Sources */,
+				5CA9BB5F14F18153004B7851 /* gui_theme.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

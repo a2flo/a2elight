@@ -40,6 +40,7 @@
 
 class shader;
 class opencl;
+class gui;
 class A2E_API engine {
 public:
 	engine(const char* callpath_, const char* datapath_);
@@ -75,6 +76,7 @@ public:
 	unicode* get_unicode();
 	opencl* get_opencl();
 	shader* get_shader();
+	gui* get_gui();
 	
 	// the initialization mode is used to determine if we should load
 	// or compute graphical stuff like textures or shaders
@@ -200,6 +202,7 @@ protected:
 	unicode* u;
 	opencl* ocl;
 	shader* shd;
+	gui* ui;
 	
 	// actual engine constructor
 	void create();

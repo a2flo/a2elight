@@ -58,24 +58,6 @@ scene::scene(engine* e_) {
 		cur_exposure = 0;
 		fframe_time = 0.0f;
 		iframe_time = SDL_GetTicks();
-
-		float screen_w = (float)e->get_width();
-		float screen_h = (float)e->get_height();
-		unsigned int q = 5;
-		float xInc = 1.0f / screen_w;
-		float yInc = 1.0f / screen_h;
-		tcs_line_h = new float[q*2];
-		tcs_line_v = new float[q*2];
-		// h
-		for(unsigned int i = 0; i < q; i++) {
-			tcs_line_h[i*2+0] = (-2.0f * xInc) + ((float)i * xInc);
-			tcs_line_h[i*2+1] = 0.0f;
-		}
-		// v
-		for(unsigned int i = 0; i < q; i++) {
-			tcs_line_v[i*2+0] = 0.0f;
-			tcs_line_v[i*2+1] = (-2.0f * yInc) + ((float)i * yInc);
-		}
 		
 		// create buffers used for inferred rendering
 		
@@ -204,9 +186,6 @@ scene::~scene() {
 		
 		delete light_sphere;
 	}
-
-	delete [] tcs_line_h;
-	delete [] tcs_line_v;
 
 	a2e_debug("scene object deleted");
 }

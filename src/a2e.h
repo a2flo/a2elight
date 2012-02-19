@@ -36,6 +36,7 @@
 #include "core/bbox.h"
 #include "core/functor.h"
 
+#include "gui/gui.h"
 #include "gui/event.h"
 #include "gui/image.h"
 

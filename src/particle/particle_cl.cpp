@@ -514,6 +514,6 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_draw->disable();
 	
 	glDepthMask(GL_TRUE);
-	g->set_blend_mode(gfx::BM_DEFAULT);
+	g->set_blend_mode(gfx::BLEND_MODE::DEFAULT);
 	glDisable(GL_BLEND);
 }

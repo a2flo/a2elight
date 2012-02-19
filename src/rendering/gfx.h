@@ -64,50 +64,56 @@ public:
 #endif
 		};
 		
+		void set(const unsigned int& x1_, const unsigned int& y1_, const unsigned int& x2_, const unsigned int& y2_) {
+			x1 = x1_; y1 = y1_; x2 = x2_; y2 = y2_;
+		}
+		
+		friend ostream& operator<<(ostream& output, const rect& r) {
+			output << "(" << r.x1 << ", " << r.y1 << ") x (" << r.x2 << ", " << r.y2 << ")";
+			return output;
+		}
+		
 		rect() : x1(0), y1(0), x2(0), y2(0) {}
 		rect(const rect& r) : x1(r.x1), y1(r.y1), x2(r.x2), y2(r.y2) {}
 		rect(const unsigned int& x1_, const unsigned int& y1_, const unsigned int& x2_, const unsigned int& y2_) : x1(x1_), y1(y1_), x2(x2_), y2(y2_) {}
 	};
 
-	enum FADE_TYPE {
-		FT_HORIZONTAL,
-		FT_VERTICAL,
-		FT_DIAGONAL
+	enum class GRADIENT_TYPE {
+		HORIZONTAL,
+		VERTICAL,
+		DIAGONAL
 	};
 	
-	enum BLEND_MODE {
-		BM_DEFAULT,
-		BM_ADD,
-		BM_PRE_MUL,
-		BM_COLOR,
-		BM_ALPHA
+	enum class BLEND_MODE {
+		DEFAULT,
+		ADD,
+		PRE_MUL,
+		COLOR,
+		ALPHA
 	};
-
-	// conversions
-	void coord_to_pnt(pnt* point, unsigned int x, unsigned int y);
-	void coord_to_ipnt(ipnt* point, int x, int y);
-	void pnt_to_rect(gfx::rect* rectangle, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
-	void ipnt_to_rect(gfx::rect* rectangle, int x1, int y1, int x2, int y2);
-	pnt* coord_to_pnt(unsigned int x, unsigned int y);
-	ipnt* coord_to_ipnt(int x, int y);
-	gfx::rect* pnt_to_rect(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
-
+	
 	// drawing
-	void draw_point(pnt* point, unsigned int color);
-	void draw_line(pnt* point1, pnt* point2, unsigned int color);
+	void draw_point(const pnt& point, const float4& color);
+	void draw_line(const pnt& point1, const pnt& point2, const float4& color);
 	void draw_line(unsigned int x1, unsigned int y1,
 				   unsigned int x2, unsigned int y2,
-				   unsigned int color);
-	void draw_3d_line(const float3& v1, const float3& v2, unsigned int color);
+				   const float4& color);
+	void draw_3d_line(const float3& v1, const float3& v2, const float4& color);
 	
-	void draw_rectangle(gfx::rect* rectangle, unsigned int color);
-	void draw_rectangle(pnt* p1, pnt* p2, unsigned int color);
-	void draw_2colored_rectangle(gfx::rect* rectangle, unsigned int color1, unsigned int color2);
-	void draw_filled_rectangle(gfx::rect* rectangle, unsigned int color);
-	void draw_fade_rectangle(gfx::rect* rectangle, unsigned int color1, unsigned int color2, FADE_TYPE ft);
+	void draw_rectangle(const gfx::rect& rectangle, const float4& color);
+	void draw_rectangle(const pnt& p1, const pnt& p2, const float4& color);
+	void draw_2colored_rectangle(const gfx::rect& rectangle, const float4& color1, const float4& color2);
+	void draw_filled_rectangle(const gfx::rect& rectangle, const float4& color);
+	// NOTE: corner bools: right top, right bottom, left bottom, left top
+	void draw_filled_rounded_rectangle(const gfx::rect& rectangle, const float& radius, const float4& color);
+	void draw_filled_rounded_rectangle(const gfx::rect& rectangle, const float& radius, const bool4& corners, const float4& color);
+	void draw_gradient_rectangle(const gfx::rect& rectangle, const float4& color1, const float4& color2, const GRADIENT_TYPE gt);
 	void draw_textured_rectangle(const gfx::rect& rectangle,
 								 const coord& bottom_left, const coord& top_right,
 								 GLuint texture);
+	void draw_textured_passthrough_rectangle(const gfx::rect& rectangle,
+											 const coord& bottom_left, const coord& top_right,
+											 GLuint texture);
 	void draw_textured_color_rectangle(const gfx::rect& rectangle,
 									   const coord& bottom_left, const coord& top_right,
 									   const float4& color,
@@ -133,7 +139,11 @@ public:
 											 const float4& add_color,
 											 GLuint texture);
 	
-	void draw_bbox(extbbox* bbox, unsigned int color);
+	void draw_circle(const pnt& p, const float& radius, const float4& color);
+	void draw_ellipsoid(const pnt& p, const float& radius_lr, const float& radius_tb, const float4& color);
+	void draw_circle_sector(const pnt& p, const float& radius, const float& start_angle, const float& end_angle, const float4& color);
+	
+	void draw_bbox(const extbbox& bbox, const float4& color);
 	void draw_fullscreen_triangle() const;
 	void draw_textured_fullscreen_triangle() const;
 	void draw_fullscreen_quad() const;
@@ -142,23 +152,18 @@ public:
 						 const GLenum primitive_type, const GLsizei& count);
 
 	// testing
-	bool is_pnt_in_rectangle(gfx::rect* rectangle, pnt* point);
-	bool is_pnt_in_rectangle(gfx::rect* rectangle, unsigned int x, unsigned int y);
-	bool is_pnt_in_rectangle(gfx::rect* rectangle, ipnt* point);
-	bool is_pnt_in_rectangle(gfx::rect* rectangle, int x, int y);
-
-	// color funcs
-	unsigned int get_color(unsigned int red, unsigned int green, unsigned int blue);
-	unsigned int get_color(unsigned int rgb);
-	unsigned int get_average_color(unsigned int color1, unsigned int color2);
+	static bool is_pnt_in_rectangle(const gfx::rect& rectangle, const pnt& point);
+	static bool is_pnt_in_rectangle(const gfx::rect& rectangle, const unsigned int& x, const unsigned int& y);
+	static bool is_pnt_in_rectangle(const gfx::rect& rectangle, const ipnt& point);
+	static bool is_pnt_in_rectangle(const gfx::rect& rectangle, const int& x, const int& y);
 
 	// scissor test
-	void begin_scissor();
-	void set_scissor(gfx::rect* rectangle);
-	void set_scissor(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
-	void end_scissor();
+	static void begin_scissor();
+	static void set_scissor(const gfx::rect& rectangle);
+	static void set_scissor(const unsigned int& x1, const unsigned int& y1, const unsigned int& x2, const unsigned int& y2);
+	static void end_scissor();
 	
-	void set_blend_mode(BLEND_MODE mode);
+	static void set_blend_mode(const BLEND_MODE mode);
 	
 	//
 	GLuint get_fullscreen_triangle_vbo() const;
@@ -198,7 +203,11 @@ protected:
 										const bool use_mul_color,
 										const float4& add_color,
 										const bool use_add_color,
+										const bool passthrough,
 										GLuint texture);
+	
+	void compute_ellipsoid_points(vector<float2>& dst_points, const float& radius_lr, const float& radius_tb, const float& start_angle, const float& end_angle);
+	
 };
 
 #endif

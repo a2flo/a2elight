@@ -45,7 +45,7 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	bbox.max.set(0.0f, 0.0f, 0.0f);
 	bbox.pos.set(0.0f, 0.0f, 0.0f);
 	
-	blend_mode = gfx::BM_ADD;
+	blend_mode = gfx::BLEND_MODE::ADD;
 	
 	// init data
 	data.particle_count = 0;
@@ -270,7 +270,7 @@ void* particle_system::get_aux_data() const {
 
 void particle_system::set_sorting(const bool state) {
 	sorting = state;
-	set_blend_mode(sorting ? gfx::BLEND_MODE::BM_PRE_MUL : gfx::BLEND_MODE::BM_ADD);
+	set_blend_mode(sorting ? gfx::BLEND_MODE::PRE_MUL : gfx::BLEND_MODE::ADD);
 }
 
 bool particle_system::is_sorting() const {

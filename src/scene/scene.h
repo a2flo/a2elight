@@ -198,8 +198,6 @@ protected:
 	int cur_exposure;
 	float fframe_time;
 	int iframe_time;
-	float* tcs_line_h;
-	float* tcs_line_v;
 	
 	float eye_distance;
 
