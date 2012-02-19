@@ -52,6 +52,8 @@ public:
 	bool get_alpha(GLint format);
 	
 	const a2e_texture get_dummy_texture() const;
+	
+	static const GLint convert_internal_format(const GLint& internal_format);
 
 protected:
 	file_io* f;

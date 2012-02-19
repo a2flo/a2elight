@@ -102,8 +102,13 @@ scene::scene(engine* e_) {
 		GLenum target = GL_TEXTURE_2D;
 		
 		// figure out the best 16-bit float format
+//#if !defined(A2E_IOS)
 		GLint rgba16_float_internal_format = GL_RGBA16F;
 		GLenum f16_format_type = GL_HALF_FLOAT;
+/*#else // TODO: use RGBA8 for now
+		GLint rgba16_float_internal_format = GL_RGBA8;
+		GLenum f16_format_type = GL_UNSIGNED_BYTE;
+#endif*/
 		
 		GLint internal_formats[] = { rgba16_float_internal_format, rgba16_float_internal_format };
 		GLenum formats[] = { GL_RGBA, GL_RGBA };
@@ -133,13 +138,17 @@ scene::scene(engine* e_) {
 			frames[i].g_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
 												  filters, taas, wraps, wraps, internal_formats, formats,
 												  types, 1, rtt::DT_TEXTURE_2D);
+#if !defined(A2E_IOS) // TODO: think of a workaround for this
 			frames[i].g_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
 												  filters, taas, wraps, wraps, internal_formats, formats,
 												  types, 2, rtt::DT_TEXTURE_2D);
+#endif
 			
 			// create light buffer
 			frames[i].l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+#if !defined(A2E_IOS)
 			frames[i].l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+#endif
 			
 			// scene/final buffer (material pass)
 			if(final_buffer_size.x == render_buffer_size.x && final_buffer_size.y == render_buffer_size.y) {
@@ -159,9 +168,11 @@ scene::scene(engine* e_) {
 			frames[i].cl_normal_nuv_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[0]->tex_id[0]);
 			frames[i].cl_depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[0]->depth_buffer);
 			frames[i].cl_light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, frames[i].l_buffer[0]->tex_id[0]);
+#if !defined(A2E_IOS)
 			frames[i].cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[1]->tex_id[0]);
 			frames[i].cl_depth_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[1]->depth_buffer);
 			frames[i].cl_light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, frames[i].l_buffer[1]->tex_id[0]);
+#endif
 #endif
 		}
 		
@@ -407,8 +418,10 @@ void scene::geometry_pass() {
 	r->start_draw(frames[0].g_buffer[0]);
 	r->clear();
 	
+#if !defined(A2E_IOS)
 	static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(1, draw_buffers);
+#endif
 	
 	// render models (opaque)
 	for(auto iter = models.begin(); iter != models.end(); iter++) {
@@ -437,6 +450,7 @@ void scene::geometry_pass() {
 	
 	r->stop_draw();
 	
+#if !defined(A2E_IOS)
 	// render models (transparent/alpha)
 	r->start_draw(frames[0].g_buffer[1]);
 	r->clear();
@@ -453,6 +467,9 @@ void scene::geometry_pass() {
 	}
 	
 	r->stop_draw();
+#else
+	// TODO: render transparent models in iOS/GLES2.0
+#endif
 }
 
 void scene::light_and_material_pass() {
@@ -475,7 +492,11 @@ void scene::light_and_material_pass() {
 										(-near_far_plane.y * near_far_plane.x) / (near_far_plane.y - near_far_plane.x));
 	const float3 cam_position = -float3(*e->get_position());
 	const float2 screen_size = float2(float(l_buffer->width), float(l_buffer->height));
+#if !defined(A2E_IOS)
 	const bool light_alpha_objects = !alpha_objects.empty();
+#else
+	const bool light_alpha_objects = false; // TODO: iOS: implement this!
+#endif
 	
 	// TODO: cleanup
 	const matrix4f projection_matrix = *e->get_projection_matrix();
@@ -612,6 +633,7 @@ void scene::light_and_material_pass() {
 	// b/c they are not contained in the current depth buffer
 	glDepthFunc(GL_LEQUAL);
 	
+#if !defined(A2E_IOS)
 	if(sorted_alpha_objects.size() > 0) {
 		// render models (transparent/alpha)
 		glEnable(GL_BLEND);
@@ -627,6 +649,9 @@ void scene::light_and_material_pass() {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
 	}
+#else
+	// TODO: render transparent models in iOS/GLES2.0
+#endif
 	
 	// render/draw particle managers
 	for(auto& pm : particle_managers) {

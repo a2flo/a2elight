@@ -157,7 +157,12 @@
 #endif
 
 #if defined(__APPLE__) || defined(__MACOSX)
+#if !defined(A2E_IOS)
 #include <OpenGL/OpenGL.h>
+#else
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
+#endif
 #include <OpenCL/opencl.h>
 #else
 #include <GL/gl3.h>

@@ -26,6 +26,8 @@
 #endif
 
 // ..., internal format, format, type, bpp, red shift, green shift, blue shift, alpha shift
+#if !defined(A2E_IOS)
+
 #define __TEXTURE_FORMATS(F, src_surface, dst_internal_format, dst_format, dst_type) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_R8, GL_RED, GL_UNSIGNED_BYTE, 8, 0, 0, 0, 0) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_RG8, GL_RG, GL_UNSIGNED_BYTE, 16, 0, 8, 0, 0) \
@@ -39,6 +41,25 @@ F(src_surface, dst_internal_format, dst_format, dst_type, GL_R16, GL_RED, GL_UNS
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_RG16, GL_RG, GL_UNSIGNED_SHORT, 32, 0, 16, 0, 0) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGB16, GL_RGB, GL_UNSIGNED_SHORT, 48, 0, 16, 32, 0) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT, 64, 0, 16, 32, 48)
+
+#else
+
+// these two are necessary to correctly convert bgr textures to rgb
+#define A2E_IOS_GL_BGR 1
+#define A2E_IOS_GL_BGR8 2
+
+#define __TEXTURE_FORMATS(F, src_surface, dst_internal_format, dst_format, dst_type) \
+F(src_surface, dst_internal_format, dst_format, dst_type, GL_R8, GL_RED, GL_UNSIGNED_BYTE, 8, 0, 0, 0, 0) \
+F(src_surface, dst_internal_format, dst_format, dst_type, GL_RG8, GL_RG, GL_UNSIGNED_BYTE, 16, 0, 8, 0, 0) \
+F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 24, 0, 8, 16, 0) \
+F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE, 32, 0, 8, 16, 0) \
+F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 32, 0, 8, 16, 24) \
+F(src_surface, dst_internal_format, dst_format, dst_type, A2E_IOS_GL_BGR8, A2E_IOS_GL_BGR, GL_UNSIGNED_BYTE, 24, 16, 8, 0, 0) \
+F(src_surface, dst_internal_format, dst_format, dst_type, A2E_IOS_GL_BGR8, GL_BGRA, GL_UNSIGNED_BYTE, 32, 16, 8, 0, 0) \
+F(src_surface, dst_internal_format, dst_format, dst_type, GL_BGRA8, GL_BGRA, GL_UNSIGNED_BYTE, 32, 16, 8, 0, 24)
+
+#endif
+
 // TODO: float?
 
 #define __CHECK_FORMAT(src_surface, dst_internal_format, dst_format, dst_type, \
@@ -121,7 +142,11 @@ a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_
 	check_format(tex_surface, internal_format, format, type);
 	
 	// if the format is BGR(A), convert it to RGB(A)
+#if !defined(A2E_IOS)
 	if(format == GL_BGR || format == GL_BGRA) {
+#else
+	if(format == A2E_IOS_GL_BGR || format == GL_BGRA) {
+#endif
 		SDL_PixelFormat new_pformat;
 		memcpy(&new_pformat, tex_surface->format, sizeof(SDL_PixelFormat));
 		new_pformat.Rshift = tex_surface->format->Bshift;
@@ -143,7 +168,7 @@ a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_
 			internal_format = GL_RGBA8;
 		}
 		
-		SDL_Surface* new_surface = SDL_ConvertSurface(tex_surface, &new_pformat, SDL_HWSURFACE);
+		SDL_Surface* new_surface = SDL_ConvertSurface(tex_surface, &new_pformat, 0);
 		if(new_surface == NULL) {
 			a2e_error("BGR(A)->RGB(A) surface conversion failed!");
 		}
@@ -217,7 +242,7 @@ a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height,
 	}
 	
 	// create texture
-	glTexImage2D(GL_TEXTURE_2D, 0, ret_tex->internal_format, ret_tex->width, ret_tex->height, 0, ret_tex->format, ret_tex->type, pixel_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, convert_internal_format(ret_tex->internal_format), ret_tex->width, ret_tex->height, 0, ret_tex->format, ret_tex->type, pixel_data);
 	
 	if(filtering > 1) {
 		// build mipmaps
@@ -265,7 +290,9 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, filter[filtering]);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, wrap_s);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, wrap_t);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, wrap_r);
+#if !defined(A2E_IOS)
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, wrap_r); // TODO: why isn't this supported on iOS?
+#endif
 	
 	if(anisotropic > 0 && filtering >= texture_object::TF_BILINEAR) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (GLint)anisotropic);
@@ -275,7 +302,7 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 									GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
 	
 	for(size_t i = 0; i < 6; i++) {
-		glTexImage2D(cmap[i], 0, ret_tex->internal_format, ret_tex->width, ret_tex->height, 0, ret_tex->format, ret_tex->type, pixel_data[i]);
+		glTexImage2D(cmap[i], 0, convert_internal_format(ret_tex->internal_format), ret_tex->width, ret_tex->height, 0, ret_tex->format, ret_tex->type, pixel_data[i]);
 		
 	}
 	if(filtering > 1) {
@@ -345,31 +372,35 @@ unsigned int texman::get_components(GLint format) {
 			ret = 2;
 			break;
 		case GL_RGB:
+		case GL_RGB8:
+#if !defined(A2E_IOS)
 		case GL_BGR:
 		case GL_R3_G3_B2:
 		case GL_RGB4:
 		case GL_RGB5:
-		case GL_RGB8:
 		case GL_RGB10:
 		case GL_RGB12:
 		case GL_RGB16:
 		case GL_SRGB:
 		case GL_SRGB8:
+#endif
 			ret = 3;
 			break;
 		case GL_RGBA:
 		case GL_BGRA:
-		case GL_RGBA2:
 		case GL_RGBA4:
 		case GL_RGB5_A1:
 		case GL_RGBA8:
+		case GL_RGBA16F:
+#if !defined(A2E_IOS)
+		case GL_RGBA2:
 		case GL_RGB10_A2:
 		case GL_RGBA12:
 		case GL_RGBA16:
-		case GL_RGBA16F:
 		case GL_RGBA32F:
 		case GL_SRGB_ALPHA:
 		case GL_SRGB8_ALPHA8:
+#endif
 			ret = 4;
 			break;
 		default:
@@ -398,31 +429,35 @@ bool texman::get_alpha(GLint format) {
 		case GL_RED:
 		case GL_RG:
 		case GL_RGB:
+		case GL_RGB8:
+#if !defined(A2E_IOS)
 		case GL_BGR:
 		case GL_R3_G3_B2:
 		case GL_RGB4:
 		case GL_RGB5:
-		case GL_RGB8:
 		case GL_RGB10:
 		case GL_RGB12:
 		case GL_RGB16:
 		case GL_SRGB:
 		case GL_SRGB8:
+#endif
 			ret = false;
 			break;
 		case GL_RGBA:
 		case GL_BGRA:
-		case GL_RGBA2:
 		case GL_RGBA4:
 		case GL_RGB5_A1:
 		case GL_RGBA8:
+		case GL_RGBA16F:
+#if !defined(A2E_IOS)
+		case GL_RGBA2:
 		case GL_RGB10_A2:
 		case GL_RGBA12:
 		case GL_RGBA16:
-		case GL_RGBA16F:
 		case GL_RGBA32F:
 		case GL_SRGB_ALPHA:
 		case GL_SRGB8_ALPHA8:
+#endif
 			ret = true;
 			break;
 		default:
@@ -431,4 +466,31 @@ bool texman::get_alpha(GLint format) {
 			break;
 	}
 	return ret;
+}
+
+const GLint texman::convert_internal_format(const GLint& internal_format) {
+#if !defined(A2E_IOS)
+	return internal_format;
+#else
+	switch(internal_format) {
+		case GL_RGB8: return GL_RGB;
+		case GL_RGBA4: return GL_RGBA;
+		case GL_RGB5_A1: return GL_RGBA;
+		case GL_RGBA8: return GL_RGBA;
+		case GL_RGBA16F: return GL_RGBA;
+		case GL_DEPTH_COMPONENT16: return GL_DEPTH_COMPONENT;
+		case GL_DEPTH_COMPONENT24: return GL_DEPTH_COMPONENT;
+		
+		case GL_RED:
+		case GL_RG:
+		case GL_RGB:
+		case GL_RGBA:
+		case GL_BGRA:
+		case GL_ALPHA:
+		case GL_LUMINANCE:
+		case GL_LUMINANCE_ALPHA:
+		default: break;
+	}
+	return internal_format;
+#endif
 }

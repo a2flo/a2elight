@@ -35,7 +35,7 @@ typedef vector2<unsigned int> pnt;
 typedef vector2<int> ipnt;
 typedef vector2<float> coord;
 
-template <typename T> class A2E_API __attribute__((packed)) vector2 {
+template <typename T> class A2E_API __attribute__((packed, aligned(4))) vector2 {
 public:
 	union {
 		T x, u;

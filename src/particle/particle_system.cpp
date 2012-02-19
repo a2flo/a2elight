@@ -33,6 +33,7 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	
 	aux_data = NULL;
 	
+#if !defined(A2E_IOS)
 	// only gen if ltype == POINT is set?
 	glGenBuffers(1, &lights_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, lights_ubo);
@@ -40,6 +41,9 @@ particle_system::particle_system(engine* e_) : e(e_) {
 				 (sizeof(float4) * 2) * A2E_MAX_PARTICLE_LIGHTS,
 				 NULL, GL_STATIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+#else
+	lights_ubo = 0;
+#endif
 	
 	bbox.min.set(0.0f, 0.0f, 0.0f);
 	bbox.max.set(0.0f, 0.0f, 0.0f);
@@ -59,6 +63,7 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	data.particle_indices_vbo[1] = 0;
 	data.particle_indices_swap = 0;
 	
+#if !defined(A2E_NO_OPENCL)
 	// for opencl computed particle systems
 	data.ocl_pos_time_buffer = NULL;
 	data.ocl_dir_buffer = NULL;
@@ -68,6 +73,7 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	data.ocl_gl_pos_time_vbo = 0;
 	data.ocl_gl_dir_vbo = 0;
 	data.ocl_range_global.set(0);
+#endif
 	
 	// vars for reentrant sorting
 	data.reentrant_complete = true;
@@ -78,15 +84,18 @@ particle_system::particle_system(engine* e_) : e(e_) {
 /*! there is no function currently
  */
 particle_system::~particle_system() {
-	glDeleteBuffers(1, &lights_ubo);
+	if(glIsBuffer(lights_ubo)) glDeleteBuffers(1, &lights_ubo);
 	
-	if(glIsBuffer(data.ocl_gl_pos_time_vbo)) glDeleteBuffers(1, &data.ocl_gl_pos_time_vbo);
-	if(glIsBuffer(data.ocl_gl_dir_vbo)) glDeleteBuffers(1, &data.ocl_gl_dir_vbo);
 	if(glIsBuffer(data.particle_indices_vbo[0])) glDeleteBuffers(1, &data.particle_indices_vbo[0]);
 	if(glIsBuffer(data.particle_indices_vbo[1])) glDeleteBuffers(1, &data.particle_indices_vbo[1]);
+	
+#if !defined(A2E_NO_OPENCL)
+	if(glIsBuffer(data.ocl_gl_pos_time_vbo)) glDeleteBuffers(1, &data.ocl_gl_pos_time_vbo);
+	if(glIsBuffer(data.ocl_gl_dir_vbo)) glDeleteBuffers(1, &data.ocl_gl_dir_vbo);
 	if(data.ocl_pos_time_buffer != NULL) e->get_opencl()->delete_buffer(data.ocl_pos_time_buffer);
 	if(data.ocl_dir_buffer != NULL) e->get_opencl()->delete_buffer(data.ocl_dir_buffer);
 	if(data.ocl_distances != NULL) e->get_opencl()->delete_buffer(data.ocl_distances);
+#endif
 }
 
 void particle_system::set_type(particle_system::EMITTER_TYPE type_) {

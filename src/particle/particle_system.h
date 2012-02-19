@@ -136,6 +136,7 @@ public:
 		GLuint particle_indices_vbo[2];
 		unsigned int particle_indices_swap; // either 0 or 1
 		
+#if !defined(A2E_NO_OPENCL)
 		// for opencl computed particle systems
 		opencl::buffer_object* ocl_pos_time_buffer;
 		opencl::buffer_object* ocl_dir_buffer;
@@ -144,6 +145,7 @@ public:
 		GLuint ocl_gl_pos_time_vbo;
 		GLuint ocl_gl_dir_vbo;
 		cl::NDRange ocl_range_global;
+#endif
 		
 		// vars for reentrant sorting
 		bool reentrant_complete;

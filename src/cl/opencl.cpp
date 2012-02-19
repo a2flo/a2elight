@@ -18,6 +18,8 @@
 
 #include "opencl.h"
 
+#if !defined(A2E_NO_OPENCL)
+
 #define __ERROR_CODE_INFO(F) \
 F(CL_SUCCESS) \
 F(CL_DEVICE_NOT_FOUND) \
@@ -183,7 +185,9 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 #ifdef __APPLE__
 		cl_context_properties cl_properties[] = {
 			CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platform_index](),
+#if !defined(A2E_IOS) // TODO: sharing isn't supported on iOS yet (code path exists, but fails with a gles sharegroup)
 			CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()),
+#endif
 			0 };
 		
 		// create a context with all platform devices (this works fine since 10.7)
@@ -1261,3 +1265,5 @@ void opencl::release_gl_object(buffer_object* gl_buffer_obj) {
 						   (cl::Memory*)gl_buffer_obj->image_buffer));
 	queues[active_device->device]->enqueueReleaseGLObjects(&gl_objects);
 }
+
+#endif

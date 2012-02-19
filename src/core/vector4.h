@@ -36,7 +36,7 @@ typedef vector4<bool> bool4;
 typedef vector4<size_t> size4;
 typedef vector4<ssize_t> ssize4;
 
-template <typename T> class A2E_API __attribute__((packed)) vector4 : public vector3<T> {
+template <typename T> class A2E_API __attribute__((packed, aligned(4))) vector4 : public vector3<T> {
 public:
 	union {
 		T w, a;

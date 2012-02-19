@@ -60,7 +60,13 @@ string _A2E_VERSION_TO_STR(const size_t& version) {
 #define A2E_LIBCXX ""
 #endif
 
-#define A2E_VERSION_STRING (string("A2E::light ")+(sizeof(void*) == 4 ? "x86" : (sizeof(void*) == 8 ? "x64" : "unknown"))+A2E_DEBUG_STR \
+#if !defined(A2E_IOS)
+#define A2E_PLATFORM (sizeof(void*) == 4 ? "x86" : (sizeof(void*) == 8 ? "x64" : "unknown"))
+#else
+#define A2E_PLATFORM (sizeof(void*) == 4 ? "ARM" : (sizeof(void*) == 8 ? "ARM64" : "unknown"))
+#endif
+
+#define A2E_VERSION_STRING (string("A2E::light ")+A2E_PLATFORM+A2E_DEBUG_STR \
 " v"+(A2E_MAJOR_VERSION)+"."+(A2E_MINOR_VERSION)+"."+(A2E_REVISION_VERSION)+(A2E_DEV_STAGE_VERSION)+"-"+size_t2string(A2E_BUILD_VERSION)+\
 " ("+A2E_BUILD_DATE+" "+A2E_BUILD_TIME+") built with "+string(A2E_COMPILER+A2E_LIBCXX))
 

@@ -69,10 +69,12 @@ bool file_io::open_file(const string& filename, FIO_OPEN_TYPE open_type) {
 		case file_io::OT_APPEND_READ_BINARY:
 			filestream.open(filename, fstream::in | fstream::app | fstream::binary);
 			break;
+#if 0
 		default:
 			assert(false && "invalid open_type");
 			filestream.open(filename, fstream::in);
 			break;
+#endif
 	}
 
 	if(!filestream.is_open()) {

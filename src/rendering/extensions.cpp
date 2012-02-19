@@ -40,13 +40,16 @@ const char* ext::GRAPHIC_CARD_STR[] = {
 	"Radeon HD4",
 	"Radeon HD5",
 	"Radeon HD6",
-	"Radeon HD7"
+	"Radeon HD7",
+	"PowerVR SGX535",
+	"PowerVR SGX543",
 };
 
 const char* ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[] = {
 	"GCV_UNKNOWN",
 	"GCV_NVIDIA",
-	"GCV_ATI"
+	"GCV_ATI",
+	"GCV_POWERVR",
 };
 
 const char* ext::GRAPHIC_CARD_DEFINE_STR[] = {
@@ -63,7 +66,9 @@ const char* ext::GRAPHIC_CARD_DEFINE_STR[] = {
 	"GC_RADEON_HD4",
 	"GC_RADEON_HD5",
 	"GC_RADEON_HD6",
-	"GC_RADEON_HD7"
+	"GC_RADEON_HD7",
+	"GC_SGX_535",
+	"GC_SGX_543",
 };
 
 /*! create and initialize the extension class
@@ -74,20 +79,30 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	ext::force_device = force_device_;
 	ext::force_vendor = force_vendor_;
 	
+#if !defined(A2E_IOS)
 	init_gl_funcs();
+#endif
 	
 	// get supported extensions
+#if !defined(A2E_IOS)
 	GLint ext_count = 0;
 	glGetIntegerv(GL_NUM_EXTENSIONS, &ext_count);
 	for(int i = 0; i < ext_count; i++) {
 		supported_extensions.insert((const char*)glGetStringi(GL_EXTENSIONS, i));
 	}
+#else
+	const string exts = (const char*)glGetString(GL_EXTENSIONS);
+	for(size_t pos = 0; (pos = exts.find("GL_", pos)) != string::npos; pos++) {
+		supported_extensions.insert(exts.substr(pos, exts.find(" ", pos) - pos));
+	}
+#endif
 	
 	// get opengl and glsl version
 	const string str_gl_version = (const char*)glGetString(GL_VERSION);
 	const string str_glsl_version = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	
 	opengl_version = OPENGL_UNKNOWN;
+#if !defined(A2E_IOS)
 	switch(str_gl_version[0]) {
 		case '0':
 		case '1':
@@ -128,8 +143,26 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			opengl_version = OPENGL_4_2;
 			break;
 	}
+#else
+	const string str_gles_version = str_gl_version.substr(str_gl_version.find("OpenGL ES ")+10,
+														  str_gl_version.length()-10);
+	switch(str_gles_version[0]) {
+		case '0':
+		case '1':
+			opengl_version = OPENGL_UNKNOWN;
+			break;
+		case '2':
+			opengl_version = OPENGL_ES_2_0;
+			break;
+		default:
+			// default to highest version
+			opengl_version = OPENGL_ES_2_0;
+			break;
+	}
+#endif
 	
 	glsl_version = GLSL_NO_VERSION;
+#if !defined(A2E_IOS)
 	switch(str_glsl_version[0]) {
 		case '1':
 			switch(str_glsl_version[2]) {
@@ -160,9 +193,22 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			glsl_version = GLSL_420;
 			break;
 	}
+#else
+	const string str_glsles_version = str_glsl_version.substr(str_glsl_version.find("OpenGL ES GLSL ES ")+18,
+															  str_glsl_version.length()-18);
+	switch(str_glsles_version[0]) {
+		case '1':
+			glsl_version = GLSL_ES_100;
+			break;
+		default:
+			// default to highest version
+			glsl_version = GLSL_ES_100;
+			break;
+	}
+#endif
 
 	// set all flags to false beforehand
-	shader_support = (glsl_version >= GLSL_150);
+	shader_support = (glsl_version >= GLSL_ES_100);
 	shader_model_5_0_support = false;
 	anisotropic_filtering_support = false;
 	fbo_multisample_coverage_support = false;
@@ -188,6 +234,8 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 		}
 		core::str_to_lower_inplace(vendor_str);
 		if(vendor_str.find("nvidia") != string::npos) vendor = ext::GCV_NVIDIA;
+		// imagin(ati)on needs to be checked first ...
+		else if(vendor_str.find("imagination") != string::npos) vendor = ext::GCV_POWERVR;
 		else if(vendor_str.find("ati") != string::npos) vendor = ext::GCV_ATI;
 		else vendor = ext::GCV_UNKNOWN;
 	}
@@ -237,11 +285,13 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	}
 
 	// get max multi-sampling samples
+#if !defined(A2E_IOS)
 	if(fbo_multisample_coverage_support) {
 		glGetIntegerv(GL_MAX_MULTISAMPLE_COVERAGE_MODES_NV, (GLint*)&max_multisample_coverage_modes);
 		multisample_coverage_modes = new ext::NV_MULTISAMPLE_COVERAGE_MODE[max_multisample_coverage_modes];
 		glGetIntegerv(GL_MULTISAMPLE_COVERAGE_MODES_NV, (GLint*)multisample_coverage_modes);
 	}
+#endif
 	if(imode == 0) glGetIntegerv(GL_MAX_SAMPLES, (GLint*)&max_samples);
 	
 	// get max vertex textures
@@ -264,7 +314,12 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	if(imode == 0) glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&(ext::max_texture_image_units));
 	
 	// get max draw buffers
+#if !defined(A2E_IOS)
 	if(imode == 0) glGetIntegerv(GL_MAX_DRAW_BUFFERS, (GLint*)&(ext::max_draw_buffers));
+#else
+	// TODO: no support on iOS (yet), workaround?
+	max_draw_buffers = 0;
+#endif
 
 	// graphic card handling
 	if(imode == 0) {
@@ -340,6 +395,14 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			}
 			else if(renderer_str.find("radeon hd 7") != string::npos) {
 				graphic_card = ext::GC_RADEON_HD7;
+			}
+		}
+		else if(vendor == ext::GCV_POWERVR) {
+			if(renderer_str.find("sgx 535") != string::npos) {
+				graphic_card = ext::GC_SGX_535;
+			}
+			else if(renderer_str.find("sgx 543") != string::npos) {
+				graphic_card = ext::GC_SGX_543;
 			}
 		}
 		else {
@@ -466,6 +529,7 @@ bool ext::is_fbo_multisample_coverage_mode_support(unsigned int coverage_samples
 
 const char* ext::cstr_from_glsl_version(const ext::GLSL_VERSION& version) const {
 	switch(version) {
+		case GLSL_ES_100: return "1.00";
 		case GLSL_150: return "1.50";
 		case GLSL_330: return "3.30";
 		case GLSL_400: return "4.00";
@@ -479,6 +543,7 @@ const char* ext::cstr_from_glsl_version(const ext::GLSL_VERSION& version) const 
 
 const char* ext::glsl_version_str_from_glsl_version(const ext::GLSL_VERSION& version) const {
 	switch(version) {
+		case GLSL_ES_100: return "100";
 		case GLSL_150: return "150";
 		case GLSL_330: return "330";
 		case GLSL_400: return "400";
@@ -493,6 +558,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& major_version, const size_t
 	switch(major_version) {
 		case 1:
 			switch(minor_version) {
+				case 0: return GLSL_ES_100;
 				case 50: return GLSL_150;
 				default: break;
 			}
@@ -521,6 +587,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& major_version, const size_t
 
 ext::GLSL_VERSION ext::to_glsl_version(const size_t& version) const {
 	switch(version) {
+		case 100: return GLSL_ES_100;
 		case 150: return GLSL_150;
 		case 330: return GLSL_330;
 		case 400: return GLSL_400;
@@ -534,6 +601,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& version) const {
 
 const char* ext::cstr_from_gl_version(const ext::OPENGL_VERSION& version) const {
 	switch(version) {
+		case OPENGL_ES_2_0: return "OpenGL ES 2.0";
 		case OPENGL_3_0: return "OpenGL 3.0";
 		case OPENGL_3_1: return "OpenGL 3.1";
 		case OPENGL_3_2: return "OpenGL 3.2";

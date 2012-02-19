@@ -30,7 +30,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserve
 		case DLL_PROCESS_DETACH:
 			break;
 	}
-    return TRUE;
+	return TRUE;
 }
 #endif // __WINDOWS__
 
@@ -49,12 +49,22 @@ engine::engine(const char* callpath_, const char* datapath_) {
 #else
 	const char dir_slash = '\\';
 #endif
-	engine::datapath = datapath.substr(0, datapath.rfind(dir_slash)+1) + datapath_;
+	
+#if defined(A2E_IOS)
+	// strip one "../"
+	const size_t cdup_pos = rel_datapath.find("../");
+	if(cdup_pos != string::npos) {
+		rel_datapath = (rel_datapath.substr(0, cdup_pos) +
+						rel_datapath.substr(cdup_pos+3, rel_datapath.length()-cdup_pos-3));
+	}
+#endif
+	
+	engine::datapath = datapath.substr(0, datapath.rfind(dir_slash)+1) + rel_datapath;
 
 #ifdef CYGWIN
 	engine::callpath = "./";
 	engine::datapath = callpath_;
-	engine::datapath = datapath.substr(0, datapath.rfind("/")+1) + datapath_;
+	engine::datapath = datapath.substr(0, datapath.rfind("/")+1) + rel_datapath;
 #endif
 	
 	create();
@@ -71,6 +81,9 @@ engine::~engine() {
 		}
 	}
 	cursors.clear();
+	
+	delete window_handler;
+	// TODO: delete from event object
 
 	if(c != NULL) delete c;
 	if(f != NULL) delete f;
@@ -172,6 +185,9 @@ void engine::create() {
 	g = new gfx(this);
 	ocl = NULL;
 	
+	window_handler = new event::handler(this, &engine::window_event_handler);
+	e->add_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
+	
 	AtomicSet(&reload_shaders_flag, 0);
 	AtomicSet(&reload_kernels_flag, 0);
 	
@@ -258,7 +274,7 @@ void engine::create() {
 void engine::init(bool console, unsigned int width, unsigned int height,
 				  bool fullscreen, bool vsync, const char* ico) {
 	if(console == true) {
-	    engine::mode = engine::CONSOLE;
+		engine::mode = engine::CONSOLE;
 		// create extension class object
 		exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
 		a2e_debug("initializing albion 2 engine in console only mode");
@@ -292,6 +308,8 @@ void engine::init(const char* ico) {
 	// set some flags
 	config.flags |= SDL_WINDOW_OPENGL;
 	config.flags |= SDL_WINDOW_SHOWN;
+	
+#if !defined(A2E_IOS)
 	config.flags |= SDL_WINDOW_INPUT_FOCUS;
 	config.flags |= SDL_WINDOW_MOUSE_FOCUS;
 
@@ -300,6 +318,11 @@ void engine::init(const char* ico) {
 		a2e_debug("fullscreen enabled");
 	}
 	else a2e_debug("fullscreen disabled");
+#else
+	config.flags |= SDL_WINDOW_FULLSCREEN;
+	config.flags |= SDL_WINDOW_RESIZABLE;
+	config.flags |= SDL_WINDOW_BORDERLESS;
+#endif
 
 	a2e_debug("vsync %s", config.vsync ? "enabled" : "disabled");
 	
@@ -310,17 +333,32 @@ void engine::init(const char* ico) {
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
+	
+#if !defined(A2E_IOS)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#else
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	
+	//
+	SDL_DisplayMode fullscreen_mode;
+	SDL_zero(fullscreen_mode);
+	fullscreen_mode.format = SDL_PIXELFORMAT_RGBA8888;
+	fullscreen_mode.w = config.width;
+	fullscreen_mode.h = config.height;
+#endif
 
 	// ... load icon before SDL_SetVideoMode
 	if(ico != NULL) load_ico(ico);
 
 	// create screen
+#if !defined(A2E_IOS)
 	config.wnd = SDL_CreateWindow("A2E", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (unsigned int)config.width, (unsigned int)config.height, config.flags);
+#else
+	config.wnd = SDL_CreateWindow(NULL, 0, 0, (unsigned int)config.width, (unsigned int)config.height, config.flags);
+#endif
 	if(config.wnd == NULL) {
 		a2e_error("can't create window: %s", SDL_GetError());
 		exit(1);
@@ -329,15 +367,33 @@ void engine::init(const char* ico) {
 		SDL_GetWindowSize(config.wnd, (int*)&config.width, (int*)&config.height);
 		a2e_debug("video mode set: w%u h%u", config.width, config.height);
 	}
+	
+#if defined(A2E_IOS)
+	if(SDL_SetWindowDisplayMode(config.wnd, &fullscreen_mode) < 0) {
+		a2e_error("can't set up fullscreen display mode: %s", SDL_GetError());
+		exit(1);
+	}
+	SDL_GetWindowSize(config.wnd, (int*)&config.width, (int*)&config.height);
+	a2e_debug("fullscreen mode set: w%u h%u", config.width, config.height);
+	SDL_ShowWindow(config.wnd);
+#endif
+	
+	
 	config.ctx = SDL_GL_CreateContext(config.wnd);
 	if(config.ctx == NULL) {
 		a2e_error("can't create opengl context: %s", SDL_GetError());
 		exit(1);
 	}
+#if !defined(A2E_IOS)
 	SDL_GL_SetSwapInterval(config.vsync ? 1 : 0); // has to be set after context creation
+#else
+	make_current();
+#endif
 	
 	// TODO: this is only a rudimentary solution, think of or wait for a better one ...
+#if !defined(A2E_IOS)
 	ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), f, config.wnd, config.clear_cache); // use absolute path
+#endif
 	
 	// enable multi-threaded opengl context when on os x
 /*#ifdef __APPLE__
@@ -351,18 +407,27 @@ void engine::init(const char* ico) {
 #endif*/
 	
 	// make an early clear
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	swap();
 
 	// create extension class object
 	exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
 	
 	// capability test
+#if !defined(A2E_IOS)
 	if(!exts->is_gl_version(3, 2)) { // TODO: check for shader support! (use recognized gl version)
 		a2e_error("A2E doesn't support your graphic device! OpenGL 3.2 is the minimum requirement.");
 		SDL_Delay(10000);
 		exit(1);
 	}
+#else
+	if(!exts->is_gl_version(2, 0)) {
+		a2e_error("A2E doesn't support your graphic device! OpenGL ES 2.0 is the minimum requirement.");
+		SDL_Delay(10000);
+		exit(1);
+	}
+#endif
 	
 	int tmp = 0;
 	SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &tmp);
@@ -378,21 +443,9 @@ void engine::init(const char* ico) {
 	}
 	else a2e_debug("video driver: %s", SDL_GetCurrentVideoDriver());
 	
-	// enable key repeat
-	if((SDL_EnableKeyRepeat((int)config.key_repeat, SDL_DEFAULT_REPEAT_INTERVAL))) {
-		a2e_debug("setting keyboard repeat failed: %s", SDL_GetError());
-		exit(1);
-	}
-	else {
-		a2e_debug("keyboard repeat set");
-	}
-	
 	e->set_ldouble_click_time((unsigned int)config.ldouble_click_time);
 	e->set_rdouble_click_time((unsigned int)config.rdouble_click_time);
 	e->set_mdouble_click_time((unsigned int)config.mdouble_click_time);
-	
-	// enable unicode key input
-	SDL_EnableUNICODE(1);
 	
 	// initialize ogl
 	init_gl();
@@ -476,8 +529,10 @@ void engine::init(const char* ico) {
 	shd = new shader(this);
 	g->init();
 	
+#if !defined(A2E_IOS)
 	// init opencl
 	ocl->init(false, config.opencl_platform);
+#endif
 }
 
 /*! sets the windows width
@@ -499,12 +554,16 @@ void engine::set_height(unsigned int height) {
 /*! starts drawing the window
  */
 void engine::start_draw() {
+#if defined(A2E_IOS)
+	make_current();
+#endif
+	
 	// draws ogl stuff
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	glViewport(0, 0, (unsigned int)config.width, (unsigned int)config.height);
 	
 	// clear the color and depth buffers
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// reset model view matrix
 	modelview_matrix.identity();
@@ -512,6 +571,7 @@ void engine::start_draw() {
 	rotation_matrix.identity();
 	mvp_matrix = projection_matrix;
 	
+#if !defined(A2E_IOS)
 	//
 	static bool vao_init = false;
 	static GLuint global_vao = 0;
@@ -521,12 +581,15 @@ void engine::start_draw() {
 		glGenVertexArrays(1, &global_vao);
 	}
 	glBindVertexArray(global_vao);
+#endif
 }
 
 /*! stops drawing the window
  */
 void engine::stop_draw() {
+#if !defined(A2E_IOS)
 	glBindVertexArray(0);
+#endif
 	swap();
 	
 	GLenum error = glGetError();
@@ -576,24 +639,30 @@ void engine::stop_draw() {
 		AtomicSet(&reload_shaders_flag, 0);
 		glFlush();
 		glFinish();
+#if !defined(A2E_NO_OPENCL)
 		ocl->flush();
 		ocl->finish();
+#endif
 		shd->reload_shaders();
 	}
 	if(AtomicGet(&reload_kernels_flag) == 1) {
 		AtomicSet(&reload_kernels_flag, 0);
 		glFlush();
 		glFinish();
+#if !defined(A2E_NO_OPENCL)
 		ocl->flush();
 		ocl->finish();
 		ocl->reload_kernels();
+#endif
 	}
 }
 
 void engine::push_ogl_state() {
 	// make a full soft-context-switch
+#if !defined(A2E_IOS)
 	glGetIntegerv(GL_BLEND_SRC, &pushed_blend_src);
 	glGetIntegerv(GL_BLEND_DST, &pushed_blend_dst);
+#endif
 	glGetIntegerv(GL_BLEND_SRC_RGB, &pushed_blend_src_rgb);
 	glGetIntegerv(GL_BLEND_DST_RGB, &pushed_blend_dst_rgb);
 	glGetIntegerv(GL_BLEND_SRC_ALPHA, &pushed_blend_src_alpha);
@@ -623,11 +692,11 @@ const char* engine::get_caption() {
 
 /*! opengl initialization function
  */
-bool engine::init_gl() {
+void engine::init_gl() {
 	// set clear color
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// depth buffer setup
-	glClearDepth(1.0f);
+	glClearDepthf(1.0f);
 	// enable depth testing
 	glEnable(GL_DEPTH_TEST);
 	// less/equal depth test
@@ -638,13 +707,11 @@ bool engine::init_gl() {
 	glFrontFace(GL_CCW);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	return true;
 }
 
 /* function to reset our viewport after a window resize
  */
-bool engine::resize_window() {
+void engine::resize_window() {
 	// set the viewport
 	glViewport(0, 0, (GLsizei)config.width, (GLsizei)config.height);
 
@@ -658,8 +725,6 @@ bool engine::resize_window() {
 	translation_matrix.identity();
 	rotation_matrix.identity();
 	mvp_matrix = projection_matrix;
-
-	return true;
 }
 
 /*! sets the position of the user/viewer
@@ -1125,4 +1190,22 @@ const float2& engine::get_near_far_plane() const {
 
 const xml::xml_doc& engine::get_config_doc() const {
 	return config_doc;
+}
+
+void engine::make_current() {
+#if defined(A2E_IOS)
+	if(SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
+		a2e_error("couldn't make gl context current: %s!", SDL_GetError());
+		return;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 1);
+#endif
+}
+
+bool engine::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+	if(type == EVENT_TYPE::WINDOW_RESIZE) {
+		const window_resize_event& evt = (const window_resize_event&)*obj;
+		// TODO: resize
+	}
+	return true;
 }

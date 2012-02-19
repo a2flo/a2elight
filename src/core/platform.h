@@ -92,9 +92,14 @@
 #include <SDL/SDL_platform.h>
 #include <SDL/SDL_syswm.h>
 #include <SDL_image/SDL_image.h>
-#include <SDL_net/SDL_net.h>
+//#include <SDL_net/SDL_net.h>
+#if !defined(A2E_IOS)
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
+#else
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
+#endif
 #include <sys/types.h>
 #include <pwd.h>
 #include <unistd.h>
@@ -142,6 +147,12 @@
 #if (__GNUC__ == 4 && __GNUC_MINOR__ == 6)
 // TODO: remove all the gcc workarounds ...
 #define GCC_LEGACY 1
+#endif
+
+#if !defined(A2E_IOS)
+#define A2E_DEFAULT_FRAMEBUFFER 0
+#else
+#define A2E_DEFAULT_FRAMEBUFFER 1
 #endif
 
 // c++ headers

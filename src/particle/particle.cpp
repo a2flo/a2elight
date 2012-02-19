@@ -26,7 +26,9 @@ particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), cl(
 	//
 	if(cl->is_supported()) {
 		a2e_debug("using OpenCL render path!");
+#if !defined(A2E_NO_OPENCL)
 		pm = new particle_manager_cl(e);
+#endif
 	}
 	// no hw/sw support at all
 	else {

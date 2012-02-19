@@ -38,7 +38,7 @@ typedef vector3<ssize_t> ssize3;
 #pragma clang diagnostic ignored "-Wtautological-compare"
 #endif
 
-template <typename T> class A2E_API __attribute__((packed)) vector3 {
+template <typename T> class A2E_API __attribute__((packed, aligned(4))) vector3 {
 public:
 	union {
 		T x, r;

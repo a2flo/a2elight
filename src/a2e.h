@@ -20,7 +20,9 @@
 #include "global.h"
 
 #include "cl/opencl.h"
+#if !defined(A2E_NO_OPENCL)
 #include "cl/cl.hpp"
+#endif
 
 #include "core/platform.h"
 #include "core/core.h"
@@ -47,11 +49,19 @@
 #include "rendering/shader.h"
 #include "rendering/texman.h"
 #include "rendering/texture_object.h"
+#if !defined(A2E_IOS)
 #include "rendering/gl_funcs.h"
+#else
+#include "rendering/gles_compat.h"
+#endif
 #include "rendering/renderer/shader_base.h"
 #include "rendering/renderer/shader_object.h"
 #include "rendering/renderer/a2e_shader.h"
+#if !defined(A2E_IOS)
 #include "rendering/renderer/gl3/shader_gl3.h"
+#else
+#include "rendering/renderer/gles2/shader_gles2.h"
+#endif
 
 #include "scene/scene.h"
 #include "scene/camera.h"

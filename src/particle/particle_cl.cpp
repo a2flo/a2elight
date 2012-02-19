@@ -19,6 +19,8 @@
 #include "particle_cl.h"
 #include "scene/light.h"
 
+#if !defined(A2E_NO_OPENCL)
+
 /*! there is no function currently
  */
 particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
@@ -440,12 +442,18 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	
 	// point -> gs: quad
 	gl3shader particle_draw = s->get_gl3shader("PARTICLE_DRAW_OPENCL");
+#if !defined(A2E_IOS)
 	const auto ltype = ps->get_lighting_type();
+#else
+	const auto ltype = particle_system::LIGHTING_TYPE::NONE; // can't use particle lighting on iOS/GLES2.0
+#endif
 	string shd_option = "#";
 	switch(ltype) {
 		case particle_system::LIGHTING_TYPE::NONE: shd_option = "#"; break;
+#if !defined(A2E_IOS)
 		case particle_system::LIGHTING_TYPE::POINT: shd_option = "lit"; break;
 		case particle_system::LIGHTING_TYPE::POINT_PP: shd_option = "lit_pp"; break;
+#endif
 	}
 	particle_draw->use(shd_option);
 	particle_draw->uniform("living_time", (float)ps->get_living_time());
@@ -460,9 +468,10 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_draw->texture("depth_buffer", frame_buffer->depth_buffer);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	
+#if !defined(A2E_IOS)
 	if(ltype != particle_system::LIGHTING_TYPE::NONE) {
 		// note: max lights is currently 4
-		struct __attribute__((packed)) light_info {
+		struct __attribute__((packed, aligned(4))) light_info {
 			float4 position;
 			float4 color;
 		} lights_data[A2E_MAX_PARTICLE_LIGHTS];
@@ -486,6 +495,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 						&lights_data[0]);
 		particle_draw->block("light_buffer", lights_ubo);
 	}
+#endif
 	
 	particle_draw->uniform("color", ps->get_color());
 	particle_draw->uniform("size", ps->get_size());
@@ -515,3 +525,5 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	glDepthMask(GL_TRUE);
 	g->set_blend_mode(gfx::BM_DEFAULT);
 }
+
+#endif

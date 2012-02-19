@@ -19,6 +19,7 @@
 
 #include "a2e_shader.h"
 #include "rendering/shader.h"
+#include <regex>
 
 a2e_shader::a2e_shader(engine* eng) : e(eng), f(e->get_file_io()), exts(e->get_ext()), x(e->get_xml()),
 buffer(stringstream::in | stringstream::out | stringstream::binary), buffer2(stringstream::in | stringstream::out | stringstream::binary) {
@@ -32,7 +33,7 @@ buffer(stringstream::in | stringstream::out | stringstream::binary), buffer2(str
 	
 	// use sdl platform defines for this
 	conditions["MAC_OS_X"] =
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && !defined(A2E_IOS)
 				   true
 #else
 				   false
@@ -52,6 +53,14 @@ buffer(stringstream::in | stringstream::out | stringstream::binary), buffer2(str
 				   true
 #else
 				   false
+#endif
+	;
+	
+	conditions["IOS"] =
+#if defined(A2E_IOS)
+	true
+#else
+	false
 #endif
 	;
 }
@@ -128,6 +137,11 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 				
 				valid_shader = true;
 				cur_node = cur_node->children;
+					
+#if defined(A2E_IOS)
+				// always include this in glsl es
+				if(node_name == "a2e_shader") a2e_shd->includes.push_back("glsles_compat");
+#endif
 			}
 			
 			if(valid_shader) {
@@ -173,12 +187,17 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 						node_name == "geometry_shader" ||
 						node_name == "fragment_shader") {
 					// get glsl version
-					ext::GLSL_VERSION glsl_version = ext::GLSL_150;
+#if !defined(A2E_IOS)
+					static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_150;
+#else
+					static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_ES_100;
+#endif
+					ext::GLSL_VERSION glsl_version = default_glsl_version;
 					if(x->is_attribute(cur_elem->attributes, "version")) {
 						glsl_version = exts->to_glsl_version(x->get_attribute<size_t>(cur_elem->attributes, "version"));
 						if(glsl_version == ext::GLSL_NO_VERSION) {
 							// reset to default
-							glsl_version = ext::GLSL_150;
+							glsl_version = default_glsl_version;
 						}
 					}
 					
@@ -373,6 +392,10 @@ bool a2e_shader::check_shader_condition(const A2E_SHADER_CONDITION_TYPE type, co
 				min_card = ext::min_ati_card;
 				max_card = ext::max_ati_card;
 			}
+			else if(vendor == ext::GCV_POWERVR && graphic_card <= ext::max_powervr_card) {
+				min_card = ext::min_powervr_card;
+				max_card = ext::max_powervr_card;
+			}
 			else {
 				a2e_error("unknown card %d!", graphic_card);
 				break;
@@ -502,20 +525,21 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 		a2e_shader_code* fragment_shd = shd->fragment_shader[option];
 		
 		// add include code
-		for(auto& include : shd->includes) {
-			if(a2e_shader_includes.count(include) == 0) {
-				a2e_error("unknown include \"%s\"! - will be ignored!", include);
+		// (since we're inserting the include at the beginning, do this in reverse order, so the first include is the first in the code/shader)
+		for(auto include = shd->includes.rbegin(); include != shd->includes.rend(); include++) {
+			if(a2e_shader_includes.count(*include) == 0) {
+				a2e_error("unknown include \"%s\"! - will be ignored!", *include);
 				continue;
 			}
 			
-			a2e_shader_include* include_shd = a2e_shader_includes[include];
+			a2e_shader_include* include_shd = a2e_shader_includes[*include];
 			a2e_shader_include_object* include_obj = include_shd->shader_include_object;
 			
 			// check for option compatibility
 			string include_option = option;
 			if(include_obj->options.count(option) == 0) {
 				if(include_obj->options.count("#") == 0) {
-					a2e_error("incompatible include (%s) - no match for option \"%s\" and include contains no standard option!", include, option);
+					a2e_error("incompatible include (%s) - no match for option \"%s\" and include contains no standard option!", *include, option);
 					continue;
 				}
 				else include_option = "#";
@@ -579,11 +603,23 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		else shd->geometry_shader_available = true;
 		
 		// version
-		shd->vs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(vertex_shd->version))+" core\n";
-		shd->fs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(fragment_shd->version))+" core\n";
+#if !defined(A2E_IOS)
+		static const string glsl_version_suffix = " core";
+#else
+		static const string glsl_version_suffix = "";
+#endif
+		shd->vs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(vertex_shd->version))+glsl_version_suffix+"\n";
+		shd->fs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(fragment_shd->version))+glsl_version_suffix+"\n";
 		if(shd->geometry_shader_available) {
-			shd->gs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(geometry_shd->version))+" core\n";
+			shd->gs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(geometry_shd->version))+glsl_version_suffix+"\n";
 		}
+		
+		// default precision qualifiers (glsl es only)
+#if defined(A2E_IOS)
+		static const string def_prec_quals = "precision highp float;\nprecision highp int;\nprecision highp sampler2D;\nprecision highp samplerCube;\n";
+		shd->vs_program[option] += def_prec_quals;
+		shd->fs_program[option] += def_prec_quals;
+#endif
 		
 		// preprocessor
 		shd->vs_program[option] += vertex_shd->preprocessor;
@@ -605,7 +641,6 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		shd->fs_program[option] += fragment_shd->variables;
 		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd->variables;
 		
-		
 		// programs
 		shd->vs_program[option] += vertex_shd->program;
 		shd->fs_program[option] += fragment_shd->program;
@@ -617,6 +652,10 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		if(shd->geometry_shader_available) {
 			shd->gs_program[option] = core::find_and_replace(shd->gs_program[option], "builtin ", "");
 		}
+		
+#if defined(A2E_IOS)
+		make_glsl_es_compat(shd, option);
+#endif
 		
 		// REMOVE ME: for debugging purposes only ...
 #if 0
@@ -659,5 +698,58 @@ void a2e_shader::load_a2e_shader_includes() {
 	for(map<string, a2e_shader_include*>::iterator iter = a2e_shader_includes.begin(); iter != a2e_shader_includes.end(); iter++) {
 		iter->second->shader_include_object = create_a2e_shader_include();
 		load_a2e_shader("a2e_include_"+iter->second->filename, string(e->shader_path(iter->second->filename.c_str())), (a2e_shader_object*)iter->second->shader_include_object);
+	}
+}
+
+void a2e_shader::make_glsl_es_compat(a2e_shader_object* shd, const string& option) {
+	// this function will try its best to make OpenGL 3.2 / GLSL 1.50 shaders compatible to GLSL ES 1.00
+	// TODO: !
+	
+	// regex objects
+	struct regex_shader_replacement {
+		const regex rx;
+		const string repl;
+	};
+	static const regex_shader_replacement vs_regex[] = {
+		// strip unavailable storage qualifiers
+		{ regex("^([\\s]*)(smooth )([^;]+)"), "$3" }, // NOTE: these precede centroid
+		{ regex("^([\\s]*)(flat )([^;]+)"), "$3" },
+		{ regex("^([\\s]*)(noperspective )([^;]+)"), "$3" },
+		{ regex("^([\\s]*)(centroid )([^;]+)"), "$3" },
+		
+		{ regex("^([\\s]*)(in )([^;]+)"), "attribute $3" },
+		{ regex("^([\\s]*)(out )([^;]+)"), "varying $3" },
+	};
+	static const regex_shader_replacement fs_regex[] = {
+		// strip unavailable storage qualifiers
+		{ regex("^([\\s]*)(smooth )([^;]+)"), "$3" },
+		{ regex("^([\\s]*)(flat )([^;]+)"), "$3" },
+		{ regex("^([\\s]*)(noperspective )([^;]+)"), "$3" },
+		{ regex("^([\\s]*)(centroid )([^;]+)"), "$3" },
+		
+		{ regex("^([\\s]*)(in )([^;]+)"), "varying $3" },
+		{ regex("^([\\s]*)(out )([^;]+)"), "// out $3 => gl_FragColor" },
+		{ regex("frag_color(_\\d){0,1}"), "gl_FragColor" },
+	};
+	static const size_t rx_len[] = { A2E_ARRAY_LENGTH(vs_regex), A2E_ARRAY_LENGTH(fs_regex) };
+	
+	// modify shaders
+	for(size_t i = 0; i < 2; i++) {
+		const regex_shader_replacement* rx = (i == 0 ? vs_regex : fs_regex);
+		string& prog = (i == 0 ? shd->vs_program[option] : shd->fs_program[option]);
+		vector<string> lines = core::tokenize(prog, '\n');
+		prog = "";
+		for(string& line : lines) {
+			if(line.size() == 0) {
+				prog += '\n';
+				continue;
+			}
+			
+			//
+			for(size_t j = 0; j < rx_len[i]; j++) {
+				line = regex_replace(line, rx[j].rx, rx[j].repl);
+			}
+			prog += line + '\n';
+		}
 	}
 }
