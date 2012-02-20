@@ -179,6 +179,7 @@ void engine::create() {
 	standard_cursor = nullptr;
 	cursor_data = nullptr;
 	cursor_mask = nullptr;
+	global_vao = 0;
 	
 	u = new unicode();
 	f = new file_io();
@@ -555,13 +556,6 @@ void engine::start_draw() {
 	mvp_matrix = projection_matrix;
 	
 #if !defined(A2E_IOS)
-	//
-	static bool vao_init = false;
-	static GLuint global_vao = 0;
-	if(!vao_init) {
-		vao_init = true;
-		glGenVertexArrays(1, &global_vao);
-	}
 	glBindVertexArray(global_vao);
 #endif
 }
@@ -689,6 +683,16 @@ void engine::init_gl() {
 	glFrontFace(GL_CCW);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+#if !defined(A2E_IOS)
+	//
+	static bool vao_init = false;
+	if(!vao_init) {
+		vao_init = true;
+		glGenVertexArrays(1, &global_vao);
+	}
+	glBindVertexArray(global_vao);
+#endif
 }
 
 /* function to reset our viewport after a window resize

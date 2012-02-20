@@ -332,6 +332,7 @@ protected:
 	// misc
 	atomic_t reload_shaders_flag;
 	atomic_t reload_kernels_flag;
+	GLuint global_vao;
 
 };
 
