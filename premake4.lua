@@ -77,9 +77,14 @@ solution "albion2"
 		buildoptions { "-Wall -x c++ -std=c++0x -Wno-trigraphs -Wreturn-type -Wunused-variable" }
 		
 		if(clang_libcxx) then
-			buildoptions { "-stdlib=libc++" }
+			buildoptions { "-stdlib=libc++ -integrated-as" }
 			buildoptions { "-Wno-delete-non-virtual-dtor -Wno-overloaded-virtual -Wunreachable-code -Wdangling-else" }
-			linkoptions { "-stdlib=libc++ -fvisibility=default" }
+			linkoptions { "-fvisibility=default" }
+			if(not win_unixenv) then
+				linkoptions { "-stdlib=libc++" }
+			else
+				linkoptions { "-lc++.dll" }
+			end
 		end
 		
 		if(gcc_compat) then

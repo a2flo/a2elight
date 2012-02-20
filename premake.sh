@@ -6,11 +6,13 @@ A2_MAKE="make"
 A2_MAKE_PLATFORM="32"
 A2_ARGS=""
 A2_CPU_COUNT=1
+A2_USE_CLANG=0
 
 if [[ $# > 0 && $1 == "gcc" ]]; then
 	A2_ARGS="--gcc"
 else
 	A2_ARGS="--clang"
+	A2_USE_CLANG=1
 fi
 
 case $( uname | tr [:upper:] [:lower:] ) in
@@ -64,6 +66,11 @@ echo "using: premake4 --cc=gcc --os="${A2_OS}" gmake "${A2_ARGS}
 
 premake4 --cc=gcc --os=${A2_OS} gmake ${A2_ARGS}
 sed -i -e 's/\${MAKE}/\${MAKE} -j '${A2_CPU_COUNT}'/' Makefile
+
+if [[ $A2_USE_CLANG == 1 ]]; then
+	sed -i '1i export CC=clang' Makefile
+	sed -i '1i export CXX=clang++' Makefile
+fi
 
 chmod +x src/build_version.sh
 
