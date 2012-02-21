@@ -140,8 +140,8 @@ opencl::opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool
 opencl::~opencl() {
 	a2e_debug("deleting opencl object");
 	
-	for(vector<opencl::buffer_object*>::iterator biter = buffers.begin(); biter != buffers.end(); biter++) {
-		delete (*biter)->buffer;
+	for(const auto& buf : buffers) {
+		delete buf->buffer;
 	}
 	buffers.clear();
 	
@@ -158,7 +158,7 @@ opencl::~opencl() {
 }
 
 void opencl::destroy_kernels() {
-	for(auto& k : kernels) {
+	for(const auto& k : kernels) {
 		delete k.second;
 	}
 	kernels.clear();
@@ -239,95 +239,99 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		unsigned int fastest_gpu_score = 0;
 		unsigned int cpu_score = 0;
 		unsigned int gpu_score = 0;
-		for(vector<cl::Device>::iterator diter = internal_devices.begin(); diter != internal_devices.end(); diter++) {
+		for(const auto& internal_device : internal_devices) {
 			dev_type_str = "";
 			
-			devices.push_back(new opencl::device_object());
-			devices.back()->device = &*diter;
-			devices.back()->internal_type = diter->getInfo<CL_DEVICE_TYPE>();
-			devices.back()->units = diter->getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
-			devices.back()->clock = diter->getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>();
-			devices.back()->mem_size = diter->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
-			devices.back()->name = diter->getInfo<CL_DEVICE_NAME>();
-			devices.back()->vendor = diter->getInfo<CL_DEVICE_VENDOR>();
-			devices.back()->version = diter->getInfo<CL_DEVICE_VERSION>();
-			devices.back()->driver_version = diter->getInfo<CL_DRIVER_VERSION>();
-			devices.back()->extensions = diter->getInfo<CL_DEVICE_EXTENSIONS>();
+			opencl::device_object* device = new opencl::device_object();
+			devices.push_back(device);
+			device->device = &internal_device;
+			device->internal_type = internal_device.getInfo<CL_DEVICE_TYPE>();
+			device->units = internal_device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
+			device->clock = internal_device.getInfo<CL_DEVICE_MAX_CLOCK_FREQUENCY>();
+			device->mem_size = internal_device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+			device->name = internal_device.getInfo<CL_DEVICE_NAME>();
+			device->vendor = internal_device.getInfo<CL_DEVICE_VENDOR>();
+			device->version = internal_device.getInfo<CL_DEVICE_VERSION>();
+			device->driver_version = internal_device.getInfo<CL_DRIVER_VERSION>();
+			device->extensions = internal_device.getInfo<CL_DEVICE_EXTENSIONS>();
 			
-			devices.back()->max_alloc = diter->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
-			devices.back()->max_wg_size = diter->getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-			devices.back()->img_support = diter->getInfo<CL_DEVICE_IMAGE_SUPPORT>() == 1;
-			devices.back()->max_img_2d.set(diter->getInfo<CL_DEVICE_IMAGE2D_MAX_WIDTH>(), diter->getInfo<CL_DEVICE_IMAGE2D_MAX_HEIGHT>());
-			devices.back()->max_img_3d.set(diter->getInfo<CL_DEVICE_IMAGE3D_MAX_WIDTH>(), diter->getInfo<CL_DEVICE_IMAGE3D_MAX_HEIGHT>(), diter->getInfo<CL_DEVICE_IMAGE3D_MAX_DEPTH>());
+			device->max_alloc = internal_device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>();
+			device->max_wg_size = internal_device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+			device->img_support = internal_device.getInfo<CL_DEVICE_IMAGE_SUPPORT>() == 1;
+			device->max_img_2d.set(internal_device.getInfo<CL_DEVICE_IMAGE2D_MAX_WIDTH>(),
+								   internal_device.getInfo<CL_DEVICE_IMAGE2D_MAX_HEIGHT>());
+			device->max_img_3d.set(internal_device.getInfo<CL_DEVICE_IMAGE3D_MAX_WIDTH>(),
+								   internal_device.getInfo<CL_DEVICE_IMAGE3D_MAX_HEIGHT>(),
+								   internal_device.getInfo<CL_DEVICE_IMAGE3D_MAX_DEPTH>());
 
-			devices.back()->vendor_type = CLV_UNKNOWN;
-			string vendor_str = core::str_to_lower(devices.back()->vendor);
+			device->vendor_type = CLV_UNKNOWN;
+			string vendor_str = core::str_to_lower(device->vendor);
 			if(strstr(vendor_str.c_str(), "nvidia") != nullptr) {
-				devices.back()->vendor_type = CLV_NVIDIA;
+				device->vendor_type = CLV_NVIDIA;
 			}
 			else if(strstr(vendor_str.c_str(), "ati") != nullptr) {
-				devices.back()->vendor_type = CLV_ATI;
+				device->vendor_type = CLV_ATI;
 			}
 			else if(strstr(vendor_str.c_str(), "amd") != nullptr) {
-				devices.back()->vendor_type = CLV_AMD;
+				device->vendor_type = CLV_AMD;
 			}
 			else if(strstr(vendor_str.c_str(), "intel") != nullptr) {
-				devices.back()->vendor_type = CLV_INTEL;
+				device->vendor_type = CLV_INTEL;
 			}
 			
-			if(devices.back()->internal_type & CL_DEVICE_TYPE_CPU) {
-				devices.back()->type = (opencl::OPENCL_DEVICE)cpu_counter;
+			if(device->internal_type & CL_DEVICE_TYPE_CPU) {
+				device->type = (opencl::OPENCL_DEVICE)cpu_counter;
 				cpu_counter++;
 				dev_type_str += "CPU ";
 				
 				if(fastest_cpu == nullptr) {
 					fastest_cpu = devices.back();
-					fastest_cpu_score = devices.back()->units * devices.back()->clock;
+					fastest_cpu_score = device->units * device->clock;
 				}
 				else {
-					cpu_score = devices.back()->units * devices.back()->clock;
+					cpu_score = device->units * device->clock;
 					if(cpu_score > fastest_cpu_score) {
 						fastest_cpu = devices.back();
 					}
 				}
 			}
-			if(devices.back()->internal_type & CL_DEVICE_TYPE_GPU) {
-				devices.back()->type = (opencl::OPENCL_DEVICE)gpu_counter;
+			if(device->internal_type & CL_DEVICE_TYPE_GPU) {
+				device->type = (opencl::OPENCL_DEVICE)gpu_counter;
 				gpu_counter++;
 				dev_type_str += "GPU ";
 				
 				if(fastest_gpu == nullptr) {
 					fastest_gpu = devices.back();
-					fastest_gpu_score = devices.back()->units * devices.back()->clock;
+					fastest_gpu_score = device->units * device->clock;
 				}
 				else {
-					gpu_score = devices.back()->units * devices.back()->clock;
+					gpu_score = device->units * device->clock;
 					if(gpu_score > fastest_gpu_score) {
 						fastest_gpu = devices.back();
 					}
 				}
 			}
-			if(devices.back()->internal_type & CL_DEVICE_TYPE_ACCELERATOR) {
+			if(device->internal_type & CL_DEVICE_TYPE_ACCELERATOR) {
 				dev_type_str += "Accelerator ";
 			}
-			if(devices.back()->internal_type & CL_DEVICE_TYPE_DEFAULT) {
+			if(device->internal_type & CL_DEVICE_TYPE_DEFAULT) {
 				dev_type_str += "Default ";
 			}
 			
 			// TYPE (Units: %, Clock: %): Name, Vendor, Version, Driver Version
 			a2e_debug("%s(Units: %u, Clock: %u MHz, Memory: %u MB): %s %s, %s/%s",
 					 dev_type_str.c_str(),
-					 devices.back()->units,
-					 devices.back()->clock,
-					 (unsigned int)(devices.back()->mem_size / 1024ul / 1024ul),
-					 devices.back()->vendor.c_str(),
-					 devices.back()->name.c_str(),
-					 devices.back()->version.c_str(),
-					 devices.back()->driver_version.c_str());
+					 device->units,
+					 device->clock,
+					 (unsigned int)(device->mem_size / 1024ul / 1024ul),
+					 device->vendor.c_str(),
+					 device->name.c_str(),
+					 device->version.c_str(),
+					 device->driver_version.c_str());
 		}
 		
 		// create a (single) command queue for each device
-		for(device_object* device : devices) {
+		for(const auto& device : devices) {
 			queues[device->device] = new cl::CommandQueue(*context, *device->device, 0, &ierr);
 		}
 		
@@ -357,7 +361,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		
 		//
 		cout << "## write only formats:" << endl;
-		for(auto& format : wo_formats) {
+		for(const auto& format : wo_formats) {
 			cout << "\t";
 			switch(format.image_channel_order) {
 				case CL_R: cout << "CL_R"; break;
@@ -466,12 +470,12 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 		kernels[identifier]->program = new cl::Program(*context, source);
 		
 		// compile for each device independently to add device-specific defines
-		for(vector<device_object*>::iterator dev_iter = devices.begin(); dev_iter != devices.end(); dev_iter++) {
+		for(const auto& device : devices) {
 			vector<cl::Device> cur_device;
-			cur_device.push_back(*(*dev_iter)->device);
+			cur_device.push_back(*device->device);
 			
 			string device_options = "";
-			switch((*dev_iter)->vendor_type) {
+			switch(device->vendor_type) {
 				case CLV_NVIDIA:
 					device_options += nv_build_options;
 					device_options += " -DNVIDIA";
@@ -489,9 +493,9 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 					device_options += " -DUNKNOWN_VENDOR";
 					break;
 			}
-			if(((*dev_iter)->internal_type & CL_DEVICE_TYPE_CPU) != 0) device_options += " -DCPU";
-			if(((*dev_iter)->internal_type & CL_DEVICE_TYPE_GPU) != 0) device_options += " -DGPU";
-			if(((*dev_iter)->internal_type & CL_DEVICE_TYPE_ACCELERATOR) != 0) device_options += " -DACCELERATOR";
+			if((device->internal_type & CL_DEVICE_TYPE_CPU) != 0) device_options += " -DCPU";
+			if((device->internal_type & CL_DEVICE_TYPE_GPU) != 0) device_options += " -DGPU";
+			if((device->internal_type & CL_DEVICE_TYPE_ACCELERATOR) != 0) device_options += " -DACCELERATOR";
 			
 			kernels[identifier]->program->build(cur_device, (options+device_options).c_str());
 		}
@@ -504,25 +508,25 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 		kernels[identifier]->args_passed.insert(kernels[identifier]->args_passed.begin(), kernels[identifier]->arg_count, false);
 
 		// print out build log
-		/*for(vector<cl::Device>::iterator diter = internal_devices.begin(); diter != internal_devices.end(); diter++) {
+		/*for(const auto& internal_device : internal_devices) {
 			char build_log[CLINFO_STR_SIZE];
 			memset(build_log, 0, CLINFO_STR_SIZE);
-			kernels[identifier]->program.getBuildInfo(*diter, CL_PROGRAM_BUILD_LOG, &build_log);
+			kernels[identifier]->program->getBuildInfo(internal_device, CL_PROGRAM_BUILD_LOG, &build_log);
 			a2e_debug("build log: %s", build_log);
 		}*/
 		
-		size_t device_num = 0;
-		for(vector<device_object*>::iterator diter = devices.begin(); diter != devices.end(); diter++) {
+		/*size_t device_num = 0;
+		for(const auto& device : devices) {
 			//cout << "DEBUG: kernel local memory device #" << device_num << ": " << kernels[identifier]->kernel.getWorkGroupInfo<CL_KERNEL_LOCAL_MEM_SIZE>(*(*diter)->device) << endl;
 			device_num++;
-		}
+		}*/
 	}
 	__HANDLE_CL_EXCEPTION_START("add_kernel")
 		// print out build log
-		for(vector<cl::Device>::iterator diter = internal_devices.begin(); diter != internal_devices.end(); diter++) {
+		for(const auto& internal_device : internal_devices) {
 			char build_log[CLINFO_STR_SIZE];
 			memset(build_log, 0, CLINFO_STR_SIZE);
-			kernels[identifier]->program->getBuildInfo(*diter, CL_PROGRAM_BUILD_LOG, &build_log);
+			kernels[identifier]->program->getBuildInfo(internal_device, CL_PROGRAM_BUILD_LOG, &build_log);
 			a2e_error("build log (%s): %s", identifier, build_log);
 		}
 		
@@ -554,14 +558,14 @@ void opencl::log_program_binary(const kernel_object* kernel, const string& optio
 		clGetProgramInfo((*kernel->program)(), CL_PROGRAM_BINARIES, program_sizes.size()*sizeof(unsigned char*), &program_binaries[0], nullptr);
 		
 		string kernel_name = kernel->kernel->getInfo<CL_KERNEL_FUNCTION_NAME>();
-		for(vector<device_object*>::iterator diter = devices.begin(); diter != devices.end(); diter++) {
+		for(const auto& device : devices) {
 			if(program_sizes[device_num] > 0) {
-				if((*diter)->vendor_type != opencl::CLV_UNKNOWN) {
+				if(device->vendor_type != opencl::CLV_UNKNOWN) {
 					string file_name = kernel_name + string("_") + size_t2string(device_num);
-					if((*diter)->vendor_type == opencl::CLV_NVIDIA) {
+					if(device->vendor_type == opencl::CLV_NVIDIA) {
 						file_name += ".ptx";
 					}
-					else if((*diter)->vendor_type == opencl::CLV_INTEL || (*diter)->vendor_type == opencl::CLV_AMD) {
+					else if(device->vendor_type == opencl::CLV_INTEL || device->vendor_type == opencl::CLV_AMD) {
 						file_name += ".asm";
 					}
 					else {
@@ -878,10 +882,10 @@ opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type,
 
 void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
 	// remove buffer from each associated kernel (and unset the kernel argument)
-	for(map<kernel_object*, vector<unsigned int> >::iterator akiter = buffer_obj->associated_kernels.begin(); akiter != buffer_obj->associated_kernels.end(); akiter++) {
-		for(vector<unsigned int>::iterator arg_iter = akiter->second.begin(); arg_iter != akiter->second.end(); arg_iter++) {
-			akiter->first->args_passed[*arg_iter] = false;
-			akiter->first->buffer_args.erase(*arg_iter);
+	for(const auto& associated_kernel : buffer_obj->associated_kernels) {
+		for(const auto& arg_num : associated_kernel.second) {
+			associated_kernel.first->args_passed[arg_num] = false;
+			associated_kernel.first->buffer_args.erase(arg_num);
 		}
 	}
 	buffer_obj->associated_kernels.clear();
@@ -972,9 +976,9 @@ void opencl::set_active_device(opencl::OPENCL_DEVICE dev) {
 	}
 	
 	if((dev >= GPU0 && dev <= GPU255) || (dev >= CPU0 && dev <= CPU255)) {
-		for(vector<device_object*>::iterator diter = devices.begin(); diter != devices.end(); diter++) {
-			if((*diter)->type == dev) {
-				active_device = *diter;
+		for(const auto& device : devices) {
+			if(device->type == dev) {
+				active_device = device;
 				return;
 			}
 		}
@@ -1008,11 +1012,11 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 		if(!all_set) return;
 		
 		vector<cl::Memory> gl_objects;
-		for(map<unsigned int, buffer_object*>::iterator biter = kernel_obj->buffer_args.begin(); biter != kernel_obj->buffer_args.end(); biter++) {
-			if((biter->second->type & opencl::BT_COPY_ON_USE) != 0) write_buffer(biter->second, biter->second->data);
-			if((biter->second->type & opencl::BT_OPENGL_BUFFER) != 0 &&
-			   !biter->second->manual_gl_sharing) {
-				gl_objects.push_back(*(biter->second->buffer != nullptr ? (cl::Memory*)biter->second->buffer : (cl::Memory*)biter->second->image_buffer));
+		for(const auto& buffer_arg : kernel_obj->buffer_args) {
+			if((buffer_arg.second->type & opencl::BT_COPY_ON_USE) != 0) write_buffer(buffer_arg.second, buffer_arg.second->data);
+			if((buffer_arg.second->type & opencl::BT_OPENGL_BUFFER) != 0 &&
+			   !buffer_arg.second->manual_gl_sharing) {
+				gl_objects.push_back(*(buffer_arg.second->buffer != nullptr ? (cl::Memory*)buffer_arg.second->buffer : (cl::Memory*)buffer_arg.second->image_buffer));
 				kernel_obj->has_ogl_buffers = true;
 			}
 		}
@@ -1024,12 +1028,16 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 		//func().wait();
 		func();
 		
-		for(map<unsigned int, buffer_object*>::iterator biter = kernel_obj->buffer_args.begin(); biter != kernel_obj->buffer_args.end(); biter++) {
-			if((biter->second->type & opencl::BT_READ_BACK_RESULT) != 0) read_buffer(biter->second->data, biter->second);
+		for(const auto& buffer_arg : kernel_obj->buffer_args) {
+			if((buffer_arg.second->type & opencl::BT_READ_BACK_RESULT) != 0) read_buffer(buffer_arg.second->data, buffer_arg.second);
 		}
-		for(map<unsigned int, buffer_object*>::reverse_iterator biter = kernel_obj->buffer_args.rbegin(); biter != kernel_obj->buffer_args.rend(); biter++) {
-			if((biter->second->type & opencl::BT_DELETE_AFTER_USE) != 0) delete_buffer(biter->second);
-		}
+		
+		for_each(begin(kernel_obj->buffer_args), end(kernel_obj->buffer_args),
+				 [this](const pair<const unsigned int, buffer_object*>& buffer_arg) {
+					 if((buffer_arg.second->type & opencl::BT_DELETE_AFTER_USE) != 0) {
+						 this->delete_buffer(buffer_arg.second);
+					 }
+				 });
 		
 		if(kernel_obj->has_ogl_buffers && !gl_objects.empty()) {
 			queues[active_device->device]->enqueueReleaseGLObjects(&gl_objects);
@@ -1086,9 +1094,9 @@ opencl::device_object* opencl::get_device(opencl::OPENCL_DEVICE device) {
 	else if(device == FASTEST_CPU) return fastest_cpu;
 	else {
 		if((device >= GPU0 && device <= GPU255) || (device >= CPU0 && device <= CPU255)) {
-			for(vector<device_object*>::iterator diter = devices.begin(); diter != devices.end(); diter++) {
-				if((*diter)->type == device) {
-					return *diter;
+			for(const auto& dev : devices) {
+				if(dev->type == device) {
+					return dev;
 				}
 			}
 		}
@@ -1146,8 +1154,8 @@ void opencl::unmap_buffer(opencl::buffer_object* buffer_obj, void* map_ptr) {
 }
 
 bool opencl::has_vendor_device(OPENCL_VENDOR vendor_type) {
-	for(vector<device_object*>::const_iterator dev_iter = devices.begin(); dev_iter != devices.end(); dev_iter++) {
-		if((*dev_iter)->vendor_type == vendor_type) return true;
+	for(const auto& device : devices) {
+		if(device->vendor_type == vendor_type) return true;
 	}
 	return false;
 }

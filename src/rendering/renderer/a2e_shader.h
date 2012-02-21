@@ -115,9 +115,9 @@ public:
 			add_option("#");
 		}
 		virtual ~a2e_shader_object_base() {
-			for(auto& shd : vertex_shader) delete shd.second;
-			for(auto& shd : geometry_shader) delete shd.second;
-			for(auto& shd : fragment_shader) delete shd.second;
+			for(const auto& shd : vertex_shader) delete shd.second;
+			for(const auto& shd : geometry_shader) delete shd.second;
+			for(const auto& shd : fragment_shader) delete shd.second;
 		}
 	};
 	
@@ -182,7 +182,7 @@ protected:
 	vector<a2e_shader_object*> a2e_shader_objects;
 	vector<a2e_shader_include_object*> a2e_shader_include_objects;
 	map<string, a2e_shader_include*> a2e_shader_includes;
-	map<string, vector<a2e_shader_object*> > a2e_shaders;
+	map<string, vector<a2e_shader_object*>> a2e_shaders;
 	
 	map<string, bool> conditions;
 	

@@ -64,7 +64,7 @@ struct shader_object {
 #endif
 	a2e_shader(false) {}
 	~shader_object() {
-		for(auto& prog : programs) {
+		for(const auto& prog : programs) {
 			delete prog;
 		}
 		programs.clear();

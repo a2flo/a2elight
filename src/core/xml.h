@@ -40,7 +40,6 @@ public:
 	struct xml_doc {
 	private:
 		template<typename T> class default_value {
-		// TODO: use "constexpr static T" again
 		public: static const T def() { return T(); }
 		};
 		const string& extract_attr(const string& path) const;

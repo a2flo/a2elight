@@ -228,7 +228,7 @@ xml::xml_node::xml_node(const xmlNode* node) {
 }
 xml::xml_node::~xml_node() {
 	// cascading delete
-	for(auto& child : children) {
+	for(const auto& child : children) {
 		delete child.second;
 	}
 	attributes.clear();

@@ -42,7 +42,7 @@ void gui_theme::load(const string& filename) {
 	}
 	
 	// process nodes
-	for(const auto node : ui_doc.nodes) {
+	for(const auto& node : ui_doc.nodes) {
 		process_node(node.second, nullptr);
 	}
 }
@@ -59,7 +59,7 @@ void gui_theme::process_node(const xml::xml_node* node, const xml::xml_node* par
 	// TODO
 	
 	// process child nodes
-	for(const auto child : node->children) {
+	for(const auto& child : node->children) {
 		process_node(child.second, node);
 	}
 }

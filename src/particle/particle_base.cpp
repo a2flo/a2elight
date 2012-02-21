@@ -29,7 +29,7 @@ particle_manager_base::particle_manager_base(engine* e_) : e(e_), s(e->get_shade
 particle_manager_base::~particle_manager_base() {
 	a2e_debug("deleting particle_manager_base object");
 	
-	for(auto& psystem : particle_systems) {
+	for(const auto& psystem : particle_systems) {
 		delete psystem;
 	}
 	particle_systems.clear();
@@ -40,7 +40,7 @@ particle_manager_base::~particle_manager_base() {
 /*! draws all particle systems
  */
 void particle_manager_base::draw(const rtt::fbo* frame_buffer) {
-	for(auto& psystem : particle_systems) {
+	for(const auto& psystem : particle_systems) {
 		if(psystem->is_visible()) draw_particle_system(psystem, frame_buffer);
 	}
 }
@@ -48,7 +48,7 @@ void particle_manager_base::draw(const rtt::fbo* frame_buffer) {
 /*! runs the particle system
  */
 void particle_manager_base::run() {
-	for(auto& psystem : particle_systems) {
+	for(const auto& psystem : particle_systems) {
 		if(psystem->is_active()) run_particle_system(psystem);
 	}
 }

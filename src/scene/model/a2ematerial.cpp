@@ -30,38 +30,38 @@ a2ematerial::a2ematerial(engine* eng) : e(eng), t(eng->get_texman()), exts(eng->
 a2ematerial::~a2ematerial() {
 	a2e_debug("deleting a2ematerial object");
 
-	for(vector<material>::iterator mat_iter = materials.begin(); mat_iter != materials.end(); mat_iter++) {
-		switch(mat_iter->mat_type) {
+	for(const auto& material : materials) {
+		switch(material.mat_type) {
 			case PARALLAX:
-				t->delete_texture(((parallax_material*)mat_iter->mat)->normal_texture);
-				t->delete_texture(((parallax_material*)mat_iter->mat)->height_texture);
+				t->delete_texture(((parallax_material*)material.mat)->normal_texture);
+				t->delete_texture(((parallax_material*)material.mat)->height_texture);
 				// fall through
 			case DIFFUSE:
-				t->delete_texture(((diffuse_material*)mat_iter->mat)->diffuse_texture);
-				t->delete_texture(((diffuse_material*)mat_iter->mat)->specular_texture);
+				t->delete_texture(((diffuse_material*)material.mat)->diffuse_texture);
+				t->delete_texture(((diffuse_material*)material.mat)->specular_texture);
 				break;
 			default:
 				break;
 		}
 
-		switch(mat_iter->lm_type) {
+		switch(material.lm_type) {
 			case LM_WARD:
-				t->delete_texture(((ward_model*)mat_iter->model)->isotropic_texture);
-				t->delete_texture(((ward_model*)mat_iter->model)->anisotropic_texture);
+				t->delete_texture(((ward_model*)material.model)->isotropic_texture);
+				t->delete_texture(((ward_model*)material.model)->anisotropic_texture);
 				break;
 			case LM_ASHIKHMIN_SHIRLEY:
-				t->delete_texture(((ashikhmin_shirley_model*)mat_iter->model)->anisotropic_texture);
+				t->delete_texture(((ashikhmin_shirley_model*)material.model)->anisotropic_texture);
 				break;
 			default: break;
 		}
 
-		if(mat_iter->mat != nullptr) delete mat_iter->mat;
-		if(mat_iter->model != nullptr) delete mat_iter->model;
+		if(material.mat != nullptr) delete material.mat;
+		if(material.model != nullptr) delete material.model;
 	}
 	materials.clear();
 
-	for(map<size_t, object_mapping*>::iterator miter = mapping.begin(); miter != mapping.end(); miter++) {
-		delete miter->second;
+	for(const auto& m : mapping) {
+		delete m.second;
 	}
 	mapping.clear();
 
@@ -533,7 +533,7 @@ void a2ematerial::copy_object_mapping(const size_t& from_object, const size_t& t
 }
 
 void a2ematerial::copy_object_mapping(const size_t& from_object, const vector<size_t>& to_objects) {
-	for(vector<size_t>::const_iterator obj_iter = to_objects.begin(); obj_iter != to_objects.end(); obj_iter++) {
-		copy_object_mapping(from_object, *obj_iter);
+	for(const auto& obj : to_objects) {
+		copy_object_mapping(from_object, obj);
 	}
 }

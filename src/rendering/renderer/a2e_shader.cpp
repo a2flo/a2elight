@@ -148,12 +148,12 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 				if(node_name == "includes") {
 					string includes_str = (const char*)xmlNodeGetContent((xmlNode*)cur_elem);
 					vector<string> includes = core::tokenize(includes_str, ' ');
-					for(vector<string>::const_iterator inc_iter = includes.begin(); inc_iter != includes.end(); inc_iter++) {
-						if(a2e_shader_includes.count(*inc_iter) == 0) {
-							a2e_error("unknown include \"%s\"! - will be ignored!", inc_iter->c_str());
+					for(const auto& include : includes) {
+						if(a2e_shader_includes.count(include) == 0) {
+							a2e_error("unknown include \"%s\"! - will be ignored!", include);
 						}
 						else {
-							a2e_shd->includes.push_back(*inc_iter);
+							a2e_shd->includes.push_back(include);
 						}
 					}
 				}
@@ -177,7 +177,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 							}
 							
 							// add options to shader options set, allocate memory
-							for(auto& option : options) {
+							for(const auto& option : options) {
 								a2e_shd->add_option(option);
 							}
 						}
@@ -214,7 +214,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 					}
 					
 					// traverse xml nodes and combine shader code for each option
-					for(auto& option : a2e_shd->options) {
+					for(const auto& option : a2e_shd->options) {
 						a2e_shader_code* shd = (node_name == "vertex_shader" ? a2e_shd->vertex_shader[option] :
 												(node_name == "geometry_shader" ? a2e_shd->geometry_shader[option] :
 												 a2e_shd->fragment_shader[option]));
@@ -303,7 +303,7 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 						const string option_value =  x->get_attribute<string>(((xmlElement*)cur_node)->attributes, "value");
 						vector<string> valid_options = core::tokenize(option_value, ' ');
 						traverse_child_node = false;
-						for(auto& voption : valid_options) {
+						for(const auto& voption : valid_options) {
 							if(voption == option) {
 								traverse_child_node = true;
 								break;
@@ -462,7 +462,7 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 	//		actual shader default version
 	//		example: (# A B) (# B D) -> (## #D A# BB), valid options: (# A B D)
 	bool default_opt = (shd->options.count("#") != 0);
-	for(auto& include : shd->includes) {
+	for(const auto& include : shd->includes) {
 		if(a2e_shader_includes.count(include) == 0) {
 			a2e_error("unknown include \"%s\"! - will be ignored!", include);
 			continue;
@@ -474,7 +474,7 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 		set<string> new_options = shd->options; // we will operate on a copy
 		if(!default_opt && !inc_default_opt) {
 			// intersect
-			for(auto& option : shd->options) {
+			for(const auto& option : shd->options) {
 				if(inc_obj->options.count(option) == 0) {
 					new_options.erase(option);
 				}
@@ -489,7 +489,7 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 		}
 		else if(default_opt && inc_default_opt) {
 			//
-			for(auto& inc_option : inc_obj->options) {
+			for(const auto& inc_option : inc_obj->options) {
 				if(new_options.count(inc_option) == 0) {
 					new_options.insert(inc_option);
 				}
@@ -498,7 +498,7 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 		
 		// assign/add new options, ...
 		set<string> old_options = shd->options; // need to copy again, since we're operating on it
-		for(auto& option : new_options) {
+		for(const auto& option : new_options) {
 			if(shd->options.count(option) == 0) {
 				shd->add_option(option);
 				
@@ -509,7 +509,7 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 			}
 		}
 		// ... delete old ones, ...
-		for(auto& option : old_options) {
+		for(const auto& option : old_options) {
 			if(new_options.count(option) == 0) {
 				shd->remove_option(option);
 			}
@@ -518,7 +518,7 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 	}
 	
 	// do this for each option
-	for(auto& option : shd->options) {
+	for(const auto& option : shd->options) {
 		//
 		a2e_shader_code* vertex_shd = shd->vertex_shader[option];
 		a2e_shader_code* geometry_shd = shd->geometry_shader[option];
@@ -526,7 +526,7 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 		
 		// add include code
 		// (since we're inserting the include at the beginning, do this in reverse order, so the first include is the first in the code/shader)
-		for(auto include = shd->includes.rbegin(); include != shd->includes.rend(); include++) {
+		for(auto include = shd->includes.crbegin(); include != shd->includes.crend(); include++) {
 			if(a2e_shader_includes.count(*include) == 0) {
 				a2e_error("unknown include \"%s\"! - will be ignored!", *include);
 				continue;
@@ -583,7 +583,7 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 	bool ret = true;
 	
 	// do this for each option
-	for(auto& option : shd->options) {
+	for(const auto& option : shd->options) {
 		shd->vs_program[option] = "";
 		shd->gs_program[option] = "";
 		shd->fs_program[option] = "";
@@ -679,7 +679,10 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 #endif
 		
 		ext::GLSL_VERSION max_glsl_version = std::max(std::max(vertex_shd->version, fragment_shd->version), geometry_shd->version);
-		shader_object* obj = shader_obj->add_shader_src(shd->identifier, option, max_glsl_version, shd->vs_program[option].c_str(), shd->gs_program[option].c_str(), shd->fs_program[option].c_str());
+		shader_object* obj = shader_obj->add_shader_src(shd->identifier, option, max_glsl_version,
+														shd->vs_program[option].c_str(),
+														shd->gs_program[option].c_str(),
+														shd->fs_program[option].c_str());
 		if(obj == nullptr) ret = false;
 		else obj->a2e_shader = true;
 	}
@@ -689,15 +692,17 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 
 void a2e_shader::load_a2e_shader_includes() {
 	map<string, file_io::FILE_TYPE> file_list = core::get_file_list(e->shader_path("include/"), "a2eshdi");
-	for(map<string, file_io::FILE_TYPE>::iterator include_iter = file_list.begin(); include_iter != file_list.end(); include_iter++) {
-		const string inc_name = include_iter->first.substr(0, include_iter->first.find(".a2eshdi"));
+	for(const auto& include : file_list) {
+		const string inc_name = include.first.substr(0, include.first.find(".a2eshdi"));
 		a2e_shader_includes[inc_name] = new a2e_shader_include();
-		a2e_shader_includes[inc_name]->filename = "include/"+include_iter->first;
+		a2e_shader_includes[inc_name]->filename = "include/"+include.first;
 	}
 	
-	for(map<string, a2e_shader_include*>::iterator iter = a2e_shader_includes.begin(); iter != a2e_shader_includes.end(); iter++) {
-		iter->second->shader_include_object = create_a2e_shader_include();
-		load_a2e_shader("a2e_include_"+iter->second->filename, string(e->shader_path(iter->second->filename.c_str())), (a2e_shader_object*)iter->second->shader_include_object);
+	for(const auto& include : a2e_shader_includes) {
+		include.second->shader_include_object = create_a2e_shader_include();
+		load_a2e_shader("a2e_include_"+include.second->filename,
+						string(e->shader_path(include.second->filename.c_str())),
+						(a2e_shader_object*)include.second->shader_include_object);
 	}
 }
 

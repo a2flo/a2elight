@@ -106,19 +106,19 @@ a2e_texture texman::check_texture(const string& filename, GLsizei width, GLsizei
 	if(filename == "") return dummy_texture;
 	
 	// check if we already loaded this texture
-	for(deque<a2e_texture>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
-		if((*tex_iter)->filename == filename &&
-		   (*tex_iter)->height == height &&
-		   (*tex_iter)->width == width &&
-		   (*tex_iter)->internal_format == internal_format &&
-		   (*tex_iter)->format == format &&
-		   (*tex_iter)->filtering == filtering &&
-		   (*tex_iter)->anisotropic == anisotropic &&
-		   (*tex_iter)->wrap_s == wrap_s &&
-		   (*tex_iter)->wrap_t == wrap_t &&
-		   (*tex_iter)->type == type) {
+	for(const auto& tex : textures) {
+		if(tex->filename == filename &&
+		   tex->height == height &&
+		   tex->width == width &&
+		   tex->internal_format == internal_format &&
+		   tex->format == format &&
+		   tex->filtering == filtering &&
+		   tex->anisotropic == anisotropic &&
+		   tex->wrap_s == wrap_s &&
+		   tex->wrap_t == wrap_t &&
+		   tex->type == type) {
 			// we already loaded the texture, so just return its number
-			return *tex_iter;
+			return tex;
 		}
 	}
 	
@@ -319,7 +319,7 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 }
 
 void texman::delete_texture(a2e_texture& tex) {
-	deque<a2e_texture>::iterator del_iter = find(textures.begin(), textures.end(), tex);
+	const auto del_iter = find(textures.begin(), textures.end(), tex);
 	if(del_iter != textures.end()) {
 		//delete &(*del_iter);
 		textures.erase(del_iter);
@@ -335,9 +335,9 @@ const a2e_texture texman::get_dummy_texture() const {
  *  @param tex_num the opengl texture number we want to search for
  */
 a2e_texture texman::get_texture(GLuint tex_num) {
-	for(deque<a2e_texture>::iterator tex_iter = textures.begin(); tex_iter != textures.end(); tex_iter++) {
-		if((*tex_iter)->tex_num == tex_num) {
-			return *tex_iter;
+	for(const auto& tex : textures) {
+		if(tex->tex_num == tex_num) {
+			return tex;
 		}
 	}
 	

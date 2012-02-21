@@ -369,7 +369,7 @@ void scene::delete_alpha_objects(const size_t count, const extbbox** bboxes) {
 
 void scene::setup_scene() {
 	// run particle managers
-	for(auto& pm : particle_managers) {
+	for(const auto& pm : particle_managers) {
 		pm->run();
 	}
 }
@@ -387,7 +387,7 @@ void scene::geometry_pass() {
 #endif
 	
 	// render models (opaque)
-	for(auto& iter : models) {
+	for(const auto& iter : models) {
 		if(iter->get_visible()) iter->draw(DRAW_MODE::GEOMETRY_PASS);
 	}
 	
@@ -397,17 +397,17 @@ void scene::geometry_pass() {
 	}
 
 	// render physical objects
-	for(auto& model : models) {
+	for(const auto& model : models) {
 		if(model->get_draw_phys_obj()) model->draw_phys_obj();
 	}
 	
 	// render callbacks (opaque)
-	for(auto& draw_iter : draw_callbacks) {
+	for(const auto& draw_iter : draw_callbacks) {
 		draw_iter.second->draw(DRAW_MODE::GEOMETRY_PASS);
 	}
 	
 	// render/draw particle managers (TODO: PARTICLE TODO)
-	/*for(auto& pm : particle_managers) {
+	/*for(const auto& pm : particle_managers) {
 		pm->draw();
 	}*/
 	
@@ -425,7 +425,7 @@ void scene::geometry_pass() {
 	}
 	
 	// render callbacks (alpha)
-	for(auto& draw_iter : draw_callbacks) {
+	for(const auto& draw_iter : draw_callbacks) {
 		draw_iter.second->draw(DRAW_MODE::GEOMETRY_ALPHA_PASS);
 	}
 	
@@ -577,7 +577,7 @@ void scene::light_and_material_pass() {
 	else r->clear();
 	
 	// render models (opaque)
-	for(auto& iter : models) {
+	for(const auto& iter : models) {
 		if(iter->get_visible()) {
 			iter->set_ir_buffers(frames[0].g_buffer[0], frames[0].l_buffer[0],
 								 frames[0].g_buffer[1], frames[0].l_buffer[1]);
@@ -586,8 +586,8 @@ void scene::light_and_material_pass() {
 	}
 	
 	// render callbacks (opaque pass)
-	for(map<string, draw_handler*>::iterator draw_iter = draw_callbacks.begin(); draw_iter != draw_callbacks.end(); draw_iter++) {
-		draw_iter->second->draw(DRAW_MODE::MATERIAL_PASS);
+	for(const auto& draw_cb : draw_callbacks) {
+		draw_cb.second->draw(DRAW_MODE::MATERIAL_PASS);
 	}
 	
 	// for alpha objects and particles rendering, switch back to LEQUAL,
@@ -604,8 +604,8 @@ void scene::light_and_material_pass() {
 			(*obj.second)(DRAW_MODE::MATERIAL_ALPHA_PASS, obj.first, iter->second);
 		}
 		// render callbacks (alpha pass)
-		for(map<string, draw_handler*>::iterator draw_iter = draw_callbacks.begin(); draw_iter != draw_callbacks.end(); draw_iter++) {
-			draw_iter->second->draw(DRAW_MODE::MATERIAL_ALPHA_PASS);
+		for(const auto& draw_cb : draw_callbacks) {
+			draw_cb.second->draw(DRAW_MODE::MATERIAL_ALPHA_PASS);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
@@ -615,7 +615,7 @@ void scene::light_and_material_pass() {
 #endif
 	
 	// render/draw particle managers
-	for(auto& pm : particle_managers) {
+	for(const auto& pm : particle_managers) {
 		pm->draw(frames[0].g_buffer[0]);
 	}
 	
@@ -671,7 +671,7 @@ void scene::light_and_material_pass() {
 	
 	// apply post processing
 	if(is_post_processing) {
-		for(auto& pph : pp_handlers) {
+		for(const auto& pph : pp_handlers) {
 			(*pph)(scene_buffer);
 		}
 	}
@@ -738,7 +738,7 @@ void scene::delete_light(light* del_light) {
  *  @param z z coordinate
  */
 void scene::set_position(float x, float y, float z) {
-	for(auto& model : models) {
+	for(const auto& model : models) {
 		// subtract old position and add new one
 		model->set_position(model->get_position()->x - position.x + x,
 							model->get_position()->y - position.y + y,

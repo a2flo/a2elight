@@ -180,7 +180,7 @@ public:
 		~kernel_object() {
 			if(global != nullptr) delete global;
 			if(local != nullptr) delete local;
-			for(auto& ba : buffer_args) {
+			for(const auto& ba : buffer_args) {
 				ba.second->associated_kernels.erase(this);
 			}
 			delete kernel;
@@ -200,13 +200,13 @@ public:
 		cl::ImageFormat format;
 		size3 origin;
 		size3 region;
-		map<kernel_object*, vector<unsigned int> > associated_kernels; // kernels + argument numbers
+		map<kernel_object*, vector<unsigned int>> associated_kernels; // kernels + argument numbers
 		
 		buffer_object() : buffer(nullptr), image_buffer(nullptr), ogl_buffer(0), manual_gl_sharing(false), data(nullptr), size(0), type(0), format(0, 0), associated_kernels() {}
 	};
 	
 	struct device_object {
-		cl::Device* device;
+		const cl::Device* device;
 		OPENCL_DEVICE type;
 		OPENCL_VENDOR vendor_type;
 		unsigned int units;
@@ -272,7 +272,7 @@ protected:
 	map<string, kernel_object*> kernels;
 	kernel_object* cur_kernel;
 	
-	map<cl::Device*, cl::CommandQueue*> queues;
+	map<const cl::Device*, cl::CommandQueue*> queues;
 	
 };
 

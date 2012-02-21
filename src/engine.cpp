@@ -76,9 +76,9 @@ engine::engine(const char* callpath_, const char* datapath_) {
 engine::~engine() {
 	a2e_debug("deleting engine object");
 
-	for(map<string, SDL_Cursor*>::iterator citer = cursors.begin(); citer != cursors.end(); citer++) {
-		if(citer->first != "STANDARD") {
-			SDL_FreeCursor(citer->second);
+	for(const auto& cursor : cursors) {
+		if(cursor.first != "STANDARD") {
+			SDL_FreeCursor(cursor.second);
 		}
 	}
 	cursors.clear();
@@ -462,8 +462,8 @@ void engine::init(const char* ico) {
 	supported_aa_modes.push_back(rtt::TAA_SSAA_2_FXAA);
 	
 	bool chosen_aa_mode_supported = false;
-	for(vector<rtt::TEXTURE_ANTI_ALIASING>::iterator aaiter = supported_aa_modes.begin(); aaiter != supported_aa_modes.end(); aaiter++) {
-		if(*aaiter == config.anti_aliasing) chosen_aa_mode_supported = true;
+	for(const auto& aa_mode : supported_aa_modes) {
+		if(aa_mode == config.anti_aliasing) chosen_aa_mode_supported = true;
 	}
 
 	// if the chosen anti-aliasing mode isn't supported, use the next best one

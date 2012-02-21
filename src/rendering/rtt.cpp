@@ -68,7 +68,7 @@ rtt::~rtt() {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 
-	for(rtt::fbo* buffer : buffers) {
+	for(const auto& buffer : buffers) {
 		glDeleteTextures(buffer->attachment_count, buffer->tex_id);
 		glDeleteFramebuffers(1, &buffer->fbo_id);
 		delete buffer;

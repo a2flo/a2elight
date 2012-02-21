@@ -58,8 +58,8 @@ shader::~shader() {
 	
 	delete a2e_shd;
 
-	for(map<string, shader_object*>::iterator shd_iter = shaders.begin(); shd_iter != shaders.end(); shd_iter++) {
-		delete shd_iter->second;
+	for(const auto& shd : shaders) {
+		delete shd.second;
 	}
 	shaders.clear();
 
@@ -69,8 +69,8 @@ shader::~shader() {
 void shader::reload_shaders() {
 	// delete old shaders
 	if(a2e_shd != nullptr) delete a2e_shd;
-	for(map<string, shader_object*>::iterator shd_iter = shaders.begin(); shd_iter != shaders.end(); shd_iter++) {
-		delete shd_iter->second;
+	for(const auto& shd : shaders) {
+		delete shd.second;
 	}
 	shaders.clear();
 
