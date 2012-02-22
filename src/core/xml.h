@@ -71,7 +71,7 @@ public:
 		
 		const string& operator[](const string& attr_name) const {
 			static const string invalid_attr = "INVALID";
-			const auto& attr = attributes.find(attr_name);
+			const auto attr = attributes.find(attr_name);
 			if(attr == attributes.end()) return invalid_attr;
 			return attr->second;
 		}

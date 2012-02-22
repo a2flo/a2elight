@@ -154,10 +154,10 @@ public:
 	void set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool state);
 	
 	void set_active_device(OPENCL_DEVICE dev);
-	bool set_kernel_argument(unsigned int index, opencl::buffer_object* arg);
-	bool set_kernel_argument(unsigned int index, const opencl::buffer_object* arg);
-	template<typename T> bool set_kernel_argument(unsigned int index, T arg);
-	bool set_kernel_argument(unsigned int index, size_t size, void* arg);
+	bool set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg);
+	bool set_kernel_argument(const unsigned int& index, const opencl::buffer_object* arg);
+	template<typename T> bool set_kernel_argument(const unsigned int& index, T&& arg);
+	bool set_kernel_argument(const unsigned int& index, size_t size, void* arg);
 	void set_kernel_range(const cl::NDRange& global, const cl::NDRange& local);
 	size_t get_kernel_work_group_size();
 	cl::NDRange compute_local_kernel_range(const unsigned int dimensions);
@@ -281,15 +281,15 @@ protected:
 	
 };
 
-template<typename T> bool opencl::set_kernel_argument(unsigned int index, T arg) {
+template<typename T> bool opencl::set_kernel_argument(const unsigned int& index, T&& arg) {
 	try {
 		cur_kernel->kernel->setArg(index, arg);
 		cur_kernel->args_passed[index] = true;
 		
 		// remove "references" of the last used buffer for this kernel and argument index (if there is one)
 		if(cur_kernel->buffer_args.count(index) > 0) {
-			vector<unsigned int>* buf_associated_kernels = &cur_kernel->buffer_args[index]->associated_kernels[cur_kernel];
-			buf_associated_kernels->erase(find(buf_associated_kernels->begin(), buf_associated_kernels->end(), index));
+			auto& associated_kernels = cur_kernel->buffer_args[index]->associated_kernels[cur_kernel];
+			remove(begin(associated_kernels), end(associated_kernels), index);
 			cur_kernel->buffer_args.erase(index);
 		}
 		return true;

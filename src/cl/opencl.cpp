@@ -938,7 +938,7 @@ void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
 	buffer_obj->associated_kernels.clear();
 	if(buffer_obj->buffer != nullptr) delete buffer_obj->buffer;
 	if(buffer_obj->image_buffer != nullptr) delete buffer_obj->image_buffer;
-	buffers.erase(find(buffers.begin(), buffers.end(), buffer_obj));
+	buffers.erase(find(begin(buffers), end(buffers), buffer_obj));
 }
 
 void opencl::write_buffer(opencl::buffer_object* buffer_obj, const void* src, const size_t offset, const size_t size) {
@@ -1112,7 +1112,7 @@ void opencl::run_kernel(const char* kernel_identifier) {
 	a2e_error("kernel \"%s\" doesn't exist!", kernel_identifier);
 }
 
-bool opencl::set_kernel_argument(unsigned int index, opencl::buffer_object* arg) {
+bool opencl::set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg) {
 	if((arg->buffer != nullptr && set_kernel_argument(index, (*arg->buffer)())) ||
 	   (arg->image_buffer != nullptr && set_kernel_argument(index, *(cl::Memory*)arg->image_buffer))) {
 		cur_kernel->buffer_args[index] = arg;
@@ -1122,11 +1122,11 @@ bool opencl::set_kernel_argument(unsigned int index, opencl::buffer_object* arg)
 	return false;
 }
 
-bool opencl::set_kernel_argument(unsigned int index, const opencl::buffer_object* arg) {
+bool opencl::set_kernel_argument(const unsigned int& index, const opencl::buffer_object* arg) {
 	return set_kernel_argument(index, (opencl::buffer_object*)arg);
 }
 
-bool opencl::set_kernel_argument(unsigned int index, size_t size, void* arg) {
+bool opencl::set_kernel_argument(const unsigned int& index, size_t size, void* arg) {
 	try {
 		cur_kernel->kernel->setArg(index, size, arg);
 		cur_kernel->args_passed[index] = true;
