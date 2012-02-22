@@ -82,7 +82,7 @@ const char* opencl::error_code_to_string(cl_int error_code) {
 #define __HANDLE_CL_EXCEPTION_START_EXT(func_str, additional_info)									\
 catch(cl::Error err) {																				\
 	a2e_error("line #%s, " func_str "(): %s (%d: %s)%s!", \
-			  size_t2string(__LINE__).c_str(), err.what(), err.err(), error_code_to_string(err.err()), additional_info);
+			  __LINE__, err.what(), err.err(), error_code_to_string(err.err()), additional_info);
 #define __HANDLE_CL_EXCEPTION_END }
 #define __HANDLE_CL_EXCEPTION(func_str) __HANDLE_CL_EXCEPTION_START(func_str) __HANDLE_CL_EXCEPTION_END
 #define __HANDLE_CL_EXCEPTION_EXT(func_str, additional_info) __HANDLE_CL_EXCEPTION_START_EXT(func_str, additional_info) __HANDLE_CL_EXCEPTION_END
@@ -449,6 +449,20 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 			return kernels[identifier];
 		}
 		
+		// check if this is an external kernel (and hasn't been added before)
+		if(external_kernels.count(identifier) == 0 &&
+		   none_of(begin(internal_kernels), end(internal_kernels),
+				   [&identifier](const string& int_kernel) {
+					   return (int_kernel == identifier);
+				   })) {
+			// if so, add it to the external kernel list
+			external_kernels.insert(make_pair(identifier,
+											  make_tuple(src,
+														 func_name,
+														 string(additional_options != nullptr ?
+																additional_options : ""))));
+		}
+		
 		if(additional_options != nullptr && strlen(additional_options) > 0) {
 			options += (additional_options[0] != ' ' ? " " : "") + string(additional_options);
 		}
@@ -609,6 +623,19 @@ void opencl::check_compilation(const bool ret, const string& filename) {
 void opencl::reload_kernels() {
 	destroy_kernels();
 	
+	// TODO: clean this up (+initializer list)
+	// first time init:
+	if(internal_kernels.empty()) {
+		internal_kernels.insert("PARTICLE INIT");
+		internal_kernels.insert("PARTICLE RESPAWN");
+		internal_kernels.insert("PARTICLE COMPUTE");
+		internal_kernels.insert("PARTICLE SORT LOCAL");
+		internal_kernels.insert("PARTICLE SORT MERGE GLOBAL");
+		internal_kernels.insert("PARTICLE SORT MERGE LOCAL");
+		internal_kernels.insert("PARTICLE COMPUTE DISTANCES");
+		internal_kernels.insert("INFERRED LIGHTING");
+	};
+	
 	successful_internal_compilation = true;
 	check_compilation(add_kernel_file("PARTICLE INIT", make_kernel_path("particle_spawn.cl"), "particle_init", " -DA2E_PARTICLE_INIT") != nullptr, "particle_spawn.cl");
 	check_compilation(add_kernel_file("PARTICLE RESPAWN", make_kernel_path("particle_spawn.cl"), "particle_respawn") != nullptr, "particle_spawn.cl");
@@ -644,6 +671,15 @@ void opencl::reload_kernels() {
 		// one or more kernels didn't compile, TODO: use fallback?
 		a2e_error("there were problems loading/compiling the internal kernels!");
 	}
+	
+	// load external kernels
+	for(const auto& ext_kernel : external_kernels) {
+		add_kernel_src(ext_kernel.first,
+					   get<0>(ext_kernel.second),
+					   get<1>(ext_kernel.second),
+					   get<2>(ext_kernel.second).c_str());
+	}
+	if(!external_kernels.empty()) a2e_debug("external kernels loaded successfully!");
 }
 
 void opencl::load_internal_kernels() {
