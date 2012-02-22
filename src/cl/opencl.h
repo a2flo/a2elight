@@ -104,6 +104,7 @@ public:
 		CLV_ATI,
 		CLV_INTEL,
 		CLV_AMD,
+		CLV_APPLE,
 		CLV_UNKNOWN
 	};
 	

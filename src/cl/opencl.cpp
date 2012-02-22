@@ -278,6 +278,9 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			else if(strstr(vendor_str.c_str(), "intel") != nullptr) {
 				device->vendor_type = CLV_INTEL;
 			}
+			else if(strstr(vendor_str.c_str(), "apple") != nullptr) {
+				device->vendor_type = CLV_APPLE;
+			}
 			
 			if(device->internal_type & CL_DEVICE_TYPE_CPU) {
 				device->type = (opencl::OPENCL_DEVICE)cpu_counter;
@@ -502,6 +505,9 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 					break;
 				case CLV_AMD:
 					device_options += " -DAMD";
+					break;
+				case CLV_APPLE:
+					device_options += " -DAPPLE_ARM";
 					break;
 				default:
 					device_options += " -DUNKNOWN_VENDOR";
