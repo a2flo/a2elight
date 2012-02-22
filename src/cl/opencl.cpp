@@ -422,6 +422,11 @@ bool opencl::is_gpu_support() {
 }
 
 opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const char* file_name, const string& func_name, const char* additional_options) {
+	if(kernels.count(identifier) != 0) {
+		a2e_error("kernel \"%s\" already exists!", identifier);
+		return kernels[identifier];
+	}
+	
 	if(!f->open_file(file_name, file_io::OT_READ)) {
 		return nullptr;
 	}
@@ -440,30 +445,30 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const c
 	kernel_data = "#define __" + core::str_to_upper(func_name) +  "_BUILD_TIME__ " + uint2string((unsigned int)time(nullptr)) + "\n" + kernel_data;
 //#endif
 	
+	// check if this is an external kernel (and hasn't been added before)
+	if(external_kernels.count(identifier) == 0 &&
+	   none_of(begin(internal_kernels), end(internal_kernels),
+			   [&identifier](const string& int_kernel) {
+				   return (int_kernel == identifier);
+			   })) {
+		// if so, add it to the external kernel list
+		external_kernels.insert(make_pair(identifier,
+										  make_tuple(string(file_name),
+													 func_name,
+													 string(additional_options != nullptr ?
+															additional_options : ""))));
+	}
+	
 	return add_kernel_src(identifier, kernel_data, func_name, additional_options);
 }
 
 opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const string& src, const string& func_name, const char* additional_options) {
-	a2e_debug("compiling \"%s\" kernel!", identifier.c_str());
+	a2e_debug("compiling \"%s\" kernel!", identifier);
 	string options = build_options;
 	try {
 		if(kernels.count(identifier) != 0) {
-			a2e_error("kernel \"%s\" already exists!", identifier.c_str());
+			a2e_error("kernel \"%s\" already exists!", identifier);
 			return kernels[identifier];
-		}
-		
-		// check if this is an external kernel (and hasn't been added before)
-		if(external_kernels.count(identifier) == 0 &&
-		   none_of(begin(internal_kernels), end(internal_kernels),
-				   [&identifier](const string& int_kernel) {
-					   return (int_kernel == identifier);
-				   })) {
-			// if so, add it to the external kernel list
-			external_kernels.insert(make_pair(identifier,
-											  make_tuple(src,
-														 func_name,
-														 string(additional_options != nullptr ?
-																additional_options : ""))));
 		}
 		
 		if(additional_options != nullptr && strlen(additional_options) > 0) {
@@ -680,10 +685,10 @@ void opencl::reload_kernels() {
 	
 	// load external kernels
 	for(const auto& ext_kernel : external_kernels) {
-		add_kernel_src(ext_kernel.first,
-					   get<0>(ext_kernel.second),
-					   get<1>(ext_kernel.second),
-					   get<2>(ext_kernel.second).c_str());
+		add_kernel_file(ext_kernel.first,
+						get<0>(ext_kernel.second).c_str(),
+						get<1>(ext_kernel.second),
+						get<2>(ext_kernel.second).c_str());
 	}
 	if(!external_kernels.empty()) a2e_debug("external kernels loaded successfully!");
 }

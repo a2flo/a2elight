@@ -275,7 +275,7 @@ protected:
 	
 	map<const cl::Device*, cl::CommandQueue*> queues;
 	
-	// identifier -> <source, func_name, options>
+	// identifier -> <file_name, func_name, options>
 	set<string> internal_kernels;
 	map<string, tuple<string, string, string>> external_kernels;
 	
