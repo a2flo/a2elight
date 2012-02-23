@@ -402,9 +402,10 @@ void engine::init(const char* ico) {
 #endif
 	
 	// make an early clear
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	swap();
+	e->handle_events(); // this will effectively create/open the window on some platforms
 
 	// create extension class object
 	exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
@@ -448,10 +449,6 @@ void engine::init(const char* ico) {
 
 	// resize stuff
 	resize_window();
-
-	// reserve memory for position and rotation 
-	engine::position = new float3();
-	engine::rotation = new float3();
 
 	// check which anti-aliasing modes are supported (ranging from worst to best)
 	supported_aa_modes.push_back(rtt::TAA_NONE);
@@ -513,6 +510,22 @@ void engine::init(const char* ico) {
 	shd = new shader(this);
 	g->init();
 	
+	// draw the loading screen/image
+	start_draw();
+	start_2d_draw();
+	a2e_texture load_tex = t->add_texture(data_path("loading.png"), texture_object::TF_LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	const size2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
+	const size2 img_offset(config.width/2 - load_tex_draw_size.x/2,
+						   config.height/2 - load_tex_draw_size.y/2);
+	g->set_blend_mode(gfx::BLEND_MODE::PRE_MUL);
+	g->draw_textured_rectangle(gfx::rect(img_offset.x, img_offset.y,
+										 img_offset.x + load_tex_draw_size.x,
+										 img_offset.y + load_tex_draw_size.y),
+							   coord(0.0f, 0.0f), coord(1.0f, 1.0f),
+							   load_tex->tex());
+	stop_2d_draw();
+	stop_draw();
+	
 #if !defined(A2E_IOS)
 	// init opencl
 	ocl->init(false, config.opencl_platform);
@@ -563,9 +576,6 @@ void engine::start_draw() {
 /*! stops drawing the window
  */
 void engine::stop_draw() {
-#if !defined(A2E_IOS)
-	glBindVertexArray(0);
-#endif
 	swap();
 	
 	GLenum error = glGetError();
