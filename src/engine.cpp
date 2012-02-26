@@ -312,7 +312,10 @@ void engine::init(const char* ico) {
 		windows_pos.set(0, 0);
 		a2e_debug("fullscreen enabled");
 	}
-	else a2e_debug("fullscreen disabled");
+	else {
+		a2e_debug("fullscreen disabled");
+		//config.flags |= SDL_WINDOW_RESIZABLE;
+	}
 #else
 	config.flags |= SDL_WINDOW_FULLSCREEN;
 	config.flags |= SDL_WINDOW_RESIZABLE;
@@ -332,6 +335,9 @@ void engine::init(const char* ico) {
 #if !defined(A2E_IOS)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#if !defined(__APPLE__) && !defined(MINGW) // TODO: update sdl!
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#endif
 #else
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -1206,8 +1212,14 @@ void engine::make_current() {
 
 bool engine::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 	if(type == EVENT_TYPE::WINDOW_RESIZE) {
-		//const window_resize_event& evt = (const window_resize_event&)*obj;
+		const window_resize_event& evt = (const window_resize_event&)*obj;
+		config.width = evt.size.x;
+		config.height = evt.size.y;
+		resize_window();
+		
 		// TODO: resize
+		// TODO: add scene manager/vector and recreate buffers inside the engine
+		// TODO: delay everything until after or before rendering a frame (or completetly handle this inside the main frame?)
 	}
 	return true;
 }

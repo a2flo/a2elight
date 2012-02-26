@@ -800,7 +800,8 @@ unsigned int a2emodel::get_col_index_count() {
 //// lighting stuff                                                                                          ////
 
 // inferred rendering
-void a2emodel::set_ir_buffers(const rtt::fbo* g_buffer_, const rtt::fbo* l_buffer_,
+void a2emodel::set_ir_buffers(const rtt::fbo* g_buffer_,
+							  const rtt::fbo* l_buffer_,
 							  const rtt::fbo* g_buffer_alpha_,
 							  const rtt::fbo* l_buffer_alpha_) {
 	a2emodel::g_buffer = g_buffer_;

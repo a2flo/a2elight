@@ -44,16 +44,6 @@ public:
 		unwind_add_event_handler(handler_, std::forward<event_types>(types)...);
 	}
 
-	//! input types
-	/*enum INPUT_TYPE {
-		IT_LEFT,	//!< enum left arrow key
-		IT_RIGHT,	//!< enum right arrow key
-		IT_BACK,	//!< enum backspace key
-		IT_DEL,		//!< enum delete key
-		IT_HOME,	//!< enum home key
-		IT_END		//!< enum end key
-	};*/
-
 	//! gets the mouses position (pnt)
 	pnt get_mouse_pos() const;
 	

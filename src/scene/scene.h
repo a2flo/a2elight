@@ -105,6 +105,8 @@ public:
 	float get_eye_distance();
 	void set_eye_distance(float distance);
 	
+	void recreate_buffers();
+	
 	//
 	void add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, draw_callback* cb);
 	void add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids, draw_callback* cbs);
@@ -135,6 +137,7 @@ protected:
 	void light_and_material_pass();
 	void postprocess();
 	void sort_alpha_objects();
+	void delete_buffers();
 
 	// vars
 	float3 position;

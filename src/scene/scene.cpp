@@ -59,98 +59,7 @@ scene::scene(engine* e_) {
 		fframe_time = 0.0f;
 		iframe_time = SDL_GetTicks();
 		
-		// create buffers used for inferred rendering
-		
-		// note: opaque and alpha/transparent geometry have their own buffers
-		// use 1 + 2 16-bit RGBA float buffers for the g-buffer: normal+Nuv (both) and DSF (alpha only)
-		// use 1 + 1 16-bit RGBA float buffer for the l-buffer
-		// use 1 8-bit RGBA ubyte buffer for the (intermediate) fxaa buffer
-		// use 1 8-bit RGBA ubyte buffer for the final buffer
-		
-		// TODO: add 4xSSAA support -> downscale in shader (+enable in engine)
-		
-		// figure out the target type (multi-sampled or not)
-		GLenum target = GL_TEXTURE_2D;
-		
-		// figure out the best 16-bit float format
-//#if !defined(A2E_IOS)
-		GLint rgba16_float_internal_format = GL_RGBA16F;
-		GLenum f16_format_type = GL_HALF_FLOAT;
-/*#else // TODO: use RGBA8 for now
-		GLint rgba16_float_internal_format = GL_RGBA8;
-		GLenum f16_format_type = GL_UNSIGNED_BYTE;
-#endif*/
-		
-		GLint internal_formats[] = { rgba16_float_internal_format, rgba16_float_internal_format };
-		GLenum formats[] = { GL_RGBA, GL_RGBA };
-		GLenum targets[] = { target, target };
-		texture_object::TEXTURE_FILTERING filters[] = { texture_object::TF_POINT, texture_object::TF_POINT };
-		const rtt::TEXTURE_ANTI_ALIASING taa = e->get_anti_aliasing();
-		rtt::TEXTURE_ANTI_ALIASING taas[] = { taa, taa };
-		GLint wraps[] = { GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
-		GLenum types[] = { f16_format_type, f16_format_type };
-		
-		//
-		float2 inferred_scale(float2(e->get_inferred_scale())*12.5f + 50.0f);
-		inferred_scale *= float2(e->get_width(), e->get_height());
-		inferred_scale /= 100.0f;
-		uint2 render_buffer_size = uint2(inferred_scale);
-		if(render_buffer_size.x % 2 == 1) render_buffer_size.x++;
-		if(render_buffer_size.y % 2 == 1) render_buffer_size.y++;
-		const uint2 final_buffer_size = uint2(e->get_width(), e->get_height());
-		
-		const float aa_scale = r->get_anti_aliasing_scale(e->get_anti_aliasing());
-		
-		cur_frame = 0;
-		for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
-			// create geometry buffer
-			// note that depth must be a 2d texture, because we will read it later inside a shader
-			// also: opaque gbuffer doesn't need an additional id buffer
-			frames[i].g_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
-												  filters, taas, wraps, wraps, internal_formats, formats,
-												  types, 1, rtt::DT_TEXTURE_2D);
-#if !defined(A2E_IOS) // TODO: think of a workaround for this
-			frames[i].g_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
-												  filters, taas, wraps, wraps, internal_formats, formats,
-												  types, 2, rtt::DT_TEXTURE_2D);
-#endif
-			
-			// create light buffer
-			frames[i].l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
-#if !defined(A2E_IOS)
-			frames[i].l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
-#endif
-			
-			// scene/final buffer (material pass)
-			if(final_buffer_size.x == render_buffer_size.x && final_buffer_size.y == render_buffer_size.y) {
-				// reuse the g-buffer depth buffer (performance and memory!)
-				frames[i].scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
-				frames[i].scene_buffer->depth_type = rtt::DT_TEXTURE_2D;
-				frames[i].scene_buffer->depth_buffer = frames[i].g_buffer[0]->depth_buffer;
-			}
-			else {
-				// sadly, the depth buffer optimization can't be used here, because the buffers are of a different size
-				frames[i].scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
-			}
-			
-			frames[i].fxaa_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_LINEAR, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
-			
-#if defined(A2E_INFERRED_RENDERING_CL)
-			frames[i].cl_normal_nuv_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[0]->tex_id[0]);
-			frames[i].cl_depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[0]->depth_buffer);
-			frames[i].cl_light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, frames[i].l_buffer[0]->tex_id[0]);
-#if !defined(A2E_IOS)
-			frames[i].cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[1]->tex_id[0]);
-			frames[i].cl_depth_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[1]->depth_buffer);
-			frames[i].cl_light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, frames[i].l_buffer[1]->tex_id[0]);
-#endif
-#endif
-		}
-		
-		a2e_debug("g/l-buffer @%v", size2(frames[0].g_buffer[0]->width,
-										  frames[0].g_buffer[0]->height));
-		a2e_debug("scene-buffer @%v", size2(frames[0].scene_buffer->width,
-											frames[0].scene_buffer->height));
+		recreate_buffers();
 
 		// load light objects/models
 		// TODO: !!! use simpler model!
@@ -170,30 +79,7 @@ scene::~scene() {
 
 	// if hdr is supported, than fbo's are supported too, so we don't need an extra delete in the "hdr fbo delete branch"
 	if(e->get_init_mode() == engine::GRAPHICAL) {
-		for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
-			if(frames[i].scene_buffer != nullptr) r->delete_buffer(frames[i].scene_buffer);
-			if(frames[i].fxaa_buffer != nullptr) r->delete_buffer(frames[i].fxaa_buffer);
-			if(frames[i].g_buffer[0] != nullptr) r->delete_buffer(frames[i].g_buffer[0]);
-			if(frames[i].l_buffer[0] != nullptr) r->delete_buffer(frames[i].l_buffer[0]);
-			if(frames[i].g_buffer[1] != nullptr) r->delete_buffer(frames[i].g_buffer[1]);
-			if(frames[i].l_buffer[1] != nullptr) r->delete_buffer(frames[i].l_buffer[1]);
-			
-#if defined(A2E_INFERRED_RENDERING_CL)
-			if(frames[i].cl_normal_nuv_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[0]);
-			if(frames[i].cl_depth_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_depth_buffer[0]);
-			if(frames[i].cl_light_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[0]);
-			if(frames[i].cl_normal_nuv_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[1]);
-			if(frames[i].cl_depth_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_depth_buffer[1]);
-			if(frames[i].cl_light_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[1]);
-#endif
-		}
-		
-		if(blur_buffer1 != nullptr) r->delete_buffer(blur_buffer1);
-		if(blur_buffer2 != nullptr) r->delete_buffer(blur_buffer2);
-		if(blur_buffer3 != nullptr) r->delete_buffer(blur_buffer3);
-		if(average_buffer != nullptr) r->delete_buffer(average_buffer);
-		if(exposure_buffer[0] != nullptr) r->delete_buffer(exposure_buffer[0]);
-		if(exposure_buffer[1] != nullptr) r->delete_buffer(exposure_buffer[1]);
+		delete_buffers();
 		
 		delete light_sphere;
 	}
@@ -201,11 +87,136 @@ scene::~scene() {
 	a2e_debug("scene object deleted");
 }
 
+void scene::delete_buffers() {
+	for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
+		if(frames[i].scene_buffer != nullptr) r->delete_buffer(frames[i].scene_buffer);
+		if(frames[i].fxaa_buffer != nullptr) r->delete_buffer(frames[i].fxaa_buffer);
+		if(frames[i].g_buffer[0] != nullptr) r->delete_buffer(frames[i].g_buffer[0]);
+		if(frames[i].l_buffer[0] != nullptr) r->delete_buffer(frames[i].l_buffer[0]);
+		if(frames[i].g_buffer[1] != nullptr) r->delete_buffer(frames[i].g_buffer[1]);
+		if(frames[i].l_buffer[1] != nullptr) r->delete_buffer(frames[i].l_buffer[1]);
+		
+#if defined(A2E_INFERRED_RENDERING_CL)
+		if(frames[i].cl_normal_nuv_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[0]);
+		if(frames[i].cl_depth_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_depth_buffer[0]);
+		if(frames[i].cl_light_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[0]);
+		if(frames[i].cl_normal_nuv_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[1]);
+		if(frames[i].cl_depth_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_depth_buffer[1]);
+		if(frames[i].cl_light_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[1]);
+#endif
+	}
+	
+	if(blur_buffer1 != nullptr) r->delete_buffer(blur_buffer1);
+	if(blur_buffer2 != nullptr) r->delete_buffer(blur_buffer2);
+	if(blur_buffer3 != nullptr) r->delete_buffer(blur_buffer3);
+	if(average_buffer != nullptr) r->delete_buffer(average_buffer);
+	if(exposure_buffer[0] != nullptr) r->delete_buffer(exposure_buffer[0]);
+	if(exposure_buffer[1] != nullptr) r->delete_buffer(exposure_buffer[1]);
+}
+
+void scene::recreate_buffers() {
+	if(e->get_init_mode() != engine::GRAPHICAL) return;
+	
+	// check if buffers have already been created (and delete them, if so)
+	delete_buffers();
+	
+	// create buffers used for inferred rendering
+	
+	// note: opaque and alpha/transparent geometry have their own buffers
+	// use 1 + 2 16-bit RGBA float buffers for the g-buffer: normal+Nuv (both) and DSF (alpha only)
+	// use 1 + 1 16-bit RGBA float buffer for the l-buffer
+	// use 1 8-bit RGBA ubyte buffer for the (intermediate) fxaa buffer
+	// use 1 8-bit RGBA ubyte buffer for the final buffer
+	
+	// TODO: add 4xSSAA support -> downscale in shader (+enable in engine)
+	
+	// figure out the target type (multi-sampled or not)
+	GLenum target = GL_TEXTURE_2D;
+	
+	// figure out the best 16-bit float format
+	//#if !defined(A2E_IOS)
+	GLint rgba16_float_internal_format = GL_RGBA16F;
+	GLenum f16_format_type = GL_HALF_FLOAT;
+	/*#else // TODO: use RGBA8 for now
+	GLint rgba16_float_internal_format = GL_RGBA8;
+	GLenum f16_format_type = GL_UNSIGNED_BYTE;
+	#endif*/
+	
+	GLint internal_formats[] = { rgba16_float_internal_format, rgba16_float_internal_format };
+	GLenum formats[] = { GL_RGBA, GL_RGBA };
+	GLenum targets[] = { target, target };
+	texture_object::TEXTURE_FILTERING filters[] = { texture_object::TF_POINT, texture_object::TF_POINT };
+	const rtt::TEXTURE_ANTI_ALIASING taa = e->get_anti_aliasing();
+	rtt::TEXTURE_ANTI_ALIASING taas[] = { taa, taa };
+	GLint wraps[] = { GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	GLenum types[] = { f16_format_type, f16_format_type };
+	
+	//
+	float2 inferred_scale(float2(e->get_inferred_scale())*12.5f + 50.0f);
+	inferred_scale *= float2(e->get_width(), e->get_height());
+	inferred_scale /= 100.0f;
+	uint2 render_buffer_size = uint2(inferred_scale);
+	if(render_buffer_size.x % 2 == 1) render_buffer_size.x++;
+	if(render_buffer_size.y % 2 == 1) render_buffer_size.y++;
+	const uint2 final_buffer_size = uint2(e->get_width(), e->get_height());
+	
+	const float aa_scale = r->get_anti_aliasing_scale(e->get_anti_aliasing());
+	
+	cur_frame = 0;
+	for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
+		// create geometry buffer
+		// note that depth must be a 2d texture, because we will read it later inside a shader
+		// also: opaque gbuffer doesn't need an additional id buffer
+		frames[i].g_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
+											  filters, taas, wraps, wraps, internal_formats, formats,
+											  types, 1, rtt::DT_TEXTURE_2D);
+#if !defined(A2E_IOS) // TODO: think of a workaround for this
+		frames[i].g_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
+											  filters, taas, wraps, wraps, internal_formats, formats,
+											  types, 2, rtt::DT_TEXTURE_2D);
+#endif
+		
+		// create light buffer
+		frames[i].l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+#if !defined(A2E_IOS)
+		frames[i].l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+#endif
+		
+		// scene/final buffer (material pass)
+		if(final_buffer_size.x == render_buffer_size.x && final_buffer_size.y == render_buffer_size.y) {
+			// reuse the g-buffer depth buffer (performance and memory!)
+			frames[i].scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+			frames[i].scene_buffer->depth_type = rtt::DT_TEXTURE_2D;
+			frames[i].scene_buffer->depth_buffer = frames[i].g_buffer[0]->depth_buffer;
+		}
+		else {
+			// sadly, the depth buffer optimization can't be used here, because the buffers are of a different size
+			frames[i].scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
+		}
+		
+		frames[i].fxaa_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_LINEAR, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+		
+#if defined(A2E_INFERRED_RENDERING_CL)
+		frames[i].cl_normal_nuv_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[0]->tex_id[0]);
+		frames[i].cl_depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[0]->depth_buffer);
+		frames[i].cl_light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, frames[i].l_buffer[0]->tex_id[0]);
+#if !defined(A2E_IOS)
+		frames[i].cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[1]->tex_id[0]);
+		frames[i].cl_depth_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[1]->depth_buffer);
+		frames[i].cl_light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, frames[i].l_buffer[1]->tex_id[0]);
+#endif
+#endif
+	}
+	
+	a2e_debug("g/l-buffer @%v", size2(frames[0].g_buffer[0]->width,
+									  frames[0].g_buffer[0]->height));
+	a2e_debug("scene-buffer @%v", size2(frames[0].scene_buffer->width,
+										frames[0].scene_buffer->height));
+}
+
 /*! draws the scene
  */
 void scene::draw() {
-	//cout << "######" << endl;
-	
 	// scene setup (lights, run particle systems, ...)
 	setup_scene();
 	

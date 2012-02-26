@@ -122,7 +122,8 @@ public:
 	virtual unsigned int get_col_index_count();
 	
 	// inferred rendering
-	void set_ir_buffers(const rtt::fbo* g_buffer, const rtt::fbo* l_buffer,
+	void set_ir_buffers(const rtt::fbo* g_buffer,
+						const rtt::fbo* l_buffer,
 						const rtt::fbo* g_buffer_alpha,
 						const rtt::fbo* l_buffer_alpha);
 	

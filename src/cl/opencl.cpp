@@ -673,9 +673,9 @@ void opencl::reload_kernels() {
 	
 	// TODO: make tile size dependent on #cores
 	/*check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=4 -DA2E_IR_TILE_SIZE_Y=4") != nullptr, "ir_lighting.cl");*/
-	string ir_lighting_flags = " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16";
+	/*string ir_lighting_flags = " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16";
 	if(local_atomics_support) ir_lighting_flags += " -DA2E_LOCAL_ATOMICS";
-	check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", ir_lighting_flags.c_str()) != nullptr, "ir_lighting.cl");
+	check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", ir_lighting_flags.c_str()) != nullptr, "ir_lighting.cl");*/
 	
 	if(successful_internal_compilation) a2e_debug("internal kernels loaded successfully!");
 	else {
