@@ -76,8 +76,8 @@ scene::scene(engine* e_) {
 scene::~scene() {
 	a2e_debug("deleting scene object");
 	
+	e->get_event()->remove_event_handler(*window_handler);
 	delete window_handler;
-	// TODO: delete from event object
 
 	a2e_debug("deleting models and lights");
 	models.clear();

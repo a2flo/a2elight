@@ -23,7 +23,7 @@
 /*! there is no function currently
  */
 camera::camera(engine* e_) : e(e_), evt(e_->get_event()),
-keyboard_handler(new event::handler(this, &camera::key_handler)) {
+keyboard_handler(this, &camera::key_handler) {
 	up_down = 0.0f;
 
 	keyboard_input = true;
@@ -37,15 +37,13 @@ keyboard_handler(new event::handler(this, &camera::key_handler)) {
 	key_state[0] = key_state[1] = key_state[2] = key_state[3] = false;
 	
 	// TODO: make this an internal handler?
-	evt->add_event_handler(*keyboard_handler, EVENT_TYPE::KEY_DOWN, EVENT_TYPE::KEY_UP);
+	evt->add_event_handler(keyboard_handler, EVENT_TYPE::KEY_DOWN, EVENT_TYPE::KEY_UP);
 }
 
 /*! there is no function currently
  */
 camera::~camera() {
-	// TODO: !
-	//evt->delete_event_handler(*keyboard_handler);
-	delete keyboard_handler;
+	evt->remove_event_handler(keyboard_handler);
 }
 
 /*! runs the camera (expected to be called every draw)

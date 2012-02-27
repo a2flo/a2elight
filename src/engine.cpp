@@ -83,12 +83,11 @@ engine::~engine() {
 	}
 	cursors.clear();
 	
+	e->remove_event_handler(*window_handler);
 	delete window_handler;
-	// TODO: delete from event object
 
 	if(c != nullptr) delete c;
 	if(f != nullptr) delete f;
-	if(e != nullptr) delete e;
 	if(g != nullptr) delete g;
 	if(t != nullptr) delete t;
 	if(exts != nullptr) delete exts;
@@ -97,6 +96,9 @@ engine::~engine() {
 	if(ocl != nullptr) delete ocl;
 	if(shd != nullptr) delete shd;
 	if(ui != nullptr) delete ui;
+	
+	// delete this at the end, b/c other classes will remove event handlers
+	if(e != nullptr) delete e;
 
 	a2e_debug("engine object deleted");
 	

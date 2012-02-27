@@ -62,7 +62,8 @@ key_handler_fnctr(this, &gui::key_handler), mouse_handler_fnctr(this, &gui::mous
 gui::~gui() {
 	a2e_debug("deleting gui object");
 	
-	// TODO: delete event handlers
+	evt->remove_event_handler(key_handler_fnctr);
+	evt->remove_event_handler(mouse_handler_fnctr);
 
 	a2e_debug("gui object deleted");
 }

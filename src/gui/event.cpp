@@ -20,7 +20,7 @@
 
 event::event() : thread_base("event"),
 #if !defined(GCC_LEGACY)
-user_queue_lock()
+user_queue_lock(), handlers_lock()
 #else
 user_queue_lock(nullptr)
 #endif
@@ -281,11 +281,15 @@ void event::set_mdouble_click_time(unsigned int dctime) {
 }
 
 void event::add_event_handler(handler& handler_, EVENT_TYPE type) {
+	handlers_lock.lock();
 	handlers.insert(pair<EVENT_TYPE, handler&>(type, handler_));
+	handlers_lock.unlock();
 }
 
 void event::add_internal_event_handler(handler& handler_, EVENT_TYPE type) {
+	handlers_lock.lock();
 	internal_handlers.insert(pair<EVENT_TYPE, handler&>(type, handler_));
+	handlers_lock.unlock();
 }
 
 void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
@@ -293,11 +297,13 @@ void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 	prev_events[type] = obj;
 	
 	// call internal event handlers directly
+	handlers_lock.lock();
 	const auto range = internal_handlers.equal_range(type);
 	for(auto iter = range.first; iter != range.second; iter++) {
 		// ignore return value for now (TODO: actually use this?)
 		iter->second(type, obj);
 	}
+	handlers_lock.unlock();
 	
 	// push to user event queue (these will be handled later on)
 #if !defined(GCC_LEGACY)
@@ -319,9 +325,50 @@ void event::handle_user_events() {
 		user_event_queue_processing.pop();
 		
 		// call user event handlers
+		handlers_lock.lock();
 		const auto range = handlers.equal_range(evt.first);
 		for(auto iter = range.first; iter != range.second; iter++) {
 			iter->second(evt.first, evt.second);
 		}
+		handlers_lock.unlock();
 	}
+}
+
+void event::remove_event_handler(const handler& handler_) {
+	handlers_lock.lock();
+	// TODO: check if this is safe ...
+	for(auto handler_iter = handlers.cbegin(); handler_iter != handlers.cend(); ) {
+		// good old pointer comparison ...
+		if(&handler_iter->second == &handler_) {
+			handlers.erase(handler_iter++);
+		}
+		else ++handler_iter;
+	}
+	for(auto handler_iter = internal_handlers.cbegin(); handler_iter != internal_handlers.cend(); ) {
+		if(&handler_iter->second == &handler_) {
+			internal_handlers.erase(handler_iter++);
+		}
+		else ++handler_iter;
+	}
+	handlers_lock.unlock();
+}
+
+void event::remove_event_types_from_handler(const handler& handler_, const set<EVENT_TYPE>& types) {
+	handlers_lock.lock();
+	// TODO: check if this is safe ...
+	for(auto handler_iter = handlers.cbegin(); handler_iter != handlers.cend(); ) {
+		if(&handler_iter->second == &handler_ &&
+		   types.count(handler_iter->first) > 0) {
+			handlers.erase(handler_iter++);
+		}
+		else ++handler_iter;
+	}
+	for(auto handler_iter = internal_handlers.cbegin(); handler_iter != internal_handlers.cend(); ) {
+		if(&handler_iter->second == &handler_ &&
+		   types.count(handler_iter->first) > 0) {
+			internal_handlers.erase(handler_iter++);
+		}
+		else ++handler_iter;
+	}
+	handlers_lock.unlock();
 }

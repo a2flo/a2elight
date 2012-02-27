@@ -80,7 +80,7 @@ protected:
 	// [right, left, up, down]
 	bool key_state[4];
 	
-	event::handler* keyboard_handler;
+	event::handler keyboard_handler;
 	bool key_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	
 };

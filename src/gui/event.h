@@ -48,6 +48,10 @@ public:
 		// unwind types, always call the simple add handler for each type
 		unwind_add_internal_event_handler(handler_, std::forward<event_types>(types)...);
 	}
+	
+	// completely remove an event handler or only remove event types that are handled by an event handler
+	void remove_event_handler(const handler& handler_);
+	void remove_event_types_from_handler(const handler& handler_, const set<EVENT_TYPE>& types);
 
 	//! gets the mouses position (pnt)
 	pnt get_mouse_pos() const;
@@ -67,6 +71,7 @@ protected:
 	queue<pair<EVENT_TYPE, shared_ptr<event_object>>> user_event_queue, user_event_queue_processing;
 #if !defined(GCC_LEGACY)
 	recursive_mutex user_queue_lock;
+	recursive_mutex handlers_lock;
 #else
 	SDL_mutex* user_queue_lock;
 #endif
