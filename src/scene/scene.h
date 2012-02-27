@@ -105,7 +105,7 @@ public:
 	float get_eye_distance();
 	void set_eye_distance(float distance);
 	
-	void recreate_buffers();
+	void recreate_buffers(const size2 buffer_size);
 	
 	//
 	void add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, draw_callback* cb);
@@ -205,6 +205,10 @@ protected:
 	float eye_distance;
 
 	bool stereo;
+	
+	// event handlers
+	event::handler* window_handler;
+	bool window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 
 };
 

@@ -284,6 +284,10 @@ void event::add_event_handler(handler& handler_, EVENT_TYPE type) {
 	handlers.insert(pair<EVENT_TYPE, handler&>(type, handler_));
 }
 
+void event::add_internal_event_handler(handler& handler_, EVENT_TYPE type) {
+	internal_handlers.insert(pair<EVENT_TYPE, handler&>(type, handler_));
+}
+
 void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 	// set/override last event for this type
 	prev_events[type] = obj;

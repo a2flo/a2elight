@@ -43,6 +43,11 @@ public:
 		// unwind types, always call the simple add handler for each type
 		unwind_add_event_handler(handler_, std::forward<event_types>(types)...);
 	}
+	void add_internal_event_handler(handler& handler_, EVENT_TYPE type);
+	template<typename... event_types> void add_internal_event_handler(handler& handler_, event_types&&... types) {
+		// unwind types, always call the simple add handler for each type
+		unwind_add_internal_event_handler(handler_, std::forward<event_types>(types)...);
+	}
 
 	//! gets the mouses position (pnt)
 	pnt get_mouse_pos() const;
@@ -97,6 +102,14 @@ protected:
 		// unwind types, always call the simple add handler for each type
 		add_event_handler(handler_, type);
 		unwind_add_event_handler(handler_, std::forward<event_types>(types)...);
+	}
+	void unwind_add_internal_event_handler(handler& handler_, EVENT_TYPE type) {
+		add_internal_event_handler(handler_, type);
+	}
+	template<typename... event_types> void unwind_add_internal_event_handler(handler& handler_, EVENT_TYPE type, event_types&&... types) {
+		// unwind types, always call the simple add handler for each type
+		add_internal_event_handler(handler_, type);
+		unwind_add_internal_event_handler(handler_, std::forward<event_types>(types)...);
 	}
 
 };

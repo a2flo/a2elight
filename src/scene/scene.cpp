@@ -59,7 +59,10 @@ scene::scene(engine* e_) {
 		fframe_time = 0.0f;
 		iframe_time = SDL_GetTicks();
 		
-		recreate_buffers();
+		recreate_buffers(size2(e->get_width(), e->get_height()));
+		
+		window_handler = new event::handler(this, &scene::window_event_handler);
+		e->get_event()->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
 
 		// load light objects/models
 		// TODO: !!! use simpler model!
@@ -72,6 +75,9 @@ scene::scene(engine* e_) {
  */
 scene::~scene() {
 	a2e_debug("deleting scene object");
+	
+	delete window_handler;
+	// TODO: delete from event object
 
 	a2e_debug("deleting models and lights");
 	models.clear();
@@ -114,7 +120,7 @@ void scene::delete_buffers() {
 	if(exposure_buffer[1] != nullptr) r->delete_buffer(exposure_buffer[1]);
 }
 
-void scene::recreate_buffers() {
+void scene::recreate_buffers(const size2 buffer_size) {
 	if(e->get_init_mode() != engine::GRAPHICAL) return;
 	
 	// check if buffers have already been created (and delete them, if so)
@@ -153,12 +159,12 @@ void scene::recreate_buffers() {
 	
 	//
 	float2 inferred_scale(float2(e->get_inferred_scale())*12.5f + 50.0f);
-	inferred_scale *= float2(e->get_width(), e->get_height());
+	inferred_scale *= float2(buffer_size);
 	inferred_scale /= 100.0f;
 	uint2 render_buffer_size = uint2(inferred_scale);
 	if(render_buffer_size.x % 2 == 1) render_buffer_size.x++;
 	if(render_buffer_size.y % 2 == 1) render_buffer_size.y++;
-	const uint2 final_buffer_size = uint2(e->get_width(), e->get_height());
+	const uint2 final_buffer_size = uint2(buffer_size);
 	
 	const float aa_scale = r->get_anti_aliasing_scale(e->get_anti_aliasing());
 	
@@ -212,6 +218,14 @@ void scene::recreate_buffers() {
 									  frames[0].g_buffer[0]->height));
 	a2e_debug("scene-buffer @%v", size2(frames[0].scene_buffer->width,
 										frames[0].scene_buffer->height));
+}
+
+bool scene::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+	if(type == EVENT_TYPE::WINDOW_RESIZE) {
+		const window_resize_event& evt = (const window_resize_event&)*obj;
+		recreate_buffers(evt.size);
+	}
+	return true;
 }
 
 /*! draws the scene

@@ -191,7 +191,7 @@ void engine::create() {
 	ocl = nullptr;
 	
 	window_handler = new event::handler(this, &engine::window_event_handler);
-	e->add_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
+	e->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
 	AtomicSet(&reload_shaders_flag, 0);
 	AtomicSet(&reload_kernels_flag, 0);
@@ -314,7 +314,7 @@ void engine::init(const char* ico) {
 	}
 	else {
 		a2e_debug("fullscreen disabled");
-		//config.flags |= SDL_WINDOW_RESIZABLE;
+		config.flags |= SDL_WINDOW_RESIZABLE;
 	}
 #else
 	config.flags |= SDL_WINDOW_FULLSCREEN;
@@ -1216,10 +1216,6 @@ bool engine::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj)
 		config.width = evt.size.x;
 		config.height = evt.size.y;
 		resize_window();
-		
-		// TODO: resize
-		// TODO: add scene manager/vector and recreate buffers inside the engine
-		// TODO: delay everything until after or before rendering a frame (or completetly handle this inside the main frame?)
 	}
 	return true;
 }
