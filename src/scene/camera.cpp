@@ -36,7 +36,6 @@ keyboard_handler(this, &camera::key_handler) {
 	
 	key_state[0] = key_state[1] = key_state[2] = key_state[3] = false;
 	
-	// TODO: make this an internal handler?
 	evt->add_event_handler(keyboard_handler, EVENT_TYPE::KEY_DOWN, EVENT_TYPE::KEY_UP);
 }
 

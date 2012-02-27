@@ -289,7 +289,7 @@ template<typename T> bool opencl::set_kernel_argument(const unsigned int& index,
 		// remove "references" of the last used buffer for this kernel and argument index (if there is one)
 		if(cur_kernel->buffer_args.count(index) > 0) {
 			auto& associated_kernels = cur_kernel->buffer_args[index]->associated_kernels[cur_kernel];
-			remove(begin(associated_kernels), end(associated_kernels), index);
+			associated_kernels.erase(remove(begin(associated_kernels), end(associated_kernels), index), end(associated_kernels));
 			cur_kernel->buffer_args.erase(index);
 		}
 		return true;

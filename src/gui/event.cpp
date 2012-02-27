@@ -336,17 +336,16 @@ void event::handle_user_events() {
 
 void event::remove_event_handler(const handler& handler_) {
 	handlers_lock.lock();
-	// TODO: check if this is safe ...
 	for(auto handler_iter = handlers.cbegin(); handler_iter != handlers.cend(); ) {
 		// good old pointer comparison ...
 		if(&handler_iter->second == &handler_) {
-			handlers.erase(handler_iter++);
+			handler_iter = handlers.erase(handler_iter);
 		}
 		else ++handler_iter;
 	}
 	for(auto handler_iter = internal_handlers.cbegin(); handler_iter != internal_handlers.cend(); ) {
 		if(&handler_iter->second == &handler_) {
-			internal_handlers.erase(handler_iter++);
+			handler_iter = internal_handlers.erase(handler_iter);
 		}
 		else ++handler_iter;
 	}
@@ -355,20 +354,11 @@ void event::remove_event_handler(const handler& handler_) {
 
 void event::remove_event_types_from_handler(const handler& handler_, const set<EVENT_TYPE>& types) {
 	handlers_lock.lock();
-	// TODO: check if this is safe ...
-	for(auto handler_iter = handlers.cbegin(); handler_iter != handlers.cend(); ) {
-		if(&handler_iter->second == &handler_ &&
-		   types.count(handler_iter->first) > 0) {
-			handlers.erase(handler_iter++);
-		}
-		else ++handler_iter;
-	}
-	for(auto handler_iter = internal_handlers.cbegin(); handler_iter != internal_handlers.cend(); ) {
-		if(&handler_iter->second == &handler_ &&
-		   types.count(handler_iter->first) > 0) {
-			internal_handlers.erase(handler_iter++);
-		}
-		else ++handler_iter;
+	for(const auto& type : types) {
+		const auto range_0 = handlers.equal_range(type);
+		handlers.erase(range_0.first, range_0.second);
+		const auto range_1 = internal_handlers.equal_range(type);
+		internal_handlers.erase(range_1.first, range_1.second);
 	}
 	handlers_lock.unlock();
 }

@@ -751,7 +751,7 @@ void scene::add_light(light* new_light) {
  *  @param del_light pointer to the light
  */
 void scene::delete_light(light* del_light) {
-	remove(lights.begin(), lights.end(), del_light);
+	lights.erase(remove(lights.begin(), lights.end(), del_light), end(lights));
 
 	// disable lighting automatically if there are no lights left
 	if(lights.size() == 0) scene::is_light = false;
@@ -841,7 +841,7 @@ void scene::add_particle_manager(particle_manager* pm) {
 }
 
 void scene::delete_particle_manager(particle_manager* pm) {
-	remove(particle_managers.begin(), particle_managers.end(), pm);
+	particle_managers.erase(remove(particle_managers.begin(), particle_managers.end(), pm), end(particle_managers));
 }
 
 void scene::add_post_processing(post_processing_handler* pph) {

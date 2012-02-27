@@ -432,7 +432,7 @@ void rtt::delete_buffer(rtt::fbo* buffer) {
 	glDeleteTextures(buffer->attachment_count, buffer->tex_id);
 	glDeleteFramebuffers(1, &buffer->fbo_id);
 	delete buffer;
-	remove(buffers.begin(), buffers.end(), buffer);
+	buffers.erase(remove(buffers.begin(), buffers.end(), buffer), end(buffers));
 }
 
 void rtt::start_draw(rtt::fbo* buffer) {
