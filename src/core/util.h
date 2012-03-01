@@ -128,10 +128,7 @@ template<> struct compile_time_check<false> {};
 	(void)sizeof((compile_time_check<(expr) != 0>(ERROR_##msg())));	\
 }
 
-// misc macros
-#define A2E_ARRAY_LENGTH(array) (sizeof(array)/sizeof(array[0]))
-#define A2E_TO_STR(x) #x
-
+// misc
 class A2E_API a2e_exception : public exception {
 protected:
 	string error_str;

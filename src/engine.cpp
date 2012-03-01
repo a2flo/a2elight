@@ -545,7 +545,8 @@ void engine::init(const char* ico) {
  */
 void engine::set_width(unsigned int width) {
 	config.width = width;
-	// TODO: ...
+	e->handle_event(EVENT_TYPE::WINDOW_RESIZE,
+					make_shared<window_resize_event>(SDL_GetTicks(), size2(config.width, config.height)));
 }
 
 /*! sets the window height
@@ -553,7 +554,8 @@ void engine::set_width(unsigned int width) {
  */
 void engine::set_height(unsigned int height) {
 	config.height = height;
-	// TODO: ...
+	e->handle_event(EVENT_TYPE::WINDOW_RESIZE,
+					make_shared<window_resize_event>(SDL_GetTicks(), size2(config.width, config.height)));
 }
 
 /*! starts drawing the window
@@ -721,7 +723,7 @@ void engine::resize_window() {
 
 	// projection matrix
 	// set perspective with fov (default = 72) and near/far plane value (default = 1.0f/1000.0f)
-	projection_matrix.perspective(config.fov, (float)config.width / (float)config.height,
+	projection_matrix.perspective(config.fov, float(config.width) / float(config.height),
 								  config.near_far_plane.x, config.near_far_plane.y);
 
 	// model view matrix
@@ -1095,23 +1097,23 @@ SDL_Cursor* engine::get_cursor(const char* name) {
 	return cursors[name];
 }
 
-bool engine::get_fullscreen() {
+bool engine::get_fullscreen() const {
 	return config.fullscreen;
 }
 
-bool engine::get_vsync() {
+bool engine::get_vsync() const {
 	return config.vsync;
 }
 
-bool engine::get_stereo() {
+bool engine::get_stereo() const {
 	return config.stereo;
 }
 
-unsigned int engine::get_width() {
+unsigned int engine::get_width() const {
 	return (unsigned int)config.width;
 }
 
-unsigned int engine::get_height() {
+unsigned int engine::get_height() const {
 	return (unsigned int)config.height;
 }
 
@@ -1143,7 +1145,7 @@ string* engine::get_force_vendor() {
 	return &config.force_vendor;
 }
 
-SDL_Window* engine::get_window() {
+SDL_Window* engine::get_window() const {
 	return config.wnd;
 }
 

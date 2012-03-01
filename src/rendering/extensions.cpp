@@ -249,30 +249,24 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	}
 
 	// check extension support and set flags accordingly
-	// TODO: use c++0x initialization lists when support is available
-	static const size_t _a2e_max_ext_checks = 8; // 8 should suffice for the moment
-	struct _a2e_ext_check {
+	const struct {
 		bool* flag;
-		const char* exts[_a2e_max_ext_checks];
-	};
-	const _a2e_ext_check ext_checks[] = {
+		const char* exts[4];
+	} ext_checks[] = {
 		{ &fbo_multisample_coverage_support, { "GL_NV_framebuffer_multisample_coverage" } },
-				
 		{ &anisotropic_filtering_support, { "GL_EXT_texture_filter_anisotropic" } },
-		
 		{ &shader_model_5_0_support, { "GL_ARB_gpu_shader5" } },
 	};
 	
-	size_t check_cnt = A2E_ARRAY_LENGTH(ext_checks);
-	for(size_t i = 0; i < check_cnt; i++) {
-		if(*ext_checks[i].flag == true) continue; // already supported by another extension
-		*ext_checks[i].flag = true;
-		for(size_t j = 0; j < _a2e_max_ext_checks; j++) {
-			if(ext_checks[i].exts[j] == nullptr) break;
-			if(!is_ext_supported(ext_checks[i].exts[j])) {
-				*ext_checks[i].flag = false;
+	for(const auto& check : ext_checks) {
+		if(*check.flag == true) continue; // already supported by another extension
+		*check.flag = true;
+		for(const auto& ext_str : check.exts) {
+			if(ext_str == nullptr) break;
+			if(!is_ext_supported(ext_str)) {
+				*check.flag = false;
 				if(imode == 0) {
-					a2e_error("your graphic device doesn't support '%s'!", ext_checks[i].exts[j]);
+					a2e_error("your graphic device doesn't support '%s'!", ext_str);
 				}
 				// don't break here, but rather print all extensions that aren't supported
 			}

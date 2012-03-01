@@ -41,25 +41,6 @@ light::light(engine* e_, const float& x, const float& y, const float& z)
 	set_radius(1.0f);
 }
 
-// TODO: -> header, remove this
-#if !defined(__clang__)
-light::light(engine* e_, const float3& pos) 
-: e(e_), type(LT_POINT)
-{
-	position.set(pos);
-	color.set(0.0f, 0.0f, 0.0f);
-	ambient.set(0.0f, 0.0f, 0.0f);
-
-	spot_dir.set(0.0f, 1.0f, 0.0f);
-	cutoff = 180.0f;
-	
-	enabled = true;
-	spot_light = false;
-	
-	set_radius(1.0f);
-}
-#endif
-
 /*! destroys the light object
  */
 light::~light() {

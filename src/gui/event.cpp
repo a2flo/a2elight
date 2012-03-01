@@ -19,11 +19,7 @@
 #include "event.h"
 
 event::event() : thread_base("event"),
-#if !defined(GCC_LEGACY)
 user_queue_lock(), handlers_lock()
-#else
-user_queue_lock(nullptr)
-#endif
 {
 	mouse_down_state[0] = mouse_down_state[1] = mouse_down_state[2] =
 	mouse_up_state[0] = mouse_up_state[1] = mouse_up_state[2] =
@@ -40,17 +36,10 @@ user_queue_lock(nullptr)
 	shift = false;
 	alt = false;
 	
-#if defined(GCC_LEGACY)
-	user_queue_lock = SDL_CreateMutex();
-#endif
-	
 	this->start();
 }
 
 event::~event() {
-#if defined(GCC_LEGACY)
-	SDL_DestroyMutex(user_queue_lock);
-#endif
 }
 
 void event::run() {
@@ -59,16 +48,9 @@ void event::run() {
 	
 	// copy/move user events to a processing queue, so the queue can
 	// still be used in the other (main) event thread
-#if !defined(GCC_LEGACY)
 	user_queue_lock.lock();
 	user_event_queue_processing.swap(user_event_queue);
 	user_queue_lock.unlock();
-#else
-	if(SDL_mutexP(user_queue_lock) != -1) {
-		user_event_queue_processing.swap(user_event_queue);
-		SDL_mutexV(user_queue_lock);
-	}
-#endif
 	
 	handle_user_events();
 }
@@ -306,16 +288,9 @@ void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 	handlers_lock.unlock();
 	
 	// push to user event queue (these will be handled later on)
-#if !defined(GCC_LEGACY)
 	user_queue_lock.lock();
 	user_event_queue.push(make_pair(type, obj));
 	user_queue_lock.unlock();
-#else
-	if(SDL_mutexP(user_queue_lock) != -1) {
-		user_event_queue.push(make_pair(type, obj));
-		SDL_mutexV(user_queue_lock);
-	}
-#endif
 }
 
 void event::handle_user_events() {

@@ -140,11 +140,6 @@
 #include <unistd.h>
 #endif
 
-#if (__GNUC__ == 4 && __GNUC_MINOR__ == 6)
-// TODO: remove all the gcc workarounds ...
-#define GCC_LEGACY 1
-#endif
-
 #if !defined(A2E_IOS)
 #define A2E_DEFAULT_FRAMEBUFFER 0
 #else

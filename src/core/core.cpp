@@ -17,12 +17,10 @@
  */
 
 #include "core.h"
-
-#if !(defined(MINGW) && __GNUC__ == 4 && __GNUC_MINOR__ <= 6)
 #include <random>
+
 static random_device rd;
 static mt19937 gen(rd());
-#endif
 
 /*! there is no function currently
  */
@@ -333,7 +331,6 @@ void core::system(const string& cmd, string& output) {
 	pclose(sys_pipe);
 }
 
-#if !(defined(MINGW) && __GNUC__ == 4 && __GNUC_MINOR__ <= 6)
 int core::rand(const int& max) {
 	uniform_int_distribution<> dist(0, max-1);
 	return dist(gen);
@@ -353,25 +350,3 @@ float core::rand(const float& min, const float& max) {
 	uniform_real_distribution<> dist(min, max);
 	return dist(gen);
 }
-#else
-// TODO: this is only a mingw/gcc workaround for now (remove when not needed any longer)
-int core::rand(const int& max) {
-	srand(time(nullptr));
-	return (::rand() >> 1) % max;
-}
-
-int core::rand(const int& min, const int& max) {
-	srand(time(nullptr));
-	return ((::rand() >> 1) % (max-min)) + min;
-}
-
-float core::rand(const float& max) {
-	srand(time(nullptr));
-	return (float(::rand()) / float(RAND_MAX)) * max; // not really correct, but okay for now
-}
-
-float core::rand(const float& min, const float& max) {
-	srand(time(nullptr));
-	return ((float(::rand()) / float(RAND_MAX)) * max) + min; // not really correct, but okay for now
-}
-#endif

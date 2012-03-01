@@ -516,36 +516,35 @@ bool shader::load_internal_shaders() {
 	bool err_cur_shader = false;
 	
 	//
-	const char* internal_shaders[] = {
+	static const string internal_shaders[][2] = {
 		// misc/postprocess/hdr/...
-		"BLURLINE3", "misc/blurline3.a2eshd",
-		"BLURLINE5", "misc/blurline5.a2eshd",
+		{ "BLURLINE3", "misc/blurline3.a2eshd" },
+		{ "BLURLINE5", "misc/blurline5.a2eshd" },
 #if !defined(A2E_IOS)
-		"LUMA", "misc/luma.a2eshd",
-		"FXAA", "misc/fxaa3.a2eshd",
+		{ "LUMA", "misc/luma.a2eshd" },
+		{ "FXAA", "misc/fxaa3.a2eshd" },
 #endif
-		"SIMPLE", "misc/simple.a2eshd", // basically a replacement for fixed-function shading/drawing
-		//"DOWNSAMPLE", "misc/downsample.a2eshd",
-		"BLEND", "misc/blend.a2eshd",
+		{ "SIMPLE", "misc/simple.a2eshd" }, // basically a replacement for fixed-function shading/drawing
+		//"DOWNSAMPLE", "misc/downsample.a2eshd" },
+		{ "BLEND", "misc/blend.a2eshd" },
 
 		// inferred rendering
-		"IR_GP_GBUFFER", "inferred/gp_gbuffer.a2eshd",
-		"IR_GP_GBUFFER_PARALLAX", "inferred/gp_gbuffer_parallax.a2eshd",
-		"IR_LP_PHONG", "inferred/lp_phong.a2eshd",
-		"IR_MP_DIFFUSE", "inferred/mp_diffuse.a2eshd",
-		"IR_MP_PARALLAX", "inferred/mp_parallax.a2eshd",
+		{ "IR_GP_GBUFFER", "inferred/gp_gbuffer.a2eshd" },
+		{ "IR_GP_GBUFFER_PARALLAX", "inferred/gp_gbuffer_parallax.a2eshd" },
+		{ "IR_LP_PHONG", "inferred/lp_phong.a2eshd" },
+		{ "IR_MP_DIFFUSE", "inferred/mp_diffuse.a2eshd" },
+		{ "IR_MP_PARALLAX", "inferred/mp_parallax.a2eshd" },
 		
 #if !defined(A2E_IOS)
 		// particle
-		"PARTICLE_DRAW_OPENCL", "particle/particle_draw_ocl.a2eshd",
+		{ "PARTICLE_DRAW_OPENCL", "particle/particle_draw_ocl.a2eshd" },
 #endif
 	};
 	
-	const size_t count = A2E_ARRAY_LENGTH(internal_shaders)/2;
-	for(size_t i = 0; i < count; i++) {
+	for(const auto& int_shader : internal_shaders) {
 		err_cur_shader = false;
-		string shader_identifier = internal_shaders[i*2 + 0];
-		string shader_filename = internal_shaders[i*2 + 1];
+		const string& shader_identifier = int_shader[0];
+		const string& shader_filename = int_shader[1];
 		
 		if(shader_filename != "") {
 			a2e_shd->add_a2e_shader(shader_identifier);
@@ -600,6 +599,7 @@ bool shader::add_a2e_shader(const string& identifier, const string& filename) {
 }
 
 ////
+#define A2E_SHADER_IMPL_TO_STR(x) #x
 #define make_get_shader(ret_type, shader_impl, min_glsl, max_glsl) \
 template <> ret_type shader::get_shader(const string& identifier) const { \
 	if(shaders.count(identifier) == 0) return nullptr; \
@@ -607,7 +607,7 @@ template <> ret_type shader::get_shader(const string& identifier) const { \
 	const shader_object& shd_obj = *shaders.find(identifier)->second; \
 	if(shd_obj.glsl_version < min_glsl || shd_obj.glsl_version > max_glsl) { \
 		a2e_error("requested gl type \"%s\" doesn't match shader \"%s\" glsl version %s!", \
-				 A2E_TO_STR(shader_impl), identifier, exts->cstr_from_glsl_version(shd_obj.glsl_version)); \
+				 A2E_SHADER_IMPL_TO_STR(shader_impl), identifier, exts->cstr_from_glsl_version(shd_obj.glsl_version)); \
 		return nullptr; \
 	} \
 	 \
@@ -618,5 +618,5 @@ ret_type shader::get_##ret_type(const string& identifier) const { return get_sha
 #if !defined(A2E_IOS)
 make_get_shader(gl3shader, shader_gl3, ext::GLSL_150, ext::GLSL_330);
 #else
-make_get_shader(gl3shader, shader_gles2, ext::GLSL_ES_100, ext::GLSL_330);
+make_get_shader(gl3shader, shader_gles2, ext::GLSL_ES_100, ext::GLSL_ES_100);
 #endif

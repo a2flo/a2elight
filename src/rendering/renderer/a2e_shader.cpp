@@ -736,11 +736,9 @@ void a2e_shader::make_glsl_es_compat(a2e_shader_object* shd, const string& optio
 		{ regex("^([\\s]*)(out )([^;]+)"), "// out $3 => gl_FragColor" },
 		{ regex("frag_color(_\\d){0,1}"), "gl_FragColor" },
 	};
-	static const size_t rx_len[] = { A2E_ARRAY_LENGTH(vs_regex), A2E_ARRAY_LENGTH(fs_regex) };
 	
 	// modify shaders
 	for(size_t i = 0; i < 2; i++) {
-		const regex_shader_replacement* rx = (i == 0 ? vs_regex : fs_regex);
 		string& prog = (i == 0 ? shd->vs_program[option] : shd->fs_program[option]);
 		vector<string> lines = core::tokenize(prog, '\n');
 		prog = "";
@@ -751,9 +749,11 @@ void a2e_shader::make_glsl_es_compat(a2e_shader_object* shd, const string& optio
 			}
 			
 			//
-			for(size_t j = 0; j < rx_len[i]; j++) {
-				line = regex_replace(line, rx[j].rx, rx[j].repl);
-			}
+			for_each(i == 0 ? begin(vs_regex) : begin(fs_regex),
+					 i == 0 ? end(vs_regex) : end(fs_regex),
+					 [&line](const regex_shader_replacement& rx) {
+						 line = regex_replace(line, rx.rx, rx.repl);
+					 });
 			prog += line + '\n';
 		}
 	}

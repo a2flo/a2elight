@@ -24,7 +24,7 @@
 #define A2E_MAJOR_VERSION "0"
 #define A2E_MINOR_VERSION "2"
 #define A2E_REVISION_VERSION "1"
-#define A2E_DEV_STAGE_VERSION "b2"
+#define A2E_DEV_STAGE_VERSION "b3"
 #define A2E_BUILD_TIME __TIME__
 #define A2E_BUILD_DATE __DATE__
 
@@ -85,14 +85,18 @@ string _A2E_VERSION_TO_STR(const size_t& version) {
 #if !__has_feature(cxx_rvalue_references) || \
 	!__has_feature(cxx_auto_type) || \
 	!__has_feature(cxx_variadic_templates) || \
-	!__has_feature(cxx_range_for)
-#error "Sorry, but you need Clang with support for 'rvalue_references', 'auto_type', 'variadic_templates' and 'range_for' to compile A2E"
+	!__has_feature(cxx_range_for) || \
+	!__has_feature(cxx_lambdas) || \
+	!__has_feature(cxx_generalized_initializers) || \
+	!__has_feature(cxx_constexpr) || \
+	!__has_feature(cxx_nonstatic_member_init)
+#error "Sorry, but you need Clang with support for 'rvalue_references', 'auto_type', 'variadic_templates', 'range_for', 'lambdas', 'generalized_initializers', 'constexpr' and 'nonstatic_member_init' to compile A2E"
 #endif
 
 // gcc check
 #elif defined(__GNUC__)
-#if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 6)
-#error "Sorry, but you need GCC 4.6+ to compile A2E"
+#if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 7)
+#error "Sorry, but you need GCC 4.7+ to compile A2E"
 #endif
 
 // just fall through ...

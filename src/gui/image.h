@@ -40,8 +40,8 @@ public:
 	void set_position(pnt* position);
 	pnt& get_position();
 
-	a2e_texture& get_texture();
-	void set_texture(a2e_texture& new_tex);
+	const a2e_texture& get_texture() const;
+	void set_texture(const a2e_texture& new_tex);
 
 	void set_scaling(bool state);
 	bool get_scaling();

@@ -704,7 +704,7 @@ void scene::light_and_material_pass() {
 	if(!is_fxaa || is_ssaa_fxaa || is_post_processing) {
 		// draw to back buffer
 		e->start_2d_draw();
-		static const gfx::rect fs_rect(0, 0, e->get_width(), e->get_height());
+		const gfx::rect fs_rect(0, 0, e->get_width(), e->get_height());
 		g->draw_textured_rectangle(fs_rect,
 								   coord(0.0f, 1.0f), coord(1.0f, 0.0f),
 								   scene_buffer->tex_id[0]);

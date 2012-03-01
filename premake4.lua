@@ -74,7 +74,7 @@ solution "albion2"
 		end
 		includedirs { "/usr/local/include", "/usr/include/libxml2", "/usr/include/libxml",
 					  "/usr/include/freetype2", "/usr/local/include/freetype2", }
-		buildoptions { "-Wall -x c++ -std=c++0x -Wno-trigraphs -Wreturn-type -Wunused-variable" }
+		buildoptions { "-Wall -x c++ -std=c++11 -Wno-trigraphs -Wreturn-type -Wunused-variable" }
 		
 		if(clang_libcxx) then
 			buildoptions { "-stdlib=libc++ -integrated-as" }

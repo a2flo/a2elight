@@ -22,7 +22,6 @@
 #include "global.h"
 #include "atomics.h"
 
-#if !defined(GCC_LEGACY)
 #include <thread>
 #include <mutex>
 
@@ -69,53 +68,5 @@ protected:
 	thread_base(const thread_base& tb);
 	void operator=(const thread_base& tb);
 };
-
-#else
-// workaround for gcc 4.6 (use old sdl based thread solution)
-// TODO: remove this at a later point
-
-class thread_base {
-public:
-	thread_base();
-	virtual ~thread_base();
-	
-	enum THREAD_STATUS {
-		INVALID = -1,
-		INIT = 0,
-		RUNNING = 1,
-		FINISHED = 2
-	};
-	
-	// this is the main run function of the thread
-	virtual void run() = 0;
-	
-	void finish();
-	virtual void restart();
-	void lock();
-	bool try_lock();
-	void unlock();
-	
-	void set_thread_status(const thread_base::THREAD_STATUS status);
-	THREAD_STATUS get_thread_status();
-	bool is_running(); // shortcut for get_thread_status() == RUNNING || INIT
-	void set_thread_should_finish();
-	bool thread_should_finish();
-	void set_thread_delay(const unsigned int delay);
-	unsigned int get_thread_delay();
-	
-protected:
-	SDL_Thread* thread_obj;
-	SDL_mutex* thread_lock;
-	THREAD_STATUS thread_status;
-	atomic_t thread_should_finish_flag;
-	unsigned int thread_delay;
-	
-	void start();
-	static int _thread_run(void* data);
-	
-	thread_base(const thread_base& tb);
-	void operator=(const thread_base& tb);
-};
-#endif
 
 #endif

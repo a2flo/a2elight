@@ -146,12 +146,12 @@ public:
 	const xml::xml_doc& get_config_doc() const;
 	
 	// screen/window
-	SDL_Window* get_window();
-	unsigned int get_width();
-	unsigned int get_height();
-	bool get_fullscreen();
-	bool get_vsync();
-	bool get_stereo();
+	SDL_Window* get_window() const;
+	unsigned int get_width() const;
+	unsigned int get_height() const;
+	bool get_fullscreen() const;
+	bool get_vsync() const;
+	bool get_stereo() const;
 	
 	// projection
 	const float& get_fov() const;

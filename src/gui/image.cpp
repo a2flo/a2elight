@@ -121,12 +121,12 @@ pnt& image::get_position() {
 /*! sets the images texture
  *  @param tex the texture we want to set
  */
-void image::set_texture(a2e_texture& new_tex) {
+void image::set_texture(const a2e_texture& new_tex) {
 	tex = new_tex;
 }
 
 //! returns the images texture
-a2e_texture& image::get_texture() {
+const a2e_texture& image::get_texture() const {
 	return tex;
 }
 

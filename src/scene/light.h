@@ -29,14 +29,8 @@
 class engine;
 class A2E_API light {
 public:
-// TODO: always use delegating constructors when gcc comes around to support such a fucking trivial feature -.- ...
-#if defined(__clang__)
 	light(engine* e, const float& x, const float& y, const float& z);
 	light(engine* e_, const float3& pos) : light(e_, pos.x, pos.y, pos.z) {}
-#else
-	light(engine* e, const float& x, const float& y, const float& z);
-	light(engine* e, const float3& pos);
-#endif
 	~light();
 	
 	enum LIGHT_TYPE {

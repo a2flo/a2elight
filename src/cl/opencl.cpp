@@ -339,11 +339,39 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		}
 		
 		// make the first recognized device the active device
-		//active_device = devices[0];
 		set_active_device(opencl::FASTEST_GPU);
 		
 		if(fastest_cpu != nullptr) a2e_debug("fastest CPU device: %s %s (score: %u)", fastest_cpu->vendor.c_str(), fastest_cpu->name.c_str(), fastest_cpu_score);
 		if(fastest_gpu != nullptr) a2e_debug("fastest GPU device: %s %s (score: %u)", fastest_gpu->vendor.c_str(), fastest_gpu->name.c_str(), fastest_gpu_score);
+		
+		// compile internal kernels
+		size_t local_size_limit = std::max((size_t)512, devices[0]->max_wg_size); // default to 512
+		bool local_atomics_support = true;
+		for(const auto& device : devices) {
+			if(device->max_wg_size < local_size_limit) {
+				local_size_limit = device->max_wg_size;
+			}
+			if(device->extensions.find("cl_khr_local_int32_base_atomics") == string::npos ||
+			   device->extensions.find("cl_khr_local_int32_extended_atomics") == string::npos) {
+				local_atomics_support = false;
+			}
+		}
+		const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
+		
+		// TODO: make tile size dependent on #cores
+		string ir_lighting_flags = " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16";
+		if(local_atomics_support) ir_lighting_flags += " -DA2E_LOCAL_ATOMICS";
+		
+		internal_kernels = { // first time init:
+			make_tuple("PARTICLE INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
+			make_tuple("PARTICLE RESPAWN", "particle_spawn.cl", "particle_respawn", ""),
+			make_tuple("PARTICLE COMPUTE", "particle_compute.cl", "particle_compute", ""),
+			make_tuple("PARTICLE SORT LOCAL", "particle_sort.cl", "bitonicSortLocal", lsl_str),
+			make_tuple("PARTICLE SORT MERGE GLOBAL", "particle_sort.cl", "bitonicMergeGlobal", lsl_str),
+			make_tuple("PARTICLE SORT MERGE LOCAL", "particle_sort.cl", "bitonicMergeLocal", lsl_str),
+			make_tuple("PARTICLE COMPUTE DISTANCES", "particle_sort.cl", "compute_distances", lsl_str),
+			make_tuple("INFERRED LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags)
+		};
 		
 		load_internal_kernels();
 	}
@@ -421,7 +449,7 @@ bool opencl::is_gpu_support() {
 	return (fastest_gpu != nullptr);
 }
 
-opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const char* file_name, const string& func_name, const char* additional_options) {
+opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const string& file_name, const string& func_name, const string additional_options) {
 	if(kernels.count(identifier) != 0) {
 		a2e_error("kernel \"%s\" already exists!", identifier);
 		return kernels[identifier];
@@ -448,21 +476,18 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const c
 	// check if this is an external kernel (and hasn't been added before)
 	if(external_kernels.count(identifier) == 0 &&
 	   none_of(begin(internal_kernels), end(internal_kernels),
-			   [&identifier](const string& int_kernel) {
-				   return (int_kernel == identifier);
+			   [&identifier](const decltype(internal_kernels)::value_type& int_kernel) {
+				   return (get<0>(int_kernel) == identifier);
 			   })) {
 		// if so, add it to the external kernel list
 		external_kernels.insert(make_pair(identifier,
-										  make_tuple(string(file_name),
-													 func_name,
-													 string(additional_options != nullptr ?
-															additional_options : ""))));
+										  make_tuple(file_name, func_name, additional_options)));
 	}
 	
 	return add_kernel_src(identifier, kernel_data, func_name, additional_options);
 }
 
-opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const string& src, const string& func_name, const char* additional_options) {
+opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options) {
 	a2e_debug("compiling \"%s\" kernel!", identifier);
 	string options = build_options;
 	try {
@@ -471,8 +496,8 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 			return kernels[identifier];
 		}
 		
-		if(additional_options != nullptr && strlen(additional_options) > 0) {
-			options += (additional_options[0] != ' ' ? " " : "") + string(additional_options);
+		if(!additional_options.empty()) {
+			options += (additional_options[0] != ' ' ? " " : "") + additional_options;
 		}
 		
 #ifdef __APPLE__
@@ -634,48 +659,15 @@ void opencl::check_compilation(const bool ret, const string& filename) {
 void opencl::reload_kernels() {
 	destroy_kernels();
 	
-	// TODO: clean this up (+initializer list)
-	// first time init:
-	if(internal_kernels.empty()) {
-		internal_kernels.insert("PARTICLE INIT");
-		internal_kernels.insert("PARTICLE RESPAWN");
-		internal_kernels.insert("PARTICLE COMPUTE");
-		internal_kernels.insert("PARTICLE SORT LOCAL");
-		internal_kernels.insert("PARTICLE SORT MERGE GLOBAL");
-		internal_kernels.insert("PARTICLE SORT MERGE LOCAL");
-		internal_kernels.insert("PARTICLE COMPUTE DISTANCES");
-		internal_kernels.insert("INFERRED LIGHTING");
-	};
-	
 	successful_internal_compilation = true;
-	check_compilation(add_kernel_file("PARTICLE INIT", make_kernel_path("particle_spawn.cl"), "particle_init", " -DA2E_PARTICLE_INIT") != nullptr, "particle_spawn.cl");
-	check_compilation(add_kernel_file("PARTICLE RESPAWN", make_kernel_path("particle_spawn.cl"), "particle_respawn") != nullptr, "particle_spawn.cl");
-	check_compilation(add_kernel_file("PARTICLE COMPUTE", make_kernel_path("particle_compute.cl"), "particle_compute") != nullptr, "particle_compute.cl");
 	
-	// figure out which sorting local size we can use and if we have local atomics support
-	// a local size of 1024 can be used on fermi+ gpus
-	size_t local_size_limit = std::max((size_t)512, devices[0]->max_wg_size); // default to 512
-	bool local_atomics_support = true;
-	for(const auto& device : devices) {
-		if(device->max_wg_size < local_size_limit) {
-			local_size_limit = device->max_wg_size;
-		}
-		if(device->extensions.find("cl_khr_local_int32_base_atomics") == string::npos ||
-		   device->extensions.find("cl_khr_local_int32_extended_atomics") == string::npos) {
-			local_atomics_support = false;
-		}
+	for(const auto& int_kernel : internal_kernels) {
+		check_compilation(add_kernel_file(get<0>(int_kernel),
+										  make_kernel_path(get<1>(int_kernel)),
+										  get<2>(int_kernel),
+										  get<3>(int_kernel)) != nullptr,
+						  get<1>(int_kernel));
 	}
-	const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
-	check_compilation(add_kernel_file("PARTICLE SORT LOCAL", make_kernel_path("particle_sort.cl"), "bitonicSortLocal", lsl_str.c_str()) != nullptr, "particle_sort.cl");
-	check_compilation(add_kernel_file("PARTICLE SORT MERGE GLOBAL", make_kernel_path("particle_sort.cl"), "bitonicMergeGlobal", lsl_str.c_str()) != nullptr, "particle_sort.cl");
-	check_compilation(add_kernel_file("PARTICLE SORT MERGE LOCAL", make_kernel_path("particle_sort.cl"), "bitonicMergeLocal", lsl_str.c_str()) != nullptr, "particle_sort.cl");
-	check_compilation(add_kernel_file("PARTICLE COMPUTE DISTANCES", make_kernel_path("particle_sort.cl"), "compute_distances", lsl_str.c_str()) != nullptr, "particle_sort.cl");
-	
-	// TODO: make tile size dependent on #cores
-	/*check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", " -DA2E_IR_TILE_SIZE_X=4 -DA2E_IR_TILE_SIZE_Y=4") != nullptr, "ir_lighting.cl");*/
-	/*string ir_lighting_flags = " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16";
-	if(local_atomics_support) ir_lighting_flags += " -DA2E_LOCAL_ATOMICS";
-	check_compilation(add_kernel_file("INFERRED LIGHTING", make_kernel_path("ir_lighting.cl"), "ir_lighting", ir_lighting_flags.c_str()) != nullptr, "ir_lighting.cl");*/
 	
 	if(successful_internal_compilation) a2e_debug("internal kernels loaded successfully!");
 	else {

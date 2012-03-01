@@ -135,8 +135,8 @@ public:
 	void finish();
 	void flush();
 	
-	kernel_object* add_kernel_file(const string& identifier, const char* file_name, const string& func_name, const char* additional_options = nullptr);
-	kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const char* additional_options = nullptr);
+	kernel_object* add_kernel_file(const string& identifier, const string& file_name, const string& func_name, const string additional_options = "");
+	kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "");
 	
 	buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr);
 	buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
@@ -229,9 +229,8 @@ public:
 		device_object() : device(nullptr), type((OPENCL_DEVICE)0), units(0), clock(0), mem_size(0), internal_type(0), name(""), vendor(""), version(""), driver_version(""), extensions("") {}
 	};
 
-	inline const char* make_kernel_path(const char* file_name) {
-		tmp_path = kernel_path_str + string(file_name);
-		return tmp_path.c_str();
+	inline const string make_kernel_path(const string& file_name) const {
+		return kernel_path_str + file_name;
 	}
 	
 protected:
@@ -241,7 +240,6 @@ protected:
 	string build_options;
 	string nv_build_options;
 	string kernel_path_str;
-	string tmp_path;
 	
 	stringstream* buffer;
 	
@@ -276,8 +274,8 @@ protected:
 	map<const cl::Device*, cl::CommandQueue*> queues;
 	
 	// identifier -> <file_name, func_name, options>
-	set<string> internal_kernels;
 	map<string, tuple<string, string, string>> external_kernels;
+	vector<tuple<string, string, string, string>> internal_kernels;
 	
 };
 

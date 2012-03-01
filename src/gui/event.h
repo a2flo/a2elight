@@ -35,6 +35,7 @@ public:
 	virtual ~event();
 
 	void handle_events();
+	void handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj);
 	
 	// <returns true if handled, pointer to object, event type>
 	typedef functor<bool, EVENT_TYPE, shared_ptr<event_object>> handler;
@@ -69,13 +70,8 @@ protected:
 	unordered_multimap<EVENT_TYPE, handler&> internal_handlers;
 	unordered_multimap<EVENT_TYPE, handler&> handlers;
 	queue<pair<EVENT_TYPE, shared_ptr<event_object>>> user_event_queue, user_event_queue_processing;
-#if !defined(GCC_LEGACY)
 	recursive_mutex user_queue_lock;
 	recursive_mutex handlers_lock;
-#else
-	SDL_mutex* user_queue_lock;
-#endif
-	void handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj);
 	void handle_user_events();
 	
 	//
