@@ -61,12 +61,8 @@
 #include <stdexcept>
 #include <ctime>
 #include <cstring>
-#include <cstdarg>
 #include <cmath>
 #include <cassert>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stddef.h>
 
 #ifdef CYGWIN
 #include <sys/wait.h>

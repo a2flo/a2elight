@@ -34,14 +34,13 @@ public:
 template <typename return_type, typename... Args> class functor {
 protected:
 	typedef functor_impl<return_type, Args...> impl;
-	// TODO: -auto_ptr +shared_ptr
-	std::auto_ptr<impl> sp_impl;
+	std::unique_ptr<impl> sp_impl;
 	
 public:
 	functor();
 	functor(const functor&);
 	functor& operator=(const functor&);
-	explicit functor(std::auto_ptr<impl> sp_impl_);
+	explicit functor(std::unique_ptr<impl> sp_impl_);
 	
 	typedef return_type result_type;
 	

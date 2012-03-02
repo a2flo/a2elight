@@ -81,10 +81,6 @@
 
 
 // general includes
-#ifdef A2E_USE_OPENMP
-#include <omp.h>
-#endif
-
 #ifdef __APPLE__
 #include <SDL/SDL.h>
 #include <SDL/SDL_thread.h>

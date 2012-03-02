@@ -381,7 +381,6 @@ void engine::init(const char* ico) {
 	SDL_ShowWindow(config.wnd);
 #endif
 	
-	
 	config.ctx = SDL_GL_CreateContext(config.wnd);
 	if(config.ctx == nullptr) {
 		a2e_error("can't create opengl context: %s", SDL_GetError());
@@ -394,7 +393,7 @@ void engine::init(const char* ico) {
 #endif
 	
 	// TODO: this is only a rudimentary solution, think of or wait for a better one ...
-#if !defined(A2E_IOS)
+#if !defined(A2E_NO_OPENCL)
 	ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), f, config.wnd, config.clear_cache); // use absolute path
 #endif
 	
@@ -488,12 +487,6 @@ void engine::init(const char* ico) {
 	// create texture manager and render to texture object
 	t = new texman(f, u, exts, datapath, config.anisotropic);
 	r = new rtt(this, g, exts, (unsigned int)config.width, (unsigned int)config.height);
-
-	// print out informations about additional threads
-#ifdef A2E_USE_OPENMP
-	omp_set_num_threads(config.thread_count);
-	config.thread_count = omp_get_max_threads();
-#endif
 	
 	// if GL_RENDERER is that damn m$ gdi driver, exit a2e 
 	// no official support for this crappy piece of software 
@@ -534,7 +527,7 @@ void engine::init(const char* ico) {
 	stop_2d_draw();
 	stop_draw();
 	
-#if !defined(A2E_IOS)
+#if !defined(A2E_NO_OPENCL)
 	// init opencl
 	ocl->init(false, config.opencl_platform);
 #endif
@@ -545,8 +538,8 @@ void engine::init(const char* ico) {
  */
 void engine::set_width(unsigned int width) {
 	config.width = width;
-	e->handle_event(EVENT_TYPE::WINDOW_RESIZE,
-					make_shared<window_resize_event>(SDL_GetTicks(), size2(config.width, config.height)));
+	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
+				 make_shared<window_resize_event>(SDL_GetTicks(), size2(config.width, config.height)));
 }
 
 /*! sets the window height
@@ -554,8 +547,8 @@ void engine::set_width(unsigned int width) {
  */
 void engine::set_height(unsigned int height) {
 	config.height = height;
-	e->handle_event(EVENT_TYPE::WINDOW_RESIZE,
-					make_shared<window_resize_event>(SDL_GetTicks(), size2(config.width, config.height)));
+	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
+				 make_shared<window_resize_event>(SDL_GetTicks(), size2(config.width, config.height)));
 }
 
 /*! starts drawing the window

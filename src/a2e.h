@@ -20,9 +20,6 @@
 #include "global.h"
 
 #include "cl/opencl.h"
-#if !defined(A2E_NO_OPENCL)
-#include "cl/cl.hpp"
-#endif
 
 #include "core/platform.h"
 #include "core/core.h"

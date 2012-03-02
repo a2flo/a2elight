@@ -274,6 +274,11 @@ void event::add_internal_event_handler(handler& handler_, EVENT_TYPE type) {
 	handlers_lock.unlock();
 }
 
+void event::add_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
+	// for now, just pass it through
+	handle_event(type, obj);
+}
+
 void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 	// set/override last event for this type
 	prev_events[type] = obj;
