@@ -30,6 +30,7 @@
 #include "scene/light.h"
 #include "rendering/shader.h"
 #include "core/matrix4.h"
+#include "core/bbox.h"
 #include "rendering/rtt.h"
 #include "cl/opencl.h"
 
@@ -129,7 +130,6 @@ protected:
 	shader* s;
 	ext* exts;
 	rtt* r;
-	gfx* g;
 	opencl* cl;
 	
 	void setup_scene();

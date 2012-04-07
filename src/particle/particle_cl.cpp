@@ -24,8 +24,7 @@
 /*! there is no function currently
  */
 particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
-	//max_particle_count = 1024*1024; // limit to 1 million+
-	max_particle_count = 16*1024*1024; // gna, screw it, 16 mil should be fine
+	max_particle_count = 16*1024*1024; // limit to 16 million+
 	
 	cl->use_kernel("PARTICLE INIT");
 	init_range_local = cl->compute_local_kernel_range(1);
@@ -438,7 +437,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_system::internal_particle_data* pdata = ps->get_internal_particle_data();
 	
 	glEnable(GL_BLEND);
-	g->set_blend_mode(ps->get_blend_mode());
+	gfx2d::set_blend_mode(ps->get_blend_mode());
 	glDepthMask(GL_FALSE);
 	
 	// point -> gs: quad
@@ -524,7 +523,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_draw->disable();
 	
 	glDepthMask(GL_TRUE);
-	g->set_blend_mode(gfx::BLEND_MODE::DEFAULT);
+	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::DEFAULT);
 	glDisable(GL_BLEND);
 }
 

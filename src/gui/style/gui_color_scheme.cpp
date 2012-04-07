@@ -27,24 +27,26 @@ gui_color_scheme::gui_color_scheme(engine* e_) : e(e_), x(e->get_xml()) {
 gui_color_scheme::~gui_color_scheme() {
 }
 
-void gui_color_scheme::load(const string& filename) {
-	xml::xml_doc ui_doc = x->process_file(e->data_path(filename));
+bool gui_color_scheme::load(const string& filename) {
+	xml::xml_doc ui_doc = x->process_file(e->data_path(filename), false); // TODO: DTD!
 	if(!ui_doc.valid) {
 		a2e_error("couldn't process color scheme file %s!", filename);
-		return;
+		return false;
 	}
 	
 	const size_t doc_version = ui_doc.get<size_t>("a2e_color_scheme.version");
 	if(doc_version != A2E_COLOR_SCHEME_VERSION) {
 		a2e_error("invalid color scheme version: %u (should be %u)!",
 				  doc_version, A2E_COLOR_SCHEME_VERSION);
-		return;
+		return false;
 	}
 	
 	// process nodes
 	for(const auto& node : ui_doc.nodes) {
 		process_node(node.second, nullptr);
 	}
+	
+	return true;
 }
 
 void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_node* parent) {

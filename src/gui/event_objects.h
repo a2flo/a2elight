@@ -51,6 +51,7 @@ enum class EVENT_TYPE : unsigned int {
 	
 	QUIT,
 	WINDOW_RESIZE,
+	SHADER_RELOAD,
 	
 	// TODO: add code for these:
 	// TOUCH, GESTURE, ...
@@ -145,6 +146,7 @@ typedef key_event<EVENT_TYPE::KEY_HOLD> key_hold_event;
 
 // misc
 typedef event_object_base<EVENT_TYPE::QUIT> quit_event;
+typedef event_object_base<EVENT_TYPE::SHADER_RELOAD> shader_reload_event;
 
 template<EVENT_TYPE event_type> struct window_resize_event_base : public event_object_base<event_type> {
 	const size2 size;

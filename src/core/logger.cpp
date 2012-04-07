@@ -22,13 +22,12 @@
 #if !defined(A2E_IOS)
 #define A2E_LOG_FILENAME "log.txt"
 #else
-#define A2E_LOG_FILENAME "/Documents/log.txt"
+#define A2E_LOG_FILENAME "/tmp/a2e_log.txt"
 #endif
 
 fstream logger::log_file(A2E_LOG_FILENAME, fstream::out);
 atomic_t logger::err_counter;
 SDL_SpinLock logger::slock;
-const config* logger::conf = nullptr;
 
 void logger::init() {
 	logger::err_counter.value = 0;

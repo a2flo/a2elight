@@ -177,11 +177,14 @@ void camera::set_keyboard_input(const bool& state) {
  *  @param state the cam_input state
  */
 void camera::set_mouse_input(const bool& state) {
-	// grab input (if this leads to problems on windows or linux, make it #ifdef __APPLE__, b/c it fixes mouse issues on os x)
-	SDL_SetWindowGrab(e->get_window(), (SDL_bool)(state ? 1 : 0));
+	// grab input
+	SDL_SetWindowGrab(e->get_window(), (state ? SDL_TRUE : SDL_FALSE));
 	
-	// TODO: obsolete? remove this
 #ifdef __APPLE__
+	// this effictively calls CGAssociateMouseAndMouseCursorPosition (which will lock the cursor to the window)
+	// and subsequently handles all mouse moves in relative/delta mode
+	SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
+	
 	// this fixes some weird mouse positioning when switching from grab to non-grab mode
 	if(mouse_input && !state) {
 		SDL_WarpMouseInWindow(e->get_window(), e->get_width()/2, e->get_height()/2);

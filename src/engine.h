@@ -23,7 +23,6 @@
 #include "core/core.h"
 #include "core/file_io.h"
 #include "gui/event.h"
-#include "rendering/gfx.h"
 #include "rendering/texman.h"
 #include "rendering/extensions.h"
 #include "core/xml.h"
@@ -68,7 +67,6 @@ public:
 	core* get_core();
 	file_io* get_file_io();
 	event* get_event();
-	gfx* get_gfx();
 	texman* get_texman();
 	ext* get_ext();
 	xml* get_xml();
@@ -194,7 +192,6 @@ protected:
 	core* c;
 	file_io* f;
 	event* e;
-	gfx* g;
 	texman* t;
 	ext* exts;
 	xml* x;

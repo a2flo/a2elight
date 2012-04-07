@@ -82,12 +82,12 @@
 
 // general includes
 #ifdef __APPLE__
-#include <SDL/SDL.h>
-#include <SDL/SDL_thread.h>
-#include <SDL/SDL_cpuinfo.h>
-#include <SDL/SDL_platform.h>
-#include <SDL/SDL_syswm.h>
-#include <SDL_image/SDL_image.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_thread.h>
+#include <SDL2/SDL_cpuinfo.h>
+#include <SDL2/SDL_platform.h>
+#include <SDL2/SDL_syswm.h>
+#include <SDL2_image/SDL_image.h>
 #if !defined(A2E_IOS)
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
@@ -150,4 +150,15 @@
 
 #ifndef __has_feature
 #define __has_feature(x) 0
+#endif
+
+// TODO: better location for this?
+#ifndef __DRAW_MODE_DEF__
+#define __DRAW_MODE_DEF__
+enum class DRAW_MODE : unsigned int {
+	GEOMETRY_PASS			= 1,
+	MATERIAL_PASS			= 2,
+	GEOMETRY_ALPHA_PASS	= 3,
+	MATERIAL_ALPHA_PASS	= 4,
+};
 #endif

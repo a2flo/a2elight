@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5C08D66D152F45660066381D /* gfx2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C08D66B152F45660066381D /* gfx2d.cpp */; };
+		5C08D66E152F45660066381D /* gfx2d.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C08D66C152F45660066381D /* gfx2d.h */; };
 		5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C2C9274140AA9D900AC808C /* libxml2.dylib */; };
 		5C32C6BB135526C300164662 /* atomics.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C32C6BA135526C300164662 /* atomics.h */; };
 		5C32C6BE135528F300164662 /* vector2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C32C6BD135528F300164662 /* vector2.cpp */; };
@@ -41,8 +43,6 @@
 		5C39769D123189750075C168 /* unicode.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C3975FC123189750075C168 /* unicode.h */; };
 		5C3976B0123189750075C168 /* extensions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C397613123189750075C168 /* extensions.cpp */; };
 		5C3976B1123189750075C168 /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C397614123189750075C168 /* extensions.h */; };
-		5C3976B2123189750075C168 /* gfx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C397615123189750075C168 /* gfx.cpp */; };
-		5C3976B3123189750075C168 /* gfx.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C397616123189750075C168 /* gfx.h */; };
 		5C3976B4123189750075C168 /* gl_funcs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C397617123189750075C168 /* gl_funcs.cpp */; };
 		5C3976B5123189750075C168 /* gl_funcs.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C397618123189750075C168 /* gl_funcs.h */; };
 		5C3976B6123189750075C168 /* a2e_shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C39761A123189750075C168 /* a2e_shader.cpp */; };
@@ -79,12 +79,10 @@
 		5C61BDAD1231D32000FD3451 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDA91231D32000FD3451 /* Cocoa.framework */; };
 		5C61BDAE1231D32000FD3451 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDAA1231D32000FD3451 /* OpenCL.framework */; };
 		5C61BDAF1231D32000FD3451 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDAB1231D32000FD3451 /* OpenGL.framework */; };
-		5C61BDB71231D32B00FD3451 /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDB21231D32B00FD3451 /* SDL_image.framework */; };
 		5C61BDEE1232A25500FD3451 /* logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C61BDEC1232A25500FD3451 /* logger.cpp */; };
 		5C61BDEF1232A25500FD3451 /* logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C61BDED1232A25500FD3451 /* logger.h */; };
 		5CA26A161455CD07002A6D9E /* event_objects.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA26A151455CD07002A6D9E /* event_objects.h */; };
 		5CA3844113CA7D4A00AB1F24 /* atomics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA3844013CA7D4A00AB1F24 /* atomics.cpp */; };
-		5CA3845C13CA900C00AB1F24 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CA3844313CA80E400AB1F24 /* SDL.framework */; };
 		5CA73B441466A34200B1B268 /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA73B3C1466A34200B1B268 /* particle.cpp */; };
 		5CA73B451466A34200B1B268 /* particle.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA73B3D1466A34200B1B268 /* particle.h */; };
 		5CA73B461466A34200B1B268 /* particle_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA73B3E1466A34200B1B268 /* particle_base.cpp */; };
@@ -104,6 +102,8 @@
 		5CA9BB5F14F18153004B7851 /* gui_theme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB5914F18153004B7851 /* gui_theme.cpp */; };
 		5CA9BB6014F18153004B7851 /* gui_theme.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5A14F18153004B7851 /* gui_theme.h */; };
 		5CBF520B123458FD00971741 /* texture_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CBF520A123458FD00971741 /* texture_object.h */; };
+		5CC97E3E1501677200AB0D95 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3C1501677200AB0D95 /* SDL2.framework */; };
+		5CC97E3F1501677200AB0D95 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3D1501677200AB0D95 /* SDL2_image.framework */; };
 		5CD79ED712E3D16600CE2BE5 /* basic_math.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CD79ED612E3D16600CE2BE5 /* basic_math.h */; };
 		5CDC19F0142F8A4A00FE031C /* vector4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC19EF142F8A4A00FE031C /* vector4.cpp */; };
 /* End PBXBuildFile section */
@@ -111,6 +111,8 @@
 /* Begin PBXFileReference section */
 		5C05F790123171DA00D122BF /* liba2elightd.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liba2elightd.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C05F792123171DA00D122BF /* a2e_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e_Prefix.pch; sourceTree = "<group>"; };
+		5C08D66B152F45660066381D /* gfx2d.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gfx2d.cpp; sourceTree = "<group>"; };
+		5C08D66C152F45660066381D /* gfx2d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx2d.h; sourceTree = "<group>"; };
 		5C27B7181241432C00EF25B9 /* a2e.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e.h; sourceTree = SOURCE_ROOT; };
 		5C2C9274140AA9D900AC808C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		5C32C6BA135526C300164662 /* atomics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = atomics.h; sourceTree = "<group>"; };
@@ -146,8 +148,6 @@
 		5C3975FC123189750075C168 /* unicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unicode.h; sourceTree = "<group>"; };
 		5C397613123189750075C168 /* extensions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = extensions.cpp; sourceTree = "<group>"; };
 		5C397614123189750075C168 /* extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = extensions.h; sourceTree = "<group>"; };
-		5C397615123189750075C168 /* gfx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gfx.cpp; sourceTree = "<group>"; };
-		5C397616123189750075C168 /* gfx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx.h; sourceTree = "<group>"; };
 		5C397617123189750075C168 /* gl_funcs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gl_funcs.cpp; sourceTree = "<group>"; };
 		5C397618123189750075C168 /* gl_funcs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gl_funcs.h; sourceTree = "<group>"; };
 		5C39761A123189750075C168 /* a2e_shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = a2e_shader.cpp; sourceTree = "<group>"; };
@@ -185,14 +185,12 @@
 		5C61BDAA1231D32000FD3451 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = /System/Library/Frameworks/OpenCL.framework; sourceTree = "<absolute>"; };
 		5C61BDAB1231D32000FD3451 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		5C61BDB11231D32B00FD3451 /* lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = lua.framework; path = /Library/Frameworks/lua.framework; sourceTree = "<absolute>"; };
-		5C61BDB21231D32B00FD3451 /* SDL_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_image.framework; path = /Library/Frameworks/SDL_image.framework; sourceTree = "<absolute>"; };
 		5C61BDEC1232A25500FD3451 /* logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = logger.cpp; sourceTree = "<group>"; };
 		5C61BDED1232A25500FD3451 /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
 		5C7A8FF614B398B2004AA18B /* premake.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = premake.sh; path = ../premake.sh; sourceTree = "<group>"; };
 		5C7A8FF714B398B2004AA18B /* premake4.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = premake4.lua; path = ../premake4.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		5CA26A151455CD07002A6D9E /* event_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = event_objects.h; sourceTree = "<group>"; };
 		5CA3844013CA7D4A00AB1F24 /* atomics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = atomics.cpp; sourceTree = "<group>"; };
-		5CA3844313CA80E400AB1F24 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
 		5CA73B3C1466A34200B1B268 /* particle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = particle.cpp; sourceTree = "<group>"; };
 		5CA73B3D1466A34200B1B268 /* particle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = particle.h; sourceTree = "<group>"; };
 		5CA73B3E1466A34200B1B268 /* particle_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = particle_base.cpp; sourceTree = "<group>"; };
@@ -215,6 +213,8 @@
 		5CA9BB6614F1830B004B7851 /* shader_gles2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shader_gles2.h; sourceTree = "<group>"; };
 		5CA9BB6814F183E2004B7851 /* gles_compat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gles_compat.h; sourceTree = "<group>"; };
 		5CBF520A123458FD00971741 /* texture_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture_object.h; sourceTree = "<group>"; };
+		5CC97E3C1501677200AB0D95 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Library/Frameworks/SDL2.framework; sourceTree = SDKROOT; };
+		5CC97E3D1501677200AB0D95 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Library/Frameworks/SDL2_image.framework; sourceTree = SDKROOT; };
 		5CD79ED612E3D16600CE2BE5 /* basic_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = basic_math.h; sourceTree = "<group>"; };
 		5CDC19EF142F8A4A00FE031C /* vector4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vector4.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -225,12 +225,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */,
-				5CA3845C13CA900C00AB1F24 /* SDL.framework in Frameworks */,
 				5C61BDAC1231D32000FD3451 /* AppKit.framework in Frameworks */,
 				5C61BDAD1231D32000FD3451 /* Cocoa.framework in Frameworks */,
 				5C61BDAE1231D32000FD3451 /* OpenCL.framework in Frameworks */,
 				5C61BDAF1231D32000FD3451 /* OpenGL.framework in Frameworks */,
-				5C61BDB71231D32B00FD3451 /* SDL_image.framework in Frameworks */,
+				5CC97E3E1501677200AB0D95 /* SDL2.framework in Frameworks */,
+				5CC97E3F1501677200AB0D95 /* SDL2_image.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,9 +280,9 @@
 			isa = PBXGroup;
 			children = (
 				5C2C9274140AA9D900AC808C /* libxml2.dylib */,
-				5CA3844313CA80E400AB1F24 /* SDL.framework */,
+				5CC97E3C1501677200AB0D95 /* SDL2.framework */,
+				5CC97E3D1501677200AB0D95 /* SDL2_image.framework */,
 				5C61BDB11231D32B00FD3451 /* lua.framework */,
-				5C61BDB21231D32B00FD3451 /* SDL_image.framework */,
 				5C61BDA81231D32000FD3451 /* AppKit.framework */,
 				5C61BDA91231D32000FD3451 /* Cocoa.framework */,
 				5C61BDAA1231D32000FD3451 /* OpenCL.framework */,
@@ -368,8 +368,8 @@
 				5C397613123189750075C168 /* extensions.cpp */,
 				5C397614123189750075C168 /* extensions.h */,
 				5CA9BB6814F183E2004B7851 /* gles_compat.h */,
-				5C397615123189750075C168 /* gfx.cpp */,
-				5C397616123189750075C168 /* gfx.h */,
+				5C08D66B152F45660066381D /* gfx2d.cpp */,
+				5C08D66C152F45660066381D /* gfx2d.h */,
 				5C397617123189750075C168 /* gl_funcs.cpp */,
 				5C397618123189750075C168 /* gl_funcs.h */,
 				5C397627123189750075C168 /* rtt.cpp */,
@@ -517,7 +517,6 @@
 				5C397699123189750075C168 /* image.h in Headers */,
 				5C39769D123189750075C168 /* unicode.h in Headers */,
 				5C3976B1123189750075C168 /* extensions.h in Headers */,
-				5C3976B3123189750075C168 /* gfx.h in Headers */,
 				5C3976B5123189750075C168 /* gl_funcs.h in Headers */,
 				5C3976B7123189750075C168 /* a2e_shader.h in Headers */,
 				5C3976BB123189750075C168 /* shader_gl3.h in Headers */,
@@ -547,6 +546,7 @@
 				5CA9BB5C14F18153004B7851 /* gui_object.h in Headers */,
 				5CA9BB5E14F18153004B7851 /* gui_color_scheme.h in Headers */,
 				5CA9BB6014F18153004B7851 /* gui_theme.h in Headers */,
+				5C08D66E152F45660066381D /* gfx2d.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -629,7 +629,6 @@
 				5C397698123189750075C168 /* image.cpp in Sources */,
 				5C39769C123189750075C168 /* unicode.cpp in Sources */,
 				5C3976B0123189750075C168 /* extensions.cpp in Sources */,
-				5C3976B2123189750075C168 /* gfx.cpp in Sources */,
 				5C3976B4123189750075C168 /* gl_funcs.cpp in Sources */,
 				5C3976B6123189750075C168 /* a2e_shader.cpp in Sources */,
 				5C3976BA123189750075C168 /* shader_gl3.cpp in Sources */,
@@ -656,6 +655,7 @@
 				5CA9BB5B14F18153004B7851 /* gui_object.cpp in Sources */,
 				5CA9BB5D14F18153004B7851 /* gui_color_scheme.cpp in Sources */,
 				5CA9BB5F14F18153004B7851 /* gui_theme.cpp in Sources */,
+				5C08D66D152F45660066381D /* gfx2d.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -686,7 +686,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-stdlib=libc++";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 			};
 			name = Debug;
@@ -712,7 +712,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = "-stdlib=libc++";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 			};
 			name = Release;
@@ -791,6 +791,7 @@
 					"-Wdangling-else",
 					"-Wshift-overflow",
 					"-Wvexing-parse",
+					"-Wc++11-narrowing",
 				);
 			};
 			name = Debug;
@@ -866,6 +867,7 @@
 					"-Wdangling-else",
 					"-Wshift-overflow",
 					"-Wvexing-parse",
+					"-Wc++11-narrowing",
 				);
 			};
 			name = Release;

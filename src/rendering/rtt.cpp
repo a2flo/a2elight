@@ -44,10 +44,9 @@ const char* rtt::TEXTURE_ANTI_ALIASING_STR[] = {
 
 /*! there is no function currently
  */
-rtt::rtt(engine* e_, gfx* g_, ext* exts_, unsigned int screen_width_, unsigned int screen_height_) {
+rtt::rtt(engine* e_, ext* exts_, unsigned int screen_width_, unsigned int screen_height_) {
 	// get classes
 	rtt::e = e_;
-	rtt::g = g_;
 	rtt::exts = exts_;
 
 	current_buffer = nullptr;

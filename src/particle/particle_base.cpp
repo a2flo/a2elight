@@ -20,7 +20,7 @@
 
 /*! there is no function currently
  */
-particle_manager_base::particle_manager_base(engine* e_) : e(e_), s(e->get_shader()), cl(e->get_opencl()), g(e->get_gfx()), r(e->get_rtt()), exts(e->get_ext()), t(e->get_texman()) {
+particle_manager_base::particle_manager_base(engine* e_) : e(e_), s(e->get_shader()), cl(e->get_opencl()), r(e->get_rtt()), exts(e->get_ext()), t(e->get_texman()) {
 	max_particle_count = 1024*128; // limit to 2^17 for now
 }
 

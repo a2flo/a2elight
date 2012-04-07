@@ -42,7 +42,7 @@
 #include "particle/particle.h"
 
 #include "rendering/extensions.h"
-#include "rendering/gfx.h"
+#include "rendering/gfx2d.h"
 #include "rendering/rtt.h"
 #include "rendering/shader.h"
 #include "rendering/texman.h"

@@ -22,7 +22,6 @@
 #include "global.h"
 
 #include "core/core.h"
-#include "rendering/gfx.h"
 #include "rendering/extensions.h"
 #include "rendering/texture_object.h"
 
@@ -33,7 +32,7 @@
 class engine;
 class A2E_API rtt {
 public:
-	rtt(engine* e, gfx* g, ext* exts, unsigned int screen_width, unsigned int screen_height);
+	rtt(engine* e, ext* exts, unsigned int screen_width, unsigned int screen_height);
 	~rtt();
 
 	enum TEXTURE_ANTI_ALIASING {
@@ -107,7 +106,6 @@ public:
 
 protected:
 	engine* e;
-	gfx* g;
 	ext* exts;
 
 	vector<fbo*> buffers;

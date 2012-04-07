@@ -44,7 +44,6 @@ scene::scene(engine* e_) {
 	scene::s = e->get_shader();
 	scene::exts = e->get_ext();
 	scene::r = e->get_rtt();
-	scene::g = e->get_gfx();
 	scene::cl = e->get_opencl();
 
 	stereo = e->get_stereo();
@@ -570,7 +569,7 @@ void scene::light_and_material_pass() {
 					ir_lighting->uniform("light_color", float4(li->get_color(), 0.0f));
 					ir_lighting->uniform("light_ambient", float4(li->get_ambient(), 0.0f));
 					
-					ir_lighting->attribute_array("in_vertex", g->get_fullscreen_quad_vbo(), 2, GL_FLOAT);
+					ir_lighting->attribute_array("in_vertex", gfx2d::get_fullscreen_quad_vbo(), 2, GL_FLOAT);
 					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 				}
 			}
@@ -662,7 +661,7 @@ void scene::light_and_material_pass() {
 		
 		gl3shader luma_shd = s->get_gl3shader("LUMA");
 		luma_shd->texture("src_buffer", scene_buffer->tex_id[0]);
-		g->draw_fullscreen_triangle();
+		gfx2d::draw_fullscreen_triangle();
 		luma_shd->disable();
 		
 		r->stop_2d_draw();
@@ -682,7 +681,7 @@ void scene::light_and_material_pass() {
 						  float2(1.0f) / float2(fxaa_buffer->width, fxaa_buffer->height));
 		
 		glFrontFace(GL_CW);
-		g->draw_fullscreen_triangle();
+		gfx2d::draw_fullscreen_triangle();
 		glFrontFace(GL_CCW);
 		
 		fxaa_shd->disable();
@@ -704,10 +703,9 @@ void scene::light_and_material_pass() {
 	if(!is_fxaa || is_ssaa_fxaa || is_post_processing) {
 		// draw to back buffer
 		e->start_2d_draw();
-		const gfx::rect fs_rect(0, 0, e->get_width(), e->get_height());
-		g->draw_textured_rectangle(fs_rect,
-								   coord(0.0f, 1.0f), coord(1.0f, 0.0f),
-								   scene_buffer->tex_id[0]);
+		gfx2d::draw_rectangle_texture(rect(0, 0, e->get_width(), e->get_height()),
+									  scene_buffer->tex_id[0],
+									  coord(0.0f, 1.0f), coord(1.0f, 0.0f));
 		e->stop_2d_draw();
 	}
 }

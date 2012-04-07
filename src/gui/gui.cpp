@@ -21,7 +21,7 @@
 
 gui::gui(engine* e_) :
 thread_base("gui"),
-e(e_), evt(e_->get_event()), g(e_->get_gfx()),
+e(e_), evt(e_->get_event()),
 key_handler_fnctr(this, &gui::key_handler), mouse_handler_fnctr(this, &gui::mouse_handler) {
 	AtomicSet(&keyboard_input, 1);
 	AtomicSet(&mouse_input, 1);

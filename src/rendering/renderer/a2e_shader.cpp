@@ -708,7 +708,6 @@ void a2e_shader::load_a2e_shader_includes() {
 
 void a2e_shader::make_glsl_es_compat(a2e_shader_object* shd, const string& option) {
 	// this function will try its best to make OpenGL 3.2 / GLSL 1.50 shaders compatible to GLSL ES 1.00
-	// TODO: !
 	
 	// regex objects
 	struct regex_shader_replacement {

@@ -96,8 +96,8 @@ void shader::reload_shaders() {
 	if(err_shd_cnt == 0) a2e_debug("external shaders compiled successfully!");
 	else a2e_debug("failed to compile %u external!", err_shd_cnt);
 	
-	// TODO: this is only temporary - see gfx.h for TODO
-	e->get_gfx()->_init_shader();
+	// emit shader reload event
+	e->get_event()->add_event(EVENT_TYPE::SHADER_RELOAD, make_shared<shader_reload_event>(SDL_GetTicks()));
 }
 
 void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned int src_attachment, unsigned int dest_attachment) {
@@ -527,6 +527,10 @@ bool shader::load_internal_shaders() {
 		{ "SIMPLE", "misc/simple.a2eshd" }, // basically a replacement for fixed-function shading/drawing
 		//"DOWNSAMPLE", "misc/downsample.a2eshd" },
 		{ "BLEND", "misc/blend.a2eshd" },
+		
+		// gfx2d
+		{ "GFX2D_GRADIENT", "gfx2d/gradient.a2eshd" },
+		{ "GFX2D_TEXTURE", "gfx2d/texture.a2eshd" },
 
 		// inferred rendering
 		{ "IR_GP_GBUFFER", "inferred/gp_gbuffer.a2eshd" },

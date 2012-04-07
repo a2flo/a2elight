@@ -76,7 +76,7 @@ xml::xml_doc xml::process_file(const string& filename, const bool validate) cons
 		
 		for(; cur_node; cur_node = cur_node->next) {
 			if(cur_node->type == XML_ELEMENT_NODE) {
-				xml_node* node = new xml_node(cur_node);
+				xml_node* node = new xml_node(string((const char*)cur_node->name), cur_node);
 				nodes->insert(make_pair(string((const char*)cur_node->name), node));
 				
 				if(cur_node->children != nullptr) {
@@ -219,7 +219,7 @@ template<> const ssize4 xml::xml_doc::get<ssize4>(const string& path, const ssiz
 			: default_value);
 }
 
-xml::xml_node::xml_node(const xmlNode* node) {
+xml::xml_node::xml_node(const string& name_, const xmlNode* node) : node_name(name_) {
 	for(xmlAttr* cur_attr = node->properties; cur_attr; cur_attr = cur_attr->next) {
 		attributes.insert(make_pair(string((const char*)cur_attr->name),
 									string((cur_attr->children != nullptr ? (const char*)cur_attr->children->content : "INVALID"))

@@ -20,6 +20,7 @@
 #include "rendering/shader.h"
 #include "cl/opencl.h"
 #include "gui/gui.h"
+#include "rendering/gfx2d.h"
 
 // dll main for windows dll export
 #ifdef __WINDOWS__
@@ -85,10 +86,11 @@ engine::~engine() {
 	
 	e->remove_event_handler(*window_handler);
 	delete window_handler;
+	
+	gfx2d::destroy();
 
 	if(c != nullptr) delete c;
 	if(f != nullptr) delete f;
-	if(g != nullptr) delete g;
 	if(t != nullptr) delete t;
 	if(exts != nullptr) delete exts;
 	if(x != nullptr) delete x;
@@ -162,7 +164,6 @@ void engine::create() {
 	c = nullptr;
 	f = nullptr;
 	e = nullptr;
-	g = nullptr;
 	t = nullptr;
 	exts = nullptr;
 	x = nullptr;
@@ -188,7 +189,6 @@ void engine::create() {
 	c = new core();
 	x = new xml(this);
 	e = new event();
-	g = new gfx(this);
 	ui = new gui(this);
 	ocl = nullptr;
 	
@@ -337,9 +337,7 @@ void engine::init(const char* ico) {
 #if !defined(A2E_IOS)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#if !defined(__APPLE__) && !defined(MINGW) // TODO: update sdl!
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-#endif
 #else
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -352,9 +350,6 @@ void engine::init(const char* ico) {
 	fullscreen_mode.w = config.width;
 	fullscreen_mode.h = config.height;
 #endif
-
-	// ... load icon before SDL_SetVideoMode
-	if(ico != nullptr) load_ico(ico);
 
 	// create screen
 #if !defined(A2E_IOS)
@@ -380,6 +375,9 @@ void engine::init(const char* ico) {
 	a2e_debug("fullscreen mode set: w%u h%u", config.width, config.height);
 	SDL_ShowWindow(config.wnd);
 #endif
+	
+	// load icon
+	if(ico != nullptr) load_ico(ico);
 	
 	config.ctx = SDL_GL_CreateContext(config.wnd);
 	if(config.ctx == nullptr) {
@@ -486,7 +484,7 @@ void engine::init(const char* ico) {
 	
 	// create texture manager and render to texture object
 	t = new texman(f, u, exts, datapath, config.anisotropic);
-	r = new rtt(this, g, exts, (unsigned int)config.width, (unsigned int)config.height);
+	r = new rtt(this, exts, (unsigned int)config.width, (unsigned int)config.height);
 	
 	// if GL_RENDERER is that damn m$ gdi driver, exit a2e 
 	// no official support for this crappy piece of software 
@@ -509,7 +507,7 @@ void engine::init(const char* ico) {
 	
 	// init/create shaders, init gfx
 	shd = new shader(this);
-	g->init();
+	gfx2d::init(this);
 	
 	// draw the loading screen/image
 	start_draw();
@@ -518,12 +516,12 @@ void engine::init(const char* ico) {
 	const size2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
 	const size2 img_offset(config.width/2 - load_tex_draw_size.x/2,
 						   config.height/2 - load_tex_draw_size.y/2);
-	g->set_blend_mode(gfx::BLEND_MODE::PRE_MUL);
-	g->draw_textured_rectangle(gfx::rect(img_offset.x, img_offset.y,
-										 img_offset.x + load_tex_draw_size.x,
-										 img_offset.y + load_tex_draw_size.y),
-							   coord(0.0f, 0.0f), coord(1.0f, 1.0f),
-							   load_tex->tex());
+	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
+	gfx2d::draw_rectangle_texture(rect(img_offset.x, img_offset.y,
+									   img_offset.x + load_tex_draw_size.x,
+									   img_offset.y + load_tex_draw_size.y),
+								  load_tex->tex(),
+								  coord(0.0f, 1.0f), coord(1.0f, 0.0f));
 	stop_2d_draw();
 	stop_draw();
 	
@@ -849,12 +847,6 @@ file_io* engine::get_file_io() {
  */
 event* engine::get_event() {
 	return engine::e;
-}
-
-/*! returns the gfx class
- */
-gfx* engine::get_gfx() {
-	return engine::g;
 }
 
 /*! returns the texman class

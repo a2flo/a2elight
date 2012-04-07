@@ -65,7 +65,6 @@ protected:
 	engine* e;
 	shader* s;
 	opencl* cl;
-	gfx* g;
 	rtt* r;
 	ext* exts;
 	texman* t;

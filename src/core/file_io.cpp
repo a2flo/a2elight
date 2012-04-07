@@ -145,8 +145,7 @@ unsigned int file_io::get_uint() {
  */
 float file_io::get_float() {
 	float f = 0.0f;
-	filestream.read((char*)tmp, 4);
-	memcpy(&f, tmp, 4);
+	filestream.read((char*)&f, 4);
 	return f;
 }
 

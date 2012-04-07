@@ -25,16 +25,12 @@ using namespace std;
 // TODO: use C++11 atomics when supported by clang/gcc
 
 ////////////////////////////////////////////////////////////////////////////////
-// SDL 1.3+ atomic functions
-#if defined(__APPLE__)
-#include <SDL/SDL_atomic.h>
-#else
+// SDL 2.0+ atomic functions
 #include <SDL2/SDL_atomic.h>
-#endif
 
-// check if atomics and sdl 1.3 are available
-#if !defined(_SDL_atomic_h_ ) || (SDL_MAJOR_VERSION == 1 && SDL_MINOR_VERSION < 3)
-#error "A2E requires SDL 1.3 with support for atomics"
+// check if atomics and sdl 2.0 are available
+#if !defined(_SDL_atomic_h_ ) || (SDL_MAJOR_VERSION == 1)
+#error "A2E requires SDL 2.0 with support for atomics"
 #endif
 
 #define AtomicFetchThenIncrement(a) SDL_AtomicAdd(a, 1)

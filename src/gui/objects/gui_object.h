@@ -20,8 +20,7 @@
 #define __GUI_OBJECT_H__
 
 #include "global.h"
-
-#include "rendering/gfx.h"
+#include "core/vector2.h"
 
 /*! @class gui_object
  *  @brief gui object element functions
@@ -58,7 +57,6 @@ public:
 
 protected:
 	engine* e;
-	gfx* g;
 	
 	// gui object element variables
 	struct {
@@ -66,7 +64,7 @@ protected:
 		bool enabled;
 	} state;
 	
-	gfx::rect rect;
+	rect rectangle;
 	
 	gui_object* parent;
 	

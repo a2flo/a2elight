@@ -55,7 +55,6 @@ public:
 protected:
 	engine* e;
 	texman* t;
-	gfx* g;
 	
 	pnt position;
 

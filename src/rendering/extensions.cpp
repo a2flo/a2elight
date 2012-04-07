@@ -333,43 +333,50 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			}
 			// yes, these are all actually geforce 9 cards ... and thank you nvidia for this totally fucked up naming scheme ...
 			else if(renderer_str.find("geforce 9") != string::npos ||		// 9xxx(M)
-					renderer_str.find("geforce 1") != string::npos ||		// 1xx(M)
+					renderer_str.find("geforce 1") != string::npos ||			// 1xx(M)
 					renderer_str.find("geforce g 1") != string::npos ||		// G 1xx(M)
 					renderer_str.find("geforce g1") != string::npos ||		// G1xx(M)
-					renderer_str.find("geforce gt 1") != string::npos ||	// GT 1xx(M)
+					renderer_str.find("geforce gt 1") != string::npos ||		// GT 1xx(M)
 					renderer_str.find("geforce gts 1") != string::npos ||	// GTS 1xx(M)
 					(renderer_str.find("geforce gts 2") != string::npos && renderer_str.find("m") == string::npos) || // GTS 2xx (!M)
 					(renderer_str.find("geforce gtx 2") != string::npos && renderer_str.find("m") != string::npos)) { // GTX 2xxM
 				graphic_card = ext::GC_GEFORCE_9;
 			}
 			else if(renderer_str.find("geforce 2") != string::npos ||		// 2xx(M)
-					renderer_str.find("geforce 3") != string::npos ||		// 3xx(M)
+					renderer_str.find("geforce 3") != string::npos ||			// 3xx(M)
 					renderer_str.find("geforce g 2") != string::npos ||		// G 2xx(M)
 					renderer_str.find("geforce g2") != string::npos ||		// G2xx(M)
-					renderer_str.find("geforce gt 2") != string::npos ||	// GT 2xx(M)
+					renderer_str.find("geforce gt 2") != string::npos ||		// GT 2xx(M)
 					renderer_str.find("geforce gts 2") != string::npos ||	// GTS 2xx(M)
 					renderer_str.find("geforce gtx 2") != string::npos ||	// GTX 2xx
-					renderer_str.find("geforce gt 3") != string::npos ||	// GT 3xx(M)
+					renderer_str.find("geforce gt 3") != string::npos ||		// GT 3xx(M)
 					renderer_str.find("geforce gts 3") != string::npos) {	// GTS 3xx(M)
 				graphic_card = ext::GC_GEFORCE_GT200;
 			}
 			else if(renderer_str.find("geforce gtx 4") != string::npos ||	// GTX 4xx
 					renderer_str.find("geforce gts 4") != string::npos ||	// GTS 4xx
-					renderer_str.find("geforce gt 4") != string::npos ||	// GT 4xx
+					renderer_str.find("geforce gt 4") != string::npos ||		// GT 4xx
 					renderer_str.find("geforce gtx 5") != string::npos ||	// GTX 5xx
 					renderer_str.find("geforce gts 5") != string::npos ||	// GTS 5xx
-					renderer_str.find("geforce gt 5") != string::npos ||	// GT 5xx
-					renderer_str.find("geforce gtx 6") != string::npos ||	// GTX 6xx
-					renderer_str.find("geforce gts 6") != string::npos ||	// GTS 6xx
-					renderer_str.find("geforce gt 6") != string::npos) {	// GT 6xx
+					renderer_str.find("geforce gt 5") != string::npos ||		// GT 5xx
+					// this is getting out of hand ...
+					(renderer_str.find("geforce gtx 6") != string::npos &&
+					 renderer_str.find("m") != string::npos &&
+					 renderer_str.find("660m") == string::npos &&
+					 renderer_str.find("680m") == string::npos) ||			// GTX 6xxM (!660M/680M)
+					(renderer_str.find("geforce gt 6") != string::npos &&
+					 renderer_str.find("m") != string::npos &&
+					 renderer_str.find("650m") == string::npos &&
+					 renderer_str.find("640m") == string::npos) ||			// GT 6xxM (!640M/650M)
+					(renderer_str.find("geforce gts 6") != string::npos &&
+					 renderer_str.find("m") != string::npos)) {				// GTS 6xxM
 				graphic_card = ext::GC_GEFORCE_GF100;
 			}
-			else if(renderer_str.find("geforce gtx 7") != string::npos ||	// GTX 7xx
-					renderer_str.find("geforce gts 7") != string::npos ||	// GTS 7xx
-					renderer_str.find("geforce gt 7") != string::npos) {	// GT 7xx
+			else if(renderer_str.find("geforce gtx 6") != string::npos ||	// GTX 6xx
+					renderer_str.find("geforce gts 6") != string::npos ||	// GTS 6xx
+					renderer_str.find("geforce gt 6") != string::npos) {		// GT 6xx
 				graphic_card = ext::GC_GEFORCE_GK100;
 			}
-			// TODO: GK100?
 		}
 		else if(vendor == ext::GCV_ATI) {
 			if(renderer_str.find("radeon hd 2") != string::npos) {

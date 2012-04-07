@@ -21,7 +21,7 @@
 #include "core/core.h"
 
 gui_object::gui_object(engine* e_) :
-e(e_), g(e_->get_gfx()), rect(), parent(nullptr) {
+e(e_), rectangle(), parent(nullptr) {
 	//
 	state.visible = true;
 	state.enabled = true;

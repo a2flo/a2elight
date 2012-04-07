@@ -21,21 +21,33 @@
 
 #include "global.h"
 #include "core/xml.h"
+#include "gui_color_scheme.h"
 
 class engine;
 class xml;
+class gfx;
 class gui_theme {
 public:
 	gui_theme(engine* e);
 	~gui_theme();
 	
-	void load(const string& filename);
+	bool load(const string& filename);
 	
 protected:
 	engine* e;
 	xml* x;
+	gui_color_scheme scheme;
 	
-	void process_node(const xml::xml_node* node, const xml::xml_node* parent);
+	bool load_ui_object(const string& filename);
+	
+	void process_state(const xml::xml_node* node, const xml::xml_node* parent);
+	void process_primitive(const xml::xml_node* node, const xml::xml_node* parent);
+	
+	//
+	typedef std::function<void(const pnt& offset, const size2& size)> gui_ui_object_draw_function;
+	struct gui_ui_object {
+		vector<gui_ui_object_draw_function> draw_calls;
+	};
 	
 };
 

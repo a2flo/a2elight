@@ -32,7 +32,6 @@ using namespace std;
 #define a2e_msg(...) logger::log(logger::LT_MSG, __FILE__, __func__, __VA_ARGS__)
 #define a2e_log(...) logger::log(logger::LT_NONE, __FILE__, __func__, __VA_ARGS__)
 
-class config;
 class A2E_API logger {
 public:
 	enum LOG_TYPE {
@@ -44,7 +43,6 @@ public:
 	
 	static void init();
 	static void destroy();
-	static void set_config(const config* conf);
 	
 	//
 	static const char* type_to_str(const LOG_TYPE& type) {
@@ -74,7 +72,6 @@ protected:
 	static fstream log_file;
 	static atomic_t err_counter;
 	static SDL_SpinLock slock;
-	static const config* conf;
 	
 	//
 	static void prepare_log(stringstream& buffer, const LOG_TYPE& type, const char* file, const char* func);

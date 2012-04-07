@@ -22,9 +22,10 @@
 #include "global.h"
 
 #include "core/core.h"
-#include "rendering/gfx.h"
 #include "engine.h"
 #include "cl/opencl.h"
+#include "core/bbox.h"
+#include "rendering/gfx2d.h"
 
 /*! @class particle_system class
  *  @brief a2e particle system class
@@ -93,8 +94,8 @@ public:
 	void set_size(const float2& size);
 	const float2& get_size() const;
 	
-	void set_blend_mode(const gfx::BLEND_MODE mode);
-	const gfx::BLEND_MODE& get_blend_mode() const;
+	void set_blend_mode(const gfx2d::BLEND_MODE mode);
+	const gfx2d::BLEND_MODE& get_blend_mode() const;
 	
 	void set_visible(const bool state);
 	bool is_visible() const;
@@ -176,7 +177,7 @@ protected:
 	bool rentrant_sorting;
 	bool render_intermediate_sorted_buffer;
 	size_t sorting_step_size;
-	gfx::BLEND_MODE blend_mode;
+	gfx2d::BLEND_MODE blend_mode;
 	vector<light*> lights;
 	GLuint lights_ubo;
 	void* aux_data;

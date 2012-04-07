@@ -331,7 +331,7 @@ void a2estatic::load_from_memory(unsigned int object_count_, unsigned int vertex
 	
 	object_names = new string[object_count];
 	for(unsigned int i = 0; i < object_count; i++) {
-		object_names[i] = "object #" + i;
+		object_names[i] = "object #" + uint2string(i);
 	}
 	
 	// set this stuff for normal generating

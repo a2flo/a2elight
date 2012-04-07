@@ -64,11 +64,13 @@ public:
 		template<typename T> const T get(const string& path, const T default_val = default_value<T>::def()) const;
 	};
 	struct xml_node {
-		xml_node(const xmlNode* node);
+		xml_node(const string& name, const xmlNode* node);
 		~xml_node();
+		const string node_name;
 		unordered_multimap<string, xml_node*> children;
 		unordered_map<string, const string> attributes;
 		
+		const string& name() const { return node_name; }
 		const string& operator[](const string& attr_name) const {
 			static const string invalid_attr = "INVALID";
 			const auto attr = attributes.find(attr_name);

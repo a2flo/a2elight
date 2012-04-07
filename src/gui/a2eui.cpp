@@ -28,7 +28,7 @@ a2eui::~a2eui() {
 }
 
 void a2eui::load(const string& filename) {
-	xml::xml_doc ui_doc = x->process_file(e->data_path(filename));
+	xml::xml_doc ui_doc = x->process_file(e->data_path(filename), false); // TODO: DTD!
 	if(!ui_doc.valid) {
 		a2e_error("couldn't process ui file %s!", filename);
 		return;

@@ -29,7 +29,7 @@ public:
 	gui_color_scheme(engine* e);
 	~gui_color_scheme();
 	
-	void load(const string& filename);
+	bool load(const string& filename);
 	
 	const float4 get(const string& name) const;
 	

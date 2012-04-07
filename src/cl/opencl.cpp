@@ -322,15 +322,15 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			}
 			
 			// TYPE (Units: %, Clock: %): Name, Vendor, Version, Driver Version
-			a2e_debug("%s(Units: %u, Clock: %u MHz, Memory: %u MB): %s %s, %s/%s",
-					 dev_type_str.c_str(),
+			a2e_debug("%s(Units: %u, Clock: %u MHz, Memory: %u MB): %s %s, %s / %s",
+					 dev_type_str,
 					 device->units,
 					 device->clock,
 					 (unsigned int)(device->mem_size / 1024ul / 1024ul),
-					 device->vendor.c_str(),
-					 device->name.c_str(),
-					 device->version.c_str(),
-					 device->driver_version.c_str());
+					 device->vendor,
+					 device->name,
+					 device->version,
+					 device->driver_version);
 		}
 		
 		// create a (single) command queue for each device
@@ -474,6 +474,8 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 //#endif
 	
 	// check if this is an external kernel (and hasn't been added before)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code" // TODO: remove this when it doesn't throw a warning any more
 	if(external_kernels.count(identifier) == 0 &&
 	   none_of(begin(internal_kernels), end(internal_kernels),
 			   [&identifier](const decltype(internal_kernels)::value_type& int_kernel) {
@@ -483,6 +485,7 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 		external_kernels.insert(make_pair(identifier,
 										  make_tuple(file_name, func_name, additional_options)));
 	}
+#pragma clang diagnostic pop
 	
 	return add_kernel_src(identifier, kernel_data, func_name, additional_options);
 }

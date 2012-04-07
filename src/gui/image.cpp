@@ -17,11 +17,12 @@
  */
 
 #include "image.h"
+#include "rendering/gfx2d.h"
 
 /*! there is no function currently
  *  @param e pointer to the engine class
  */
-image::image(engine* e_) : e(e_), t(e_->get_texman()), g(e_->get_gfx()), position() {
+image::image(engine* e_) : e(e_), t(e_->get_texman()), position() {
 	scale = true;
 	gui_img = false;
 	color = 0xFFFFFF;
@@ -56,7 +57,7 @@ void image::draw(unsigned int scale_x, unsigned int scale_y, bool flip_y) {
 		top_right.set(1.0f, 1.0f);
 	}
 
-	gfx::rect rectangle;
+	rect rectangle;
 	if(scale) {
 		rectangle.x1 = position.x;
 		rectangle.y1 = position.y;
@@ -69,10 +70,7 @@ void image::draw(unsigned int scale_x, unsigned int scale_y, bool flip_y) {
 		rectangle.x2 = position.x + tex->width;
 		rectangle.y2 = position.y + tex->height;
 	}
-	g->draw_textured_color_rectangle(rectangle,
-									 bottom_left, top_right,
-									 fcolor,
-									 tex->tex());
+	gfx2d::draw_rectangle_texture(rectangle, tex->tex(), fcolor, float4(0.0f), bottom_left, top_right);
 
 	if(tex->alpha) { glDisable(GL_BLEND); }
 

@@ -177,7 +177,12 @@ a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_
 			tex_surface = new_surface;
 		}
 	}
+		
+	// check if this texture already exists
+	a2e_texture check_tex = check_texture(filename, tex_surface->w, tex_surface->h, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type);
+	if(check_tex != dummy_texture) return check_tex;
 	
+	// add
 	a2e_texture ret_tex(new texture_object());
 	ret_tex->filename = filename;
 	ret_tex = add_texture(tex_surface->pixels, tex_surface->w, tex_surface->h, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type, &ret_tex);
@@ -200,6 +205,7 @@ a2e_texture texman::add_texture(const string& filename, GLint internal_format, G
 	a2e_texture check_tex = check_texture(filename, tex_surface->w, tex_surface->h, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type);
 	if(check_tex != dummy_texture) return check_tex;
 	
+	// add
 	a2e_texture ret_tex(new texture_object());
 	ret_tex->filename = filename;
 	ret_tex = add_texture(tex_surface->pixels, tex_surface->w, tex_surface->h, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type, &ret_tex);

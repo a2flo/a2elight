@@ -85,7 +85,6 @@ public:
 protected:
 	engine* e;
 	event* evt;
-	gfx* g;
 	
 	virtual void run();
 	

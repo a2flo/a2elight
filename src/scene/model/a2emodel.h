@@ -23,6 +23,7 @@
 
 #include "core/core.h"
 #include "core/vector3.h"
+#include "core/bbox.h"
 #include "core/file_io.h"
 #include "engine.h"
 #include "scene/model/a2ematerial.h"
