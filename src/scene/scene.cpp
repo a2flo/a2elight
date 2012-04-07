@@ -704,8 +704,7 @@ void scene::light_and_material_pass() {
 		// draw to back buffer
 		e->start_2d_draw();
 		gfx2d::draw_rectangle_texture(rect(0, 0, e->get_width(), e->get_height()),
-									  scene_buffer->tex_id[0],
-									  coord(0.0f, 1.0f), coord(1.0f, 0.0f));
+									  scene_buffer->tex_id[0]);
 		e->stop_2d_draw();
 	}
 }
