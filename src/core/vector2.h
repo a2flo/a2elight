@@ -119,6 +119,8 @@ public:
 		*this = *this / v;
 		return *this;
 	}
+	vector2 operator%(const vector2& v) const;
+	vector2& operator%=(const vector2& v);
 	
 	T length() const {
 		return sqrt(dot());
@@ -195,6 +197,20 @@ struct rect {
 	//rect(const uint2& low_, const uint2& high_) : low(low_), high(high_) {}
 	~rect() {}
 };
+
+template<> vector2<float> vector2<float>::operator%(const vector2& v) const; // specialize for float (mod)
+template<> vector2<double> vector2<double>::operator%(const vector2& v) const; // specialize for double (mod)
+template<typename T> vector2<T> vector2<T>::operator%(const vector2<T>& v) const {
+	return vector2<T>(x % v.x, y % v.y);
+}
+
+template<> vector2<float>& vector2<float>::operator%=(const vector2& v); // specialize for float (mod)
+template<> vector2<double>& vector2<double>::operator%=(const vector2& v); // specialize for double (mod)
+template<typename T> vector2<T>& vector2<T>::operator%=(const vector2<T>& v) {
+	x %= v.x;
+	y %= v.y;
+	return *this;
+}
 
 template<> vector2<float>& vector2<float>::round();
 template<typename T> vector2<T>& vector2<T>::round() {

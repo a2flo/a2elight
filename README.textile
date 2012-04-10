@@ -17,7 +17,7 @@ OS X:
 * install Xcode 4.3+ and a custom build clang 3.1+
 * copy SDL2.framework and SDL2_image.framework from your Albion.app to /Library/Frameworks
 * alternatively: clone SDL2 and SDL2_image repositories and build it yourself: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
-* open albion.xcodeproj and build it
+* open src/a2elight.xcodeproj and build it
 * in Terminal do (but change /path/to/a2elight!):
 ** sudo ln -sf /path/to/a2elight/src /usr/local/include/a2elight
 ** sudo ln -sf /path/to/a2elight/lib/liba2elight.dylib /usr/local/lib/liba2elight.dylib

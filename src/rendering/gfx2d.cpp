@@ -159,6 +159,7 @@ void gfx2d::upload_points_and_draw(const gl3shader& shd, const primitive_propert
 	// disable everything
 	glDisableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	shd->disable();
 }
 
 //! begins/enables the scissor

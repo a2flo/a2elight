@@ -40,6 +40,7 @@
 class shader;
 class opencl;
 class gui;
+class scene;
 class A2E_API engine {
 public:
 	engine(const char* callpath_, const char* datapath_);
@@ -54,7 +55,7 @@ public:
 	void start_draw();
 	void stop_draw();
 	void start_2d_draw();
-	void start_2d_draw(const unsigned int width, const unsigned int height, const bool fbo);
+	void start_2d_draw(const unsigned int width, const unsigned int height);
 	void stop_2d_draw();
 	void push_ogl_state();
 	void pop_ogl_state();
@@ -75,6 +76,7 @@ public:
 	opencl* get_opencl();
 	shader* get_shader();
 	gui* get_gui();
+	scene* get_scene();
 	
 	// the initialization mode is used to determine if we should load
 	// or compute graphical stuff like textures or shaders
@@ -189,17 +191,18 @@ public:
 	size_t get_inferred_scale() const;
 
 protected:
-	core* c;
-	file_io* f;
-	event* e;
-	texman* t;
-	ext* exts;
-	xml* x;
-	rtt* r;
-	unicode* u;
-	opencl* ocl;
-	shader* shd;
-	gui* ui;
+	core* c = nullptr;
+	file_io* f = nullptr;
+	event* e = nullptr;
+	texman* t = nullptr;
+	ext* exts = nullptr;
+	xml* x = nullptr;
+	rtt* r = nullptr;
+	unicode* u = nullptr;
+	opencl* ocl = nullptr;
+	shader* shd = nullptr;
+	gui* ui = nullptr;
+	scene* sce = nullptr;
 	
 	// actual engine constructor
 	void create();

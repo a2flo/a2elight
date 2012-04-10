@@ -24,6 +24,26 @@ template<> A2E_API float2& vector2<float>::round() {
 	return *this;
 }
 
+template<> A2E_API float2 vector2<float>::operator%(const float2& v) const {
+	return float2(fmodf(x, v.x), fmodf(y, v.y));
+}
+
+template<> A2E_API float2& vector2<float>::operator%=(const float2& v) {
+	x = fmodf(x, v.x);
+	y = fmodf(y, v.y);
+	return *this;
+}
+
+template<> A2E_API double2 vector2<double>::operator%(const double2& v) const {
+	return double2(fmod(x, v.x), fmod(y, v.y));
+}
+
+template<> A2E_API double2& vector2<double>::operator%=(const double2& v) {
+	x = fmod(x, v.x);
+	y = fmod(y, v.y);
+	return *this;
+}
+
 #if defined(A2E_EXPORT)
 // instantiate
 template class vector2<float>;

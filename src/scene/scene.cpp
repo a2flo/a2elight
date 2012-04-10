@@ -24,7 +24,8 @@ static opencl* _cl = nullptr;
 /*! scene constructor
  */
 scene::scene(engine* e_) {
-	scene::is_light = false;
+	enabled = true;
+	is_light = false;
 	
 	_dbg_projs = nullptr;
 	_dbg_proj_count = 0;
@@ -40,11 +41,11 @@ scene::scene(engine* e_) {
 	exposure_buffer[1] = nullptr;
 
 	// get classes
-	scene::e = e_;
-	scene::s = e->get_shader();
-	scene::exts = e->get_ext();
-	scene::r = e->get_rtt();
-	scene::cl = e->get_opencl();
+	e = e_;
+	s = e->get_shader();
+	exts = e->get_ext();
+	r = e->get_rtt();
+	cl = e->get_opencl();
 
 	stereo = e->get_stereo();
 	eye_distance = -0.3f; // 1.5f?
@@ -230,6 +231,9 @@ bool scene::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) 
 /*! draws the scene
  */
 void scene::draw() {
+	// don't draw anything if scene isn't enabled
+	if(!enabled) return;
+	
 	// scene setup (lights, run particle systems, ...)
 	setup_scene();
 	
@@ -650,8 +654,6 @@ void scene::light_and_material_pass() {
 	const bool is_fxaa = (cur_aa == rtt::TAA_FXAA ||
 						  cur_aa == rtt::TAA_SSAA_4_3_FXAA ||
 						  cur_aa == rtt::TAA_SSAA_2_FXAA);
-	const bool is_ssaa_fxaa = (cur_aa == rtt::TAA_SSAA_4_3_FXAA ||
-							   cur_aa == rtt::TAA_SSAA_2_FXAA);
 	const bool is_post_processing = !pp_handlers.empty();
 	
 	if(is_fxaa) {
@@ -667,13 +669,9 @@ void scene::light_and_material_pass() {
 		r->stop_2d_draw();
 		r->stop_draw();
 		
-		//
-		if(is_ssaa_fxaa || is_post_processing) {
-			// render to scene buffer again (-> correct filtering!)
-			r->start_draw(scene_buffer);
-			r->start_2d_draw();
-		}
-		else e->start_2d_draw();
+		// render to scene buffer again (-> correct filtering!)
+		r->start_draw(scene_buffer);
+		r->start_2d_draw();
 		
 		gl3shader fxaa_shd = s->get_gl3shader("FXAA");
 		fxaa_shd->texture("src_buffer", fxaa_buffer->tex_id[0]);
@@ -686,11 +684,8 @@ void scene::light_and_material_pass() {
 		
 		fxaa_shd->disable();
 		
-		if(is_ssaa_fxaa) {
-			r->stop_2d_draw();
-			r->stop_draw();
-		}
-		else e->stop_2d_draw();
+		r->stop_2d_draw();
+		r->stop_draw();
 	}
 	
 	// apply post processing
@@ -698,14 +693,6 @@ void scene::light_and_material_pass() {
 		for(const auto& pph : pp_handlers) {
 			(*pph)(scene_buffer);
 		}
-	}
-	
-	if(!is_fxaa || is_ssaa_fxaa || is_post_processing) {
-		// draw to back buffer
-		e->start_2d_draw();
-		gfx2d::draw_rectangle_texture(rect(0, 0, e->get_width(), e->get_height()),
-									  scene_buffer->tex_id[0]);
-		e->stop_2d_draw();
 	}
 }
 
@@ -857,4 +844,20 @@ void scene::delete_post_processing(const post_processing_handler* pph) {
 		return; // already in container
 	}
 	pp_handlers.erase(iter);
+}
+
+void scene::set_enabled(const bool& status) {
+	if(status != enabled && !status) {
+		// clear scene buffers (so they are fully transparent)
+		for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
+			r->start_draw(frames[i].scene_buffer);
+			r->clear();
+			r->stop_draw();
+		}
+	}
+	enabled = status;
+}
+
+bool scene::is_enabled() const {
+	return enabled;
 }

@@ -21,6 +21,7 @@
 #include "cl/opencl.h"
 #include "gui/gui.h"
 #include "rendering/gfx2d.h"
+#include "scene/scene.h"
 
 // dll main for windows dll export
 #ifdef __WINDOWS__
@@ -98,6 +99,7 @@ engine::~engine() {
 	if(ocl != nullptr) delete ocl;
 	if(shd != nullptr) delete shd;
 	if(ui != nullptr) delete ui;
+	if(sce != nullptr) delete sce;
 	
 	// delete this at the end, b/c other classes will remove event handlers
 	if(e != nullptr) delete e;
@@ -161,17 +163,6 @@ void engine::create() {
 	kernelpath = "kernels/";
 	cursor_visible = true;
 	
-	c = nullptr;
-	f = nullptr;
-	e = nullptr;
-	t = nullptr;
-	exts = nullptr;
-	x = nullptr;
-	u = nullptr;
-	ocl = nullptr;
-	shd = nullptr;
-	ui = nullptr;
-	
 	fps = 0;
 	fps_counter = 0;
 	fps_time = 0;
@@ -189,8 +180,6 @@ void engine::create() {
 	c = new core();
 	x = new xml(this);
 	e = new event();
-	ui = new gui(this);
-	ocl = nullptr;
 	
 	window_handler = new event::handler(this, &engine::window_event_handler);
 	e->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
@@ -525,6 +514,12 @@ void engine::init(const char* ico) {
 	stop_2d_draw();
 	stop_draw();
 	
+	// create scene
+	sce = new scene(this);
+	
+	// create gui
+	ui = new gui(this);
+	
 #if !defined(A2E_NO_OPENCL)
 	// init opencl
 	ocl->init(false, config.opencl_platform);
@@ -577,6 +572,11 @@ void engine::start_draw() {
 /*! stops drawing the window
  */
 void engine::stop_draw() {
+	// draw scene and gui
+	if(sce != nullptr) sce->draw();
+	if(ui != nullptr) ui->draw();
+	
+	//
 	swap();
 	
 	GLenum error = glGetError();
@@ -765,16 +765,15 @@ float3* engine::get_rotation() {
 /*! starts drawing the 2d elements and initializes the opengl functions for that
  */
 void engine::start_2d_draw() {
-	start_2d_draw((unsigned int)config.width, (unsigned int)config.height, false);
+	start_2d_draw((unsigned int)config.width, (unsigned int)config.height);
 }
 
-void engine::start_2d_draw(const unsigned int width, const unsigned int height, const bool fbo) {
+void engine::start_2d_draw(const unsigned int width, const unsigned int height) {
 	glViewport(0, 0, width, height);
 
 	// we need an orthogonal view (2d) for drawing 2d elements
 	push_projection_matrix();
-	if(!fbo) projection_matrix.ortho(0, width, height, 0, -1.0, 1.0);
-	else projection_matrix.ortho(0, width, 0, height, -1.0, 1.0);
+	projection_matrix.ortho(0, width, 0, height, -1.0, 1.0);
 
 	push_modelview_matrix();
 	modelview_matrix.identity();
@@ -895,6 +894,12 @@ shader* engine::get_shader() {
  */
 gui* engine::get_gui() {
 	return engine::ui;
+}
+
+/*! returns a pointer to the scene class
+ */
+scene* engine::get_scene() {
+	return engine::sce;
 }
 
 /*! sets the data path

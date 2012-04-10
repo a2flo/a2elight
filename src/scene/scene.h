@@ -74,6 +74,9 @@ public:
 
 	void draw();
 	
+	void set_enabled(const bool& status);
+	bool is_enabled() const;
+	
 	template<typename T> T* create_a2emodel();
 	void add_model(a2emodel* model);
 	void delete_model(a2emodel* model);
@@ -155,6 +158,8 @@ protected:
 
 	//! specifies if lighting is enabled in this scene
 	bool is_light;
+	
+	bool enabled;
 
 	unsigned int skybox_tex;
 	float max_value;

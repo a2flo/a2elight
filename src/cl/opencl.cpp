@@ -474,8 +474,6 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 //#endif
 	
 	// check if this is an external kernel (and hasn't been added before)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunreachable-code" // TODO: remove this when it doesn't throw a warning any more
 	if(external_kernels.count(identifier) == 0 &&
 	   none_of(begin(internal_kernels), end(internal_kernels),
 			   [&identifier](const decltype(internal_kernels)::value_type& int_kernel) {
@@ -485,7 +483,6 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 		external_kernels.insert(make_pair(identifier,
 										  make_tuple(file_name, func_name, additional_options)));
 	}
-#pragma clang diagnostic pop
 	
 	return add_kernel_src(identifier, kernel_data, func_name, additional_options);
 }

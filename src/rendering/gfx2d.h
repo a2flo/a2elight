@@ -200,7 +200,6 @@ struct gfx2d::point_compute_line {
 															const Args&... args) {
 		primitive_properties props(GL_TRIANGLE_STRIP);
 		
-		// diagonal line
 		const float half_thickness = thickness * 0.5f;
 		float x1 = start_pnt.x, x2 = end_pnt.x, y1 = start_pnt.y, y2 = end_pnt.y;
 		
@@ -417,23 +416,26 @@ struct gfx2d::draw_style_texture {
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
 					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f)) {
-		draw(props, texture, bottom_left, top_right, "#");
+					 const coord top_right = coord(1.0f),
+					 const float draw_depth = 0.0f) {
+		draw(props, texture, bottom_left, top_right, draw_depth, "#");
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
 					 const bool passthrough,
 					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f)) {
-		draw(props, texture, bottom_left, top_right, "passthrough");
+					 const coord top_right = coord(1.0f),
+					 const float draw_depth = 0.0f) {
+		draw(props, texture, bottom_left, top_right, draw_depth, "passthrough");
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
 					 const float4 mul_color,
 					 const float4 add_color,
 					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f)) {
-		draw(props, texture, mul_color, add_color, bottom_left, top_right, "madd_color");
+					 const coord top_right = coord(1.0f),
+					 const float draw_depth = 0.0f) {
+		draw(props, texture, mul_color, add_color, bottom_left, top_right, draw_depth, "madd_color");
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
@@ -445,20 +447,23 @@ struct gfx2d::draw_style_texture {
 					 const float4 gradient_mul_interpolator = float4(0.5f),
 					 const float4 gradient_add_interpolator = float4(0.0f),
 					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f)) {
+					 const coord top_right = coord(1.0f),
+					 const float draw_depth = 0.0f) {
 		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
 							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
 								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
-		draw(props, texture, mul_color, add_color, gradient_positions, gradient_colors, gradient_mul_interpolator, gradient_add_interpolator, bottom_left, top_right, option);
+		draw(props, texture, mul_color, add_color, gradient_positions, gradient_colors, gradient_mul_interpolator, gradient_add_interpolator, bottom_left, top_right, draw_depth, option);
 	}
 protected:
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
 					 const coord bottom_left,
 					 const coord top_right,
+					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option);
-		texture_shd->uniform("mvpm", *e->get_mvp_matrix());
+		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
+		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
 		texture_shd->texture("tex", texture);
@@ -472,9 +477,11 @@ protected:
 					 const float4 add_color,
 					 const coord bottom_left,
 					 const coord top_right,
+					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option);
-		texture_shd->uniform("mvpm", *e->get_mvp_matrix());
+		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
+		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
 		texture_shd->texture("tex", texture);
@@ -495,9 +502,11 @@ protected:
 					 const float4 gradient_add_interpolator,
 					 const coord bottom_left,
 					 const coord top_right,
+					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option);
-		texture_shd->uniform("mvpm", *e->get_mvp_matrix());
+		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
+		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
 		texture_shd->texture("tex", texture);

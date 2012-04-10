@@ -508,7 +508,7 @@ void rtt::stop_draw() {
 }
 
 void rtt::start_2d_draw() {
-	e->start_2d_draw(current_buffer->draw_width, current_buffer->draw_height, true);
+	e->start_2d_draw(current_buffer->draw_width, current_buffer->draw_height);
 }
 
 void rtt::stop_2d_draw() {

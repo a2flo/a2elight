@@ -22,6 +22,7 @@
 #include "global.h"
 #include "threading/thread_base.h"
 #include "gui/event.h"
+#include "rendering/rtt.h"
 
 /*! @class gui
  *  @brief graphical user interface functions
@@ -29,12 +30,17 @@
 
 class engine;
 class core;
-class gfx;
+class scene;
+class shader;
+class shader_gl3;
+typedef shared_ptr<shader_gl3> gl3shader;
 
 class A2E_API gui : public thread_base {
 public:
 	gui(engine* e);
 	~gui();
+
+	void draw();
 	
 	// gui event types
 	enum class GUI_EVENT_TYPE : unsigned int {
@@ -73,26 +79,46 @@ public:
 		
 		TAB_SELECT,
 	};
-
-	void init();
-	void draw();
 	
+	// misc flags
 	void set_keyboard_input(const bool& state);
 	bool get_keyboard_input() const;
 	void set_mouse_input(const bool& state);
 	bool get_mouse_input() const;
+	
+	// draw callbacks
+	enum class DRAW_MODE_UI : unsigned int {
+		PRE_UI,
+		POST_UI
+	};
+	typedef functor<void, const gui::DRAW_MODE_UI> draw_callback;
+	void add_draw_callback(draw_callback& cb);
+	void delete_draw_callback(draw_callback& cb);
 
 protected:
 	engine* e;
 	event* evt;
+	rtt* r;
+	shader* s;
+	scene* sce;
+	
+	// note: this must be ordered
+	vector<draw_callback*> draw_callbacks;
+	
+	rtt::fbo* main_fbo;
+	
+	void reload_shaders();
+	gl3shader blend_shd;
 	
 	virtual void run();
 	
 	// event handling
 	event::handler key_handler_fnctr;
 	event::handler mouse_handler_fnctr;
+	event::handler shader_reload_fnctr;
 	bool key_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	bool mouse_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
+	bool shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	
 	atomic_t keyboard_input;
 	atomic_t mouse_input;

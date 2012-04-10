@@ -25,7 +25,6 @@
 
 class engine;
 class xml;
-class gfx;
 class gui_theme {
 public:
 	gui_theme(engine* e);

@@ -30,25 +30,23 @@ struct texture_object {
 		TF_AUTOMATIC,
 	};
 	
-	string filename;
-	GLenum texture_type;
-	GLuint tex_num;
-	GLsizei width;
-	GLsizei height;
-	GLint internal_format;
-	GLenum format;
-	bool alpha;
-	TEXTURE_FILTERING filtering;
-	size_t anisotropic;
-	GLint wrap_s;
-	GLint wrap_t;
-	GLint wrap_r;
-	GLenum type;
-	float max_value;
+	string filename = "";
+	GLenum texture_type = GL_TEXTURE_2D;
+	GLuint tex_num = 0;
+	GLsizei width = 1;
+	GLsizei height = 1;
+	GLint internal_format = GL_RGB8;
+	GLenum format = GL_RGB;
+	bool alpha = false;
+	TEXTURE_FILTERING filtering = TF_AUTOMATIC;
+	size_t anisotropic = 0;
+	GLint wrap_s = GL_REPEAT;
+	GLint wrap_t = GL_REPEAT;
+	GLint wrap_r = GL_REPEAT;
+	GLenum type = GL_UNSIGNED_BYTE;
+	float max_value = numeric_limits<float>::min();
 	
-	texture_object() : filename(""), texture_type(GL_TEXTURE_2D), tex_num(0), width(1), height(1), internal_format(GL_RGB8), format(GL_RGB), alpha(false), filtering(TF_AUTOMATIC),
-		anisotropic(0), wrap_s(GL_REPEAT), wrap_t(GL_REPEAT), wrap_r(GL_REPEAT), type(GL_UNSIGNED_BYTE), max_value(-__FLT_MAX__) {
-	}
+	texture_object() {}
 	
 	~texture_object() {
 		if(tex_num > 0) {
@@ -62,12 +60,12 @@ struct texture_object {
 	
 private:
 	// texture copy is forbidden (otherwise we would have two textures "pointing" to the same opengl texture number)
-	texture_object(const texture_object& tex) {}
-	texture_object& operator=(const texture_object& tex) { return *this; }
+	texture_object(const texture_object& tex) = delete;
+	texture_object& operator=(const texture_object& tex) = delete;
 	
 };
 
 typedef shared_ptr<texture_object> a2e_texture;
-#define make_a2e_texture() (a2e_texture(new texture_object()))
+#define make_a2e_texture() (make_shared<texture_object>())
 
 #endif

@@ -183,9 +183,9 @@ a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_
 	if(check_tex != dummy_texture) return check_tex;
 	
 	// add
-	a2e_texture ret_tex(new texture_object());
+	a2e_texture ret_tex = make_a2e_texture();
 	ret_tex->filename = filename;
-	ret_tex = add_texture(tex_surface->pixels, tex_surface->w, tex_surface->h, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type, &ret_tex);
+	ret_tex = add_texture(tex_surface->pixels, tex_surface->w, tex_surface->h, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type, ret_tex);
 
 	// delete the sdl surface, b/c it isn't needed any more
 	SDL_FreeSurface(tex_surface);
@@ -206,9 +206,9 @@ a2e_texture texman::add_texture(const string& filename, GLint internal_format, G
 	if(check_tex != dummy_texture) return check_tex;
 	
 	// add
-	a2e_texture ret_tex(new texture_object());
+	a2e_texture ret_tex = make_a2e_texture();
 	ret_tex->filename = filename;
-	ret_tex = add_texture(tex_surface->pixels, tex_surface->w, tex_surface->h, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type, &ret_tex);
+	ret_tex = add_texture(tex_surface->pixels, tex_surface->w, tex_surface->h, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type, ret_tex);
 	
 	// delete the sdl surface, b/c it isn't needed any more
 	SDL_FreeSurface(tex_surface);
@@ -216,26 +216,31 @@ a2e_texture texman::add_texture(const string& filename, GLint internal_format, G
 	return textures.back();
 }
 
-a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type, a2e_texture* tex) {
-	a2e_texture ret_tex(tex == nullptr ? make_a2e_texture() : *tex);
 	
-	ret_tex->texture_type = GL_TEXTURE_2D;
-	ret_tex->width = width;
-	ret_tex->height = height;
-	ret_tex->internal_format = internal_format;
-	ret_tex->format = format;
-	ret_tex->filtering = filtering;
-	ret_tex->anisotropic = anisotropic;
-	ret_tex->wrap_s = wrap_s;
-	ret_tex->wrap_t = wrap_t;
-	ret_tex->type = type;
+a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type) {
+	a2e_texture ret_tex = make_a2e_texture();
+	add_texture(pixel_data, width, height, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type, ret_tex);
+	return ret_tex;
+}
+
+a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type, a2e_texture& tex) {
+	tex->texture_type = GL_TEXTURE_2D;
+	tex->width = width;
+	tex->height = height;
+	tex->internal_format = internal_format;
+	tex->format = format;
+	tex->filtering = filtering;
+	tex->anisotropic = anisotropic;
+	tex->wrap_s = wrap_s;
+	tex->wrap_t = wrap_t;
+	tex->type = type;
 	
 	// if "automatic filtering" is specified, use standard filtering (as set in config.xml)
 	if(filtering == texture_object::TF_AUTOMATIC) filtering = standard_filtering;
 	
 	// now create/generate an opengl texture and bind it
-	glGenTextures(1, &ret_tex->tex_num);
-	glBindTexture(GL_TEXTURE_2D, ret_tex->tex_num);
+	glGenTextures(1, &tex->tex_num);
+	glBindTexture(GL_TEXTURE_2D, tex->tex_num);
 	
 	// texture parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (filtering == 0 ? GL_NEAREST : GL_LINEAR));
@@ -243,53 +248,65 @@ a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
 	
+	/*const size_t min_size(std::min(width, height));
+	size_t max_level = 0;
+	for(size_t size = min_size; size > 2; max_level++) {
+		size >>= 1;
+	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, max_level);*/
+	
 	if(anisotropic > 0 && filtering >= texture_object::TF_BILINEAR) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (GLint)anisotropic);
 	}
 	
 	// create texture
-	glTexImage2D(GL_TEXTURE_2D, 0, convert_internal_format(ret_tex->internal_format), ret_tex->width, ret_tex->height, 0, ret_tex->format, ret_tex->type, pixel_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, convert_internal_format(tex->internal_format), tex->width, tex->height, 0, tex->format, tex->type, pixel_data);
 	
 	if(filtering > 1) {
 		// build mipmaps
-		glGenerateMipmap(GL_TEXTURE_2D);
+		//glGenerateMipmap(GL_TEXTURE_2D);
+		// TODO: since glGenerateMipmap doesn't seem to be reliably, generate mipmaps ourselves
 	}
 	
-	ret_tex->alpha = get_alpha(ret_tex->format);
+	tex->alpha = get_alpha(tex->format);
 	
 	// add to textures container
-	textures.push_back(ret_tex);
+	textures.push_back(tex);
 	
 	return textures.back();
 }
 
-a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type, a2e_texture* tex) {
+a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type) {
+	a2e_texture ret_tex = make_a2e_texture();
+	add_cubemap_texture(pixel_data, width, height, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, wrap_r, type, ret_tex);
+	return ret_tex;
+}
+
+a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type, a2e_texture& tex) {
 	// check if width and height are equal
 	if(width != height) {
 		a2e_error("cubemap width and height must be equal!");
 		return dummy_texture;
 	}
 	
-	a2e_texture ret_tex(tex == nullptr ? make_a2e_texture() : *tex);
-	
-	ret_tex->texture_type = GL_TEXTURE_CUBE_MAP;
-	ret_tex->width = width;
-	ret_tex->height = height;
-	ret_tex->internal_format = internal_format;
-	ret_tex->format = format;
-	ret_tex->filtering = filtering;
-	ret_tex->anisotropic = anisotropic;
-	ret_tex->wrap_s = wrap_s;
-	ret_tex->wrap_t = wrap_t;
-	ret_tex->wrap_r = wrap_r;
-	ret_tex->type = type;
+	tex->texture_type = GL_TEXTURE_CUBE_MAP;
+	tex->width = width;
+	tex->height = height;
+	tex->internal_format = internal_format;
+	tex->format = format;
+	tex->filtering = filtering;
+	tex->anisotropic = anisotropic;
+	tex->wrap_s = wrap_s;
+	tex->wrap_t = wrap_t;
+	tex->wrap_r = wrap_r;
+	tex->type = type;
 	
 	// if "automatic filtering" is specified, use standard filtering (as set in config.xml)
 	if(filtering == texture_object::TF_AUTOMATIC) filtering = standard_filtering;
 	
 	// now create/generate an opengl texture and bind it
-	glGenTextures(1, &ret_tex->tex_num);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, ret_tex->tex_num);
+	glGenTextures(1, &tex->tex_num);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, tex->tex_num);
 	
 	// texture parameters
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, (filtering == 0 ? GL_NEAREST : GL_LINEAR));
@@ -308,7 +325,7 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 									GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
 	
 	for(size_t i = 0; i < 6; i++) {
-		glTexImage2D(cmap[i], 0, convert_internal_format(ret_tex->internal_format), ret_tex->width, ret_tex->height, 0, ret_tex->format, ret_tex->type, pixel_data[i]);
+		glTexImage2D(cmap[i], 0, convert_internal_format(tex->internal_format), tex->width, tex->height, 0, tex->format, tex->type, pixel_data[i]);
 		
 	}
 	if(filtering > 1) {
@@ -316,10 +333,10 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	}
 	
-	ret_tex->alpha = get_alpha(ret_tex->format);
+	tex->alpha = get_alpha(tex->format);
 	
 	// add to textures container
-	textures.push_back(ret_tex);
+	textures.push_back(tex);
 	
 	return textures.back();
 }

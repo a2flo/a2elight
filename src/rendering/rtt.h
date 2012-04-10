@@ -98,7 +98,7 @@ public:
 	void stop_draw();
 	void start_2d_draw();
 	void stop_2d_draw();
-	void clear(const unsigned int and_mask = ~0);
+	void clear(const unsigned int and_mask = 0xFFFFFFFF);
 	void check_fbo(rtt::fbo* buffer);
 	const fbo* get_current_buffer() const;
 
