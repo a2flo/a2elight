@@ -93,8 +93,8 @@ solution "albion2"
 	end
 	
 	if(win_unixenv) then
-		-- only works with gnu++0x for now ...
-		buildoptions { "-std=gnu++0x" }
+		-- only works with gnu++11 for now ...
+		buildoptions { "-std=gnu++11" }
 		defines { "WIN_UNIXENV" }
 		if(cygwin) then
 			defines { "CYGWIN" }
