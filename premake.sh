@@ -45,7 +45,14 @@ case $( uname | tr [:upper:] [:lower:] ) in
 		;;
 esac
 
-case $( uname -m ) in
+A2_PLATFORM_TEST_STRING=""
+if [[ $A2_OS != "windows" ]]; then
+	A2_PLATFORM_TEST_STRING=$( uname -m )
+else
+	A2_PLATFORM_TEST_STRING=$( gcc -dumpmachine | sed "s/-.*//" )
+fi
+
+case $A2_PLATFORM_TEST_STRING in
 	"i386"|"i486"|"i586"|"i686")
 		A2_PLATFORM="x32"
 		A2_MAKE_PLATFORM="32"
@@ -60,7 +67,6 @@ case $( uname -m ) in
 		echo "unknown architecture - using "${A2_PLATFORM}
 		exit;;
 esac
-
 
 echo "using: premake4 --cc=gcc --os="${A2_OS}" gmake "${A2_ARGS}
 

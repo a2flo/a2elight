@@ -65,11 +65,11 @@ public:
 	}
 	
 protected:
-	logger(const logger& l);
-	~logger();
-	logger& operator=(const logger& l);
+	logger(const logger& l) = delete;
+	~logger() = delete;
+	logger& operator=(const logger& l) = delete;
 	
-	static fstream log_file;
+	static ofstream log_file;
 	static atomic_t err_counter;
 	static SDL_SpinLock slock;
 	

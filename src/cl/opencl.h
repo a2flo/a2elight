@@ -99,10 +99,18 @@ public:
 	device_object* get_device(OPENCL_DEVICE device);
 	device_object* get_active_device();
 	
+	enum OPENCL_PLATFORM_VENDOR {
+		CLPV_NVIDIA,
+		CLPV_INTEL,
+		CLPV_AMD,
+		CLPV_APPLE,
+		CLPV_UNKNOWN
+	};
+	
 	enum OPENCL_VENDOR {
 		CLV_NVIDIA,
-		CLV_ATI,
 		CLV_INTEL,
+		CLV_ATI,
 		CLV_AMD,
 		CLV_APPLE,
 		CLV_UNKNOWN
@@ -167,17 +175,17 @@ public:
 	void release_gl_object(buffer_object* gl_buffer_obj);
 	
 	struct kernel_object {
-		cl::Kernel* kernel;
-		cl::Program* program;
-		cl::NDRange* global;
-		cl::NDRange* local;
-		unsigned int arg_count;
+		cl::Kernel* kernel = nullptr;
+		cl::Program* program = nullptr;
+		cl::NDRange* global = nullptr;
+		cl::NDRange* local = nullptr;
+		unsigned int arg_count = 0;
+		bool has_ogl_buffers = false;
+		string kernel_name = "";
 		vector<bool> args_passed;
 		map<unsigned int, buffer_object*> buffer_args;
-		bool has_ogl_buffers;
-		string kernel_name;
 		
-		kernel_object() : kernel(), program(), global(nullptr), local(nullptr), arg_count(0), args_passed(), buffer_args(), has_ogl_buffers(false), kernel_name("") {}
+		kernel_object() : args_passed(), buffer_args() {}
 		~kernel_object() {
 			if(global != nullptr) delete global;
 			if(local != nullptr) delete local;
@@ -190,43 +198,45 @@ public:
 	};
 	
 	struct buffer_object {
-		cl::Buffer* buffer;
-		cl::Image* image_buffer;
-		GLuint ogl_buffer;
-		bool manual_gl_sharing;
-		void* data;
-		size_t size;
-		unsigned int type;
-		cl_mem_flags flags;
-		cl::ImageFormat format;
-		size3 origin;
-		size3 region;
+		cl::Buffer* buffer = nullptr;
+		cl::Image* image_buffer = nullptr;
+		GLuint ogl_buffer = 0;
+		bool manual_gl_sharing = false;
+		void* data = nullptr;
+		size_t size = 0;
+		unsigned int type = 0;
+		cl_mem_flags flags = 0;
+		cl::ImageFormat format = cl::ImageFormat(0, 0);
+		size3 origin = size3(size_t(0));
+		size3 region = size3(size_t(0));
 		map<kernel_object*, vector<unsigned int>> associated_kernels; // kernels + argument numbers
 		
-		buffer_object() : buffer(nullptr), image_buffer(nullptr), ogl_buffer(0), manual_gl_sharing(false), data(nullptr), size(0), type(0), format(0, 0), associated_kernels() {}
+		buffer_object() : associated_kernels() {}
+		~buffer_object() {}
 	};
 	
 	struct device_object {
-		const cl::Device* device;
-		OPENCL_DEVICE type;
-		OPENCL_VENDOR vendor_type;
-		unsigned int units;
-		unsigned int clock;
-		cl_ulong mem_size;
-		cl_device_type internal_type;
-		string name;
-		string vendor;
-		string version;
-		string driver_version;
-		string extensions;
+		const cl::Device* device = nullptr;
+		OPENCL_DEVICE type = (OPENCL_DEVICE)0;
+		OPENCL_VENDOR vendor_type = CLV_UNKNOWN;
+		unsigned int units = 0;
+		unsigned int clock = 0;
+		cl_ulong mem_size = 0;
+		cl_device_type internal_type = 0;
+		string name = "";
+		string vendor = "";
+		string version = "";
+		string driver_version = "";
+		string extensions = "";
 		
-		cl_ulong max_alloc;
-		size_t max_wg_size;
-		size2 max_img_2d;
-		size3 max_img_3d;
-		bool img_support;
+		cl_ulong max_alloc = 0;
+		size_t max_wg_size = 0;
+		size2 max_img_2d = size2(size_t(0));
+		size3 max_img_3d = size3(size_t(0));
+		bool img_support = false;
 		
-		device_object() : device(nullptr), type((OPENCL_DEVICE)0), units(0), clock(0), mem_size(0), internal_type(0), name(""), vendor(""), version(""), driver_version(""), extensions("") {}
+		device_object() {}
+		~device_object() {}
 	};
 
 	inline const string make_kernel_path(const string& file_name) const {
@@ -250,11 +260,13 @@ protected:
 	void log_program_binary(const kernel_object* kernel, const string& options);
 	
 	bool has_vendor_device(OPENCL_VENDOR vendor_type);
+	string platform_vendor_to_str(const OPENCL_PLATFORM_VENDOR pvendor) const;
 	
 	const char* error_code_to_string(cl_int error_code);
 	
 	cl::Context* context;
 	cl::Platform* platform;
+	OPENCL_PLATFORM_VENDOR platform_vendor = CLPV_UNKNOWN;
 	vector<cl::Platform> platforms;
 	vector<cl::Device> internal_devices;
 	vector<device_object*> devices;

@@ -25,7 +25,7 @@
 #define A2E_LOG_FILENAME "/tmp/a2e_log.txt"
 #endif
 
-fstream logger::log_file(A2E_LOG_FILENAME, fstream::out);
+ofstream logger::log_file(A2E_LOG_FILENAME);
 atomic_t logger::err_counter;
 SDL_SpinLock logger::slock;
 

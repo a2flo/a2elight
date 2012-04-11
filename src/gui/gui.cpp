@@ -184,7 +184,7 @@ void gui::add_draw_callback(draw_callback& cb) {
 }
 
 void gui::delete_draw_callback(draw_callback& cb) {
-	for(auto iter = draw_callbacks.cbegin(); iter != draw_callbacks.cend(); iter++) {
+	for(auto iter = draw_callbacks.begin(); iter != draw_callbacks.end(); iter++) {
 		if(*iter == &cb) {
 			draw_callbacks.erase(iter);
 			return;

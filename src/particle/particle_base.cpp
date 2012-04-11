@@ -17,6 +17,7 @@
  */
 
 #include "particle_base.h"
+#include "cl/opencl.h"
 
 /*! there is no function currently
  */

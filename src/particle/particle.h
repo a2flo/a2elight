@@ -26,14 +26,13 @@
 #include "rendering/rtt.h"
 #include "rendering/shader.h"
 #include "rendering/texman.h"
-#include "cl/opencl.h"
 #include "particle/particle_system.h"
 
 /*! @class particle_manager
  *  @brief a2e particle manager
  */
 
-class particle_system;
+class opencl;
 class particle_manager_base;
 class A2E_API particle_manager {
 public:

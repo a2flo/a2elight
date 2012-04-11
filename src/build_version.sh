@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # determine the number of source files that have a timestamp newer than build_version
-NEW_SOURCE_COUNT=$(find . -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' \) -newer build_version | grep -v "build_version.h" | wc -l | tr -cd [:digit:])
+NEW_SOURCE_COUNT=$(find . -type f \( -name '*.h' -o -name '*.cpp' \) -newer build_version | grep -v "build_version.h" | wc -l | tr -cd [:digit:])
 
 BUILD_VERSION=$(cat build_version)
 if [ ${NEW_SOURCE_COUNT} -gt 0 ]; then

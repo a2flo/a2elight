@@ -21,6 +21,8 @@
 
 #if !defined(A2E_NO_OPENCL)
 
+#include "cl/opencl.h"
+
 /*! there is no function currently
  */
 particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {

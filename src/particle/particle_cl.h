@@ -28,8 +28,8 @@
 #include "rendering/rtt.h"
 #include "rendering/shader.h"
 #include "rendering/texman.h"
-#include "cl/opencl.h"
 #include "particle/particle_base.h"
+#include "cl/opencl.h"
 
 /*! @class particle_manager opencl class
  *  @brief a2e particle manager opencl class

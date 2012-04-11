@@ -33,8 +33,30 @@ end
 -- actual premake info
 solution "albion2"
 	configurations { "Release", "Debug" }
+
+project "a2elight"
+	targetname "a2elight"
+	kind "SharedLib"
+	language "C++"
+
+	files { "src/**.h", "src/**.hpp", "src/**.cpp" }
 	defines { "A2E_NET_PROTOCOL=TCP_protocol" }
-	
+
+	basedir "src"
+	targetdir "lib"
+	includedirs { "src/",
+				  "src/cl/",
+				  "src/core/",
+				  "src/gui/",
+				  "src/gui/objects/",
+				  "src/gui/style/",
+				  "src/particle/",
+				  "src/rendering/",
+				  "src/rendering/renderer/",
+				  "src/rendering/renderer/gl3/",
+				  "src/scene/",
+				  "src/scene/model/" }
+
 	-- scan args
 	local argc = 1
 	while(_ARGS[argc] ~= nil) do
@@ -73,7 +95,7 @@ solution "albion2"
 			includedirs { "/usr/include/w32api", "/usr/include/w32api/GL" }
 		end
 		includedirs { "/usr/local/include", "/usr/include/libxml2", "/usr/include/libxml",
-					  "/usr/include/freetype2", "/usr/local/include/freetype2", }
+					  "/usr/include/freetype2", "/usr/local/include/freetype2" }
 		buildoptions { "-Wall -x c++ -std=c++11 -Wno-trigraphs -Wreturn-type -Wunused-variable" }
 		
 		if(clang_libcxx) then
@@ -101,7 +123,6 @@ solution "albion2"
 		end
 		if(mingw) then
 			defines { "__WINDOWS__", "MINGW" }
-			--includedirs { "/mingw/include/GL", "/mingw/include/CL" }
 			includedirs { "/mingw/include" }
 			libdirs { "/usr/lib", "/usr/local/lib" }
 			buildoptions { "-Wno-unknown-pragmas" }
@@ -137,6 +158,13 @@ solution "albion2"
 			defines { "_GLIBCXX_USE_NANOSLEEP" }
 		end
 	end
+	
+	if(not os.is("windows") or win_unixenv) then
+		prebuildcommands { "./build_version.sh" }
+		if(mingw) then
+			postbuildcommands { "./../install.sh" }
+		end
+	end
 
 	-- prefer system platform
 	if(platform == "x64") then
@@ -147,12 +175,19 @@ solution "albion2"
 	
 	configuration { "x64" }
 		defines { "PLATFORM_X64" }
+		if(os.is("windows")) then
+			targetdir "lib/x64"
+		end
 
 	configuration { "x32" }
 		defines { "PLATFORM_X86" }
+		if(os.is("windows")) then
+			targetdir "lib/x86"
+		end
 	
 
 	configuration "Release"
+		targetname "a2elight"
 		defines { "NDEBUG" }
 		flags { "Optimize" }
 		if(not os.is("windows") or win_unixenv) then
@@ -160,54 +195,9 @@ solution "albion2"
 		end
 
 	configuration "Debug"
+		targetname "a2elightd"
 		defines { "DEBUG", "A2E_DEBUG" }
 		flags { "Symbols" }
 		if(not os.is("windows") or win_unixenv) then
 			buildoptions { " -gdwarf-2" }
 		end
-
-------------------------------------------------
--- the engine
-project "a2elight"
-	targetname "a2elight"
-	kind "SharedLib"
-	language "C++"
-
-	files { "src/**.h", "src/**.hpp", "src/**.cpp" }
-
-	basedir "src"
-	targetdir "lib"
-	includedirs { "src/",
-				  "src/cl/",
-				  "src/core/",
-				  "src/gui/",
-				  "src/gui/objects/",
-				  "src/gui/style/",
-				  "src/particle/",
-				  "src/rendering/",
-				  "src/rendering/renderer/",
-				  "src/rendering/renderer/gl3/",
-				  "src/scene/",
-				  "src/scene/model/" }
-	
-	if(not os.is("windows") or win_unixenv) then
-		prebuildcommands { "./build_version.sh" }
-		if(mingw) then
-			postbuildcommands { "./../install.sh" }
-		end
-	end
-	
-	configuration { "x32" }
-		if(os.is("windows")) then
-			targetdir "lib/x86"
-		end
-	
-	configuration { "x64" }
-		if(os.is("windows")) then
-			targetdir "lib/x64"
-		end
-	
-	configuration "Release"
-		targetname "a2elight"
-	configuration "Debug"
-		targetname "a2elightd"

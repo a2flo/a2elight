@@ -23,9 +23,9 @@
 
 #include "core/core.h"
 #include "engine.h"
-#include "cl/opencl.h"
 #include "core/bbox.h"
 #include "rendering/gfx2d.h"
+#include "cl/opencl.h"
 
 /*! @class particle_system class
  *  @brief a2e particle system class
@@ -127,31 +127,31 @@ public:
 	
 	//! don't set/get these from the outside!	
 	struct internal_particle_data {
-		unsigned long long int particle_count;  // will get computed
-		unsigned long long int spawn_rate_ts;   // will get computed
-		unsigned long long int max_init_time;   // will get computed
+		unsigned long long int particle_count = 0;  // will get computed
+		unsigned long long int spawn_rate_ts = 0;   // will get computed
+		unsigned long long int max_init_time = 0;   // will get computed
 		
 		//
-		size_t step_timer;
-		size_t reinit_timer;
-		GLuint particle_indices_vbo[2];
-		unsigned int particle_indices_swap; // either 0 or 1
+		size_t step_timer = 0;
+		size_t reinit_timer = 0;
+		GLuint particle_indices_vbo[2] = { 0, 0 };
+		unsigned int particle_indices_swap = 0; // either 0 or 1
 		
 #if !defined(A2E_NO_OPENCL)
 		// for opencl computed particle systems
-		opencl::buffer_object* ocl_pos_time_buffer;
-		opencl::buffer_object* ocl_dir_buffer;
-		opencl::buffer_object* ocl_indices[2];
-		opencl::buffer_object* ocl_distances;
-		GLuint ocl_gl_pos_time_vbo;
-		GLuint ocl_gl_dir_vbo;
+		opencl::buffer_object* ocl_pos_time_buffer = nullptr;
+		opencl::buffer_object* ocl_dir_buffer = nullptr;
+		opencl::buffer_object* ocl_indices[2] = { nullptr, nullptr };
+		opencl::buffer_object* ocl_distances = nullptr;
+		GLuint ocl_gl_pos_time_vbo = 0;
+		GLuint ocl_gl_dir_vbo = 0;
 		cl::NDRange ocl_range_global;
 #endif
 		
 		// vars for reentrant sorting
-		bool reentrant_complete;
-		unsigned int reentrant_cur_size;
-		unsigned int reentrant_cur_stride;
+		bool reentrant_complete = false;
+		unsigned int reentrant_cur_size = 0;
+		unsigned int reentrant_cur_stride = 0;
 	};
 	internal_particle_data* get_internal_particle_data();
 		

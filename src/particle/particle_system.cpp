@@ -51,34 +51,11 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	
 	blend_mode = gfx2d::BLEND_MODE::ADD;
 	
-	// init data
-	data.particle_count = 0;
-	data.spawn_rate_ts = 0;
-	data.max_init_time = 0;
-	
-	//
-	data.step_timer = 0;
-	data.reinit_timer = 0;
-	data.particle_indices_vbo[0] = 0;
-	data.particle_indices_vbo[1] = 0;
-	data.particle_indices_swap = 0;
-	
+	// init data	
 #if !defined(A2E_NO_OPENCL)
 	// for opencl computed particle systems
-	data.ocl_pos_time_buffer = nullptr;
-	data.ocl_dir_buffer = nullptr;
-	data.ocl_indices[0] = nullptr;
-	data.ocl_indices[1] = nullptr;
-	data.ocl_distances = nullptr;
-	data.ocl_gl_pos_time_vbo = 0;
-	data.ocl_gl_dir_vbo = 0;
 	data.ocl_range_global.set(0);
 #endif
-	
-	// vars for reentrant sorting
-	data.reentrant_complete = true;
-	data.reentrant_cur_size = 0;
-	data.reentrant_cur_stride = 0;
 }
 
 /*! there is no function currently

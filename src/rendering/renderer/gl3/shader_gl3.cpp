@@ -22,8 +22,8 @@
 
 #define __A2E_DECLARE_GL_TYPE_TO_STRING(type) case type: return #type;
 
-const char* gl_type_to_string(const size_t& type); // prototype ...
-const char* gl_type_to_string(const size_t& type) {
+const char* gl3_type_to_string(const size_t& type); // prototype ...
+const char* gl3_type_to_string(const size_t& type) {
 	switch(type) {
 			A2E_GL_SHADER_TYPES(__A2E_DECLARE_GL_TYPE_TO_STRING);
 		default: break;
@@ -66,13 +66,13 @@ return; \
 #define A2E_CHECK_UNIFORM_TYPE(name, expected_type) \
 size_t uniform_type = shd_obj.programs[cur_program]->uniforms.find(name)->second.type; \
 if(uniform_type != (size_t)expected_type) { \
-a2e_error("unexpected type %s for uniform \"%s\" - expected %s (in shader \"%s\")!", gl_type_to_string(uniform_type), name, gl_type_to_string(expected_type), shd_obj.name.c_str()); \
+a2e_error("unexpected type %s for uniform \"%s\" - expected %s (in shader \"%s\")!", gl3_type_to_string(uniform_type), name, gl3_type_to_string(expected_type), shd_obj.name.c_str()); \
 }
 
 #define A2E_CHECK_ATTRIBUTE_TYPE(name, expected_type) \
 size_t attribute_type = shd_obj.programs[cur_program]->attributes.find(name)->second.type; \
 if(attribute_type != (size_t)expected_type) { \
-a2e_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s\")!", gl_type_to_string(attribute_type), name, gl_type_to_string(expected_type), shd_obj.name.c_str()); \
+a2e_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s\")!", gl3_type_to_string(attribute_type), name, gl3_type_to_string(expected_type), shd_obj.name.c_str()); \
 }
 
 #else // don't check the type in release mode
@@ -406,7 +406,7 @@ void shader_gl3::set_texture(const char* name, const GLuint& tex, const GLenum& 
 	// check type
 	const size_t uniform_type = shd_obj.programs[cur_program]->uniforms.find(name)->second.type;
 	if(!is_gl_sampler_type((const GLenum)uniform_type)) {
-		a2e_error("unexpected type %s for texture uniform \"%s\" - expected a sampler type (in shader \"%s\")!", gl_type_to_string(uniform_type), name, shd_obj.name.c_str());
+		a2e_error("unexpected type %s for texture uniform \"%s\" - expected a sampler type (in shader \"%s\")!", gl3_type_to_string(uniform_type), name, shd_obj.name.c_str());
 	}
 	// check sampler mapping existence
 	if(shd_obj.programs[cur_program]->samplers.count(name) == 0) {

@@ -1,7 +1,14 @@
 #!/bin/sh
 
 A2_PLATFORM="x86"
-case $( uname -m ) in
+A2_PLATFORM_TEST_STRING=""
+if [[ $( uname -o ) != "Msys" ]]; then
+	A2_PLATFORM_TEST_STRING=$( uname -m )
+else
+	A2_PLATFORM_TEST_STRING=$( gcc -dumpmachine | sed "s/-.*//" )
+fi
+
+case $A2_PLATFORM_TEST_STRING in
 	"i386"|"i486"|"i586"|"i686")
 		A2_PLATFORM="x86"
 		;;
@@ -48,6 +55,11 @@ case $( uname | tr [:upper:] [:lower:] ) in
 		A2_INCLUDE_PATH="/c/MinGW/msys/1.0/local/include"
 		A2_BIN_PATH="/c/MinGW/msys/1.0/local/bin"
 		A2_LIB_PATH="/c/MinGW/msys/1.0/local/lib"
+		if [[ $A2_PLATFORM == "x64" ]]; then
+			A2_INCLUDE_PATH="/c/mingw64/msys/include"
+			A2_BIN_PATH="/c/mingw64/msys/bin"
+			A2_LIB_PATH="/c/mingw64/msys/lib"
+		fi
 	
 		# remove old files and folders
 		rm -Rf ${A2_INCLUDE_PATH}/a2elight

@@ -183,6 +183,8 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		}
 		
 #ifdef __APPLE__
+		platform_vendor = CLPV_APPLE;
+		
 		cl_context_properties cl_properties[] = {
 			CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platform_index](),
 #if !defined(A2E_IOS) // TODO: sharing isn't supported on iOS yet (code path exists, but fails with a gles sharegroup)
@@ -225,6 +227,22 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			context = new cl::Context(CL_DEVICE_TYPE_ALL, cl_properties, nullptr, nullptr, &ierr);
 		}
 #endif
+
+#if !defined(__APPLE__)
+		const string platform_str = platforms[platform_index].getInfo<CL_PLATFORM_NAME>();
+		const string platform_vendor_str = core::str_to_lower(platform_str);
+		if(platform_vendor_str.find("nvidia") != string::npos) {
+			platform_vendor = CLPV_NVIDIA;
+		}
+		else if(platform_vendor_str.find("amd") != string::npos) {
+			platform_vendor = CLPV_AMD;
+		}
+		else if(platform_vendor_str.find("intel") != string::npos) {
+			platform_vendor = CLPV_INTEL;
+		}
+#endif
+
+		a2e_debug("opencl platform #%u vendor: %s", platform_index, platform_vendor_to_str(platform_vendor));
 		
 		internal_devices.clear();
 		internal_devices = context->getInfo<CL_CONTEXT_DEVICES>();
@@ -269,11 +287,11 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			if(strstr(vendor_str.c_str(), "nvidia") != nullptr) {
 				device->vendor_type = CLV_NVIDIA;
 			}
-			else if(strstr(vendor_str.c_str(), "ati") != nullptr) {
-				device->vendor_type = CLV_ATI;
-			}
 			else if(strstr(vendor_str.c_str(), "amd") != nullptr) {
 				device->vendor_type = CLV_AMD;
+			}
+			else if(strstr(vendor_str.c_str(), "ati") != nullptr) {
+				device->vendor_type = CLV_ATI;
 			}
 			else if(strstr(vendor_str.c_str(), "intel") != nullptr) {
 				device->vendor_type = CLV_INTEL;
@@ -546,6 +564,8 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 			if((device->internal_type & CL_DEVICE_TYPE_CPU) != 0) device_options += " -DCPU";
 			if((device->internal_type & CL_DEVICE_TYPE_GPU) != 0) device_options += " -DGPU";
 			if((device->internal_type & CL_DEVICE_TYPE_ACCELERATOR) != 0) device_options += " -DACCELERATOR";
+			
+			device_options += " -DPLATFORM_"+platform_vendor_to_str(platform_vendor);
 			
 			kernels[identifier]->program->build(cur_device, (options+device_options).c_str());
 		}
@@ -1296,6 +1316,17 @@ void opencl::release_gl_object(buffer_object* gl_buffer_obj) {
 						   (cl::Memory*)gl_buffer_obj->buffer :
 						   (cl::Memory*)gl_buffer_obj->image_buffer));
 	queues[active_device->device]->enqueueReleaseGLObjects(&gl_objects);
+}
+
+string opencl::platform_vendor_to_str(const OPENCL_PLATFORM_VENDOR pvendor) const {
+	switch(pvendor) {
+		case CLPV_NVIDIA: return "NVIDIA";
+		case CLPV_INTEL: return "INTEL";
+		case CLPV_AMD: return "AMD";
+		case CLPV_APPLE: return "APPLE";
+		default: break;
+	}
+	return "UNKNOWN";
 }
 
 #endif

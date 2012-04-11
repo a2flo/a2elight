@@ -19,6 +19,7 @@
 #include "particle.h"
 #include "particle/particle_base.h"
 #include "particle/particle_cl.h"
+#include "cl/opencl.h"
 
 /*! there is no function currently
  */
