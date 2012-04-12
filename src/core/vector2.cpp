@@ -44,6 +44,14 @@ template<> A2E_API double2& vector2<double>::operator%=(const double2& v) {
 	return *this;
 }
 
+template<> A2E_API vector2<float> vector2<float>::abs() const {
+	return vector2<float>(fabs(x), fabs(y));
+}
+
+template<> A2E_API vector2<bool> vector2<bool>::abs() const {
+	return vector2<bool>(*this);
+}
+
 #if defined(A2E_EXPORT)
 // instantiate
 template class vector2<float>;

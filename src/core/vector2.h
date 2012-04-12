@@ -141,6 +141,8 @@ public:
 	bool is_nan() const;
 	bool is_inf() const;
 	
+	vector2 abs() const;
+	
 	vector2<T>& clamp(const T& vmin, const T& vmax) {
 		x = (x < vmin ? vmin : (x > vmax ? vmax : x));
 		y = (y < vmin ? vmin : (y > vmax ? vmax : y));
@@ -241,6 +243,12 @@ template<typename T> bool vector2<T>::is_inf() const {
 		return true;
 	}
 	return false;
+}
+
+template<> vector2<float> vector2<float>::abs() const; // specialize for float
+template<> vector2<bool> vector2<bool>::abs() const; // specialize for bool, no need for abs here
+template<typename T> vector2<T> vector2<T>::abs() const {
+	return vector2<T>((T)::llabs(x), (T)::llabs(y));
 }
 
 #if defined(A2E_EXPORT)

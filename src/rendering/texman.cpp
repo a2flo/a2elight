@@ -264,8 +264,8 @@ a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height,
 	
 	if(filtering > 1) {
 		// build mipmaps
-		//glGenerateMipmap(GL_TEXTURE_2D);
-		// TODO: since glGenerateMipmap doesn't seem to be reliably, generate mipmaps ourselves
+		glGenerateMipmap(GL_TEXTURE_2D);
+		// TODO: since glGenerateMipmap doesn't seem to work reliably, generate mipmaps ourselves
 	}
 	
 	tex->alpha = get_alpha(tex->format);
