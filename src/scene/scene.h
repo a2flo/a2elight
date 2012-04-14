@@ -141,6 +141,8 @@ protected:
 	void postprocess();
 	void sort_alpha_objects();
 	void delete_buffers();
+	
+	// TODO: clean this up:
 
 	// vars
 	float3 position;
@@ -157,13 +159,13 @@ protected:
 	size_t _dbg_proj_count;
 
 	//! specifies if lighting is enabled in this scene
-	bool is_light;
+	bool is_light = false;
 	
-	bool enabled;
+	bool enabled = true;
 
-	unsigned int skybox_tex;
-	float max_value;
-	bool render_skybox;
+	unsigned int skybox_tex = 0;
+	float max_value = 0.0f;
+	bool render_skybox = false;
 
 	a2estatic* light_sphere;
 
@@ -197,22 +199,22 @@ protected:
 	vector<post_processing_handler*> pp_handlers;
 
 	// hdr buffer
-	rtt::fbo* blur_buffer1;
-	rtt::fbo* blur_buffer2;
-	rtt::fbo* blur_buffer3;
-	rtt::fbo* average_buffer;
-	rtt::fbo* exposure_buffer[2];
+	rtt::fbo* blur_buffer1 = nullptr;
+	rtt::fbo* blur_buffer2 = nullptr;
+	rtt::fbo* blur_buffer3 = nullptr;
+	rtt::fbo* average_buffer = nullptr;
+	rtt::fbo* exposure_buffer[2] = { nullptr, nullptr };
 
-	int cur_exposure;
-	float fframe_time;
-	int iframe_time;
+	int cur_exposure = 0;
+	float fframe_time = 0.0f;
+	int iframe_time = SDL_GetTicks();
 	
-	float eye_distance;
+	float eye_distance = -0.3f; // 1.5f?
 
 	bool stereo;
 	
 	// event handlers
-	event::handler* window_handler;
+	event::handler window_handler;
 	bool window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 
 };

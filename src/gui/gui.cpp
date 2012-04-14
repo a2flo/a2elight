@@ -28,7 +28,8 @@ e(e_), evt(e_->get_event()), r(e_->get_rtt()), s(e_->get_shader()), sce(e_->get_
 main_fbo(nullptr),
 key_handler_fnctr(this, &gui::key_handler),
 mouse_handler_fnctr(this, &gui::mouse_handler),
-shader_reload_fnctr(this, &gui::shader_reload_handler){
+shader_reload_fnctr(this, &gui::shader_reload_handler),
+window_handler_fnctr(this, &gui::window_handler) {
 	AtomicSet(&keyboard_input, 1);
 	AtomicSet(&mouse_input, 1);
 
@@ -61,12 +62,10 @@ shader_reload_fnctr(this, &gui::shader_reload_handler){
 						   EVENT_TYPE::MOUSE_WHEEL_UP,
 						   EVENT_TYPE::MOUSE_WHEEL_DOWN);
 	
-	// create main gui buffer
-	const auto gui_aa = rtt::TAA_MSAA_8; // TODO: config option
-	const auto gui_filter = texture_object::TF_LINEAR;
-	main_fbo = r->add_buffer(e->get_width(), e->get_height(), GL_TEXTURE_2D, gui_filter, gui_aa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
+	recreate_buffers(size2(e->get_width(), e->get_height()));
 	
 	//
+	evt->add_internal_event_handler(window_handler_fnctr, EVENT_TYPE::WINDOW_RESIZE);
 	evt->add_internal_event_handler(shader_reload_fnctr, EVENT_TYPE::SHADER_RELOAD);
 	reload_shaders();
 	
@@ -77,13 +76,12 @@ shader_reload_fnctr(this, &gui::shader_reload_handler){
 gui::~gui() {
 	a2e_debug("deleting gui object");
 	
-	if(r != nullptr && main_fbo != nullptr) {
-		r->delete_buffer(main_fbo);
-	}
-	
 	evt->remove_event_handler(key_handler_fnctr);
 	evt->remove_event_handler(mouse_handler_fnctr);
 	evt->remove_event_handler(shader_reload_fnctr);
+	evt->remove_event_handler(window_handler_fnctr);
+	
+	delete_buffers();
 
 	a2e_debug("gui object deleted");
 }
@@ -155,6 +153,14 @@ bool gui::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 	return true;
 }
 
+bool gui::window_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+	if(type == EVENT_TYPE::WINDOW_RESIZE) {
+		const window_resize_event& evtobj = (const window_resize_event&)*obj;
+		recreate_buffers(evtobj.size);
+	}
+	return true;
+}
+
 void gui::set_keyboard_input(const bool& state) {
 	AtomicSet(&keyboard_input, state ? 1 : 0);
 }
@@ -191,4 +197,20 @@ void gui::delete_draw_callback(draw_callback& cb) {
 		}
 	}
 	a2e_error("no such ui draw callback does exist!");
+}
+
+void gui::recreate_buffers(const size2 size) {
+	delete_buffers();
+	
+	// create main gui buffer
+	const auto gui_aa = rtt::TAA_MSAA_8; // TODO: config option
+	const auto gui_filter = texture_object::TF_LINEAR;
+	main_fbo = r->add_buffer(size.x, size.y, GL_TEXTURE_2D, gui_filter, gui_aa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
+}
+
+void gui::delete_buffers() {
+	if(r != nullptr && main_fbo != nullptr) {
+		r->delete_buffer(main_fbo);
+		main_fbo = nullptr;
+	}
 }

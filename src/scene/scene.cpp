@@ -19,56 +19,26 @@
 #include "scene.h"
 #include "particle/particle.h"
 
-static opencl* _cl = nullptr;
-
 /*! scene constructor
  */
-scene::scene(engine* e_) {
-	enabled = true;
-	is_light = false;
-	
+scene::scene(engine* e_) :
+e(e_), s(e_->get_shader()), exts(e_->get_ext()), r(e_->get_rtt()), cl(e_->get_opencl()),
+window_handler(this, &scene::window_event_handler)
+{
 	_dbg_projs = nullptr;
 	_dbg_proj_count = 0;
 	
-	_cl = e_->get_opencl();
-	
 	//
-	blur_buffer1 = nullptr;
-	blur_buffer2 = nullptr;
-	blur_buffer3 = nullptr;
-	average_buffer = nullptr;
-	exposure_buffer[0] = nullptr;
-	exposure_buffer[1] = nullptr;
-
-	// get classes
-	e = e_;
-	s = e->get_shader();
-	exts = e->get_ext();
-	r = e->get_rtt();
-	cl = e->get_opencl();
-
 	stereo = e->get_stereo();
-	eye_distance = -0.3f; // 1.5f?
-
-	if(e->get_init_mode() == engine::GRAPHICAL) {
-		scene::skybox_tex = 0;
-		scene::max_value = 0.0f;
-		scene::render_skybox = false;
-
-		cur_exposure = 0;
-		fframe_time = 0.0f;
-		iframe_time = SDL_GetTicks();
-		
-		recreate_buffers(size2(e->get_width(), e->get_height()));
-		
-		window_handler = new event::handler(this, &scene::window_event_handler);
-		e->get_event()->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
-
-		// load light objects/models
-		// TODO: !!! use simpler model!
-		light_sphere = (a2estatic*)create_a2emodel<a2estatic>();
-		light_sphere->load_model(e->data_path("light_sphere.a2m"));
-	}
+	
+	recreate_buffers(size2(e->get_width(), e->get_height()));
+	
+	e->get_event()->add_internal_event_handler(window_handler, EVENT_TYPE::WINDOW_RESIZE);
+	
+	// load light objects/models
+	// TODO: !!! use simpler model!
+	light_sphere = (a2estatic*)create_a2emodel<a2estatic>();
+	light_sphere->load_model(e->data_path("light_sphere.a2m"));
 }
 
 /*! scene destructor
@@ -76,8 +46,7 @@ scene::scene(engine* e_) {
 scene::~scene() {
 	a2e_debug("deleting scene object");
 	
-	e->get_event()->remove_event_handler(*window_handler);
-	delete window_handler;
+	e->get_event()->remove_event_handler(window_handler);
 
 	a2e_debug("deleting models and lights");
 	models.clear();

@@ -106,6 +106,8 @@ protected:
 	vector<draw_callback*> draw_callbacks;
 	
 	rtt::fbo* main_fbo;
+	void recreate_buffers(const size2 size);
+	void delete_buffers();
 	
 	void reload_shaders();
 	gl3shader blend_shd;
@@ -116,9 +118,11 @@ protected:
 	event::handler key_handler_fnctr;
 	event::handler mouse_handler_fnctr;
 	event::handler shader_reload_fnctr;
+	event::handler window_handler_fnctr;
 	bool key_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	bool mouse_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	bool shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
+	bool window_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	
 	atomic_t keyboard_input;
 	atomic_t mouse_input;
