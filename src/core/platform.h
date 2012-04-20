@@ -156,8 +156,8 @@
 #ifndef __DRAW_MODE_DEF__
 #define __DRAW_MODE_DEF__
 enum class DRAW_MODE : unsigned int {
-	GEOMETRY_PASS			= 1,
-	MATERIAL_PASS			= 2,
+	GEOMETRY_PASS		= 1,
+	MATERIAL_PASS		= 2,
 	GEOMETRY_ALPHA_PASS	= 3,
 	MATERIAL_ALPHA_PASS	= 4,
 };

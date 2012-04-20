@@ -235,10 +235,20 @@ bool file_io::check_open() {
 
 /*! checks if we reached the end of file 
  */
-bool file_io::eof() {
-	bool ret = filestream.eof();
-	if(ret) filestream.clear();
-	return ret;
+bool file_io::eof() const {
+	return filestream.eof();
+}
+
+bool file_io::good() const {
+	return filestream.good();
+}
+
+bool file_io::fail() const {
+	return filestream.fail();
+}
+
+bool file_io::bad() const {
+	return filestream.bad();
 }
 
 void file_io::get_terminated_block(string* str, char terminator) {

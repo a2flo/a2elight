@@ -84,7 +84,10 @@ public:
 
 
 	bool is_file(const char* filename);
-	bool eof();
+	bool eof() const;
+	bool good() const;
+	bool fail() const;
+	bool bad() const;
 
 protected:
 	fstream filestream;

@@ -112,11 +112,11 @@ void a2emodel::pre_draw_setup(const ssize_t sub_object_num) {
 	// scale the model
 	mvm = scale_mat;
 	
-	// translate the model
-	mvm *= *e->get_translation_matrix();
-	
 	// rotate the model (use local inverse model view matrix that we already calculated)
 	mvm *= mview_mat;
+	
+	// translate the model
+	mvm *= *e->get_translation_matrix();
 	
 	// translate to model origin
 	mvm *= matrix4f().translate(position.x, position.y, position.z);
