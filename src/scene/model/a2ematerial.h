@@ -130,6 +130,7 @@ public:
 	const lighting_model* get_lighting_model(const size_t& object_id) const;
 	const material& get_material(const size_t& material_id) const;
 	material& get_material(const size_t& material_id);
+	size_t get_material_count() const;
 
 	void enable_textures(const size_t& object_id, gl3shader& shd, const size_t texture_mask = SIZE_T_MAX) const;
 	void disable_textures(const size_t& object_id, const size_t texture_mask = SIZE_T_MAX) const;

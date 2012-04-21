@@ -24,13 +24,12 @@ declare -a paths=( cl core gui particle rendering scene threading scene/model re
 case $( uname | tr [:upper:] [:lower:] ) in
 	"linux"|[a-z0-9]*"BSD")
 		A2_INCLUDE_PATH="/usr/local/include"
-		A2_BIN_PATH="/usr/local/bin"
 		A2_LIB_PATH="/usr/local/lib"
 	
 		# remove old files and folders
 		rm -Rf ${A2_INCLUDE_PATH}/a2elight
-		rm -f ${A2_BIN_PATH}/liba2elight.so
-		rm -f ${A2_BIN_PATH}/liba2elightd.so
+		rm -f ${A2_LIB_PATH}/liba2elight.so
+		rm -f ${A2_LIB_PATH}/liba2elightd.so
 		rm -f ${A2_LIB_PATH}/liba2elight.a
 		rm -f ${A2_LIB_PATH}/liba2elightd.a
 		
@@ -46,8 +45,8 @@ case $( uname | tr [:upper:] [:lower:] ) in
 			cp ${val}/*.hpp ${A2_INCLUDE_PATH}/a2elight/${val}/ 2>/dev/null
 		done
 		
-		cp ./../lib/liba2elight.so ${A2_BIN_PATH}/ 2>/dev/null
-		cp ./../lib/liba2elightd.so ${A2_BIN_PATH}/ 2>/dev/null
+		cp ./../lib/liba2elight.so ${A2_LIB_PATH}/ 2>/dev/null
+		cp ./../lib/liba2elightd.so ${A2_LIB_PATH}/ 2>/dev/null
 		cp ./../lib/liba2elight.a ${A2_LIB_PATH}/ 2>/dev/null
 		cp ./../lib/liba2elightd.a ${A2_LIB_PATH}/ 2>/dev/null
 		;;

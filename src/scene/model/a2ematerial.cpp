@@ -537,3 +537,7 @@ void a2ematerial::copy_object_mapping(const size_t& from_object, const vector<si
 		copy_object_mapping(from_object, obj);
 	}
 }
+
+size_t a2ematerial::get_material_count() const {
+	return materials.size();
+}
