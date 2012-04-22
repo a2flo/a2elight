@@ -105,9 +105,10 @@ public:
 		union {
 			// specifies if the primitive has a mid point (e.g. circle, rounded rect)
 			unsigned int has_mid_point : 1;
+			unsigned int has_equal_start_end_point : 1;
 			
 			//
-			unsigned int _unused : 31;
+			unsigned int _unused : 30;
 			
 			unsigned int flags;
 		};
@@ -227,10 +228,10 @@ struct gfx2d::point_compute_line {
 		const float2 offset_rot_left(-line_dir.y, line_dir.x);
 		const float2 offset_rot_right(line_dir.y, -line_dir.x);
 		
-		props.points.emplace_back(float2(x2 + offset_rot_right.x, y2 + offset_rot_right.y));
-		props.points.emplace_back(float2(x1 + offset_rot_right.x, y1 + offset_rot_right.y));
-		props.points.emplace_back(float2(x2 + offset_rot_left.x, y2 + offset_rot_left.y));
-		props.points.emplace_back(float2(x1 + offset_rot_left.x, y1 + offset_rot_left.y));
+		props.points.emplace_back(x2 + offset_rot_right.x, y2 + offset_rot_right.y);
+		props.points.emplace_back(x1 + offset_rot_right.x, y1 + offset_rot_right.y);
+		props.points.emplace_back(x2 + offset_rot_left.x, y2 + offset_rot_left.y);
+		props.points.emplace_back(x1 + offset_rot_left.x, y1 + offset_rot_left.y);
 		
 		//
 		props.extent.set(std::min(start_pnt.x, end_pnt.x), std::min(start_pnt.y, end_pnt.y),
@@ -313,6 +314,7 @@ struct gfx2d::point_compute_rounded_rectangle {
 		
 		// add first outer point so we have a complete "circle"
 		props.points.emplace_back(props.points[1]);
+		props.has_equal_start_end_point = 1;
 		
 		//
 		props.extent.set(std::min(r.x1, r.x2), std::min(r.y1, r.y2),
@@ -538,19 +540,26 @@ struct gfx2d::draw_style_border {
 		border_props.has_mid_point = 0;
 		const float2 center((props.extent.x + props.extent.z) * 0.5f,
 							(props.extent.y + props.extent.w) * 0.5f);
-		const float half_thickness = thickness * 0.5f;
-		border_props.points.reserve(props.points.size() * 2); // we'll need twice as much
-		for_each(begin(props.points) + props.has_mid_point, // ignore mid point(s) if it has one
-				 end(props.points),
-				 [&](const float2& p) {
-					 // extrude from extent center
-					 float2 dir = p - center;
-					 const float length = dir.length();
-					 dir.normalize();
-					 
-					 border_props.points.emplace_back(float2(center + dir * (length - half_thickness)));
-					 border_props.points.emplace_back(float2(center + dir * (length + half_thickness)));
-				 });
+		const size_t orig_point_count = props.points.size();
+		border_props.points.reserve(orig_point_count * 2); // we'll need twice as much
+		for(size_t i = props.has_mid_point; // ignore mid point(s) if it has one
+			i < orig_point_count; i++) {
+			// to do this correctly, we need the previous and next point ...
+			const float2& cur_point = props.points[i];
+			
+			// (mp/#0) -> (sp/#1) -> #2 -> #3 -> ... -> #n-2 -> (ep/#n-1)
+			const float2& prev_point = props.points[i > props.has_mid_point ? i-1 : orig_point_count - (1 + props.has_equal_start_end_point)];
+			const float2& next_point = props.points[i < orig_point_count-1 ? i+1 : props.has_mid_point + props.has_equal_start_end_point];
+			
+			// ... and compute the normal of those three points (from the two vectors outgoing from the current point)
+			const float2 v0((prev_point - cur_point).normalize());
+			const float2 v1((next_point - cur_point).normalize());
+			const float2 normal((v0 + v1).normalize());
+			
+			//
+			border_props.points.emplace_back(cur_point);
+			border_props.points.emplace_back(cur_point + normal * thickness);
+		}
 		
 		// no point in rendering no points
 		if(border_props.points.empty()) return;

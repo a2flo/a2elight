@@ -502,9 +502,9 @@ void engine::init(const char* ico) {
 	start_draw();
 	start_2d_draw();
 	a2e_texture load_tex = t->add_texture(data_path("loading.png"), texture_object::TF_LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-	const size2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
-	const size2 img_offset(config.width/2 - load_tex_draw_size.x/2,
-						   config.height/2 - load_tex_draw_size.y/2);
+	const uint2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
+	const uint2 img_offset((unsigned int)config.width/2 - load_tex_draw_size.x/2,
+						   (unsigned int)config.height/2 - load_tex_draw_size.y/2);
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 	gfx2d::draw_rectangle_texture(rect(img_offset.x, img_offset.y,
 									   img_offset.x + load_tex_draw_size.x,

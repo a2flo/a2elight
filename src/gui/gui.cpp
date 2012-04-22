@@ -205,7 +205,7 @@ void gui::recreate_buffers(const size2 size) {
 	// create main gui buffer
 	const auto gui_aa = rtt::TAA_MSAA_8; // TODO: config option
 	const auto gui_filter = texture_object::TF_LINEAR;
-	main_fbo = r->add_buffer(size.x, size.y, GL_TEXTURE_2D, gui_filter, gui_aa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
+	main_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, gui_filter, gui_aa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
 }
 
 void gui::delete_buffers() {

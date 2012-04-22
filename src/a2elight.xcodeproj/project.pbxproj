@@ -684,6 +684,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_SSE3_EXTENSIONS = YES;
 				GCC_ENABLE_SSE41_EXTENSIONS = YES;
@@ -713,6 +714,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_SSE3_EXTENSIONS = YES;
 				GCC_ENABLE_SSE41_EXTENSIONS = YES;
@@ -814,6 +816,7 @@
 					"-Wshift-overflow",
 					"-Wvexing-parse",
 					"-Wc++11-narrowing",
+					"-Wunreachable-code",
 				);
 			};
 			name = Debug;
@@ -894,6 +897,7 @@
 					"-Wshift-overflow",
 					"-Wvexing-parse",
 					"-Wc++11-narrowing",
+					"-Wunreachable-code",
 				);
 			};
 			name = Release;

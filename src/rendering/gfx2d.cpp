@@ -154,7 +154,7 @@ void gfx2d::upload_points_and_draw(const gl3shader& shd, const primitive_propert
 	glEnableVertexAttribArray((GLuint)shd->get_attribute_position("in_vertex"));
 	
 	// draw
-	glDrawArrays(props.primitive_type, 0, props.points.size());
+	glDrawArrays(props.primitive_type, 0, (GLsizei)props.points.size());
 	
 	// disable everything
 	glDisableVertexAttribArray(0);
