@@ -54,7 +54,7 @@ ipnt core::get_2d_from_3d(const float3& vec, const matrix4f& mview, const matrix
 }
 
 float3 core::get_3d_from_2d(const pnt& p, const matrix4f& mview, const matrix4f& mproj, const int4& viewport) {
-	const matrix4f ipm((mproj * mview).invert());
+	const matrix4f ipm((mview * mproj).invert());
 	const float3 wnd_vec((((p.x - float(viewport[0])) * 2.0f) / float(viewport[2])) - 1.0f,
 						 (((p.y - float(viewport[1])) * 2.0f) / float(viewport[3])) - 1.0f,
 						 1.0f);
