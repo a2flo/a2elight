@@ -76,6 +76,15 @@ public:
 		ALPHA
 	};
 	
+	enum class CORNER : unsigned int {
+		NONE			= 0,
+		TOP_RIGHT		= (1 << 0),
+		BOTTOM_RIGHT	= (1 << 1),
+		BOTTOM_LEFT		= (1 << 2),
+		TOP_LEFT		= (1 << 3),
+		ALL				= (TOP_RIGHT | BOTTOM_RIGHT | BOTTOM_LEFT | TOP_LEFT)
+	};
+	
 	// draw functions
 	template <class point_compute_draw_spec, typename... Args>
 	static void draw(const Args&... args) {
@@ -272,16 +281,13 @@ template <class draw_style>
 struct gfx2d::point_compute_rounded_rectangle {
 	template<typename... Args> static void compute_and_draw(const rect& r,
 															const float& radius,
-															const bool4 corners,
+															const CORNER corners,
 															const Args&... args) {
 		primitive_properties props(GL_TRIANGLE_FAN);
 		props.has_mid_point = 1;
 		
 		// just in case ...
-		if(corners.x == false &&
-		   corners.y == false &&
-		   corners.z == false &&
-		   corners.w == false) {
+		if(corners == CORNER::NONE) {
 			point_compute_rectangle<draw_style>::compute_and_draw(r, args...);
 			return;
 		}
@@ -294,7 +300,7 @@ struct gfx2d::point_compute_rounded_rectangle {
 		// 0: rt, 90: rb, 180: lb, 270: lt
 		for(ssize_t i = 0; i < 4; i++) {
 			float2 corner_point(i < 2 ? r.x2 : r.x1, (i == 0 || i == 3) ? r.y1 : r.y2);
-			if(corners[i]) {
+			if((unsigned int)corners & (1 << i)) {
 				// if this is a rounded corner, add 90° circle sector for that corner
 				const size_t cur_size = props.points.size();
 				gfx2d::compute_ellipsoid_points(props.points, radius, radius,

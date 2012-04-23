@@ -792,7 +792,7 @@
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SDKROOT)/usr/X11/lib\"",
+					/usr/X11/lib,
 					/opt/X11/lib,
 				);
 				LLVM_LTO = NO;
@@ -873,7 +873,7 @@
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SDKROOT)/usr/X11/lib\"",
+					/usr/X11/lib,
 					/opt/X11/lib,
 				);
 				LLVM_LTO = NO;
