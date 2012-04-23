@@ -330,13 +330,13 @@ void scene::sort_alpha_objects() {
 	delete [] bbox_proj;
 	delete [] bbox_rects;
 }
-void scene::add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, draw_callback* cb) {
+void scene::add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, a2emodel::draw_callback* cb) {
 	delete_alpha_object(bbox); // clean up old data if there is any
 	alpha_objects[bbox] = make_pair(sub_object_id, cb);
 	sorted_alpha_objects.push_back(make_pair(bbox, 0));
 }
 
-void scene::add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids, draw_callback* cbs) {
+void scene::add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids, a2emodel::draw_callback* cbs) {
 	// TODO: improve this?
 	for(size_t i = 0; i < count; i++) {
 		add_alpha_object(bboxes[i], sub_object_ids[i], &cbs[i]);
@@ -399,8 +399,8 @@ void scene::geometry_pass() {
 	}
 	
 	// render callbacks (opaque)
-	for(const auto& draw_iter : draw_callbacks) {
-		draw_iter.second->draw(DRAW_MODE::GEOMETRY_PASS);
+	for(const auto& draw_cb : draw_callbacks) {
+		(*draw_cb.second)(DRAW_MODE::GEOMETRY_PASS);
 	}
 	
 	// render/draw particle managers (TODO: PARTICLE TODO)
@@ -417,13 +417,13 @@ void scene::geometry_pass() {
 	glDrawBuffers(2, draw_buffers);
 	
 	for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
-		const pair<size_t, draw_callback*>& obj = alpha_objects[iter->first];
+		const pair<size_t, a2emodel::draw_callback*>& obj = alpha_objects[iter->first];
 		(*obj.second)(DRAW_MODE::GEOMETRY_ALPHA_PASS, obj.first, iter->second);
 	}
 	
 	// render callbacks (alpha)
-	for(const auto& draw_iter : draw_callbacks) {
-		draw_iter.second->draw(DRAW_MODE::GEOMETRY_ALPHA_PASS);
+	for(const auto& draw_cb : draw_callbacks) {
+		(*draw_cb.second)(DRAW_MODE::GEOMETRY_ALPHA_PASS);
 	}
 	
 	r->stop_draw();
@@ -584,7 +584,7 @@ void scene::light_and_material_pass() {
 	
 	// render callbacks (opaque pass)
 	for(const auto& draw_cb : draw_callbacks) {
-		draw_cb.second->draw(DRAW_MODE::MATERIAL_PASS);
+		(*draw_cb.second)(DRAW_MODE::MATERIAL_PASS);
 	}
 	
 	// for alpha objects and particles rendering, switch back to LEQUAL,
@@ -597,12 +597,12 @@ void scene::light_and_material_pass() {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // pre-multiplied alpha blending
 		for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
-			const pair<size_t, draw_callback*>& obj = alpha_objects[iter->first];
+			const pair<size_t, a2emodel::draw_callback*>& obj = alpha_objects[iter->first];
 			(*obj.second)(DRAW_MODE::MATERIAL_ALPHA_PASS, obj.first, iter->second);
 		}
 		// render callbacks (alpha pass)
 		for(const auto& draw_cb : draw_callbacks) {
-			draw_cb.second->draw(DRAW_MODE::MATERIAL_ALPHA_PASS);
+			(*draw_cb.second)(DRAW_MODE::MATERIAL_ALPHA_PASS);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
@@ -829,4 +829,32 @@ void scene::set_enabled(const bool& status) {
 
 bool scene::is_enabled() const {
 	return enabled;
+}
+
+
+void scene::add_draw_callback(const string& name, draw_callback& cb) {
+	if(draw_callbacks.count(name) > 0) {
+		a2e_error("this scene draw callback already exists!");
+		return;
+	}
+	draw_callbacks.emplace(name, &cb);
+}
+
+void scene::delete_draw_callback(draw_callback& cb) {
+	for(auto iter = draw_callbacks.begin(); iter != draw_callbacks.end(); iter++) {
+		if(iter->second == &cb) {
+			draw_callbacks.erase(iter);
+			return;
+		}
+	}
+	a2e_error("no such scene draw callback does exist!");
+}
+
+void scene::delete_draw_callback(const string& name) {
+	const auto iter = draw_callbacks.find(name);
+	if(iter == draw_callbacks.end()) {
+		a2e_error("no such scene draw callback does exist!");
+		return;
+	}
+	draw_callbacks.erase(iter);
 }

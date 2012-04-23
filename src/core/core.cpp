@@ -53,6 +53,14 @@ ipnt core::get_2d_from_3d(const float3& vec, const matrix4f& mview, const matrix
 				(int)(viewport[3] - viewport[3] * (proj_vec.y * 0.5f + 0.5f) + viewport[1])); // flip y
 }
 
+float3 core::get_3d_from_2d(const pnt& p, const matrix4f& mview, const matrix4f& mproj, const int4& viewport) {
+	const matrix4f ipm((mproj * mview).invert());
+	const float3 wnd_vec((((p.x - float(viewport[0])) * 2.0f) / float(viewport[2])) - 1.0f,
+						 (((p.y - float(viewport[1])) * 2.0f) / float(viewport[3])) - 1.0f,
+						 1.0f);
+	return (wnd_vec * ipm);
+}
+
 void core::reset(stringstream* sstr) {
 	sstr->seekp(0);
 	sstr->seekg(0);

@@ -41,33 +41,6 @@
 class particle_manager;
 
 class A2E_API scene {
-protected:
-	// draw callback handler, used to register draw functions and let them get called by the scene render function
-	class draw_handler {
-	public:
-		virtual void draw(const DRAW_MODE draw_mode) = 0;
-		virtual ~draw_handler() {}
-	};
-	
-	template<class C> class draw_handler_obj : public draw_handler {
-	private:
-		C* p_class;
-		void (C::*func)(const DRAW_MODE);
-	public:
-		draw_handler_obj(C* p_classx, void (C::*funcx)(const DRAW_MODE)) : p_class(p_classx), func(funcx) {}
-		virtual ~draw_handler_obj() {}
-		
-		virtual void draw(const DRAW_MODE draw_mode) {
-			(p_class->*func)(draw_mode);
-		}
-		
-		typedef void (C::*fp_func)();
-		C* get_class() { return p_class; }
-		fp_func get_func() { return func; }
-	};
-	
-	map<string, draw_handler*> draw_callbacks;
-	
 public:
 	scene(engine* e);
 	~scene();
@@ -96,15 +69,11 @@ public:
 	void set_render_skybox(bool state);
 	bool get_render_skybox();
 	
-	template<class C> void add_draw_callback(const char* name, C* p_class, void (C::*fp_draw_callback)(const DRAW_MODE)) {
-		draw_callbacks[name] = new draw_handler_obj<C>(p_class, fp_draw_callback);
-	}
-	void delete_draw_callback(const char* name) {
-		if(draw_callbacks.count(name)) {
-			delete draw_callbacks[name];
-			draw_callbacks.erase(name);
-		}
-	}
+	typedef functor<void, const DRAW_MODE> draw_callback;
+	void add_draw_callback(const string& name, draw_callback& cb);
+	void delete_draw_callback(draw_callback& cb);
+	void delete_draw_callback(const string& name);
+	
 	
 	float get_eye_distance();
 	void set_eye_distance(float distance);
@@ -112,8 +81,8 @@ public:
 	void recreate_buffers(const size2 buffer_size);
 	
 	//
-	void add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, draw_callback* cb);
-	void add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids, draw_callback* cbs);
+	void add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, a2emodel::draw_callback* cb);
+	void add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids, a2emodel::draw_callback* cbs);
 	void delete_alpha_object(const extbbox* bbox);
 	void delete_alpha_objects(const size_t count, const extbbox** bboxes);
 	
@@ -152,7 +121,7 @@ protected:
 	vector<particle_manager*> particle_managers;
 	
 	// <bbox*, <sub-object id, draw functor*>>
-	map<const extbbox*, pair<size_t, draw_callback*>> alpha_objects;
+	map<const extbbox*, pair<size_t, a2emodel::draw_callback*>> alpha_objects;
 	// <bbox*, mask id>, mask id: 0 (invalid), {1, 2, 3}
 	vector<pair<const extbbox*, size_t>> sorted_alpha_objects;
 	ipnt** _dbg_projs;
@@ -197,6 +166,7 @@ protected:
 	size_t cur_frame;
 	
 	vector<post_processing_handler*> pp_handlers;
+	map<string, draw_callback*> draw_callbacks;
 
 	// hdr buffer
 	rtt::fbo* blur_buffer1 = nullptr;

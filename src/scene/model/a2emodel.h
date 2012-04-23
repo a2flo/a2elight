@@ -33,9 +33,6 @@
 #include "cl/opencl.h"
 #include "rendering/extensions.h"
 
-// ret: void, args: draw_mode, sub_object_num
-typedef functor<void, const DRAW_MODE&, const size_t&, const size_t&> draw_callback;
-
 #define A2E_MAX_MASK_ID 3
 
 /*! @class a2emodel
@@ -47,6 +44,9 @@ class A2E_API a2emodel {
 public:
 	a2emodel(engine* e, shader* s, scene* sce);
 	virtual ~a2emodel();
+	
+	// ret: void, args: draw_mode, sub_object_num
+	typedef functor<void, const DRAW_MODE&, const size_t&, const size_t&> draw_callback;
 	
 	virtual void load_model(const string& filename) = 0;
 	

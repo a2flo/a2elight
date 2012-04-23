@@ -39,6 +39,7 @@ public:
 	
 	// 3d math functions
 	static ipnt get_2d_from_3d(const float3& vec, const matrix4f& mview, const matrix4f& mproj, const int4& viewport);
+	static float3 get_3d_from_2d(const pnt& p, const matrix4f& mview, const matrix4f& mproj, const int4& viewport);
 	
 	static void compute_normal(const float3& v1, const float3& v2, const float3& v3, float3& normal);
 	static void compute_normal_tangent_binormal(const float3& v1, const float3& v2, const float3& v3,
