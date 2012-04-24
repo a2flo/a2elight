@@ -24,6 +24,7 @@
 
 template <typename T> class vector3;
 typedef vector3<float> float3;
+typedef vector3<double> double3;
 typedef vector3<unsigned int> index3;
 typedef vector3<unsigned int> uint3;
 typedef vector3<int> int3;

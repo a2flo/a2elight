@@ -592,7 +592,7 @@ void scene::light_and_material_pass() {
 	glDepthFunc(GL_LEQUAL);
 	
 #if !defined(A2E_IOS)
-	if(sorted_alpha_objects.size() > 0) {
+	if(sorted_alpha_objects.size() > 0 || draw_callbacks.size() > 0) {
 		// render models (transparent/alpha)
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // pre-multiplied alpha blending
