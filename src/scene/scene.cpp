@@ -837,7 +837,8 @@ void scene::add_draw_callback(const string& name, draw_callback& cb) {
 		a2e_error("this scene draw callback already exists!");
 		return;
 	}
-	draw_callbacks.emplace(name, &cb);
+	//draw_callbacks.emplace(name, &cb); // TODO: use this, when gcc finally decides to correctly implement c++11
+	draw_callbacks.insert(make_pair(name, &cb));
 }
 
 void scene::delete_draw_callback(draw_callback& cb) {
