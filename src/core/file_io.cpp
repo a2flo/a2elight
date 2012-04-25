@@ -199,6 +199,24 @@ void file_io::write_block(const char* data, size_t size, bool check_size) {
 	}
 }
 
+void file_io::write_char(const unsigned char& ch) {
+	filestream.write((char*)&ch, 1);
+}
+
+void file_io::write_uint(const unsigned int& ui) {
+	const char chui[4] = {
+		(char)((ui & 0xFF000000) >> 24),
+		(char)((ui & 0xFF0000) >> 16),
+		(char)((ui & 0xFF00) >> 8),
+		(char)(ui & 0xFF)
+	};
+	filestream.write(chui, 4);
+}
+
+void file_io::write_float(const float& f) {
+	filestream.write((char*)&f, 4);
+}
+
 /*! returns true if the file specified by filename exists
  *  @param filename the name of the file
  */
@@ -251,14 +269,14 @@ bool file_io::bad() const {
 	return filestream.bad();
 }
 
-void file_io::get_terminated_block(string* str, char terminator) {
+void file_io::get_terminated_block(string& str, const char terminator) {
 	for(char c = get_char(); c != terminator; c = get_char()) {
-		*str += c;
+		str += c;
 	}
 }
 
-void file_io::write_terminated_block(string* str, char terminator) {
-	write_block(str->c_str(), (unsigned int)str->length());
+void file_io::write_terminated_block(const string& str, const char terminator) {
+	write_block(str.c_str(), (unsigned int)str.length());
 	filestream.put(terminator);
 }
 

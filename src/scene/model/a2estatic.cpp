@@ -182,7 +182,7 @@ void a2estatic::load_model(const string& filename) {
 
 	object_names = new string[object_count];
 	for(unsigned int i = 0; i < object_count; i++) {
-		file.get_terminated_block(&object_names[i], (char)0xFF);
+		file.get_terminated_block(object_names[i], (char)0xFF);
 	}
 
 	indices = new index3*[object_count];

@@ -67,22 +67,29 @@ public:
 	bool file_to_buffer(const string& filename, stringstream& buffer);
 	void close_file();
 	uint64_t get_filesize();
+	fstream* get_filestream();
+	
+	// file input:
 	void read_file(stringstream* buffer);
 	void get_line(char* finput, unsigned int length);
 	void get_block(char* data, size_t size);
-	void get_terminated_block(string* str, char terminator);
+	void get_terminated_block(string& str, const char terminator);
 	char get_char();
 	unsigned short int get_usint();
 	unsigned int get_uint();
 	float get_float();
-	fstream* get_filestream();
 	void seek(size_t offset);
 	streampos get_current_offset();
 	
+	// file output:
 	void write_block(const char* data, size_t size, bool check_size = false);
-	void write_terminated_block(string* str, char terminator);
+	void write_terminated_block(const string& str, const char terminator);
+	void write_char(const unsigned char& ch);
+	void write_uint(const unsigned int& ui);
+	void write_float(const float& f);
 
 
+	//
 	bool is_file(const char* filename);
 	bool eof() const;
 	bool good() const;
