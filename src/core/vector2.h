@@ -46,7 +46,7 @@ public:
 	
 	vector2() : x((T)0), y((T)0) {}
 	vector2(const vector2<T>& vec2) : x(vec2.x), y(vec2.y) {}
-	vector2(const pair<float, float>& vec2) : x(vec2.first), y(vec2.second) {}
+	vector2(const pair<T, T>& vec2) : x(vec2.first), y(vec2.second) {}
 	vector2(const T& vx, const T& vy) : x(vx), y(vy) {}
 	vector2(const T& f) : x(f), y(f) {}
 	template <typename U> vector2(const vector2<U>& vec2) : x((T)vec2.x), y((T)vec2.y) {}

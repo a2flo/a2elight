@@ -124,8 +124,10 @@ void a2estatic::post_draw_setup(const ssize_t sub_object_num) {
  *  @param vbo flag that specifies if vertex buffer objects should be used
  */
 void a2estatic::load_model(const string& filename) {
-	file_io file;
-	file.open_file(filename, file_io::OT_READ_BINARY);
+	file_io file(filename, file_io::OT_READ_BINARY);
+	if(!file.is_open()) {
+		return;
+	}
 
 	// get type and name
 	char* file_type = new char[9];
@@ -135,7 +137,7 @@ void a2estatic::load_model(const string& filename) {
 	if(strcmp(file_type, "A2EMODEL") != 0) {
 		a2e_error("non supported file type for %s: %s!", filename, file_type);
 		delete [] file_type;
-		file.close_file();
+		file.close();
 		return;
 	}
 	delete [] file_type;
@@ -144,7 +146,7 @@ void a2estatic::load_model(const string& filename) {
 	unsigned int version = file.get_uint();
 	if(version != A2M_VERSION) {
 		a2e_error("wrong model file version %u - should be %u!", version, A2M_VERSION);
-		file.close_file();
+		file.close();
 		return;
 	}
 
@@ -152,7 +154,7 @@ void a2estatic::load_model(const string& filename) {
 	char mtype = file.get_char();
 	if(mtype != 0x00 && mtype != 0x02) {
 		a2e_error("non supported model type: %u!", (unsigned int)(mtype & 0xFF));
-		file.close_file();
+		file.close();
 		return;
 	}
 
@@ -226,7 +228,7 @@ void a2estatic::load_model(const string& filename) {
 		}
 	}
 
-	file.close_file();
+	file.close();
 	
 	// set this stuff for normal generating
 	model_indices = indices;

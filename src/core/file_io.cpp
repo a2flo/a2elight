@@ -23,6 +23,10 @@
 file_io::file_io() {
 }
 
+file_io::file_io(const string& filename, FIO_OPEN_TYPE open_type) {
+	open(filename, open_type);
+}
+
 /*! there is no function currently
  */
 file_io::~file_io() {
@@ -32,7 +36,7 @@ file_io::~file_io() {
  *  @param filename the name of the file
  *  @param open_type enum that specifies how we want to open the file (like "r", "wb", etc. ...)
  */
-bool file_io::open_file(const string& filename, FIO_OPEN_TYPE open_type) {
+bool file_io::open(const string& filename, FIO_OPEN_TYPE open_type) {
 	if(check_open()) {
 		a2e_error("a file is already opened! can't open another file!");
 		return false;
@@ -81,13 +85,13 @@ bool file_io::open_file(const string& filename, FIO_OPEN_TYPE open_type) {
 
 /*! closes the input file stream
  */
-void file_io::close_file() {
+void file_io::close() {
 	filestream.close();
 	filestream.clear();
 }
 
 bool file_io::file_to_buffer(const string& filename, stringstream& buffer) {
-	if(!open_file(filename, file_io::OT_READ)) {
+	if(!open(filename, file_io::OT_READ)) {
 		return false;
 	}
 	
@@ -96,7 +100,7 @@ bool file_io::file_to_buffer(const string& filename, stringstream& buffer) {
 	buffer.clear();
 	buffer.str("");
 	read_file(&buffer);
-	close_file();
+	close();
 	return true;
 }
 
@@ -126,6 +130,7 @@ char file_io::get_char() {
 /*! reads a single unsigned short int from the current file input stream and returns it
  */
 unsigned short int file_io::get_usint() {
+	unsigned char tmp[2] { 0, 0 };
 	unsigned short int us = 0;
 	filestream.read((char*)tmp, 2);
 	us = (tmp[0] << 8) + tmp[1];
@@ -135,6 +140,7 @@ unsigned short int file_io::get_usint() {
 /*! reads a single unsigned int from the current file input stream and returns it
  */
 unsigned int file_io::get_uint() {
+	unsigned char tmp[4] { 0, 0, 0, 0 };
 	unsigned int u = 0;
 	filestream.read((char*)tmp, 4);
 	u = (tmp[0] << 24) + (tmp[1] << 16) + (tmp[2] << 8) + tmp[3];
@@ -267,6 +273,10 @@ bool file_io::fail() const {
 
 bool file_io::bad() const {
 	return filestream.bad();
+}
+
+bool file_io::is_open() const {
+	return filestream.is_open();
 }
 
 void file_io::get_terminated_block(string& str, const char terminator) {

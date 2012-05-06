@@ -16,29 +16,42 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __UNICODE_H__
-#define __UNICODE_H__
+#ifndef __FONT_MANAGER_H__
+#define __FONT_MANAGER_H__
 
 #include "global.h"
+#include "threading/thread_base.h"
+#include "gui/font.h"
 
-/*! @class unicode
- *  @brief unicode routines
+/*! @class font_manager
+ *  @brief loads and caches fonts
  */
 
-class A2E_API unicode {
+class engine;
+class rtt;
+struct FT_LibraryRec_;
+typedef struct FT_LibraryRec_* FT_Library;
+class A2E_API font_manager : public thread_base {
 public:
-	unicode();
-	~unicode();
+	font_manager(engine* e);
+	virtual ~font_manager();
+	FT_Library get_ft_library();
 	
-	size_t get_utf8_strlen(const unsigned char* cstr);
-	string get_utf8_substr(const unsigned char* cstr, size_t begin, size_t end, map<size_t, size_t>& index_table);
-	void create_utf8_index_table(const unsigned char* cstr, map<size_t, size_t>& index_table);
-	void create_charmap(const unsigned char* cstr, map<size_t, unsigned char*>& charmap, map<size_t, size_t>& index_table);
-	void utf8_str_insert(string& str, const unsigned char* insert_str, size_t insert_pos, map<size_t, size_t>& index_table);
-	void utf8_str_erase(string& str, size_t begin, size_t end, map<size_t, size_t>& index_table);
+	font& add_font(const string& identifier, const string& filename);
+	font& add_font_family(const string& identifier, const vector<string> filenames);
+	font* get_font(const string& identifier) const;
+	bool remove_font(const string& identifier);
 	
-	static vector<unsigned int> utf8_to_unicode(const string& str);
-	
+	virtual void run();
+
+protected:
+	engine* e;
+	rtt* r;
+
+	// identifier -> font object
+	unordered_map<string, font*> fonts;
+	FT_Library ft_library;
+
 };
 
 #endif

@@ -36,7 +36,7 @@ a2ematerial::~a2ematerial() {
 				t->delete_texture(((parallax_material*)material.mat)->normal_texture);
 				t->delete_texture(((parallax_material*)material.mat)->height_texture);
 				// fall through
-			case DIFFUSE:
+			[[clang::fallthrough]]; case DIFFUSE:
 				t->delete_texture(((diffuse_material*)material.mat)->diffuse_texture);
 				t->delete_texture(((diffuse_material*)material.mat)->specular_texture);
 				break;

@@ -86,7 +86,7 @@ a2e_shader::a2e_shader_include_object* a2e_shader::create_a2e_shader_include() {
  */
 bool a2e_shader::load_a2e_shader(const string& identifier, const string& filename, a2e_shader_object* shader_object) {
 	// open file
-	if(!f->open_file(filename.c_str(), file_io::OT_READ)) {
+	if(!f->open(filename.c_str(), file_io::OT_READ)) {
 		return false;
 	}
 	
@@ -96,7 +96,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	f->read_file(&buffer);
 	shader_data.reserve((size_t)f->get_filesize());
 	shader_data = buffer.str().c_str();
-	f->close_file();
+	f->close();
 	
 	// check if we have a valid xml file
 	if(shader_data.length() < 5 || shader_data.substr(0, 5) != "<?xml") {

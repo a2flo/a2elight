@@ -137,29 +137,29 @@ shader_object* shader::add_shader_file(const string& identifier, ext::GLSL_VERSI
 	char* fs_text = nullptr;
 	
 	// load shaders
-	f->open_file(vname, file_io::OT_READ_BINARY);
+	f->open(vname, file_io::OT_READ_BINARY);
 	size = (size_t)f->get_filesize();
 	vs_text = new char[size+1];
 	f->get_block(vs_text, size);
 	vs_text[size] = 0;
-	f->close_file();
+	f->close();
 	
 	// optionally load geometry shader ...
 	if(gname != nullptr) {
-		f->open_file(gname, file_io::OT_READ_BINARY);
+		f->open(gname, file_io::OT_READ_BINARY);
 		size = (size_t)f->get_filesize();
 		gs_text = new char[size+1];
 		f->get_block(gs_text, size);
 		gs_text[size] = 0;
-		f->close_file();
+		f->close();
 	}
 	
-	f->open_file(fname, file_io::OT_READ_BINARY);
+	f->open(fname, file_io::OT_READ_BINARY);
 	size = (size_t)f->get_filesize();
 	fs_text = new char[size+1];
 	f->get_block(fs_text, size);
 	fs_text[size] = 0;
-	f->close_file();
+	f->close();
 	
 	// add shader
 	ret = add_shader_src(identifier, glsl_version, vs_text, gs_text, fs_text);
@@ -531,6 +531,7 @@ bool shader::load_internal_shaders() {
 		// gfx2d
 		{ "GFX2D_GRADIENT", "gfx2d/gradient.a2eshd" },
 		{ "GFX2D_TEXTURE", "gfx2d/texture.a2eshd" },
+		{ "FONT", "gfx2d/font.a2eshd" },
 
 		// inferred rendering
 		{ "IR_GP_GBUFFER", "inferred/gp_gbuffer.a2eshd" },

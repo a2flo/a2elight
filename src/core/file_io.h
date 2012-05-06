@@ -27,12 +27,8 @@
  *  @brief file input/output
  */
 
-class A2E_API file_io
-{
+class A2E_API file_io {
 public:
-	file_io();
-	~file_io();
-
 	enum FIO_OPEN_TYPE {
 		OT_READ,
 		OT_READWRITE,
@@ -45,6 +41,10 @@ public:
 		OT_APPEND_READ,
 		OT_APPEND_READ_BINARY
 	};
+	
+	file_io();
+	file_io(const string& filename, FIO_OPEN_TYPE open_type = OT_READWRITE_BINARY);
+	~file_io();
 	
 	enum FILE_TYPE {
 		FT_NONE,
@@ -63,9 +63,9 @@ public:
 		FT_OPENCL
 	};
 
-	bool open_file(const string& filename, FIO_OPEN_TYPE open_type);
+	bool open(const string& filename, FIO_OPEN_TYPE open_type);
 	bool file_to_buffer(const string& filename, stringstream& buffer);
-	void close_file();
+	void close();
 	uint64_t get_filesize();
 	fstream* get_filestream();
 	
@@ -95,11 +95,10 @@ public:
 	bool good() const;
 	bool fail() const;
 	bool bad() const;
+	bool is_open() const;
 
 protected:
 	fstream filestream;
-
-	unsigned char tmp[8];
 
 	bool check_open();
 

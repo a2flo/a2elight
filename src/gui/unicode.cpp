@@ -214,3 +214,33 @@ void unicode::utf8_str_erase(string& str, size_t begin, size_t end, map<size_t, 
 	
 	str.erase(index_table[begin], index_table[end] - index_table[begin]);
 }
+
+vector<unsigned int> unicode::utf8_to_unicode(const string& str) {
+	vector<unsigned int> ret;
+	
+	for(auto iter = str.cbegin(); iter != str.cend(); iter++) {
+		unsigned int size = 0;
+		const unsigned int char_code = ((unsigned int)*iter) & 0xFF;
+		while((char_code & (1 << (7 - size))) != 0) {
+			size++;
+		}
+		
+		if(size == 0) {
+			ret.emplace_back(char_code & 0x7F);
+			continue;
+		}
+		
+		// AND lower (7 - size) bits of the first character
+		unsigned int cur_code = char_code & ((1 << (7 - size)) - 1);
+		
+		size--;
+		cur_code <<= size * 6; // shift up
+		
+		for(unsigned int i = 0; i < size; i++) {
+			cur_code += (((unsigned int)*++iter) & 0x3F) << ((size - i - 1) * 6);
+		}
+		ret.emplace_back(cur_code);
+	}
+	
+	return ret;
+}

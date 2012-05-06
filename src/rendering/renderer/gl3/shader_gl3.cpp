@@ -152,7 +152,7 @@ const string& shader_gl3::get_cur_option() const {
 ///////////////////////////////////////////////////////////////////////////////////////
 // -> uniform
 
-// 1{i,f,b,fv,iv,bv}
+// 1{i,ui,f,b,fv,iv,uiv,bv}
 void shader_gl3::uniform(const char* name, const float& arg1) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_FLOAT);
@@ -163,6 +163,12 @@ void shader_gl3::uniform(const char* name, const int& arg1) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_INT);
 	glUniform1i(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1);
+}
+
+void shader_gl3::uniform(const char* name, const unsigned int& arg1) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT);
+	glUniform1ui(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1);
 }
 
 void shader_gl3::uniform(const char* name, const bool& arg1) const {
@@ -183,6 +189,12 @@ void shader_gl3::uniform(const char* name, const int* arg1, const size_t& count)
 	glUniform1iv(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLsizei)count, arg1);
 }
 
+void shader_gl3::uniform(const char* name, const unsigned int* arg1, const size_t& count) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT);
+	glUniform1uiv(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLsizei)count, arg1);
+}
+
 void shader_gl3::uniform(const char* name, const bool* arg1, const size_t& count) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_BOOL);
@@ -192,7 +204,7 @@ void shader_gl3::uniform(const char* name, const bool* arg1, const size_t& count
 	delete [] int_array;
 }
 
-// 2{i,f,b,fv,iv,bv}
+// 2{i,ui,f,b,fv,iv,uiv,bv}
 void shader_gl3::uniform(const char* name, const float& arg1, const float& arg2) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_FLOAT_VEC2);
@@ -203,6 +215,12 @@ void shader_gl3::uniform(const char* name, const int& arg1, const int& arg2) con
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_INT_VEC2);
 	glUniform2i(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1, arg2);
+}
+
+void shader_gl3::uniform(const char* name, const unsigned int& arg1, const unsigned int& arg2) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC2);
+	glUniform2ui(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1, arg2);
 }
 
 void shader_gl3::uniform(const char* name, const bool& arg1, const bool& arg2) const {
@@ -223,6 +241,12 @@ void shader_gl3::uniform(const char* name, const int2& arg1) const {
 	glUniform2i(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1.x, arg1.y);
 }
 
+void shader_gl3::uniform(const char* name, const uint2& arg1) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC2);
+	glUniform2ui(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1.x, arg1.y);
+}
+
 void shader_gl3::uniform(const char* name, const bool2& arg1) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_BOOL_VEC2);
@@ -241,6 +265,12 @@ void shader_gl3::uniform(const char* name, const int2* arg1, const size_t& count
 	glUniform2iv(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLsizei)count, (GLint*)arg1);
 }
 
+void shader_gl3::uniform(const char* name, const uint2* arg1, const size_t& count) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC2);
+	glUniform2uiv(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLsizei)count, (GLuint*)arg1);
+}
+
 void shader_gl3::uniform(const char* name, const bool2* arg1, const size_t& count) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_BOOL_VEC2);
@@ -255,7 +285,7 @@ void shader_gl3::uniform(const char* name, const bool2* arg1, const size_t& coun
 }
 
 
-// 3{i,f,b,fv,iv,bv}
+// 3{i,ui,f,b,fv,iv,uiv,bv}
 void shader_gl3::uniform(const char* name, const float& arg1, const float& arg2, const float& arg3) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_FLOAT_VEC3);
@@ -266,6 +296,12 @@ void shader_gl3::uniform(const char* name, const int& arg1, const int& arg2, con
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_INT_VEC3);
 	glUniform3i(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1, arg2, arg3);
+}
+
+void shader_gl3::uniform(const char* name, const unsigned int& arg1, const unsigned int& arg2, const unsigned int& arg3) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC3);
+	glUniform3ui(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1, arg2, arg3);
 }
 
 void shader_gl3::uniform(const char* name, const bool& arg1, const bool& arg2, const bool& arg3) const {
@@ -286,6 +322,12 @@ void shader_gl3::uniform(const char* name, const int3& arg1) const {
 	glUniform3i(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1.x, arg1.y, arg1.z);
 }
 
+void shader_gl3::uniform(const char* name, const uint3& arg1) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC3);
+	glUniform3ui(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1.x, arg1.y, arg1.z);
+}
+
 void shader_gl3::uniform(const char* name, const bool3& arg1) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_BOOL_VEC3);
@@ -304,6 +346,12 @@ void shader_gl3::uniform(const char* name, const int3* arg1, const size_t& count
 	glUniform3iv(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLsizei)count, (GLint*)arg1);
 }
 
+void shader_gl3::uniform(const char* name, const uint3* arg1, const size_t& count) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC3);
+	glUniform3uiv(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLsizei)count, (GLuint*)arg1);
+}
+
 void shader_gl3::uniform(const char* name, const bool3* arg1, const size_t& count) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_BOOL_VEC3);
@@ -318,7 +366,7 @@ void shader_gl3::uniform(const char* name, const bool3* arg1, const size_t& coun
 }
 
 
-// 4{i,f,b,fv,iv,bv}
+// 4{i,ui,f,b,fv,iv,uiv,bv}
 void shader_gl3::uniform(const char* name, const float& arg1, const float& arg2, const float& arg3, const float& arg4) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_FLOAT_VEC4);
@@ -329,6 +377,12 @@ void shader_gl3::uniform(const char* name, const int& arg1, const int& arg2, con
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_INT_VEC4);
 	glUniform4i(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1, arg2, arg3, arg4);
+}
+
+void shader_gl3::uniform(const char* name, const unsigned int& arg1, const unsigned int& arg2, const unsigned int& arg3, const unsigned int& arg4) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC4);
+	glUniform4ui(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1, arg2, arg3, arg4);
 }
 
 void shader_gl3::uniform(const char* name, const bool& arg1, const bool& arg2, const bool& arg3, const bool& arg4) const {
@@ -349,6 +403,12 @@ void shader_gl3::uniform(const char* name, const int4& arg1) const {
 	glUniform4i(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1.x, arg1.y, arg1.z, arg1.w);
 }
 
+void shader_gl3::uniform(const char* name, const uint4& arg1) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC4);
+	glUniform4ui(A2E_SHADER_GET_UNIFORM_POSITION(name), arg1.x, arg1.y, arg1.z, arg1.w);
+}
+
 void shader_gl3::uniform(const char* name, const bool4& arg1) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_BOOL_VEC4);
@@ -365,6 +425,12 @@ void shader_gl3::uniform(const char* name, const int4* arg1, const size_t& count
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_INT_VEC4);
 	glUniform4iv(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLsizei)count, (GLint*)arg1);
+}
+
+void shader_gl3::uniform(const char* name, const uint4* arg1, const size_t& count) const {
+	A2E_CHECK_UNIFORM_EXISTENCE(name);
+	A2E_CHECK_UNIFORM_TYPE(name, GL_UNSIGNED_INT_VEC4);
+	glUniform4uiv(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLsizei)count, (GLuint*)arg1);
 }
 
 void shader_gl3::uniform(const char* name, const bool4* arg1, const size_t& count) const {

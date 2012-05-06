@@ -473,7 +473,7 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 		return kernels[identifier];
 	}
 	
-	if(!f->open_file(file_name, file_io::OT_READ)) {
+	if(!f->open(file_name, file_io::OT_READ)) {
 		return nullptr;
 	}
 	
@@ -484,7 +484,7 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 	kernel_data.reserve((size_t)f->get_filesize());
 	kernel_data = buffer->str();
 	
-	f->close_file();
+	f->close();
 	
 //#ifdef __APPLE__
 	// work around caching bug and modify source on each load, TODO: check if this still exists (still present in 10.6.2)

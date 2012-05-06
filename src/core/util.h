@@ -128,6 +128,18 @@ template<> struct compile_time_check<false> {};
 	(void)sizeof((compile_time_check<(expr) != 0>(ERROR_##msg())));	\
 }
 
+// cbegin/cend
+#if !defined(A2E_HAS_CBEGIN_CEND)
+
+template <class C> auto cbegin(C& c) -> decltype(c.cbegin()) { return c.cbegin(); }
+template <class C> auto cbegin(const C& c) -> decltype(c.cbegin()) { return c.cbegin(); }
+template <class C> auto cend(C& c) -> decltype(c.cend()) { return c.cend(); }
+template <class C> auto cend(const C& c) -> decltype(c.cend()) { return c.cend(); }
+template <class T, size_t N> const T* cbegin(const T (&array)[N]) { return array; }
+template <class T, size_t N> const T* cend(const T (&array)[N]) { return array + N; }
+
+#endif
+
 // misc
 class A2E_API a2e_exception : public exception {
 protected:

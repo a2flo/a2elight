@@ -744,6 +744,7 @@
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = NO;
 				CONFIGURATION_BUILD_DIR = ../lib;
@@ -754,10 +755,6 @@
 				DYLIB_CURRENT_VERSION = 0.2.1;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
-				GCC_ENABLE_SSE3_EXTENSIONS = NO;
-				GCC_ENABLE_SSE41_EXTENSIONS = NO;
-				GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS = NO;
-				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"A2E_EXPORT=1",
@@ -766,7 +763,6 @@
 					PLATFORM_X64,
 				);
 				GCC_STRICT_ALIASING = YES;
-				GCC_THUMB_SUPPORT = NO;
 				GCC_UNROLL_LOOPS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
@@ -793,7 +789,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/X11/lib,
-					/opt/X11/lib,
 				);
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
@@ -817,6 +812,8 @@
 					"-Wvexing-parse",
 					"-Wc++11-narrowing",
 					"-Wunreachable-code",
+					"-Wloop-analysis",
+					"-Wimplicit-fallthrough",
 				);
 			};
 			name = Debug;
@@ -828,6 +825,7 @@
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = NO;
 				CONFIGURATION_BUILD_DIR = ../lib;
@@ -837,9 +835,6 @@
 				DYLIB_COMPATIBILITY_VERSION = 0.2.1;
 				DYLIB_CURRENT_VERSION = 0.2.1;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
-				GCC_ENABLE_SSE3_EXTENSIONS = YES;
-				GCC_ENABLE_SSE41_EXTENSIONS = YES;
-				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"A2E_EXPORT=1",
@@ -847,7 +842,6 @@
 					PLATFORM_X64,
 				);
 				GCC_STRICT_ALIASING = YES;
-				GCC_THUMB_SUPPORT = NO;
 				GCC_UNROLL_LOOPS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
@@ -874,7 +868,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/X11/lib,
-					/opt/X11/lib,
 				);
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
@@ -898,6 +891,8 @@
 					"-Wvexing-parse",
 					"-Wc++11-narrowing",
 					"-Wunreachable-code",
+					"-Wloop-analysis",
+					"-Wimplicit-fallthrough",
 				);
 			};
 			name = Release;

@@ -39,45 +39,56 @@ public:
 	virtual const string& get_cur_option() const;
 	
 	// -> uniform
-	// 1{i,f,b,fv,iv,bv}
+	// 1{i,ui,f,b,fv,iv,uiv,bv}
 	void uniform(const char* name, const float& arg1) const;
 	void uniform(const char* name, const int& arg1) const;
+	void uniform(const char* name, const unsigned int& arg1) const;
 	void uniform(const char* name, const bool& arg1) const;
 	void uniform(const char* name, const float* arg1, const size_t& count) const;
 	void uniform(const char* name, const int* arg1, const size_t& count) const;
+	void uniform(const char* name, const unsigned int* arg1, const size_t& count) const;
 	void uniform(const char* name, const bool* arg1, const size_t& count) const;
 	
-	// 2{i,f,b,fv,iv,bv}
+	// 2{i,ui,f,b,fv,iv,uiv,bv}
 	void uniform(const char* name, const float& arg1, const float& arg2) const;
 	void uniform(const char* name, const int& arg1, const int& arg2) const;
+	void uniform(const char* name, const unsigned int& arg1, const unsigned int& arg2) const;
 	void uniform(const char* name, const bool& arg1, const bool& arg2) const;
 	void uniform(const char* name, const float2& arg1) const;
 	void uniform(const char* name, const int2& arg1) const;
+	void uniform(const char* name, const uint2& arg1) const;
 	void uniform(const char* name, const bool2& arg1) const;
 	void uniform(const char* name, const float2* arg1, const size_t& count) const;
 	void uniform(const char* name, const int2* arg1, const size_t& count) const;
+	void uniform(const char* name, const uint2* arg1, const size_t& count) const;
 	void uniform(const char* name, const bool2* arg1, const size_t& count) const;
 	
-	// 3{i,f,b,fv,iv,bv}
+	// 3{i,ui,f,b,fv,iv,uiv,bv}
 	void uniform(const char* name, const float& arg1, const float& arg2, const float& arg3) const;
 	void uniform(const char* name, const int& arg1, const int& arg2, const int& arg3) const;
+	void uniform(const char* name, const unsigned int& arg1, const unsigned int& arg2, const unsigned int& arg3) const;
 	void uniform(const char* name, const bool& arg1, const bool& arg2, const bool& arg3) const;
 	void uniform(const char* name, const float3& arg1) const;
 	void uniform(const char* name, const int3& arg1) const;
+	void uniform(const char* name, const uint3& arg1) const;
 	void uniform(const char* name, const bool3& arg1) const;
 	void uniform(const char* name, const float3* arg1, const size_t& count) const;
 	void uniform(const char* name, const int3* arg1, const size_t& count) const;
+	void uniform(const char* name, const uint3* arg1, const size_t& count) const;
 	void uniform(const char* name, const bool3* arg1, const size_t& count) const;
 	
-	// 4{i,f,b,fv,iv,bv}
+	// 4{i,ui,f,b,fv,iv,uiv,bv}
 	void uniform(const char* name, const float& arg1, const float& arg2, const float& arg3, const float& arg4) const;
 	void uniform(const char* name, const int& arg1, const int& arg2, const int& arg3, const int& arg4) const;
+	void uniform(const char* name, const unsigned int& arg1, const unsigned int& arg2, const unsigned int& arg3, const unsigned int& arg4) const;
 	void uniform(const char* name, const bool& arg1, const bool& arg2, const bool& arg3, const bool& arg4) const;
 	void uniform(const char* name, const float4& arg1) const;
 	void uniform(const char* name, const int4& arg1) const;
+	void uniform(const char* name, const uint4& arg1) const;
 	void uniform(const char* name, const bool4& arg1) const;
 	void uniform(const char* name, const float4* arg1, const size_t& count) const;
 	void uniform(const char* name, const int4* arg1, const size_t& count) const;
+	void uniform(const char* name, const uint4* arg1, const size_t& count) const;
 	void uniform(const char* name, const bool4* arg1, const size_t& count) const;
 	
 	// mat*, TODO: mat2, mat2x3, mat2x4, mat3x2, mat3x4, mat4x2, mat4x3
