@@ -135,7 +135,8 @@ font& font_manager::add_font_family(const string& identifier, const vector<strin
 		return *iter->second;
 	}
 	
-	const auto ret = fonts.emplace(identifier, new font(e, this, filenames));
+	// TODO: -> emplace
+	const auto ret = fonts.insert(make_pair(identifier, new font(e, this, filenames)));
 	return *ret.first->second;
 }
 

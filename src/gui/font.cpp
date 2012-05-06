@@ -86,26 +86,27 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 		return;
 	}
 	
+	// TODO: use emplace (w/o make_pair) instead of insert when gcc supports it
 	if(faces.find("Regular") == faces.end()) {
 		// use any since there is no real fallback
-		faces.emplace("Regular", faces.cbegin()->second);
+		faces.insert(make_pair("Regular", faces.cbegin()->second));
 	}
 	if(faces.find("Bold Italic") == faces.end()) {
 		if(faces.find("Bold") != faces.end()) {
-			faces.emplace("Bold Italic", faces.find("Bold")->second);
+			faces.insert(make_pair("Bold Italic", faces.find("Bold")->second));
 		}
 		if(faces.find("Italic") != faces.end()) {
-			faces.emplace("Bold Italic", faces.find("Italic")->second);
+			faces.insert(make_pair("Bold Italic", faces.find("Italic")->second));
 		}
 		else {
-			faces.emplace("Bold Italic", faces.find("Regular")->second);
+			faces.insert(make_pair("Bold Italic", faces.find("Regular")->second));
 		}
 	}
 	if(faces.find("Italic") == faces.end()) {
-		faces.emplace("Italic", faces.find("Regular")->second);
+		faces.insert(make_pair("Italic", faces.find("Regular")->second));
 	}
 	if(faces.find("Bold") == faces.end()) {
-		faces.emplace("Bold", faces.find("Regular")->second);
+		faces.insert(make_pair("Bold", faces.find("Regular")->second));
 	}
 	
 	// cache most used glyphs
@@ -140,7 +141,8 @@ font::~font() {
 	// different styles may point to the same FT_Font -> create a set
 	set<FT_Face> ft_faces;
 	for(const auto& face : faces) {
-		ft_faces.emplace(face.second);
+		// TODO: -> emplace
+		ft_faces.insert(face.second);
 	}
 	for(const auto& face : ft_faces) {
 		if(FT_Done_Face(face) != 0) {
@@ -184,7 +186,8 @@ bool font::add_face(const string& style, FT_Face face) {
 	
 	const string style_name(map_style(style));
 	if(faces.find(style_name) == faces.end()) {
-		faces.emplace(style_name, face);
+		// TODO: i'm repeating myself ... -> emplace
+		faces.insert(make_pair(style_name, face));
 		return true;
 	}
 	
@@ -246,14 +249,15 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 			// glyph pixel buffer
 			const unsigned char* buffer = slot->bitmap.buffer;
 			const unsigned int texture_index = (unsigned int)glyph_counter++;
-			glyphs.emplace(code,
-						   glyph_data {
-							   texture_index,
-							   int4(slot->bitmap_left,
-									int(font_size) - slot->bitmap_top,
-									(int)slot->advance.x,
-									(int)slot->advance.y)
-						   });
+			// TODO: -> emplace
+			glyphs.insert(make_pair(code,
+									glyph_data {
+										texture_index,
+										int4(slot->bitmap_left,
+											 int(font_size) - slot->bitmap_top,
+											 (int)slot->advance.x,
+											 (int)slot->advance.y)
+									}));
 			const unsigned int layer = texture_index / glyphs_per_layer;
 			const int3 offset((texture_index - (layer*glyphs_per_layer)) % glyphs_per_line,
 							  (texture_index - (layer*glyphs_per_layer)) / glyphs_per_line,
