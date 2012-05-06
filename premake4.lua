@@ -130,7 +130,7 @@ project "a2elight"
 	end
 	
 	if(os.is("linux") or os.is("bsd") or win_unixenv) then
-		links { "OpenCL" }
+		links { "OpenCL", "freetype" }
 		libdirs { os.findlib("GL"), os.findlib("xml2"), os.findlib("OpenCL") }
 		if(not win_unixenv) then
 			links { "GL", "SDL2_image", "Xxf86vm", "xml2" }
