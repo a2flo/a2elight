@@ -36,8 +36,7 @@ window_handler_fnctr(this, &gui::window_handler) {
 	// create keyboard/mouse event handlers
 	evt->add_event_handler(key_handler_fnctr,
 						   EVENT_TYPE::KEY_DOWN,
-						   EVENT_TYPE::KEY_UP,
-						   EVENT_TYPE::KEY_PRESSED);
+						   EVENT_TYPE::KEY_UP);
 	evt->add_event_handler(mouse_handler_fnctr,
 						   EVENT_TYPE::MOUSE_LEFT_DOWN,
 						   EVENT_TYPE::MOUSE_LEFT_UP,

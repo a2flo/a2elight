@@ -46,8 +46,8 @@ enum class EVENT_TYPE : unsigned int {
 	
 	KEY_DOWN,
 	KEY_UP,
-	KEY_PRESSED, // TODO: redundant? same as up? (not if esc cancels it?)
 	KEY_HOLD,
+	UNICODE_INPUT,
 	
 	QUIT,
 	WINDOW_RESIZE,
@@ -141,8 +141,8 @@ template<EVENT_TYPE event_type> struct key_event : public event_object_base<even
 };
 typedef key_event<EVENT_TYPE::KEY_DOWN> key_down_event;
 typedef key_event<EVENT_TYPE::KEY_UP> key_up_event;
-typedef key_event<EVENT_TYPE::KEY_PRESSED> key_pressed_event;
 typedef key_event<EVENT_TYPE::KEY_HOLD> key_hold_event;
+typedef key_event<EVENT_TYPE::UNICODE_INPUT> unicode_input_event;
 
 // misc
 typedef event_object_base<EVENT_TYPE::QUIT> quit_event;

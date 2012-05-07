@@ -38,6 +38,7 @@ public:
 	void utf8_str_erase(string& str, size_t begin, size_t end, map<size_t, size_t>& index_table);
 	
 	static vector<unsigned int> utf8_to_unicode(const string& str);
+	static string unicode_to_utf8(const vector<unsigned int>& codes);
 	
 };
 

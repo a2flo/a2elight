@@ -210,22 +210,27 @@ void event::handle_events() {
 		else {
 			// key, etc. event handling
 			switch(event_type) {
-				// TODO: use .unicode instead of .sym as soon as sdl really supports it
 				case SDL_KEYUP:
 					handle_event(EVENT_TYPE::KEY_UP,
-								 make_shared<key_up_event>(cur_ticks, event_handle.key.keysym.sym));
-					
-					// TODO: !
-					handle_event(EVENT_TYPE::KEY_PRESSED,
 								 make_shared<key_up_event>(cur_ticks, event_handle.key.keysym.sym));
 					break;
 				case SDL_KEYDOWN:
 					handle_event(EVENT_TYPE::KEY_DOWN,
 								 make_shared<key_up_event>(cur_ticks, event_handle.key.keysym.sym));
 					break;
-				case SDL_TEXTINPUT:
-					// TODO: !
-					break;
+				case SDL_TEXTINPUT: {
+					string text = "";
+					for(size_t i = 0; i < SDL_TEXTINPUTEVENT_TEXT_SIZE; i++) {
+						if(event_handle.text.text[i] == 0) break;
+						text += event_handle.text.text[i];
+					}
+					const vector<unsigned int> codes(unicode::utf8_to_unicode(text));
+					for(const auto& code : codes) {
+						handle_event(EVENT_TYPE::UNICODE_INPUT,
+									 make_shared<unicode_input_event>(cur_ticks, code));
+					}
+				}
+				break;
 				case SDL_WINDOWEVENT:
 					if(event_handle.window.event == SDL_WINDOWEVENT_RESIZED) {
 						const size2 new_size(event_handle.window.data1, event_handle.window.data2);
