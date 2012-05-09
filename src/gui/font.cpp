@@ -25,7 +25,6 @@
 #include "rendering/shader.h"
 #include "rendering/renderer/gl3/shader_gl3.h"
 #include <numeric>
-#include <regex>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -355,17 +354,17 @@ vector<uint2> font::create_text_ubo_data(const string& text,
 										 std::function<void (unsigned int)> cache_fnc) const {
 	// replace control strings by control characters (easier to handle later on)
 	static const struct {
-		const regex rx;
+		const string search;
 		const string repl;
 	} control_chars[] = {
-		{ regex(u8"(<i>)"), u8"\u0001" },
-		{ regex(u8"(</i>)"), u8"\u0002" },
-		{ regex(u8"(<b>)"), u8"\u0003" },
-		{ regex(u8"(</b>)"), u8"\u0004" },
+		{ u8"<i>", u8"\u0001" },
+		{ u8"</i>", u8"\u0002" },
+		{ u8"<b>", u8"\u0003" },
+		{ u8"</b>", u8"\u0004" },
 	};
 	string repl_text(text);
 	for(const auto& cc : control_chars) {
-		repl_text = regex_replace(repl_text, cc.rx, cc.repl);
+		repl_text = core::find_and_replace(repl_text, cc.search, cc.repl);
 	}
 	
 	// convert to utf-32
