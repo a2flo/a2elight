@@ -294,7 +294,7 @@ uint2 font::cache_text(const string& text, const GLuint existing_ubo) {
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, ubo_data.size() * sizeof(uint2), &ubo_data[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	
-	return { ubo, (unsigned int)ubo_data.size() };
+	return uint2(ubo, (unsigned int)ubo_data.size());
 }
 
 void font::recreate_texture_array(const size_t& layers) {
