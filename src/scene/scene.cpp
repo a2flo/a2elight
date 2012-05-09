@@ -152,9 +152,9 @@ void scene::recreate_buffers(const size2 buffer_size) {
 #endif
 		
 		// create light buffer
-		frames[i].l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+		frames[i].l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
 #if !defined(A2E_IOS)
-		frames[i].l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+		frames[i].l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
 #endif
 		
 		// scene/final buffer (material pass)
@@ -469,6 +469,8 @@ void scene::light_and_material_pass() {
 	for(size_t light_pass = 0; light_pass < (light_alpha_objects ? 2 : 1); light_pass++) {
 		r->start_draw(frames[0].l_buffer[light_pass]);
 		r->clear();
+		static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		glDrawBuffers(2, draw_buffers);
 		
 		// set blend mode (add all light results)
 		glEnable(GL_BLEND);

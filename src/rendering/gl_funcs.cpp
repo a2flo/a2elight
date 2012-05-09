@@ -37,6 +37,14 @@
 OGL_API PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC _glRenderbufferStorageMultisampleCoverageNV_ptr = nullptr; // NV_framebuffer_multisample_coverage
 
 #if !defined(__LINUX__)
+// OpenGL 1.2
+OGL_API PFNGLBLENDCOLORPROC _glBlendColor_ptr = nullptr;
+OGL_API PFNGLBLENDEQUATIONPROC _glBlendEquation_ptr = nullptr;
+OGL_API PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements_ptr = nullptr;
+OGL_API PFNGLTEXIMAGE3DPROC _glTexImage3D_ptr = nullptr;
+OGL_API PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D_ptr = nullptr;
+OGL_API PFNGLCOPYTEXSUBIMAGE3DPROC _glCopyTexSubImage3D_ptr = nullptr;
+
 // OpenGL 1.3
 OGL_API PFNGLACTIVETEXTUREPROC _glActiveTexture_ptr = nullptr;
 OGL_API PFNGLSAMPLECOVERAGEPROC _glSampleCoverage_ptr = nullptr;
@@ -515,6 +523,12 @@ void ext::check_gl_funcs() {
 #ifndef __APPLE__
 #if !defined(__LINUX__) && !defined(WIN_UNIXENV) // TODO: make this work under linux/cygwin/gcc/clang (-> real dummy functions)
 	if(_glRenderbufferStorageMultisampleCoverageNV_ptr == nullptr) _glRenderbufferStorageMultisampleCoverageNV_ptr = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)a2e_null_func<0>;
+	if(_glBlendColor_ptr == nullptr) _glBlendColor_ptr = (PFNGLBLENDCOLORPROC)a2e_null_func<1>;
+	if(_glBlendEquation_ptr == nullptr) _glBlendEquation_ptr = (PFNGLBLENDEQUATIONPROC)a2e_null_func<2>;
+	if(_glDrawRangeElements_ptr == nullptr) _glDrawRangeElements_ptr = (PFNGLDRAWRANGEELEMENTSPROC)a2e_null_func<3>;
+	if(_glTexImage3D_ptr == nullptr) _glTexImage3D_ptr = (PFNGLTEXIMAGE3DPROC)a2e_null_func<4>;
+	if(_glTexSubImage3D_ptr == nullptr) _glTexSubImage3D_ptr = (PFNGLTEXSUBIMAGE3DPROC)a2e_null_func<5>;
+	if(_glCopyTexSubImage3D_ptr == nullptr) _glCopyTexSubImage3D_ptr = (PFNGLCOPYTEXSUBIMAGE3DPROC)a2e_null_func<6>;
 	if(_glActiveTexture_ptr == nullptr) _glActiveTexture_ptr = (PFNGLACTIVETEXTUREPROC)a2e_null_func<13>;
 	if(_glSampleCoverage_ptr == nullptr) _glSampleCoverage_ptr = (PFNGLSAMPLECOVERAGEPROC)a2e_null_func<14>;
 	if(_glCompressedTexImage3D_ptr == nullptr) _glCompressedTexImage3D_ptr = (PFNGLCOMPRESSEDTEXIMAGE3DPROC)a2e_null_func<15>;
@@ -969,6 +983,14 @@ void ext::init_gl_funcs() {
 	_glRenderbufferStorageMultisampleCoverageNV_ptr = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)glGetProcAddress((ProcType)"glRenderbufferStorageMultisampleCoverageNV"); // NV_framebuffer_multisample_coverage
 	
 #if !defined(__LINUX__)
+	// OpenGL 1.2
+	_glBlendColor_ptr = (PFNGLBLENDCOLORPROC)glGetProcAddress((ProcType)"glBlendColor");
+	_glBlendEquation_ptr = (PFNGLBLENDEQUATIONPROC)glGetProcAddress((ProcType)"glBlendEquation");
+	_glDrawRangeElements_ptr = (PFNGLDRAWRANGEELEMENTSPROC)glGetProcAddress((ProcType)"glDrawRangeElements");
+	_glTexImage3D_ptr = (PFNGLTEXIMAGE3DPROC)glGetProcAddress((ProcType)"glTexImage3D");
+	_glTexSubImage3D_ptr = (PFNGLTEXSUBIMAGE3DPROC)glGetProcAddress((ProcType)"glTexSubImage3D");
+	_glCopyTexSubImage3D_ptr = (PFNGLCOPYTEXSUBIMAGE3DPROC)glGetProcAddress((ProcType)"glCopyTexSubImage3D");
+	
 	// OpenGL 1.3
 	_glActiveTexture_ptr = (PFNGLACTIVETEXTUREPROC)glGetProcAddress((ProcType)"glActiveTexture");
 	_glSampleCoverage_ptr = (PFNGLSAMPLECOVERAGEPROC)glGetProcAddress((ProcType)"glSampleCoverage");

@@ -31,7 +31,15 @@
 typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC) (GLenum target, GLsizei coverageSamples, GLsizei colorSamples, GLenum internalformat, GLsizei width, GLsizei height);
 OGL_API extern PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC _glRenderbufferStorageMultisampleCoverageNV_ptr; // NV_framebuffer_multisample_coverage
 
-#if !defined(__LINUX__) // gl 1.3 is already defined in linux
+#if !defined(__LINUX__) // gl 1.2 + 1.3 are already defined in linux
+// OpenGL 1.2
+OGL_API extern PFNGLBLENDCOLORPROC _glBlendColor_ptr;
+OGL_API extern PFNGLBLENDEQUATIONPROC _glBlendEquation_ptr;
+OGL_API extern PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements_ptr;
+OGL_API extern PFNGLTEXIMAGE3DPROC _glTexImage3D_ptr;
+OGL_API extern PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D_ptr;
+OGL_API extern PFNGLCOPYTEXSUBIMAGE3DPROC _glCopyTexSubImage3D_ptr;
+
 // OpenGL 1.3
 OGL_API extern PFNGLACTIVETEXTUREPROC _glActiveTexture_ptr;
 OGL_API extern PFNGLSAMPLECOVERAGEPROC _glSampleCoverage_ptr;
@@ -499,6 +507,12 @@ OGL_API extern PFNGLGETDOUBLEI_VPROC _glGetDoublei_v_ptr; // ARB_viewport_array
 // syntactic sugar
 #define glRenderbufferStorageMultisampleCoverageNV ((PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)_glRenderbufferStorageMultisampleCoverageNV_ptr)
 #if !defined(__LINUX__)
+#define glBlendColor ((PFNGLBLENDCOLORPROC)_glBlendColor_ptr)
+#define glBlendEquation ((PFNGLBLENDEQUATIONPROC)_glBlendEquation_ptr)
+#define glDrawRangeElements ((PFNGLDRAWRANGEELEMENTSPROC)_glDrawRangeElements_ptr)
+#define glTexImage3D ((PFNGLTEXIMAGE3DPROC)_glTexImage3D_ptr)
+#define glTexSubImage3D ((PFNGLTEXSUBIMAGE3DPROC)_glTexSubImage3D_ptr)
+#define glCopyTexSubImage3D ((PFNGLCOPYTEXSUBIMAGE3DPROC)_glCopyTexSubImage3D_ptr)
 #define glActiveTexture ((PFNGLACTIVETEXTUREPROC)_glActiveTexture_ptr)
 #define glSampleCoverage ((PFNGLSAMPLECOVERAGEPROC)_glSampleCoverage_ptr)
 #define glCompressedTexImage3D ((PFNGLCOMPRESSEDTEXIMAGE3DPROC)_glCompressedTexImage3D_ptr)

@@ -333,10 +333,12 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option) {
 	shd->uniform("screen_size", screen_size);
 	
 	if(option == "opaque") {
-		shd->texture("light_buffer", l_buffer->tex_id[0]);
+		shd->texture("light_buffer_diffuse", l_buffer->tex_id[0]);
+		shd->texture("light_buffer_specular", l_buffer->tex_id[1]);
 	}
 	else if(option == "alpha") {
-		shd->texture("light_buffer", l_buffer_alpha->tex_id[0]);
+		shd->texture("light_buffer_diffuse", l_buffer->tex_id[0]);
+		shd->texture("light_buffer_specular", l_buffer->tex_id[1]);
 		
 		// global mvm is currently only used in the material alpha pass
 		shd->uniform("mvm", mvm);

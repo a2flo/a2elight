@@ -24,11 +24,11 @@
 #define A2E_MAJOR_VERSION "0"
 #define A2E_MINOR_VERSION "2"
 #define A2E_REVISION_VERSION "1"
-#define A2E_DEV_STAGE_VERSION "b3"
+#define A2E_DEV_STAGE_VERSION "b4"
 #define A2E_BUILD_TIME __TIME__
 #define A2E_BUILD_DATE __DATE__
 
-#if A2E_DEBUG
+#if defined(A2E_DEBUG) || defined(DEBUG)
 #define A2E_DEBUG_STR " (debug)"
 #else
 #define A2E_DEBUG_STR ""
