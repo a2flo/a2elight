@@ -73,10 +73,10 @@ public:
 	void cache(const BMP_BLOCK block);
 	//! this must be utf-8 encoded
 	void cache(const string& characters);
-	//! should be within 0x0 - ​0x10FFFF
+	//! should be within 0x0 - 0x10FFFF
 	void cache(const unsigned int& start_code, const unsigned int& end_code);
 	//! <ubo, character_count>, note: ubo must be destroyed/managed manually!
-	pair<GLuint, size_t> cache_text(const string& text, const GLuint existing_ubo = 0);
+	uint2 cache_text(const string& text, const GLuint existing_ubo = 0);
 	
 	// TODO: clear cache
 	//void clear_cache();

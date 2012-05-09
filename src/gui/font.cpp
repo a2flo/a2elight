@@ -274,7 +274,7 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-pair<GLuint, size_t> font::cache_text(const string& text, const GLuint existing_ubo) {
+uint2 font::cache_text(const string& text, const GLuint existing_ubo) {
 	//
 	GLuint ubo = existing_ubo;
 	if(ubo == 0 || !glIsBuffer(ubo)) {
@@ -294,7 +294,7 @@ pair<GLuint, size_t> font::cache_text(const string& text, const GLuint existing_
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, ubo_data.size() * sizeof(uint2), &ubo_data[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	
-	return { ubo, ubo_data.size() };
+	return { ubo, (unsigned int)ubo_data.size() };
 }
 
 void font::recreate_texture_array(const size_t& layers) {
@@ -337,7 +337,7 @@ bool font::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj) 
 
 void font::draw(const string& text, const float2& position, const float4 color) {
 	const auto ubo = cache_text(text, text_ubo);
-	draw_cached(text_ubo, ubo.second, position, color);
+	draw_cached(text_ubo, ubo.y, position, color);
 }
 
 void font::draw_cached(const string& text, const float2& position, const float4 color) const {
@@ -487,6 +487,8 @@ vector<uint2> font::create_text_ubo_data(const string& text,
 }
 
 void font::draw_cached(const GLuint& ubo, const size_t& character_count, const float2& position, const float4 color) const {
+	if(ubo == 0 || character_count == 0) return;
+	
 	// draw
 	font_shd->use();
 	font_shd->uniform("mvpm", matrix4f().translate(position.x, position.y, 0.0f) * *e->get_mvp_matrix());
