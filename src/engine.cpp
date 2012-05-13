@@ -626,10 +626,6 @@ void engine::stop_draw() {
 		AtomicSet(&reload_shaders_flag, 0);
 		glFlush();
 		glFinish();
-#if !defined(A2E_NO_OPENCL)
-		ocl->flush();
-		ocl->finish();
-#endif
 		shd->reload_shaders();
 	}
 	if(AtomicGet(&reload_kernels_flag) == 1) {

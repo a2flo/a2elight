@@ -42,6 +42,7 @@ a2ematerial::~a2ematerial() {
 			case DIFFUSE:
 				t->delete_texture(((diffuse_material*)material.mat)->diffuse_texture);
 				t->delete_texture(((diffuse_material*)material.mat)->specular_texture);
+				t->delete_texture(((diffuse_material*)material.mat)->reflectance_texture);
 				break;
 			default:
 				break;
@@ -138,11 +139,13 @@ void a2ematerial::load_material(const string& filename) {
 						cur_material->mat = new diffuse_material();
 						((diffuse_material*)cur_material->mat)->diffuse_texture = dummy_texture;
 						((diffuse_material*)cur_material->mat)->specular_texture = default_specular;
+						((diffuse_material*)cur_material->mat)->reflectance_texture = default_specular;
 						break;
 					case PARALLAX:
 						cur_material->mat = new parallax_material();
 						((parallax_material*)cur_material->mat)->diffuse_texture = dummy_texture;
 						((parallax_material*)cur_material->mat)->specular_texture = default_specular;
+						((parallax_material*)cur_material->mat)->reflectance_texture = default_specular;
 						((parallax_material*)cur_material->mat)->height_texture = dummy_texture;
 						((parallax_material*)cur_material->mat)->normal_texture = dummy_texture;
 						break;
@@ -168,23 +171,14 @@ void a2ematerial::load_material(const string& filename) {
 				for(xmlNode* material_node = cur_node->children; material_node; material_node = material_node->next) {
 					xmlElement* material_elem = (xmlElement*)material_node;
 					string material_name = (const char*)material_elem->name;
-					if(material_name == "ambient") {
-						((lighting_model*)cur_material->model)->ambient_color = get_color(x->get_attribute<string>(material_elem->attributes, "color"));
-					}
-					else if(material_name == "diffuse") {
-						((lighting_model*)cur_material->model)->diffuse_color = get_color(x->get_attribute<string>(material_elem->attributes, "color"));
-					}
-					else if(material_name == "specular") {
-						((lighting_model*)cur_material->model)->specular_color = get_color(x->get_attribute<string>(material_elem->attributes, "color"));
-						((lighting_model*)cur_material->model)->specular_exponent = string2float(x->get_attribute<string>(material_elem->attributes, "exponent"));
-					}
-					else if(material_name == "texture") {
+					if(material_name == "texture") {
 						string texture_filename = x->get_attribute<string>(material_elem->attributes, "file");
 						string texture_type_str = x->get_attribute<string>(material_elem->attributes, "type");
 						
 						TEXTURE_TYPE texture_type = (TEXTURE_TYPE)0;
 						if(texture_type_str == "diffuse") texture_type = TT_DIFFUSE;
 						else if(texture_type_str == "specular") texture_type = TT_SPECULAR;
+						else if(texture_type_str == "reflectance") texture_type = TT_REFLECTANCE;
 						else if(texture_type_str == "height") texture_type = TT_HEIGHT;
 						else if(texture_type_str == "normal") texture_type = TT_NORMAL;
 						else if(texture_type_str == "isotropic") texture_type = TT_ISOTROPIC;
@@ -271,6 +265,7 @@ void a2ematerial::load_material(const string& filename) {
 						switch(texture_type) {
 							case TT_DIFFUSE: ((diffuse_material*)cur_material->mat)->diffuse_texture = tex; break;
 							case TT_SPECULAR: ((diffuse_material*)cur_material->mat)->specular_texture = tex; break;
+							case TT_REFLECTANCE: ((diffuse_material*)cur_material->mat)->reflectance_texture = tex; break;
 							case TT_HEIGHT: ((parallax_material*)cur_material->mat)->height_texture = tex; break;
 							case TT_NORMAL: ((parallax_material*)cur_material->mat)->normal_texture = tex; break;
 							case TT_ISOTROPIC: ((ward_model*)cur_material->model)->isotropic_texture = tex; break;
@@ -491,6 +486,7 @@ void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const
 			diffuse_material* dmat = (diffuse_material*)mat->mat;
 			if(texture_mask & TT_DIFFUSE) shd->texture("diffuse_texture", dmat->diffuse_texture);
 			if(texture_mask & TT_SPECULAR) shd->texture("specular_texture", dmat->specular_texture);
+			if(texture_mask & TT_REFLECTANCE) shd->texture("reflectance_texture", dmat->reflectance_texture);
 		}
 		break;
 		case PARALLAX: {
@@ -499,6 +495,7 @@ void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const
 			if(texture_mask & TT_NORMAL) shd->texture("normal_texture", pmat->normal_texture);
 			if(texture_mask & TT_HEIGHT) shd->texture("height_texture", pmat->height_texture);
 			if(texture_mask & TT_SPECULAR) shd->texture("specular_texture", pmat->specular_texture);
+			if(texture_mask & TT_REFLECTANCE) shd->texture("reflectance_texture", pmat->reflectance_texture);
 		}
 		break;
 		default:

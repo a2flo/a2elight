@@ -54,31 +54,28 @@ public:
 	enum TEXTURE_TYPE {
 		TT_DIFFUSE		= 1 << 0,
 		TT_SPECULAR		= 1 << 1,
-		TT_HEIGHT		= 1 << 2,
-		TT_NORMAL		= 1 << 3,
-		TT_ISOTROPIC	= 1 << 4,
-		TT_ANISOTROPIC	= 1 << 5
+		TT_REFLECTANCE	= 1 << 2,
+		TT_HEIGHT		= 1 << 3,
+		TT_NORMAL		= 1 << 4,
+		TT_ISOTROPIC	= 1 << 5,
+		TT_ANISOTROPIC	= 1 << 6
 	};
 
 	struct lighting_model;
 	struct material_object;
 	struct material {
-		ssize_t id;
-		MATERIAL_TYPE mat_type;
-		material_object* mat;
-		LIGHTING_MODEL lm_type;
-		lighting_model* model;
+		ssize_t id = -1;
+		MATERIAL_TYPE mat_type = NONE;
+		material_object* mat = nullptr;
+		LIGHTING_MODEL lm_type = LM_PHONG;
+		lighting_model* model = nullptr;
 		
-		material() : id(-1), mat_type(NONE), mat(nullptr), lm_type(LM_PHONG), model(nullptr) {}
+		material() {}
 	};
 	
 	//// lighting models
 	struct lighting_model {
-		float3 ambient_color;
-		float3 diffuse_color;
-		float3 specular_color;
-		float specular_exponent;
-		lighting_model() : ambient_color(0.0f), diffuse_color(0.0f), specular_color(0.0f), specular_exponent(0.0f) {}
+		lighting_model() {}
 	};
 	
 	struct phong_model : public lighting_model {
@@ -90,18 +87,18 @@ public:
 		WT_ANISOTROPIC
 	};
 	struct ward_model : public lighting_model {
-		WARD_TYPE type;
-		a2e_texture isotropic_texture;
-		a2e_texture anisotropic_texture;
-		float isotropic_roughness;
-		float2 anisotropic_roughness;
-		ward_model() : lighting_model(), type(WT_ISOTROPIC), isotropic_texture(nullptr), anisotropic_texture(nullptr), isotropic_roughness(1.0f), anisotropic_roughness(1.0f, 1.0f) {}
+		WARD_TYPE type = WT_ISOTROPIC;
+		a2e_texture isotropic_texture = nullptr;
+		a2e_texture anisotropic_texture = nullptr;
+		float isotropic_roughness = 1.0f;
+		float2 anisotropic_roughness = float2(1.0f, 1.0f);
+		ward_model() : lighting_model() {}
 	};
 	
 	struct ashikhmin_shirley_model : public lighting_model {
-		a2e_texture anisotropic_texture;
-		float2 anisotropic_roughness;
-		ashikhmin_shirley_model() : lighting_model(), anisotropic_texture(nullptr), anisotropic_roughness(1.0f, 1.0f) {}
+		a2e_texture anisotropic_texture = nullptr;
+		float2 anisotropic_roughness = float2(1.0f, 1.0f);
+		ashikhmin_shirley_model() : lighting_model() {}
 	};
 	
 	//// material types
@@ -109,15 +106,16 @@ public:
 		material_object() {}
 	};
 	struct diffuse_material : public material_object {
-		a2e_texture diffuse_texture;
-		a2e_texture specular_texture;
-		diffuse_material() : material_object(), diffuse_texture(nullptr), specular_texture(nullptr) {}
+		a2e_texture diffuse_texture = nullptr;
+		a2e_texture specular_texture = nullptr;
+		a2e_texture reflectance_texture = nullptr;
+		diffuse_material() : material_object() {}
 	};
 	struct parallax_material : public diffuse_material {
-		a2e_texture height_texture;
-		a2e_texture normal_texture;
-		bool parallax_occlusion;
-		parallax_material() : diffuse_material(), height_texture(nullptr), normal_texture(nullptr), parallax_occlusion(false) {}
+		a2e_texture height_texture = nullptr;
+		a2e_texture normal_texture = nullptr;
+		bool parallax_occlusion = false;
+		parallax_material() : diffuse_material() {}
 	};
 
 	//// functions

@@ -25,9 +25,6 @@ scene::scene(engine* e_) :
 e(e_), s(e_->get_shader()), exts(e_->get_ext()), r(e_->get_rtt()), cl(e_->get_opencl()),
 window_handler(this, &scene::window_event_handler)
 {
-	_dbg_projs = nullptr;
-	_dbg_proj_count = 0;
-	
 	//
 	stereo = e->get_stereo();
 	
@@ -52,12 +49,9 @@ scene::~scene() {
 	models.clear();
 	lights.clear();
 
-	// if hdr is supported, than fbo's are supported too, so we don't need an extra delete in the "hdr fbo delete branch"
-	if(e->get_init_mode() == engine::GRAPHICAL) {
-		delete_buffers();
-		
-		delete light_sphere;
-	}
+	//
+	delete_buffers();
+	delete light_sphere;
 
 	a2e_debug("scene object deleted");
 }
@@ -80,13 +74,6 @@ void scene::delete_buffers() {
 		if(frames[i].cl_light_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[1]);
 #endif
 	}
-	
-	if(blur_buffer1 != nullptr) r->delete_buffer(blur_buffer1);
-	if(blur_buffer2 != nullptr) r->delete_buffer(blur_buffer2);
-	if(blur_buffer3 != nullptr) r->delete_buffer(blur_buffer3);
-	if(average_buffer != nullptr) r->delete_buffer(average_buffer);
-	if(exposure_buffer[0] != nullptr) r->delete_buffer(exposure_buffer[0]);
-	if(exposure_buffer[1] != nullptr) r->delete_buffer(exposure_buffer[1]);
 }
 
 void scene::recreate_buffers(const size2 buffer_size) {
@@ -477,7 +464,8 @@ void scene::light_and_material_pass() {
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 		
 		// shader init
-		gl3shader ir_lighting = s->get_gl3shader("IR_LP_PHONG");
+		//gl3shader ir_lighting = s->get_gl3shader("IR_LP_PHONG");
+		gl3shader ir_lighting = s->get_gl3shader("IR_LP_ASHIKHMIN_SHIRLEY");
 		for(size_t light_type = 0; light_type < 2; light_type++) {
 			if(light_type == 0) {
 				ir_lighting->use("#");
@@ -860,4 +848,13 @@ void scene::delete_draw_callback(const string& name) {
 		return;
 	}
 	draw_callbacks.erase(iter);
+}
+
+scene::env_probe* scene::add_environment_probe(const float3& pos, const size2 buffer_size) {
+	// TODO: !
+	return nullptr;
+}
+
+void scene::delete_environment_probe(env_probe* probe) {
+	// TODO: !
 }

@@ -266,7 +266,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			if(!is_ext_supported(ext_str)) {
 				*check.flag = false;
 				if(imode == 0) {
-					a2e_error("your graphic device doesn't support '%s'!", ext_str);
+					a2e_msg("your graphic device doesn't support '%s'!", ext_str);
 				}
 				// don't break here, but rather print all extensions that aren't supported
 			}

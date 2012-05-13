@@ -41,6 +41,20 @@
 class particle_manager;
 
 class A2E_API scene {
+protected:
+	struct frame_buffers {
+		rtt::fbo* scene_buffer = nullptr; // final output buffer
+		rtt::fbo* fxaa_buffer = nullptr; // fxaa
+		rtt::fbo* g_buffer[2] = { nullptr, nullptr }; // opaque + alpha
+		rtt::fbo* l_buffer[2] = { nullptr, nullptr }; // opaque + alpha
+		
+#if defined(A2E_INFERRED_RENDERING_CL)
+		opencl::buffer_object* cl_normal_nuv_buffer[2] = { nullptr, nullptr };
+		opencl::buffer_object* cl_depth_buffer[2] = { nullptr, nullptr };
+		opencl::buffer_object* cl_light_buffer[2] = { nullptr, nullptr };
+#endif
+	};
+	
 public:
 	scene(engine* e);
 	~scene();
@@ -91,6 +105,15 @@ public:
 	void add_post_processing(post_processing_handler* pph);
 	void delete_post_processing(const post_processing_handler* pph);
 	
+	// environment probing/mapping
+	struct env_probe {
+		float3 position;
+		const size2 buffer_size;
+		frame_buffers buffers;
+	};
+	env_probe* add_environment_probe(const float3& pos, const size2 buffer_size);
+	void delete_environment_probe(env_probe* probe);
+	
 	// for debugging purposes:
 	const rtt::fbo* _get_g_buffer(const size_t type = 0) const { return frames[cur_frame].g_buffer[type]; }
 	const rtt::fbo* _get_l_buffer(const size_t type = 0) const { return frames[cur_frame].l_buffer[type]; }
@@ -124,8 +147,6 @@ protected:
 	map<const extbbox*, pair<size_t, a2emodel::draw_callback*>> alpha_objects;
 	// <bbox*, mask id>, mask id: 0 (invalid), {1, 2, 3}
 	vector<pair<const extbbox*, size_t>> sorted_alpha_objects;
-	ipnt** _dbg_projs;
-	size_t _dbg_proj_count;
 
 	//! specifies if lighting is enabled in this scene
 	bool is_light = false;
@@ -139,49 +160,15 @@ protected:
 	a2estatic* light_sphere;
 
 	// render and scene buffer
-	struct frame_buffers {
-		rtt::fbo* scene_buffer; // final output buffer
-		rtt::fbo* fxaa_buffer; // fxaa
-		rtt::fbo* g_buffer[2]; // opaque + alpha
-		rtt::fbo* l_buffer[2]; // opaque + alpha
-	
-#if defined(A2E_INFERRED_RENDERING_CL)
-		opencl::buffer_object* cl_normal_nuv_buffer[2];
-		opencl::buffer_object* cl_depth_buffer[2];
-		opencl::buffer_object* cl_light_buffer[2];
-#endif
-		frame_buffers() :
-		scene_buffer(nullptr), fxaa_buffer(nullptr)
-		{
-			g_buffer[0] = g_buffer[1] = nullptr;
-			l_buffer[0] = l_buffer[1] = nullptr;
-#if defined(A2E_INFERRED_RENDERING_CL)
-			cl_normal_nuv_buffer[0] = cl_normal_nuv_buffer[1] = nullptr;
-			cl_depth_buffer[0] = cl_depth_buffer[1] = nullptr;
-			cl_light_buffer[0] = cl_light_buffer[1] = nullptr;
-#endif
-		}
-	};
 	frame_buffers frames[A2E_CONCURRENT_FRAMES];
 	size_t cur_frame;
 	
 	vector<post_processing_handler*> pp_handlers;
 	map<string, draw_callback*> draw_callbacks;
 
-	// hdr buffer
-	rtt::fbo* blur_buffer1 = nullptr;
-	rtt::fbo* blur_buffer2 = nullptr;
-	rtt::fbo* blur_buffer3 = nullptr;
-	rtt::fbo* average_buffer = nullptr;
-	rtt::fbo* exposure_buffer[2] = { nullptr, nullptr };
-
-	int cur_exposure = 0;
-	float fframe_time = 0.0f;
-	int iframe_time = SDL_GetTicks();
-	
+	// stereo rendering (currently unsupported)
 	float eye_distance = -0.3f; // 1.5f?
-
-	bool stereo;
+	bool stereo = false;
 	
 	// event handlers
 	event::handler window_handler;

@@ -814,6 +814,7 @@
 					"-Wunreachable-code",
 					"-Wloop-analysis",
 					"-Wimplicit-fallthrough",
+					"-Wconditional-uninitialized",
 				);
 			};
 			name = Debug;
@@ -893,6 +894,7 @@
 					"-Wunreachable-code",
 					"-Wloop-analysis",
 					"-Wimplicit-fallthrough",
+					"-Wconditional-uninitialized",
 				);
 			};
 			name = Release;

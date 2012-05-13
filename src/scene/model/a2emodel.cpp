@@ -248,7 +248,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	else if(draw_mode == DRAW_MODE::MATERIAL_PASS ||
 			draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
 		attr_array_mask |= VA_TEXTURE_COORD;
-		texture_mask |= a2ematerial::TT_DIFFUSE | a2ematerial::TT_SPECULAR;
+		texture_mask |= a2ematerial::TT_DIFFUSE | a2ematerial::TT_SPECULAR | a2ematerial::TT_REFLECTANCE;
 		
 		if(shd_name == "") {
 			// first, select shader dependent on material type
