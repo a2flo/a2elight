@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __UNICODE_H__
-#define __UNICODE_H__
+#ifndef __A2E_UNICODE_H__
+#define __A2E_UNICODE_H__
 
 #include "global.h"
 

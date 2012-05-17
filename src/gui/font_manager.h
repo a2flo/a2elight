@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FONT_MANAGER_H__
-#define __FONT_MANAGER_H__
+#ifndef __A2E_FONT_MANAGER_H__
+#define __A2E_FONT_MANAGER_H__
 
 #include "global.h"
 #include "threading/thread_base.h"

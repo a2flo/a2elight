@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __TEXTURE_H__
-#define __TEXTURE_H__
+#ifndef __A2E_TEXTURE_H__
+#define __A2E_TEXTURE_H__
 
 #include "global.h"
 

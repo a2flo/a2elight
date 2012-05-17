@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __VECTOR_4_H__
-#define __VECTOR_4_H__
+#ifndef __A2E_VECTOR_4_H__
+#define __A2E_VECTOR_4_H__
 
 #include "core/cpp_headers.h"
 #include "core/vector3.h"

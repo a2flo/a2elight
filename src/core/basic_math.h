@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __BASIC_MATH_H__
-#define __BASIC_MATH_H__
+#ifndef __A2E_BASIC_MATH_H__
+#define __A2E_BASIC_MATH_H__
 
 #define PI 3.1415926535897932384626433832795
 #define _180DIVPI 57.295779513082322

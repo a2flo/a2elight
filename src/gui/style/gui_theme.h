@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __GUI_COLOR_THEME_H__
-#define __GUI_COLOR_THEME_H__
+#ifndef __A2E_GUI_COLOR_THEME_H__
+#define __A2E_GUI_COLOR_THEME_H__
 
 #include "global.h"
 #include "core/xml.h"

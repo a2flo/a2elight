@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __FUNCTOR_H__
-#define __FUNCTOR_H__
+#ifndef __A2E_FUNCTOR_H__
+#define __A2E_FUNCTOR_H__
 
 #include <memory>
 

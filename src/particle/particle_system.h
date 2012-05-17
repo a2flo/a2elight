@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __PARTICLE_SYSTEM_H__
-#define __PARTICLE_SYSTEM_H__
+#ifndef __A2E_PARTICLE_SYSTEM_H__
+#define __A2E_PARTICLE_SYSTEM_H__
 
 #include "global.h"
 

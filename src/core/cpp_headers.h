@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CPP_HEADERS_H__
-#define __CPP_HEADERS_H__
+#ifndef __A2E_CPP_HEADERS_H__
+#define __A2E_CPP_HEADERS_H__
 
 // on windows exports/imports: apparently these have to be treated separately,
 // always use dllexport for a2e/c++ stuff and depending on compiling or using

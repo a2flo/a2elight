@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SHADER_H__
-#define __SHADER_H__
+#ifndef __A2E_SHADER_H__
+#define __A2E_SHADER_H__
 
 #include "global.h"
 

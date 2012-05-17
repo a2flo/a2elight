@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __EVENT_H__
-#define __EVENT_H__
+#ifndef __A2E_EVENT_H__
+#define __A2E_EVENT_H__
 
 #include "global.h"
 

@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __TEXMAN_H__
-#define __TEXMAN_H__
+#ifndef __A2E_TEXMAN_H__
+#define __A2E_TEXMAN_H__
 
 #include "global.h"
 

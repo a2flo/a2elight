@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __MATRIX4_H__
-#define __MATRIX4_H__
+#ifndef __A2E_MATRIX4_H__
+#define __A2E_MATRIX4_H__
 
 #include "core/cpp_headers.h"
 #include "core/basic_math.h"

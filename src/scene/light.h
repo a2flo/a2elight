@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LIGHT_H__
-#define __LIGHT_H__
+#ifndef __A2E_LIGHT_H__
+#define __A2E_LIGHT_H__
 
 #include "global.h"
 #include "core/core.h"

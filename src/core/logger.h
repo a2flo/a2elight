@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LOGGER_H__
-#define __LOGGER_H__
+#ifndef __A2E_LOGGER_H__
+#define __A2E_LOGGER_H__
 
 #include "cpp_headers.h"
 #include "threading/atomics.h"

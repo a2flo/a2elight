@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __EVENT_OBJECTS_H__
-#define __EVENT_OBJECTS_H__
+#ifndef __A2E_EVENT_OBJECTS_H__
+#define __A2E_EVENT_OBJECTS_H__
 
 // general/global event types
 enum class EVENT_TYPE : unsigned int {

@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __UTIL_H__
-#define __UTIL_H__
+#ifndef __A2E_UTIL_H__
+#define __A2E_UTIL_H__
 
 #include "core/platform.h"
 #include "core/functor.h"
