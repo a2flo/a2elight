@@ -119,7 +119,7 @@ void gui::draw() {
 	
 	blend_shd->use();
 	blend_shd->texture("src_buffer", main_fbo->tex_id[0]);
-	blend_shd->texture("dst_buffer", sce->_get_scene_buffer()->tex_id[0]);
+	blend_shd->texture("dst_buffer", sce->get_scene_buffer()->tex_id[0]);
 	
 	glFrontFace(GL_CW);
 	gfx2d::draw_fullscreen_triangle();

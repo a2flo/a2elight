@@ -71,28 +71,19 @@ public:
 	void delete_light(light* light);
 	void add_particle_manager(particle_manager* pm);
 	void delete_particle_manager(particle_manager* pm);
-
-	void set_position(float x, float y, float z);
-	void set_light(bool state);
-
-	float3* get_position();
-	bool get_light();
-
-	void set_skybox_texture(unsigned int tex);
-	unsigned int get_skybox_texture();
-	void set_render_skybox(bool state);
-	bool get_render_skybox();
 	
 	typedef functor<void, const DRAW_MODE> draw_callback;
 	void add_draw_callback(const string& name, draw_callback& cb);
 	void delete_draw_callback(draw_callback& cb);
 	void delete_draw_callback(const string& name);
+
+	void set_skybox_texture(a2e_texture tex);
+	const a2e_texture& get_skybox_texture() const;
+	void set_render_skybox(const bool state);
+	bool get_render_skybox() const;
 	
-	
-	float get_eye_distance();
-	void set_eye_distance(float distance);
-	
-	void recreate_buffers(const size2 buffer_size);
+	void set_eye_distance(const float& distance);
+	const float& get_eye_distance() const;
 	
 	//
 	void add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, a2emodel::draw_callback* cb);
@@ -114,11 +105,11 @@ public:
 	env_probe* add_environment_probe(const float3& pos, const size2 buffer_size);
 	void delete_environment_probe(env_probe* probe);
 	
-	// for debugging purposes:
-	const rtt::fbo* _get_g_buffer(const size_t type = 0) const { return frames[cur_frame].g_buffer[type]; }
-	const rtt::fbo* _get_l_buffer(const size_t type = 0) const { return frames[cur_frame].l_buffer[type]; }
-	const rtt::fbo* _get_fxaa_buffer() const { return frames[cur_frame].fxaa_buffer; }
-	const rtt::fbo* _get_scene_buffer() const { return frames[cur_frame].scene_buffer; }
+	// for debugging and other evil purposes:
+	const rtt::fbo* get_geometry_buffer(const size_t type = 0) const { return frames[cur_frame].g_buffer[type]; }
+	const rtt::fbo* get_light_buffer(const size_t type = 0) const { return frames[cur_frame].l_buffer[type]; }
+	const rtt::fbo* get_fxaa_buffer() const { return frames[cur_frame].fxaa_buffer; }
+	const rtt::fbo* get_scene_buffer() const { return frames[cur_frame].scene_buffer; }
 
 protected:
 	engine* e;
@@ -133,12 +124,9 @@ protected:
 	void postprocess();
 	void sort_alpha_objects();
 	void delete_buffers();
-	
-	// TODO: clean this up:
+	void recreate_buffers(const size2 buffer_size);
 
-	// vars
-	float3 position;
-
+	//
 	vector<a2emodel*> models;
 	vector<light*> lights;
 	vector<particle_manager*> particle_managers;
@@ -147,21 +135,17 @@ protected:
 	map<const extbbox*, pair<size_t, a2emodel::draw_callback*>> alpha_objects;
 	// <bbox*, mask id>, mask id: 0 (invalid), {1, 2, 3}
 	vector<pair<const extbbox*, size_t>> sorted_alpha_objects;
-
-	//! specifies if lighting is enabled in this scene
-	bool is_light = false;
 	
 	bool enabled = true;
 
-	unsigned int skybox_tex = 0;
-	float max_value = 0.0f;
+	a2e_texture skybox_tex = nullptr;
 	bool render_skybox = false;
 
-	a2estatic* light_sphere;
+	a2estatic* light_sphere = nullptr;
 
 	// render and scene buffer
 	frame_buffers frames[A2E_CONCURRENT_FRAMES];
-	size_t cur_frame;
+	size_t cur_frame = 0;
 	
 	vector<post_processing_handler*> pp_handlers;
 	map<string, draw_callback*> draw_callbacks;

@@ -551,7 +551,6 @@ void scene::light_and_material_pass() {
 	
 	/////////////////////////////////////////////////////
 	// model material pass
-	// for the moment, only render models in the scene (later: TODO: use start/stop_draw using another render buffer)
 	
 	// note: this reuses the g-buffer depth buffer
 	// -> anything that has not equal depth will be culled/discarded early
@@ -678,9 +677,6 @@ void scene::delete_model(a2emodel* model) {
  *  @param new_light pointer to the light
  */
 void scene::add_light(light* new_light) {
-	// enable light automatically if we had no light before
-	if(lights.size() == 0) scene::is_light = true;
-
 	// check if light already exists ...
 	const auto iter = find(lights.begin(), lights.end(), new_light);
 	if(iter != lights.end()) {
@@ -695,71 +691,32 @@ void scene::add_light(light* new_light) {
  */
 void scene::delete_light(light* del_light) {
 	lights.erase(remove(lights.begin(), lights.end(), del_light), end(lights));
-
-	// disable lighting automatically if there are no lights left
-	if(lights.size() == 0) scene::is_light = false;
-}
-
-/*! sets the scenes position
- *  @param x x coordinate
- *  @param y y coordinate
- *  @param z z coordinate
- */
-void scene::set_position(float x, float y, float z) {
-	for(const auto& model : models) {
-		// subtract old position and add new one
-		model->set_position(model->get_position()->x - position.x + x,
-							model->get_position()->y - position.y + y,
-							model->get_position()->z - position.z + z);
-	}
-	
-	position.set(x, y, z);
-}
-
-/*! sets the light flag
- *  @param state the state of the light flag we want to set
- */
-void scene::set_light(bool state) {
-	scene::is_light = state;
-}
-
-/*! returns the scenes position
- */
-float3* scene::get_position() {
-	return &position;
-}
-
-/*! returns true if the light delete flag is set
- */
-bool scene::get_light() {
-	return scene::is_light;
 }
 
 /*! sets the skybox texture
- *  @param tex the texture id
+ *  @param tex the texture
  */
-void scene::set_skybox_texture(unsigned int tex) {
-	scene::skybox_tex = tex;
-	max_value = e->get_texman()->get_texture(tex)->max_value;
+void scene::set_skybox_texture(a2e_texture tex) {
+	skybox_tex = tex;
 }
 
-/*! returns the skybox texture id
+/*! returns the skybox texture
  */
-unsigned int scene::get_skybox_texture() {
-	return scene::skybox_tex;
+const a2e_texture& scene::get_skybox_texture() const {
+	return skybox_tex;
 }
 
 /*! sets the flag if a skybox is rendered
  *  @param state the new state
  */
-void scene::set_render_skybox(bool state) {
-	scene::render_skybox = state;
+void scene::set_render_skybox(const bool state) {
+	render_skybox = state;
 }
 
 /*! returns the render skybox flag
  */
-bool scene::get_render_skybox() {
-	return scene::render_skybox;
+bool scene::get_render_skybox() const {
+	return render_skybox;
 }
 
 /*! scene draw postprocessing
@@ -771,12 +728,12 @@ void scene::postprocess() {
 	r->stop_draw();
 }
 
-float scene::get_eye_distance() {
-	return eye_distance;
+void scene::set_eye_distance(const float& distance) {
+	eye_distance = distance;
 }
 
-void scene::set_eye_distance(float distance) {
-	eye_distance = distance;
+const float& scene::get_eye_distance() const {
+	return eye_distance;
 }
 
 void scene::add_particle_manager(particle_manager* pm) {
@@ -820,7 +777,6 @@ void scene::set_enabled(const bool& status) {
 bool scene::is_enabled() const {
 	return enabled;
 }
-
 
 void scene::add_draw_callback(const string& name, draw_callback& cb) {
 	if(draw_callbacks.count(name) > 0) {

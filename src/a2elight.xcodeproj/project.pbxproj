@@ -815,6 +815,7 @@
 					"-Wloop-analysis",
 					"-Wimplicit-fallthrough",
 					"-Wconditional-uninitialized",
+					"-Wextra-semi",
 				);
 			};
 			name = Debug;
@@ -895,6 +896,7 @@
 					"-Wloop-analysis",
 					"-Wimplicit-fallthrough",
 					"-Wconditional-uninitialized",
+					"-Wextra-semi",
 				);
 			};
 			name = Release;

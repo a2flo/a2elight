@@ -57,12 +57,12 @@ public:
 	unsigned int get_col_index_count();
 
 	//
-	GLuint get_vbo_vertices() const { return vbo_vertices_id; };
-	GLuint get_vbo_tex_coords() const { return vbo_tex_coords_id; };
-	GLuint get_vbo_indices(const size_t& sub_object) const { return vbo_indices_ids[sub_object]; };
-	GLuint get_vbo_normals() const { return vbo_normals_id; };
-	GLuint get_vbo_binormals() const { return vbo_binormals_id; };
-	GLuint get_vbo_tangents() const { return vbo_tangents_id; };
+	GLuint get_vbo_vertices() const { return vbo_vertices_id; }
+	GLuint get_vbo_tex_coords() const { return vbo_tex_coords_id; }
+	GLuint get_vbo_indices(const size_t& sub_object) const { return vbo_indices_ids[sub_object]; }
+	GLuint get_vbo_normals() const { return vbo_normals_id; }
+	GLuint get_vbo_binormals() const { return vbo_binormals_id; }
+	GLuint get_vbo_tangents() const { return vbo_tangents_id; }
 
 protected:
 	float3* vertices;
