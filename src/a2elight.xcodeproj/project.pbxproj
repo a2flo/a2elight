@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		5C08D66D152F45660066381D /* gfx2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C08D66B152F45660066381D /* gfx2d.cpp */; };
 		5C08D66E152F45660066381D /* gfx2d.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C08D66C152F45660066381D /* gfx2d.h */; };
+		5C1AC479157410460011CC41 /* quaternion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C1AC477157410460011CC41 /* quaternion.cpp */; };
+		5C1AC47A157410460011CC41 /* quaternion.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C1AC478157410460011CC41 /* quaternion.h */; };
 		5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C2C9274140AA9D900AC808C /* libxml2.dylib */; };
 		5C32C6BB135526C300164662 /* atomics.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C32C6BA135526C300164662 /* atomics.h */; };
 		5C32C6BE135528F300164662 /* vector2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C32C6BD135528F300164662 /* vector2.cpp */; };
@@ -118,6 +120,8 @@
 		5C05F792123171DA00D122BF /* a2e_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e_Prefix.pch; sourceTree = "<group>"; };
 		5C08D66B152F45660066381D /* gfx2d.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gfx2d.cpp; sourceTree = "<group>"; };
 		5C08D66C152F45660066381D /* gfx2d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx2d.h; sourceTree = "<group>"; };
+		5C1AC477157410460011CC41 /* quaternion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = quaternion.cpp; sourceTree = "<group>"; };
+		5C1AC478157410460011CC41 /* quaternion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = quaternion.h; sourceTree = "<group>"; };
 		5C27B7181241432C00EF25B9 /* a2e.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e.h; sourceTree = SOURCE_ROOT; };
 		5C2C9274140AA9D900AC808C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		5C32C6BA135526C300164662 /* atomics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = atomics.h; sourceTree = "<group>"; };
@@ -347,6 +351,8 @@
 				5C3975C1123189750075C168 /* vector4.h */,
 				5C3975C2123189750075C168 /* xml.cpp */,
 				5C3975C3123189750075C168 /* xml.h */,
+				5C1AC477157410460011CC41 /* quaternion.cpp */,
+				5C1AC478157410460011CC41 /* quaternion.h */,
 			);
 			path = core;
 			sourceTree = SOURCE_ROOT;
@@ -563,6 +569,7 @@
 				5C08D66E152F45660066381D /* gfx2d.h in Headers */,
 				5CCAF698153A3DDB0084D604 /* font_manager.h in Headers */,
 				5CCAF69A153A3DDB0084D604 /* font.h in Headers */,
+				5C1AC47A157410460011CC41 /* quaternion.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -674,6 +681,7 @@
 				5C08D66D152F45660066381D /* gfx2d.cpp in Sources */,
 				5CCAF697153A3DDB0084D604 /* font_manager.cpp in Sources */,
 				5CCAF699153A3DDB0084D604 /* font.cpp in Sources */,
+				5C1AC479157410460011CC41 /* quaternion.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -816,6 +824,7 @@
 					"-Wimplicit-fallthrough",
 					"-Wconditional-uninitialized",
 					"-Wextra-semi",
+					"-Wsometimes-uninitialized",
 				);
 			};
 			name = Debug;
@@ -897,6 +906,7 @@
 					"-Wimplicit-fallthrough",
 					"-Wconditional-uninitialized",
 					"-Wextra-semi",
+					"-Wsometimes-uninitialized",
 				);
 			};
 			name = Release;

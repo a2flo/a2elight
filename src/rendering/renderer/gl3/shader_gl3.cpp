@@ -450,7 +450,7 @@ void shader_gl3::uniform(const char* name, const bool4* arg1, const size_t& coun
 void shader_gl3::uniform(const char* name, const matrix4f& arg1) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_FLOAT_MAT4);
-	glUniformMatrix4fv(A2E_SHADER_GET_UNIFORM_POSITION(name), 1, false, (GLfloat*)arg1.data);
+	glUniformMatrix4fv(A2E_SHADER_GET_UNIFORM_POSITION(name), 1, false, (GLfloat*)&arg1.data[0]);
 }
 
 void shader_gl3::uniform(const char* name, const matrix4f* arg1, const size_t& count) const {

@@ -55,20 +55,23 @@ public:
 	virtual void draw_phys_obj();
 	
 	// misc model manipulation functions
-	virtual void set_position(float x, float y, float z);
-	virtual void set_position(float3* pos);
-	virtual void set_rotation(float x, float y, float z);
-	virtual void set_rotation(float3* rot);
-	virtual void set_scale(float x, float y, float z);
-	virtual void set_scale(float3* scl);
-	virtual void set_hard_scale(float x, float y, float z);
-	virtual void set_hard_scale(float3* hscl);
-	virtual void set_hard_position(float x, float y, float z);
-	virtual void set_hard_position(float3* hpos);
-	virtual void scale_tex_coords(float su, float sv);
-	virtual float3* get_position();
-	virtual float3* get_rotation();
-	virtual float3* get_scale();
+	virtual void set_position(const float x, const float y, const float z);
+	virtual void set_position(const float3& pos);
+	virtual void set_rotation(const float x, const float y, const float z);
+	virtual void set_rotation(const float3& rot);
+	virtual void set_scale(const float x, const float y, const float z);
+	virtual void set_scale(const float3& scl);
+	virtual void set_hard_scale(const float x, const float y, const float z);
+	virtual void set_hard_scale(const float3& hscl);
+	virtual void set_hard_position(const float x, const float y, const float z);
+	virtual void set_hard_position(const float3& hpos);
+	virtual void scale_tex_coords(const float su, const float sv);
+	virtual float3& get_position();
+	virtual float3& get_rotation();
+	virtual float3& get_scale();
+	virtual const float3& get_position() const;
+	virtual const float3& get_rotation() const;
+	virtual const float3& get_scale() const;
 	virtual void set_mview_matrix(const matrix4f& mat);
 	virtual void update_mview_matrix();
 	virtual void update_scale_matrix();
@@ -199,6 +202,7 @@ protected:
 	matrix4f mview_mat;
 	matrix4f scale_mat;
 	matrix4f mvpm; // only used while rendering (global mvpm)
+	matrix4f mvpm_backside; // only used while rendering (global mvm)
 	matrix4f mvm; // only used while rendering (global mvm)
 	
 	

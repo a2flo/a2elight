@@ -25,6 +25,7 @@
 #include "core/core.h"
 #include "core/file_io.h"
 #include "core/matrix4.h"
+#include "core/quaternion.h"
 #include "core/logger.h"
 #include "core/xml.h"
 #include "core/vector2.h"

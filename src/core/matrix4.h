@@ -33,20 +33,22 @@ template <typename T> class vector4;
 
 template <typename T> class A2E_API __attribute__((packed, aligned(4))) matrix4 {
 public:
-	T data[16];
+	array<T, 16> data;
 	
-	matrix4() { identity();	}
+	matrix4() { identity(); }
+	matrix4(matrix4&& m4) : data(m4.data) {}
 	matrix4(const matrix4<T>& m4) { memcpy(&data[0], &m4.data[0], sizeof(T)*16); }
 	matrix4(const matrix4<T>* m4) { memcpy(&data[0], &m4->data[0], sizeof(T)*16); }
 	matrix4(const T& m0, const T& m1, const T& m2, const T& m3,
 			const T& m4, const T& m5, const T& m6, const T& m7,
 			const T& m8, const T& m9, const T& m10, const T& m11,
-			const T& m12, const T& m13, const T& m14, const T& m15) {
-		data[0] = m0; data[1] = m1; data[2] = m2; data[3] = m3;
-		data[4] = m4; data[5] = m5; data[6] = m6; data[7] = m7;
-		data[8] = m8; data[9] = m9; data[10] = m10; data[11] = m11;
-		data[12] = m12; data[13] = m13; data[14] = m14; data[15] = m15;
-	}
+			const T& m12, const T& m13, const T& m14, const T& m15) :
+	data({{m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15}}) {}
+	matrix4(const vector4<T>& col_0, const vector4<T>& col_1, const vector4<T>& col_2, const vector4<T>& col_3) :
+	data({{ ((T*)&col_0)[0], ((T*)&col_0)[1], ((T*)&col_0)[2], ((T*)&col_0)[3],
+		((T*)&col_1)[0], ((T*)&col_1)[1], ((T*)&col_1)[2], ((T*)&col_1)[3],
+		((T*)&col_2)[0], ((T*)&col_2)[1], ((T*)&col_2)[2], ((T*)&col_2)[3],
+		((T*)&col_3)[0], ((T*)&col_3)[1], ((T*)&col_3)[2], ((T*)&col_3)[3] }}) {}
 	template <typename U> matrix4(const matrix4<U>& mat4) {
 		for(size_t mi = 0; mi < 16; mi++) {
 			data[mi] = mat4.data[mi];
@@ -60,10 +62,13 @@ public:
 	}
 	
 	friend ostream& operator<<(ostream& output, const matrix4<T>& m4) {
+		const auto cur_flags(output.flags());
+		output << fixed;
 		output << "/" << m4.data[0] << "\t" << m4.data[4] << "\t" << m4.data[8] << "\t" << m4.data[12] << "\\" << endl;
 		output << "|" << m4.data[1] << "\t" << m4.data[5] << "\t" << m4.data[9] << "\t" << m4.data[13] << "|" << endl;
 		output << "|" << m4.data[2] << "\t" << m4.data[6] << "\t" << m4.data[10] << "\t" << m4.data[14] << "|" << endl;
 		output << "\\" << m4.data[3] << "\t" << m4.data[7] << "\t" << m4.data[11] << "\t" << m4.data[15] << "/" << endl;
+		output.flags(cur_flags);
 		return output;
 	}
 	

@@ -99,17 +99,40 @@ public:
 	// environment probing/mapping
 	struct env_probe {
 		float3 position;
+		float2 rotation;
 		const size2 buffer_size;
+		const bool capture_alpha;
 		frame_buffers buffers;
+		size_t frame_freq = 1;
+		size_t frame_counter = frame_freq;
+		
+		enum class PROBE_FREQUENCY : unsigned int {
+			ONCE,
+			EVERY_FRAME,
+			NTH_FRAME
+		};
+		PROBE_FREQUENCY freq = PROBE_FREQUENCY::ONCE;
+		
+		void set_probe_frequency(const PROBE_FREQUENCY freq_) {
+			freq = freq_;
+		}
+		//! only use this in combination with NTH_FRAME
+		void set_frame_frequency(const size_t& frame_freq_) {
+			frame_freq = frame_freq_;
+		}
+		
+		env_probe(const float3& pos, const float2& rot, const size2 buffer_size, const bool capture_alpha);
+		~env_probe();
 	};
-	env_probe* add_environment_probe(const float3& pos, const size2 buffer_size);
+	env_probe* add_environment_probe(const float3& pos, const float2& rot, const size2 buffer_size, const bool capture_alpha);
+	void add_environment_probe(env_probe* probe);
 	void delete_environment_probe(env_probe* probe);
 	
 	// for debugging and other evil purposes:
-	const rtt::fbo* get_geometry_buffer(const size_t type = 0) const { return frames[cur_frame].g_buffer[type]; }
-	const rtt::fbo* get_light_buffer(const size_t type = 0) const { return frames[cur_frame].l_buffer[type]; }
-	const rtt::fbo* get_fxaa_buffer() const { return frames[cur_frame].fxaa_buffer; }
-	const rtt::fbo* get_scene_buffer() const { return frames[cur_frame].scene_buffer; }
+	const rtt::fbo* get_geometry_buffer(const size_t type = 0) const { return frames[0].g_buffer[type]; }
+	const rtt::fbo* get_light_buffer(const size_t type = 0) const { return frames[0].l_buffer[type]; }
+	const rtt::fbo* get_fxaa_buffer() const { return frames[0].fxaa_buffer; }
+	const rtt::fbo* get_scene_buffer() const { return frames[0].scene_buffer; }
 
 protected:
 	engine* e;
@@ -119,17 +142,18 @@ protected:
 	opencl* cl;
 	
 	void setup_scene();
-	void geometry_pass();
-	void light_and_material_pass();
+	void geometry_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_mask = DRAW_MODE::NONE);
+	void light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_mask = DRAW_MODE::NONE);
 	void postprocess();
 	void sort_alpha_objects();
-	void delete_buffers();
-	void recreate_buffers(const size2 buffer_size);
+	void delete_buffers(frame_buffers& buffers);
+	void recreate_buffers(frame_buffers& buffers, const size2 buffer_size, const bool create_alpha_buffer = true);
 
 	//
 	vector<a2emodel*> models;
 	vector<light*> lights;
 	vector<particle_manager*> particle_managers;
+	set<env_probe*> env_probes;
 	
 	// <bbox*, <sub-object id, draw functor*>>
 	map<const extbbox*, pair<size_t, a2emodel::draw_callback*>> alpha_objects;
@@ -145,7 +169,7 @@ protected:
 
 	// render and scene buffer
 	frame_buffers frames[A2E_CONCURRENT_FRAMES];
-	size_t cur_frame = 0;
+	//size_t cur_frame = 0;
 	
 	vector<post_processing_handler*> pp_handlers;
 	map<string, draw_callback*> draw_callbacks;

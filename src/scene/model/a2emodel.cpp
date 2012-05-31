@@ -18,6 +18,7 @@
 
 #include "a2emodel.h"
 #include "scene/scene.h"
+#include "core/quaternion.h"
 
 static size_t _initial_model_id = 0;
 static size_t _create_model_id() {
@@ -121,9 +122,19 @@ void a2emodel::pre_draw_setup(const ssize_t sub_object_num) {
 	// translate to model origin
 	mvm *= matrix4f().translate(position.x, position.y, position.z);
 	
+	// compute backside mvm/mvpm
+	quaternionf q_x, q_y;
+	q_x.set_rotation(e->get_rotation()->x, float3(1.0f, 0.0f, 0.0f));
+	q_y.set_rotation(180.0f - e->get_rotation()->y, float3(0.0f, 1.0f, 0.0f));
+	q_y *= q_x;
+	q_y.normalize();
+	mvpm_backside = mvm * q_y.to_matrix4();
+	
 	//
 	mvm *= *e->get_rotation_matrix();
+	
 	mvpm = mvm * *e->get_projection_matrix();
+	mvpm_backside = mvpm_backside * *e->get_projection_matrix();
 	
 	// if the wireframe flag is set, draw the model in wireframe mode
 #if !defined(A2E_IOS)
@@ -145,11 +156,13 @@ void a2emodel::post_draw_setup(const ssize_t sub_object_num) {
 /*! draws the model/object (all variables have to be set by the derived class beforehand)
  */
 void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_object_num, const size_t& mask_id) {
-	if(!(draw_mode >= DRAW_MODE::GEOMETRY_PASS &&
-		 draw_mode <= DRAW_MODE::MATERIAL_ALPHA_PASS)) {
+	if(draw_mode == DRAW_MODE::NONE ||
+	   draw_mode > DRAW_MODE::ENV_GM_PASSES_MASK) {
 		a2e_error("invalid draw_mode: %u!", (unsigned int)draw_mode);
 		return;
 	}
+	const DRAW_MODE masked_draw_mode((DRAW_MODE)((unsigned int)draw_mode & (unsigned int)DRAW_MODE::GM_PASSES_MASK));
+	const bool env_pass(((unsigned int)draw_mode & (unsigned int)DRAW_MODE::ENVIRONMENT_PASS) != 0);
 	
 	a2ematerial::MATERIAL_TYPE mat_type = material->get_material_type(sub_object_num);
 	a2ematerial::LIGHTING_MODEL lm_type = material->get_lighting_model_type(sub_object_num);
@@ -164,16 +177,16 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	// check draw mode
 	const bool transparent_sub_object = is_sub_object_transparent[sub_object_num];
 	if(transparent_sub_object &&
-	   draw_mode != DRAW_MODE::GEOMETRY_ALPHA_PASS &&
-	   draw_mode != DRAW_MODE::MATERIAL_ALPHA_PASS) {
+	   masked_draw_mode != DRAW_MODE::GEOMETRY_ALPHA_PASS &&
+	   masked_draw_mode != DRAW_MODE::MATERIAL_ALPHA_PASS) {
 		return;
 	}
 	else if(!transparent_sub_object &&
-			(draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
-			 draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS)) return;
+			(masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
+			 masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS)) return;
 	
-	if(draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
-	   draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
+	if(masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
+	   masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
 		pre_draw_setup(sub_object_num);
 	}
 	
@@ -184,16 +197,18 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	
 	//
 	gl3shader shd;
-	const string shd_option = (draw_mode == DRAW_MODE::GEOMETRY_PASS ||
-							   draw_mode == DRAW_MODE::MATERIAL_PASS ? "opaque" : "alpha");
+	const string shd_option = (masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
+							   masked_draw_mode == DRAW_MODE::MATERIAL_PASS ?
+							   (env_pass ? "opaque#env_probe" : "opaque") :
+							   (env_pass ? "alpha#env_probe" : "alpha"));
 	string shd_name = select_shader(draw_mode);
 	if(shd_name != "") {
 		shd = s->get_gl3shader(shd_name);
 		shd->use(shd_option);
 	}
 	
-	if(draw_mode == DRAW_MODE::GEOMETRY_PASS ||
-	   draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS) {
+	if(masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
+	   masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS) {
 		if(shd_name == "") {
 			// first, select shader dependent on material type
 			switch(mat_type) {
@@ -245,8 +260,8 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 		// custom pre-draw setup
 		pre_draw_geometry(shd, attr_array_mask, texture_mask);
 	}
-	else if(draw_mode == DRAW_MODE::MATERIAL_PASS ||
-			draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
+	else if(masked_draw_mode == DRAW_MODE::MATERIAL_PASS ||
+			masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
 		attr_array_mask |= VA_TEXTURE_COORD;
 		texture_mask |= a2ematerial::TT_DIFFUSE | a2ematerial::TT_SPECULAR | a2ematerial::TT_REFLECTANCE;
 		
@@ -282,8 +297,8 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 		// custom pre-draw setup
 		pre_draw_material(shd, attr_array_mask, texture_mask);
 	}
-	if(draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
-	   draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
+	if(masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
+	   masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
 		shd->uniform("mask_id", (float)mask_id);
 		shd->uniform("id", model_id);
 	}
@@ -295,6 +310,9 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	material->enable_textures(sub_object_num, shd, texture_mask);
 	
 	shd->uniform("mvpm", mvpm);
+	if(env_pass) {
+		shd->uniform("mvpm_backside", mvpm_backside);
+	}
 	
 	shd->attribute_array("in_vertex", draw_vertices_vbo, 3);
 	if(attr_array_mask & VA_NORMAL) shd->attribute_array("normal", draw_normals_vbo, 3);
@@ -308,21 +326,21 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	
 	material->disable_textures(sub_object_num);
 	
-	if(draw_mode == DRAW_MODE::GEOMETRY_PASS ||
-	   draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS) {
+	if(masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
+	   masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS) {
 		// custom post-draw setup
 		post_draw_geometry(shd);
 	}
-	else if(draw_mode == DRAW_MODE::MATERIAL_PASS ||
-			draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
+	else if(masked_draw_mode == DRAW_MODE::MATERIAL_PASS ||
+			masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
 		// custom post-draw setup
 		post_draw_material(shd);
 	}
 	
 	shd->disable();
 
-	if(draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
-	   draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
+	if(masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
+	   masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
 		post_draw_setup(sub_object_num);
 	}
 }
@@ -332,11 +350,11 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option) {
 	const float2 screen_size = float2(float(cur_buffer->width), float(cur_buffer->height));
 	shd->uniform("screen_size", screen_size);
 	
-	if(option == "opaque") {
+	if(option.find("opaque") != string::npos) {
 		shd->texture("light_buffer_diffuse", l_buffer->tex_id[0]);
 		shd->texture("light_buffer_specular", l_buffer->tex_id[1]);
 	}
-	else if(option == "alpha") {
+	else if(option.find("alpha") != string::npos) {
 		shd->texture("light_buffer_diffuse", l_buffer->tex_id[0]);
 		shd->texture("light_buffer_specular", l_buffer->tex_id[1]);
 		
@@ -386,7 +404,7 @@ void a2emodel::draw_phys_obj() {
  *  @param y the y coordinate
  *  @param z the z coordinate
  */
-void a2emodel::set_position(float x, float y, float z) {
+void a2emodel::set_position(const float x, const float y, const float z) {
 	position.set(x, y, z);
 	
 	bbox.pos.set(x, y, z);
@@ -398,8 +416,8 @@ void a2emodel::set_position(float x, float y, float z) {
 /*! sets the position of the model
  *  @param pos the new position
  */
-void a2emodel::set_position(float3* pos) {
-	set_position(pos->x, pos->y, pos->z);
+void a2emodel::set_position(const float3& pos) {
+	set_position(pos.x, pos.y, pos.z);
 }
 
 /*! sets the rotation of the model
@@ -407,7 +425,7 @@ void a2emodel::set_position(float3* pos) {
  *  @param y the y rotation
  *  @param z the z rotation
  */
-void a2emodel::set_rotation(float x, float y, float z) {
+void a2emodel::set_rotation(const float x, const float y, const float z) {
 	rotation.set(x, y, z);
 	
 	update_mview_matrix();
@@ -422,8 +440,8 @@ void a2emodel::set_rotation(float x, float y, float z) {
 /*! sets the rotation of the model
  *  @param pos the new rotation
  */
-void a2emodel::set_rotation(float3* rot) {
-	set_rotation(rot->x, rot->y, rot->z);
+void a2emodel::set_rotation(const float3& rot) {
+	set_rotation(rot.x, rot.y, rot.z);
 }
 
 /*! sets the render scale of the model (the rendered model is scaled)
@@ -431,7 +449,7 @@ void a2emodel::set_rotation(float3* rot) {
  *  @param y the y scale
  *  @param z the z scale
  */
-void a2emodel::set_scale(float x, float y, float z) {
+void a2emodel::set_scale(const float x, const float y, const float z) {
 	scale.set(x, y, z);
 	
 	update_scale_matrix();
@@ -449,8 +467,8 @@ void a2emodel::set_scale(float x, float y, float z) {
 /*! sets the scale of the model
  *  @param scl the new scale
  */
-void a2emodel::set_scale(float3* scl) {
-	set_scale(scl->x, scl->y, scl->z);
+void a2emodel::set_scale(const float3& scl) {
+	set_scale(scl.x, scl.y, scl.z);
 }
 
 /*! sets the "vertex scale" of the model (the model itself is scaled)
@@ -458,15 +476,15 @@ void a2emodel::set_scale(float3* scl) {
  *  @param y the y scale
  *  @param z the z scale
  */
-void a2emodel::set_hard_scale(float x, float y, float z) {
+void a2emodel::set_hard_scale(const float x, const float y, const float z) {
 	// to be overwritten
 }
 
 /*! sets the hard scale of the model
  *  @param hscl the new hard scale
  */
-void a2emodel::set_hard_scale(float3* hscl) {
-	set_hard_scale(hscl->x, hscl->y, hscl->z);
+void a2emodel::set_hard_scale(const float3& hscl) {
+	set_hard_scale(hscl.x, hscl.y, hscl.z);
 }
 
 /*! sets the "vertex positions" of the model (the model itself is relocated)
@@ -474,41 +492,50 @@ void a2emodel::set_hard_scale(float3* hscl) {
  *  @param y the y position
  *  @param z the z position
  */
-void a2emodel::set_hard_position(float x, float y, float z) {
+void a2emodel::set_hard_position(const float x, const float y, const float z) {
 	// to be overwritten
 }
 
 /*! sets the hard position of the model
  *  @param hpos the new hard position
  */
-void a2emodel::set_hard_position(float3* hpos) {
-	set_hard_scale(hpos->x, hpos->y, hpos->z);
+void a2emodel::set_hard_position(const float3& hpos) {
+	set_hard_scale(hpos.x, hpos.y, hpos.z);
 }
 
 /*! scales the texture coordinates by (su, sv) - note that this is a "hard scale" and the vbo is updated automatically
  *  @param su the su scale factor
  *  @param sv the sv scale factor
  */
-void a2emodel::scale_tex_coords(float su, float sv) {
+void a2emodel::scale_tex_coords(const float su, const float sv) {
 	// to be overwritten
 }
 
 /*! returns the position of the model
  */
-float3* a2emodel::get_position() {
-	return &position;
+float3& a2emodel::get_position() {
+	return position;
+}
+const float3& a2emodel::get_position() const {
+	return position;
 }
 
 /*! returns the scale of the model
  */
-float3* a2emodel::get_scale() {
-	return &scale;
+float3& a2emodel::get_scale() {
+	return scale;
+}
+const float3& a2emodel::get_scale() const {
+	return scale;
 }
 
 /*! returns the rotation of the model
  */
-float3* a2emodel::get_rotation() {
-	return &rotation;
+float3& a2emodel::get_rotation() {
+	return rotation;
+}
+const float3& a2emodel::get_rotation() const {
+	return rotation;
 }
 
 void a2emodel::set_mview_matrix(const matrix4f& mat) {

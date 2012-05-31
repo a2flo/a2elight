@@ -447,7 +447,7 @@ void a2estatic::reorganize_model_data() {
  *  @param y the y scale
  *  @param z the z scale
  */
-void a2estatic::set_hard_scale(float x, float y, float z) {
+void a2estatic::set_hard_scale(const float x, const float y, const float z) {
 	for(unsigned int i = 0; i < vertex_count; i++) {
 		vertices[i].x *= x;
 		vertices[i].y *= y;
@@ -471,7 +471,7 @@ void a2estatic::set_hard_scale(float x, float y, float z) {
 	build_bounding_box();
 }
 
-void a2estatic::set_hard_position(float x, float y, float z) {
+void a2estatic::set_hard_position(const float x, const float y, const float z) {
 	for(unsigned int i = 0; i < vertex_count; i++) {
 		vertices[i].x += x;
 		vertices[i].y += y;
@@ -530,7 +530,7 @@ void a2estatic::generate_normals() {
  *  @param su the su scale factor
  *  @param sv the sv scale factor
  */
-void a2estatic::scale_tex_coords(float su, float sv) {
+void a2estatic::scale_tex_coords(const float su, const float sv) {
 	for(unsigned int i = 0; i < vertex_count; i++) {
 		tex_coords[i].u *= su;
 		tex_coords[i].v *= sv;

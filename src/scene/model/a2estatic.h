@@ -42,14 +42,14 @@ public:
 	virtual ~a2estatic();
 
 	virtual void draw(const DRAW_MODE draw_mode);
-	void load_model(const string& filename);
+	virtual void load_model(const string& filename);
 	void load_from_memory(unsigned int object_count, unsigned int vertex_count,
 						  float3* vertices, coord* tex_coords,
 						  unsigned int* index_count, index3** indices);
 	
-	void set_hard_scale(float x, float y, float z);
-	void set_hard_position(float x, float y, float z);
-	void scale_tex_coords(float su, float sv);
+	virtual void set_hard_scale(const float x, const float y, const float z);
+	virtual void set_hard_position(const float x, const float y, const float z);
+	virtual void scale_tex_coords(const float su, const float sv);
 
 	float3* get_col_vertices();
 	index3* get_col_indices();

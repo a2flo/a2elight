@@ -40,7 +40,7 @@ protected:
 		INVALID,
 		EQUAL,		//!< enum all conditions must be fulfilled
 		NEQUAL,		//!< enum all conditions may not be fulfilled
-		OR,			//!< enum one (ore more) condtion(s) must be fulfilled
+		OR,			//!< enum one (or more) condtion(s) must be fulfilled
 		GEQUAL,		//!< enum greater or equal, only used for graphic card conditions (e.g. condition is "GEQUAL GC_GEFORCE_8" and GC_GEFORCE_9 is specified, the condition is true),
 					//!< enum also distinguishes between GC_GEFORCE, GC_RADEON and GC_GENERIC, depending on the specified/used graphic card (so all three GC_* identifiers can be used in one condition)
 		LEQUAL,		//!< enum lessor or equal, only used for graphic card conditions (e.g. condition is "LEQUAL GC_RADEON_X" and GC_RADEON_9 is specified, the condition is true)
@@ -55,25 +55,23 @@ public:
 	~a2e_shader();
 	
 	enum SHADER_PREPROCESSING {
-		SP_NONE,
-		SP_LIGHTING,
-		SP_GUI
+		SP_NONE
 	};
 	
 	struct a2e_shader_code {
-		string preprocessor;
-		string variables;
-		string program;
+		string preprocessor = "";
+		string variables = "";
+		string program = "";
 		ext::GLSL_VERSION version;
-		SHADER_PREPROCESSING preprocessing;
+		SHADER_PREPROCESSING preprocessing = SP_NONE;
 		
-		a2e_shader_code() : preprocessor(""), variables(""), program(""),
+		a2e_shader_code() :
 #if !defined(A2E_IOS)
-		version(ext::GLSL_150),
+		version(ext::GLSL_150)
 #else
-		version(ext::GLSL_ES_100),
+		version(ext::GLSL_ES_100)
 #endif
-		preprocessing(SP_NONE) {}
+		{}
 		a2e_shader_code& operator=(const a2e_shader_code& shd_code) {
 			this->preprocessor = shd_code.preprocessor;
 			this->variables = shd_code.variables;
@@ -127,7 +125,7 @@ public:
 		map<string, string> vs_program;
 		map<string, string> gs_program;
 		map<string, string> fs_program;
-		bool geometry_shader_available; // TODO: needed?
+		bool geometry_shader_available;
 		
 		a2e_shader_object() : a2e_shader_object_base(), includes(), vs_program(), gs_program(), fs_program(), geometry_shader_available(false) {}
 	};
@@ -154,6 +152,7 @@ public:
 	//
 	void get_shader_data(a2e_shader_code* shd, const char* shader_type);
 	void get_shader_content(a2e_shader_code* shd, xmlNode* node, const string& option);
+	set<string> get_shader_combiner_options(xmlNode* node);
 	bool check_shader_condition(const A2E_SHADER_CONDITION_TYPE type, const string& value);
 	A2E_SHADER_CONDITION_TYPE get_condition_type(const string& condition_type);
 

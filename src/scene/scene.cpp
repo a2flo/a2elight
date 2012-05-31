@@ -28,7 +28,7 @@ window_handler(this, &scene::window_event_handler)
 	//
 	stereo = e->get_stereo();
 	
-	recreate_buffers(size2(e->get_width(), e->get_height()));
+	recreate_buffers(frames[0], size2(e->get_width(), e->get_height()));
 	
 	e->get_event()->add_internal_event_handler(window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
@@ -50,43 +50,41 @@ scene::~scene() {
 	lights.clear();
 
 	//
-	delete_buffers();
+	delete_buffers(frames[0]);
 	delete light_sphere;
 
 	a2e_debug("scene object deleted");
 }
 
-void scene::delete_buffers() {
-	for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
-		if(frames[i].scene_buffer != nullptr) r->delete_buffer(frames[i].scene_buffer);
-		if(frames[i].fxaa_buffer != nullptr) r->delete_buffer(frames[i].fxaa_buffer);
-		if(frames[i].g_buffer[0] != nullptr) r->delete_buffer(frames[i].g_buffer[0]);
-		if(frames[i].l_buffer[0] != nullptr) r->delete_buffer(frames[i].l_buffer[0]);
-		if(frames[i].g_buffer[1] != nullptr) r->delete_buffer(frames[i].g_buffer[1]);
-		if(frames[i].l_buffer[1] != nullptr) r->delete_buffer(frames[i].l_buffer[1]);
-		
+void scene::delete_buffers(frame_buffers& buffers) {
+	if(buffers.scene_buffer != nullptr) r->delete_buffer(buffers.scene_buffer);
+	if(buffers.fxaa_buffer != nullptr) r->delete_buffer(buffers.fxaa_buffer);
+	if(buffers.g_buffer[0] != nullptr) r->delete_buffer(buffers.g_buffer[0]);
+	if(buffers.l_buffer[0] != nullptr) r->delete_buffer(buffers.l_buffer[0]);
+	if(buffers.g_buffer[1] != nullptr) r->delete_buffer(buffers.g_buffer[1]);
+	if(buffers.l_buffer[1] != nullptr) r->delete_buffer(buffers.l_buffer[1]);
+	
 #if defined(A2E_INFERRED_RENDERING_CL)
-		if(frames[i].cl_normal_nuv_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[0]);
-		if(frames[i].cl_depth_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_depth_buffer[0]);
-		if(frames[i].cl_light_buffer[0] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[0]);
-		if(frames[i].cl_normal_nuv_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_normal_nuv_buffer[1]);
-		if(frames[i].cl_depth_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_depth_buffer[1]);
-		if(frames[i].cl_light_buffer[1] != nullptr) cl->delete_buffer(frames[i].cl_light_buffer[1]);
+	if(buffers.cl_normal_nuv_buffer[0] != nullptr) cl->delete_buffer(buffers.cl_normal_nuv_buffer[0]);
+	if(buffers.cl_depth_buffer[0] != nullptr) cl->delete_buffer(buffers.cl_depth_buffer[0]);
+	if(buffers.cl_light_buffer[0] != nullptr) cl->delete_buffer(buffers.cl_light_buffer[0]);
+	if(buffers.cl_normal_nuv_buffer[1] != nullptr) cl->delete_buffer(buffers.cl_normal_nuv_buffer[1]);
+	if(buffers.cl_depth_buffer[1] != nullptr) cl->delete_buffer(buffers.cl_depth_buffer[1]);
+	if(buffers.cl_light_buffer[1] != nullptr) cl->delete_buffer(buffers.cl_light_buffer[1]);
 #endif
-	}
 }
 
-void scene::recreate_buffers(const size2 buffer_size) {
+void scene::recreate_buffers(frame_buffers& buffers, const size2 buffer_size, const bool create_alpha_buffer) {
 	if(e->get_init_mode() != engine::GRAPHICAL) return;
 	
 	// check if buffers have already been created (and delete them, if so)
-	delete_buffers();
+	delete_buffers(buffers);
 	
 	// create buffers used for inferred rendering
 	
 	// note: opaque and alpha/transparent geometry have their own buffers
 	// use 1 + 2 16-bit RGBA float buffers for the g-buffer: normal+Nuv (both) and DSF (alpha only)
-	// use 1 + 1 16-bit RGBA float buffer for the l-buffer
+	// use 2 + 2 8-bit RGBA ubyte buffer for the l-buffer (separate diffuse + specular for both)
 	// use 1 8-bit RGBA ubyte buffer for the (intermediate) fxaa buffer
 	// use 1 8-bit RGBA ubyte buffer for the final buffer
 	
@@ -95,14 +93,9 @@ void scene::recreate_buffers(const size2 buffer_size) {
 	// figure out the target type (multi-sampled or not)
 	GLenum target = GL_TEXTURE_2D;
 	
-	// figure out the best 16-bit float format
-	//#if !defined(A2E_IOS)
+	//
 	GLint rgba16_float_internal_format = GL_RGBA16F;
 	GLenum f16_format_type = GL_HALF_FLOAT;
-	/*#else // TODO: use RGBA8 for now
-	GLint rgba16_float_internal_format = GL_RGBA8;
-	GLenum f16_format_type = GL_UNSIGNED_BYTE;
-	#endif*/
 	
 	GLint internal_formats[] = { rgba16_float_internal_format, rgba16_float_internal_format };
 	GLenum formats[] = { GL_RGBA, GL_RGBA };
@@ -124,62 +117,65 @@ void scene::recreate_buffers(const size2 buffer_size) {
 	
 	const float aa_scale = r->get_anti_aliasing_scale(e->get_anti_aliasing());
 	
-	cur_frame = 0;
-	for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
-		// create geometry buffer
-		// note that depth must be a 2d texture, because we will read it later inside a shader
-		// also: opaque gbuffer doesn't need an additional id buffer
-		frames[i].g_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
-											  filters, taas, wraps, wraps, internal_formats, formats,
-											  types, 1, rtt::DT_TEXTURE_2D);
+	// create geometry buffer
+	// note that depth must be a 2d texture, because we will read it later inside a shader
+	// also: opaque gbuffer doesn't need an additional id buffer
+	buffers.g_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
+										  filters, taas, wraps, wraps, internal_formats, formats,
+										  types, 1, rtt::DT_TEXTURE_2D);
+	if(create_alpha_buffer) {
 #if !defined(A2E_IOS) // TODO: think of a workaround for this
-		frames[i].g_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
-											  filters, taas, wraps, wraps, internal_formats, formats,
-											  types, 2, rtt::DT_TEXTURE_2D);
-#endif
-		
-		// create light buffer
-		frames[i].l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
-#if !defined(A2E_IOS)
-		frames[i].l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
-#endif
-		
-		// scene/final buffer (material pass)
-		if(final_buffer_size.x == render_buffer_size.x && final_buffer_size.y == render_buffer_size.y) {
-			// reuse the g-buffer depth buffer (performance and memory!)
-			frames[i].scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
-			frames[i].scene_buffer->depth_type = rtt::DT_TEXTURE_2D;
-			frames[i].scene_buffer->depth_buffer = frames[i].g_buffer[0]->depth_buffer;
-		}
-		else {
-			// sadly, the depth buffer optimization can't be used here, because the buffers are of a different size
-			frames[i].scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
-		}
-		
-		frames[i].fxaa_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_LINEAR, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
-		
-#if defined(A2E_INFERRED_RENDERING_CL)
-		frames[i].cl_normal_nuv_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[0]->tex_id[0]);
-		frames[i].cl_depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[0]->depth_buffer);
-		frames[i].cl_light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, frames[i].l_buffer[0]->tex_id[0]);
-#if !defined(A2E_IOS)
-		frames[i].cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[1]->tex_id[0]);
-		frames[i].cl_depth_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, frames[i].g_buffer[1]->depth_buffer);
-		frames[i].cl_light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, frames[i].l_buffer[1]->tex_id[0]);
-#endif
+		buffers.g_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
+											filters, taas, wraps, wraps, internal_formats, formats,
+											types, 2, rtt::DT_TEXTURE_2D);
 #endif
 	}
+	else buffers.g_buffer[1] = nullptr;
 	
-	a2e_debug("g/l-buffer @%v", size2(frames[0].g_buffer[0]->width,
-									  frames[0].g_buffer[0]->height));
-	a2e_debug("scene-buffer @%v", size2(frames[0].scene_buffer->width,
-										frames[0].scene_buffer->height));
+	// create light buffer
+	buffers.l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
+	if(create_alpha_buffer) {
+#if !defined(A2E_IOS)
+		buffers.l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
+#endif
+	}
+	else buffers.l_buffer[1] = nullptr;
+	
+	// scene/final buffer (material pass)
+	if(final_buffer_size.x == render_buffer_size.x && final_buffer_size.y == render_buffer_size.y) {
+		// reuse the g-buffer depth buffer (performance and memory!)
+		buffers.scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+		buffers.scene_buffer->depth_type = rtt::DT_TEXTURE_2D;
+		buffers.scene_buffer->depth_buffer = buffers.g_buffer[0]->depth_buffer;
+	}
+	else {
+		// sadly, the depth buffer optimization can't be used here, because the buffers are of a different size
+		buffers.scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
+	}
+	
+	buffers.fxaa_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_LINEAR, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+	
+#if defined(A2E_INFERRED_RENDERING_CL)
+	buffers.cl_normal_nuv_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->tex_id[0]);
+	buffers.cl_depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->depth_buffer);
+	buffers.cl_light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[0]->tex_id[0]);
+#if !defined(A2E_IOS)
+	buffers.cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->tex_id[0]);
+	buffers.cl_depth_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->depth_buffer);
+	buffers.cl_light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[1]->tex_id[0]);
+#endif
+#endif
+	
+	a2e_debug("g/l-buffer @%v", size2(buffers.g_buffer[0]->width,
+									  buffers.g_buffer[0]->height));
+	a2e_debug("scene-buffer @%v", size2(buffers.scene_buffer->width,
+										buffers.scene_buffer->height));
 }
 
 bool scene::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 	if(type == EVENT_TYPE::WINDOW_RESIZE) {
 		const window_resize_event& evt = (const window_resize_event&)*obj;
-		recreate_buffers(evt.size);
+		recreate_buffers(frames[0], evt.size);
 	}
 	return true;
 }
@@ -190,7 +186,7 @@ void scene::draw() {
 	// don't draw anything if scene isn't enabled
 	if(!enabled) return;
 	
-	// scene setup (lights, run particle systems, ...)
+	// scene setup (run particle systems, ...)
 	setup_scene();
 	
 	// sort transparency/alpha objects (+assign mask ids)
@@ -198,9 +194,50 @@ void scene::draw() {
 	
 	// TODO: stereo rendering
 	
-	geometry_pass();
+	// render env probes
+	if(!env_probes.empty()) {
+		e->push_modelview_matrix();
+		e->push_projection_matrix();
+		const float3 engine_pos(*e->get_position());
+		const float3 engine_rot(*e->get_rotation());
+		for(const auto& probe : env_probes) {
+			bool render_probe = false;
+			switch (probe->freq) {
+				case env_probe::PROBE_FREQUENCY::ONCE:
+					if(probe->frame_counter > 0) {
+						probe->frame_counter--;
+						render_probe = true;
+					}
+					break;
+				case env_probe::PROBE_FREQUENCY::EVERY_FRAME:
+					render_probe = true;
+					break;
+				case env_probe::PROBE_FREQUENCY::NTH_FRAME:
+					probe->frame_counter--;
+					if(probe->frame_counter == 0) {
+						probe->frame_counter = probe->frame_freq;
+						render_probe = true;
+					}
+					break;
+			}
+			if(render_probe) {
+				e->set_position(-probe->position.x,
+								-probe->position.y,
+								-probe->position.z);
+				e->set_rotation(probe->rotation.x, probe->rotation.y);
+				geometry_pass(probe->buffers, DRAW_MODE::ENVIRONMENT_PASS);
+				light_and_material_pass(probe->buffers, DRAW_MODE::ENVIRONMENT_PASS);
+			}
+		}
+		e->pop_modelview_matrix();
+		e->pop_projection_matrix();
+		e->set_position(engine_pos.x, engine_pos.y, engine_pos.z);
+		e->set_rotation(engine_rot.x, engine_rot.y);
+	}
 	
-	light_and_material_pass();
+	// render to actual scene frame buffers
+	geometry_pass(frames[0]);
+	light_and_material_pass(frames[0]);
 }
 
 void scene::sort_alpha_objects() {
@@ -360,9 +397,12 @@ void scene::setup_scene() {
 
 /*! starts drawing the scene
  */
-void scene::geometry_pass() {
+void scene::geometry_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_mask) {
+	const DRAW_MODE geom_pass_masked = (DRAW_MODE)((unsigned int)DRAW_MODE::GEOMETRY_PASS | (unsigned int)draw_mode_or_mask);
+	const DRAW_MODE geom_alpha_pass_masked = (DRAW_MODE)((unsigned int)DRAW_MODE::GEOMETRY_ALPHA_PASS | (unsigned int)draw_mode_or_mask);
+	
 	// normal rendering using a fbo
-	r->start_draw(frames[0].g_buffer[0]);
+	r->start_draw(buffers.g_buffer[0]);
 	r->clear();
 	
 #if !defined(A2E_IOS)
@@ -372,7 +412,7 @@ void scene::geometry_pass() {
 	
 	// render models (opaque)
 	for(const auto& iter : models) {
-		if(iter->get_visible()) iter->draw(DRAW_MODE::GEOMETRY_PASS);
+		if(iter->get_visible()) iter->draw(geom_pass_masked);
 	}
 	
 	// render skybox
@@ -387,47 +427,44 @@ void scene::geometry_pass() {
 	
 	// render callbacks (opaque)
 	for(const auto& draw_cb : draw_callbacks) {
-		(*draw_cb.second)(DRAW_MODE::GEOMETRY_PASS);
+		(*draw_cb.second)(geom_pass_masked);
 	}
-	
-	// render/draw particle managers (TODO: PARTICLE TODO)
-	/*for(const auto& pm : particle_managers) {
-		pm->draw();
-	}*/
 	
 	r->stop_draw();
 	
+	if(buffers.g_buffer[1] != nullptr) {
 #if !defined(A2E_IOS)
-	// render models (transparent/alpha)
-	r->start_draw(frames[0].g_buffer[1]);
-	r->clear();
-	glDrawBuffers(2, draw_buffers);
-	
-	for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
-		const pair<size_t, a2emodel::draw_callback*>& obj = alpha_objects[iter->first];
-		(*obj.second)(DRAW_MODE::GEOMETRY_ALPHA_PASS, obj.first, iter->second);
-	}
-	
-	// render callbacks (alpha)
-	for(const auto& draw_cb : draw_callbacks) {
-		(*draw_cb.second)(DRAW_MODE::GEOMETRY_ALPHA_PASS);
-	}
-	
-	r->stop_draw();
+		// render models (transparent/alpha)
+		r->start_draw(buffers.g_buffer[1]);
+		r->clear();
+		glDrawBuffers(2, draw_buffers);
+		
+		for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
+			const pair<size_t, a2emodel::draw_callback*>& obj = alpha_objects[iter->first];
+			(*obj.second)(geom_alpha_pass_masked, obj.first, iter->second);
+		}
+		
+		// render callbacks (alpha)
+		for(const auto& draw_cb : draw_callbacks) {
+			(*draw_cb.second)(geom_alpha_pass_masked);
+		}
+		
+		r->stop_draw();
 #else
-	// TODO: render transparent models in iOS/GLES2.0
+		// TODO: render transparent models in iOS/GLES2.0
 #endif
+	}
 }
 
-void scene::light_and_material_pass() {
+void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_mask) {
 	//
-	rtt::fbo* scene_buffer = frames[0].scene_buffer;
-	rtt::fbo* fxaa_buffer = frames[0].fxaa_buffer;
-	rtt::fbo* l_buffer = frames[0].l_buffer[0];
+	rtt::fbo* scene_buffer = buffers.scene_buffer;
+	rtt::fbo* fxaa_buffer = buffers.fxaa_buffer;
+	rtt::fbo* l_buffer = buffers.l_buffer[0];
 #if defined(A2E_INFERRED_RENDERING_CL)
-	opencl::buffer_object** cl_normal_nuv_buffer = frames[0].cl_normal_nuv_buffer;
-	opencl::buffer_object** cl_depth_buffer = frames[0].cl_depth_buffer;
-	opencl::buffer_object** cl_light_buffer = frames[0].cl_light_buffer;
+	opencl::buffer_object** cl_normal_nuv_buffer = buffers.cl_normal_nuv_buffer;
+	opencl::buffer_object** cl_depth_buffer = buffers.cl_depth_buffer;
+	opencl::buffer_object** cl_light_buffer = buffers.cl_light_buffer;
 #endif
 	
 	// some parameters required both by the shader and the opencl version
@@ -438,7 +475,8 @@ void scene::light_and_material_pass() {
 	const float3 cam_position = -float3(*e->get_position());
 	const float2 screen_size = float2(float(l_buffer->width), float(l_buffer->height));
 #if !defined(A2E_IOS)
-	const bool light_alpha_objects = !alpha_objects.empty();
+	const bool light_alpha_objects = (!alpha_objects.empty() &&
+									  buffers.l_buffer[0] != nullptr);
 #else
 	const bool light_alpha_objects = false; // TODO: iOS: implement this!
 #endif
@@ -454,7 +492,7 @@ void scene::light_and_material_pass() {
 	// light pass - using shaders
 	// light 1st: opaque geometry, 2nd: alpha geometry
 	for(size_t light_pass = 0; light_pass < (light_alpha_objects ? 2 : 1); light_pass++) {
-		r->start_draw(frames[0].l_buffer[light_pass]);
+		r->start_draw(buffers.l_buffer[light_pass]);
 		r->clear();
 		static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glDrawBuffers(2, draw_buffers);
@@ -478,11 +516,11 @@ void scene::light_and_material_pass() {
 			ir_lighting->uniform("screen_size", screen_size);
 			ir_lighting->uniform("projection_ab", projection_ab);
 			ir_lighting->texture("normal_nuv_buffer",
-								 frames[0].g_buffer[light_pass]->tex_id[0], GL_TEXTURE_2D);
+								 buffers.g_buffer[light_pass]->tex_id[0], GL_TEXTURE_2D);
 			
 			//
 			ir_lighting->texture("depth_buffer",
-								 frames[0].g_buffer[light_pass]->depth_buffer, GL_TEXTURE_2D);
+								 buffers.g_buffer[light_pass]->depth_buffer, GL_TEXTURE_2D);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 			
 			// first: all point and spot (TODO) lights
@@ -497,9 +535,9 @@ void scene::light_and_material_pass() {
 					ir_lighting->uniform("light_color", float4(li->get_color(), li->get_inv_sqr_radius()));
 					
 					const float radius = li->get_radius();
-					// TODO: add max distance config setting
 					const float half_far_plane = e->get_near_far_plane().y - 0.1f;
-					float ls_radius = (radius < 0.0f || radius > half_far_plane ? half_far_plane : radius); // clamp to 499.9 (2*r=far plane)
+					const float ls_radius = (radius < 0.0f || radius > half_far_plane ?
+											 half_far_plane : radius); // clamp to (far plane)/2
 					// radius + 1, b/c we have to account for the near plane (= 1.0)
 					const float light_dist = (cam_position - li->get_position()).length() - 1.0f;
 					if(light_dist <= ls_radius) {
@@ -551,6 +589,8 @@ void scene::light_and_material_pass() {
 	
 	/////////////////////////////////////////////////////
 	// model material pass
+	const DRAW_MODE mat_pass_masked = (DRAW_MODE)((unsigned int)DRAW_MODE::MATERIAL_PASS | (unsigned int)draw_mode_or_mask);
+	const DRAW_MODE mat_alpha_pass_masked = (DRAW_MODE)((unsigned int)DRAW_MODE::MATERIAL_ALPHA_PASS | (unsigned int)draw_mode_or_mask);
 	
 	// note: this reuses the g-buffer depth buffer
 	// -> anything that has not equal depth will be culled/discarded early
@@ -565,15 +605,15 @@ void scene::light_and_material_pass() {
 	// render models (opaque)
 	for(const auto& iter : models) {
 		if(iter->get_visible()) {
-			iter->set_ir_buffers(frames[0].g_buffer[0], frames[0].l_buffer[0],
-								 frames[0].g_buffer[1], frames[0].l_buffer[1]);
-			iter->draw(DRAW_MODE::MATERIAL_PASS);
+			iter->set_ir_buffers(buffers.g_buffer[0], buffers.l_buffer[0],
+								 buffers.g_buffer[1], buffers.l_buffer[1]);
+			iter->draw(mat_pass_masked);
 		}
 	}
 	
 	// render callbacks (opaque pass)
 	for(const auto& draw_cb : draw_callbacks) {
-		(*draw_cb.second)(DRAW_MODE::MATERIAL_PASS);
+		(*draw_cb.second)(mat_pass_masked);
 	}
 	
 	// for alpha objects and particles rendering, switch back to LEQUAL,
@@ -587,11 +627,11 @@ void scene::light_and_material_pass() {
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // pre-multiplied alpha blending
 		for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
 			const pair<size_t, a2emodel::draw_callback*>& obj = alpha_objects[iter->first];
-			(*obj.second)(DRAW_MODE::MATERIAL_ALPHA_PASS, obj.first, iter->second);
+			(*obj.second)(mat_alpha_pass_masked, obj.first, iter->second);
 		}
 		// render callbacks (alpha pass)
 		for(const auto& draw_cb : draw_callbacks) {
-			(*draw_cb.second)(DRAW_MODE::MATERIAL_ALPHA_PASS);
+			(*draw_cb.second)(mat_alpha_pass_masked);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
@@ -602,7 +642,7 @@ void scene::light_and_material_pass() {
 	
 	// render/draw particle managers
 	for(const auto& pm : particle_managers) {
-		pm->draw(frames[0].g_buffer[0]);
+		pm->draw(buffers.g_buffer[0]);
 	}
 	
 	r->stop_draw();
@@ -806,11 +846,29 @@ void scene::delete_draw_callback(const string& name) {
 	draw_callbacks.erase(iter);
 }
 
-scene::env_probe* scene::add_environment_probe(const float3& pos, const size2 buffer_size) {
-	// TODO: !
-	return nullptr;
+scene::env_probe* scene::add_environment_probe(const float3& pos, const float2& rot, const size2 buffer_size, const bool capture_alpha) {
+	const size2 dual_buffer_size(buffer_size.x * 2, buffer_size.y);
+	env_probe* probe = new env_probe(pos, rot, dual_buffer_size, capture_alpha);
+	recreate_buffers(probe->buffers, probe->buffer_size, probe->capture_alpha);
+	add_environment_probe(probe);
+	return probe;
+}
+
+void scene::add_environment_probe(scene::env_probe* probe) {
+	if(probe == nullptr) return;
+	env_probes.insert(probe);
 }
 
 void scene::delete_environment_probe(env_probe* probe) {
-	// TODO: !
+	delete_buffers(probe->buffers);
+	env_probes.erase(probe);
+	if(probe != nullptr) delete probe;
+}
+
+scene::env_probe::env_probe(const float3& pos_, const float2& rot_, const size2 buffer_size_, const bool capture_alpha_) :
+position(pos_), rotation(rot_), buffer_size(buffer_size_), capture_alpha(capture_alpha_)
+{
+}
+
+scene::env_probe::~env_probe() {
 }
