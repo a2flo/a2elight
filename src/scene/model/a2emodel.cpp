@@ -197,10 +197,15 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	
 	//
 	gl3shader shd;
+	const bool has_env_map(env_map != 0);
 	const string shd_option = (masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
 							   masked_draw_mode == DRAW_MODE::MATERIAL_PASS ?
-							   (env_pass ? "opaque#env_probe" : "opaque") :
-							   (env_pass ? "alpha#env_probe" : "alpha"));
+							   (env_pass ?
+								(has_env_map ? "opaque_env#env_probe" : "opaque#env_probe") :
+								(has_env_map ? "opaque_env" : "opaque")) :
+							   (env_pass ?
+								(has_env_map ? "alpha_env#env_probe" : "alpha#env_probe") :
+								(has_env_map ? "alpha_env" : "alpha")));
 	string shd_name = select_shader(draw_mode);
 	if(shd_name != "") {
 		shd = s->get_gl3shader(shd_name);
@@ -296,6 +301,10 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 		
 		// custom pre-draw setup
 		pre_draw_material(shd, attr_array_mask, texture_mask);
+		
+		if(has_env_map) {
+			shd->texture("environment_map", env_map);
+		}
 	}
 	if(masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
 	   masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
@@ -374,6 +383,20 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option) {
 		shd->texture("dsf_buffer", g_buffer_alpha->tex_id[1]);
 		shd->texture("depth_buffer", g_buffer_alpha->depth_buffer);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+	}
+	
+	if(option.find("_env") != string::npos) {
+		// TODO: better way?
+		shd->uniform("local_mview", mview_mat);
+		shd->uniform("local_scale", scale_mat);
+		shd->uniform("model_position", position);
+		shd->uniform("cam_position", -float3(*e->get_position()));
+		if(option.find("opaque") != string::npos) {
+			shd->texture("normal_buffer", g_buffer->tex_id[0]);
+		}
+		else if(option.find("alpha") != string::npos) {
+			shd->texture("normal_buffer", g_buffer_alpha->tex_id[0]);
+		}
 	}
 }
 
@@ -822,6 +845,14 @@ unsigned int a2emodel::get_col_vertex_count() {
  */
 unsigned int a2emodel::get_col_index_count() {
 	return col_index_count;
+}
+
+void a2emodel::set_environment_map(const GLuint env_map_) {
+	env_map = env_map_;
+}
+
+GLuint a2emodel::get_environment_map() const {
+	return env_map;
 }
 
 

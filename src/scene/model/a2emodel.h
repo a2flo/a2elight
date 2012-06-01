@@ -78,6 +78,8 @@ public:
 	virtual void build_bounding_box();
 	virtual extbbox* get_bounding_box();
 	virtual extbbox* get_bounding_box(const size_t& sub_object);
+	virtual void set_environment_map(const GLuint env_map);
+	virtual GLuint get_environment_map() const;
 	
 	virtual bool is_collision_model();
 	virtual void set_draw_phys_obj(bool state);
@@ -234,6 +236,8 @@ protected:
 	virtual void generate_normals() = 0;
 	
 	virtual void model_setup();
+	
+	GLuint env_map = 0;
 	
 };
 
