@@ -18,7 +18,9 @@
 
 #include "shader_gles2.h"
 
-#if A2E_DEBUG // type checking in debug mode
+#if defined(A2E_IOS)
+
+#if defined(A2E_DEBUG) // type checking in debug mode
 
 #define __A2E_DECLARE_GL_TYPE_TO_STRING(type) case type: return #type;
 
@@ -379,7 +381,7 @@ void shader_gles2::uniform(const char* name, const bool4* arg1, const size_t& co
 void shader_gles2::uniform(const char* name, const matrix4f& arg1) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
 	A2E_CHECK_UNIFORM_TYPE(name, GL_FLOAT_MAT4);
-	glUniformMatrix4fv(A2E_SHADER_GET_UNIFORM_POSITION(name), 1, false, (GLfloat*)arg1.data);
+	glUniformMatrix4fv(A2E_SHADER_GET_UNIFORM_POSITION(name), 1, false, (GLfloat*)&arg1.data[0]);
 }
 
 void shader_gles2::uniform(const char* name, const matrix4f* arg1, const size_t& count) const {
@@ -528,3 +530,5 @@ void shader_gles2::attribute_array(const char* name, const GLuint& buffer, const
 void shader_gles2::block(const char* name, const GLuint& ubo) const {
 	a2e_error("UBOs are not supported in OpenGL ES 2.0!");
 }
+
+#endif

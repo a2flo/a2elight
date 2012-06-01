@@ -19,6 +19,8 @@
 #ifndef __A2E_SHADER_GLES2_H__
 #define __A2E_SHADER_GLES2_H__
 
+#if defined(A2E_IOS)
+
 #include "global.h"
 #include "core/matrix4.h"
 #include "engine.h"
@@ -120,5 +122,7 @@ typedef shared_ptr<shader_gles2> gles2shader;
 
 // TODO: use a better method
 #define gl3shader gles2shader
+
+#endif
 
 #endif

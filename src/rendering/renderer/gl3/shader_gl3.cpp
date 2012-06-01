@@ -18,7 +18,7 @@
 
 #include "shader_gl3.h"
 
-#if A2E_DEBUG // type checking in debug mode
+#if defined(A2E_DEBUG) // type checking in debug mode
 
 #define __A2E_DECLARE_GL_TYPE_TO_STRING(type) case type: return #type;
 
