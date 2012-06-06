@@ -29,9 +29,19 @@ xml::xml(engine* e_) : e(e_) {
 	// libxml2 init
 	LIBXML_TEST_VERSION
 	xmlInitializeCatalog();
-	xmlCatalogAdd(BAD_CAST "public",
-				  BAD_CAST "-//A2E/config",
-				  BAD_CAST e->data_path("dtd/config.dtd").c_str());
+	xmlCatalogSetDefaults(XML_CATA_ALLOW_ALL);
+	if(xmlCatalogAdd(BAD_CAST "public",
+					 BAD_CAST "-//A2E//DTD config 1.0//EN",
+					 BAD_CAST ("file://"+e->data_path("dtd/config.dtd")).c_str()) != 0) {
+		const auto error_ptr = xmlGetLastError();
+		a2e_error("failed to add catalog for config: %s", (error_ptr != nullptr ? error_ptr->message : ""));
+	}
+	if(xmlCatalogAdd(BAD_CAST "public",
+					 BAD_CAST "-//A2E//DTD a2e_shader 2.0//EN",
+					 BAD_CAST ("file://"+e->data_path("dtd/a2e_shader.dtd")).c_str()) != 0) {
+		const auto error_ptr = xmlGetLastError();
+		a2e_error("failed to add catalog for a2e_shader: %s", (error_ptr != nullptr ? error_ptr->message : ""));
+	}
 }
 
 xml::~xml() {
@@ -65,6 +75,55 @@ xml::xml_doc xml::process_file(const string& filename, const bool validate) cons
 	}
 	
 	// create internal node structure
+	create_node_structure(doc, xmldoc);
+	
+	// cleanup
+	xmlFreeDoc(xmldoc);
+	xmlFreeParserCtxt(ctx);
+	xmlCleanupParser();
+	
+	return doc;
+}
+
+xml::xml_doc xml::process_data(const string& data, const bool validate) const {
+	xml_doc doc;
+	
+	// read/parse/validate
+	xmlParserCtxtPtr ctx = xmlNewParserCtxt();
+	if(ctx == nullptr) {
+		a2e_error("failed to allocate parser context!");
+		doc.valid = false;
+		return doc;
+	}
+	
+	xmlDocPtr xmldoc = xmlCtxtReadDoc(ctx, (const xmlChar*)data.c_str(), e->data_path("dtd/shader.xml").c_str(), nullptr,
+									  (validate ? XML_PARSE_DTDLOAD | XML_PARSE_DTDVALID : 0));
+	if(xmldoc == nullptr) {
+		a2e_error("failed to parse data!");
+		doc.valid = false;
+		return doc;
+	}
+	else {
+		if(ctx->valid == 0) {
+			xmlFreeDoc(xmldoc);
+			a2e_error("failed to validate data!");
+			doc.valid = false;
+			return doc;
+		}
+	}
+	
+	// create internal node structure
+	create_node_structure(doc, xmldoc);
+	
+	// cleanup
+	xmlFreeDoc(xmldoc);
+	xmlFreeParserCtxt(ctx);
+	xmlCleanupParser();
+	
+	return doc;
+}
+
+void xml::create_node_structure(xml::xml_doc& doc, xmlDocPtr xmldoc) const {
 	deque<pair<xmlNode*, unordered_multimap<string, xml_node*>*>> node_stack;
 	node_stack.push_back(make_pair(xmldoc->children, &doc.nodes));
 	for(;;) {
@@ -76,7 +135,7 @@ xml::xml_doc xml::process_file(const string& filename, const bool validate) cons
 		
 		for(; cur_node; cur_node = cur_node->next) {
 			if(cur_node->type == XML_ELEMENT_NODE) {
-				xml_node* node = new xml_node(string((const char*)cur_node->name), cur_node);
+				xml_node* node = new xml_node(cur_node);
 				nodes->insert(make_pair(string((const char*)cur_node->name), node));
 				
 				if(cur_node->children != nullptr) {
@@ -85,13 +144,6 @@ xml::xml_doc xml::process_file(const string& filename, const bool validate) cons
 			}
 		}
 	}
-	
-	// cleanup
-	xmlFreeDoc(xmldoc);
-	xmlFreeParserCtxt(ctx);
-	xmlCleanupParser();
-	
-	return doc;
 }
 
 xml::xml_node* xml::xml_doc::get_node(const string& path) const {
@@ -117,7 +169,7 @@ const string& xml::xml_doc::extract_attr(const string& path) const {
 	
 	xml_node* node = get_node(node_path);
 	if(node == nullptr) return invalid_attr;
-	return (*node)[attr_name];
+	return (attr_name != "content" ? (*node)[attr_name] : node->content());
 }
 
 template<> const string xml::xml_doc::get<string>(const string& path, const string default_value) const {
@@ -219,7 +271,9 @@ template<> const ssize4 xml::xml_doc::get<ssize4>(const string& path, const ssiz
 			: default_value);
 }
 
-xml::xml_node::xml_node(const string& name_, const xmlNode* node) : node_name(name_) {
+xml::xml_node::xml_node(const xmlNode* node) :
+node_name((const char*)node->name),
+node_content(xmlNodeGetContent((xmlNodePtr)node) != nullptr ? (const char*)xmlNodeGetContent((xmlNodePtr)node) : "") {
 	for(xmlAttr* cur_attr = node->properties; cur_attr; cur_attr = cur_attr->next) {
 		attributes.insert(make_pair(string((const char*)cur_attr->name),
 									string((cur_attr->children != nullptr ? (const char*)cur_attr->children->content : "INVALID"))

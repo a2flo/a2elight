@@ -19,50 +19,50 @@
 
 #include "a2e_shader.h"
 #include "rendering/shader.h"
+#include "core/xml.h"
 #include <regex>
 
-a2e_shader::a2e_shader(engine* eng) : e(eng), f(e->get_file_io()), exts(e->get_ext()), x(e->get_xml()),
-buffer(stringstream::in | stringstream::out | stringstream::binary), buffer2(stringstream::in | stringstream::out | stringstream::binary) {
-	
+a2e_shader::a2e_shader(engine* eng) :
+e(eng), f(e->get_file_io()), exts(e->get_ext()), x(e->get_xml()),
+conditions({
 	// add graphic card specific conditions
-	conditions[ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[exts->get_vendor()]] = true;
-	conditions[ext::GRAPHIC_CARD_DEFINE_STR[exts->get_graphic_card()]] = true;
-	conditions["SM50_SUPPORT"] = exts->is_shader_model_5_0_support();
-	conditions["ANISOTROPIC_SUPPORT"] = exts->is_anisotropic_filtering_support();
-	conditions["FBO_MULTISAMPLE_COVERAGE_SUPPORT"] = exts->is_fbo_multisample_coverage_support();
+	{ ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[exts->get_vendor()], true },
+	{ ext::GRAPHIC_CARD_DEFINE_STR[exts->get_graphic_card()], true },
+	{ "SM50_SUPPORT", exts->is_shader_model_5_0_support() },
+	{ "ANISOTROPIC_SUPPORT", exts->is_anisotropic_filtering_support() },
+	{ "FBO_MULTISAMPLE_COVERAGE_SUPPORT", exts->is_fbo_multisample_coverage_support() },
 	
 	// use sdl platform defines for this
-	conditions["MAC_OS_X"] =
+	{ "MAC_OS_X",
 #if defined(__MACOSX__) && !defined(A2E_IOS)
-				   true
+		true
 #else
-				   false
+		false
 #endif
-	;
-	
-	conditions["WINDOWS"] =
+	},
+	{ "WINDOWS",
 #ifdef __WINDOWS__
-				   true
+		true
 #else
-				   false
+		false
 #endif
-	;
-	
-	conditions["LINUX"] =
+	},
+	{ "LINUX",
 #ifdef __LINUX__
-				   true
+		true
 #else
-				   false
+		false
 #endif
-	;
-	
-	conditions["IOS"] =
+	},
+	{ "IOS",
 #if defined(A2E_IOS)
-	true
+		true
 #else
-	false
+		false
 #endif
-	;
+	},
+})
+{
 }
 
 a2e_shader::~a2e_shader() {
@@ -85,168 +85,308 @@ a2e_shader::a2e_shader_include_object* a2e_shader::create_a2e_shader_include() {
  *  @param filename the a2eshd file name
  */
 bool a2e_shader::load_a2e_shader(const string& identifier, const string& filename, a2e_shader_object* shader_object) {
-	// open file
-	if(!f->open(filename.c_str(), file_io::OT_READ)) {
+	// read file data
+	stringstream buffer(stringstream::in | stringstream::out | stringstream::binary);
+	if(!f->file_to_buffer(filename, buffer)) {
 		return false;
 	}
+	string shader_data(buffer.str());
 	
-	string shader_data;
+	// replace special chars (&, <, >) and strip xml comments
+	static const set<string> valid_tags {
+		"?xml", "!DOCTYPE",
+		"a2e_shader_include", "a2e_shader", "includes", "options",
+		"vertex_shader", "geometry_shader", "fragment_shader",
+		"header", "option", "condition"
+	};
 	
-	core::reset(&buffer);
-	f->read_file(&buffer);
-	shader_data.reserve((size_t)f->get_filesize());
-	shader_data = buffer.str().c_str();
-	f->close();
+	bool inside_tag = false;
+	bool inside_comment = false;
+	size_t hyphen_count = 0;
+	for(auto iter = begin(shader_data); iter != end(shader_data); ) {
+		if(inside_comment && *iter != '>') {
+			if(*iter == '-') hyphen_count++;
+			else hyphen_count = 0;
+			iter = shader_data.erase(iter);
+			continue;
+		}
+		
+		switch(*iter) {
+			case '&':
+				iter = shader_data.insert(iter+1, { 'a', 'm', 'p', ';' });
+				continue;
+			case '<':
+				if(inside_tag) break;
+				else {
+					//
+					const size_t cur_pos(iter - begin(shader_data));
+					if(cur_pos+4 < shader_data.size() &&
+					   shader_data.substr(cur_pos+1, 3) == "!--") {
+						inside_tag = true;
+						inside_comment = true;
+						iter = shader_data.erase(iter, iter+4);
+						continue;
+					}
+					
+					// len must at least be 1 (first must be ignored, since it might be '/'
+					const size_t space_pos(shader_data.find_first_of(" \t\r\n>/", cur_pos+2));
+					if(space_pos != string::npos) {
+						const size_t end_tag(shader_data[cur_pos+1] == '/' ? 1 : 0);
+						const size_t tag_len(space_pos - cur_pos - 1 - end_tag);
+						const string tag_name(shader_data.substr(cur_pos+1+end_tag, tag_len));
+						if(valid_tags.count(tag_name) > 0) {
+							inside_tag = true;
+							iter += tag_len;
+							break;
+						}
+					}
+				}
+				*iter = '&';
+				iter = shader_data.insert(iter+1, { 'l', 't', ';' });
+				continue;
+			case '>':
+				if(inside_comment) {
+					if(hyphen_count >= 2) {
+						iter = shader_data.erase(iter);
+						inside_comment = false;
+						inside_tag = false;
+						hyphen_count = 0;
+						continue;
+					}
+				}
+				if(inside_tag) {
+					inside_tag = false;
+					break;
+				}
+				*iter = '&';
+				iter = shader_data.insert(iter+1, { 'g', 't', ';' });
+				continue;
+			default: break;
+		}
+		iter++;
+	}
 	
-	// check if we have a valid xml file
-	if(shader_data.length() < 5 || shader_data.substr(0, 5) != "<?xml") {
+	// process data and check if we have a valid xml file
+	xml::xml_doc shd_doc = x->process_data(shader_data);
+	if(!shd_doc.valid) {
 		a2e_error("invalid a2e-shader file %s!", filename.c_str());
 		return false;
 	}
 	
-	// replace special chars
-	shader_data = core::find_and_replace(shader_data, "&", "&amp;");
-	shader_data = core::find_and_replace(shader_data, "< ", "&lt; ");
-	shader_data = core::find_and_replace(shader_data, " >", " &gt;");
-	shader_data = core::find_and_replace(shader_data, "<= ", "&lt;= ");
-	shader_data = core::find_and_replace(shader_data, " >=", " &gt;=");
+	// check version
+	const size_t a2e_shd_version = shd_doc.get<size_t>("a2e_shader.version", 0);
+	if(a2e_shd_version != A2E_SHADER_VERSION) {
+		a2e_error("wrong version %u in shader %s - should be %u!",
+				  a2e_shd_version, filename.c_str(), A2E_SHADER_VERSION);
+		return false;
+	}
 	
 	// 
 	a2e_shader_object* a2e_shd = shader_object;
 	a2e_shd->identifier = identifier;
 	
+	// process includes
+	const string include_str(shd_doc.get<string>("a2e_shader.includes.content", ""));
+	if(include_str.length() > 0) {
+		const vector<string> includes(core::tokenize(include_str, ' '));
+		for(const auto& include : includes) {
+			if(include.length() == 0) continue;
+			if(a2e_shader_includes.count(include) == 0) {
+				a2e_error("unknown include \"%s\" in shader \"%s\"! - will be ignored!", include, identifier);
+			}
+			else {
+				a2e_shd->includes.insert(include);
+			}
+		}
+	}
+#if defined(A2E_IOS)
+	// always include this in glsl es
+	if(node_name == "a2e_shader") a2e_shd->includes.push_back("glsles_compat");
+#endif
+	
+	// process (initial) options
+	const string options_str(shd_doc.get<string>("a2e_shader.options.content", ""));
+	set<string> options { "#" };
+	if(options_str.length() > 0) {
+		const vector<string> options_tokens(core::tokenize(options_str, ' '));
+		if(options_tokens.size() == 0) {
+			a2e_error("options tag found, but empty - defaulting to standard option!");
+		}
+		else {
+			// check if options list contains '#'
+			const auto std_option = find(cbegin(options_tokens), cend(options_tokens), "#");
+			if(std_option == options_tokens.cend()) {
+				// no default option, delete it
+				options.erase("#");
+			}
+			
+			for(const auto& opt : options_tokens) {
+				options.insert(opt);
+			}
+		}
+	}
+	
+	// create/modify/extend/combine the option list of the actual shader and its includes:
+	// in case both the actual shader and the include shader contain an options list:
+	//	* both don't contain a default version: only the intersection will be processed and compiled
+	//		example: (A B C) (A C D) -> (AA CC), valid options: (A C)
+	//	* only the include contains a default version: the intersection + the include default version
+	//		and all remaining actual shader options will be compiled
+	//		example: (A B C) (# B C D) -> (A# BB CC), valid options: (A B C)
+	//	* only the actual shader contains a default version: this effectively removes the default version,
+	//		and all include options will be compiled with the actual shaders default version, excluding
+	//		the intersection, which will be compiled together separately
+	//		example: (# A B) (B C D E) -> (BB #C #D #E), valid options: (B C D E)
+	//	* both contain a default version:
+	//		both default version will be combined + the intersection of both + all remaining actual shader
+	//		options and the include shader default version + all remaining include shader options and the
+	//		actual shader default version
+	//		example: (# A B) (# B D) -> (## #D A# BB), valid options: (# A B D)
+	//	* include contains a *combiner:
+	//		*combiners are basically handled like default options, but both a version w/o them and a version w/ them
+	//		will be produced (former: w/o *combiner suffix (as if it didn't exist), latter: w/ *combiner suffix)
+	//		furthermore, all prior rules apply and *combiners are applied at the end
+	//		example: (# A B) (# *combiner) -> (## A# B# #*combiner A*combiner B*combiner)
+	//		example^2: (# A) (*combiner *combiner2) ->
+	//		           (# A #*combiner A*combiner #*combiner2 A*combiner2 #*combiner*combiner2 A*combiner*combiner2)
+	bool default_option(options.count("#") == 1);
+	for(const auto& include : a2e_shd->includes) {
+		const a2e_shader_include_object* inc_obj = a2e_shader_includes[include]->shader_include_object;
+		const bool inc_default_option(inc_obj->options.count("#") > 0);
+		if(!default_option) {
+			// shader has no default option any more, create intersection with include
+			if(!inc_default_option) {
+				// complete intersection
+				const set<string> old_options(options);
+				for(const auto& opt : old_options) {
+					if(inc_obj->options.count(opt) == 0) {
+						options.erase(opt);
+					}
+				}
+			}
+			else {
+				// include has default
+				// -> intersection doesn't matter, all shader options are kept
+				// -> include options are either already part of shader options or would have been dropped
+			}
+		}
+		else {
+			if(!inc_default_option) {
+				// drop default
+				options.erase("#");
+				default_option = false;
+				
+				// drop all options that aren't part of the include options
+				const set<string> old_options(options);
+				for(const auto& opt : old_options) {
+					if(inc_obj->options.count(opt) == 0) {
+						options.erase(opt);
+					}
+				}
+			}
+			
+			// add missing include options (only those w/o combiners, those will be added later)
+			for(const auto& inc_option : inc_obj->options) {
+				if(options.count(inc_option) == 0 && inc_option.find("*") == string::npos) {
+					options.insert(inc_option);
+				}
+			}
+		}
+	}
+	
+	//
+	if(options.empty()) {
+		a2e_error("incompatible include options for shader \"%s\" - all options exclude each other!", filename);
+		return false;
+	}
+	
+	// handle include combiners (-> merge all combiners)
+	for(const auto& include : a2e_shd->includes) {
+		const a2e_shader_include_object* inc_obj = a2e_shader_includes[include]->shader_include_object;
+		for(const auto& combiner : inc_obj->combiners) {
+			if(a2e_shd->combiners.count(combiner) == 0) {
+				a2e_shd->combiners.insert(combiner);
+			}
+		}
+	}
+	
+	// finally: add options to shader options set (-> allocate memory)
+	if(!default_option) a2e_shd->remove_option("#");
+	for(const auto& opt : options) {
+		a2e_shd->add_option(opt);
+	}
+	
+	// find and add all combiners in the shader
+	for(const auto& cur_node : shd_doc.nodes) {
+		process_node(cur_node.second, nullptr, [&a2e_shd](const xml::xml_node* node) {
+			if(node->name() == "option") {
+				// only check match options and ignore validity for now
+				// -> nomatch combiners would have already been added (if they exist and are active)
+				const string match_attrs((*node)["match"]);
+				if(match_attrs == "INVALID") return;
+				
+				const vector<string> combiners(core::tokenize(match_attrs, ' '));
+				for(const auto& combiner : combiners) {
+					// check if it's a combiner
+					if(combiner[0] == '*') {
+						a2e_shd->combiners.insert(combiner);
+					}
+				}
+			}
+		});
+	}
+	
+	// add option for each combiner combination (combiner power set)
+	const set<string> combinations(core::power_set(a2e_shd->combiners));
+	set<string> new_options;
+	for(const auto& option : a2e_shd->options) {
+		for(const auto& comb : combinations) {
+			const string combined_option(option+comb);
+			new_options.insert(combined_option);
+		}
+	}
+	for(const auto& new_option : new_options) {
+		a2e_shd->add_option(new_option);
+	}
+	
 	// create an xml doc from the read data
-	xmlDoc* doc = xmlReadMemory(shader_data.c_str(), (unsigned int)shader_data.size(), nullptr, (const char*)"UTF-8", 0);
+	xmlDoc* doc = xmlReadMemory(shader_data.c_str(), (unsigned int)shader_data.size(), nullptr,
+								(const char*)"UTF-8", 0);
 	xmlNode* root = xmlDocGetRootElement(doc);
 	
 	// parsing time
-	bool valid_shader = false;
-	for(xmlNode* cur_node = root; cur_node; cur_node = cur_node->next) {
+	for(xmlNode* cur_node = root; cur_node != nullptr; cur_node = cur_node->next) {
 		if(cur_node->type == XML_ELEMENT_NODE) {
 			xmlElement* cur_elem = (xmlElement*)cur_node;
 			string node_name = (const char*)cur_elem->name;
-			if(node_name == "a2e_shader" || node_name == "a2e_shader_include") {
-				size_t version = x->get_attribute<size_t>(cur_elem->attributes, "version");
-				if(version != A2E_SHADER_VERSION) {
-					a2e_error("wrong version %u in shader %s - should be %u!",
-							 version, filename.c_str(), A2E_SHADER_VERSION);
-					if(doc != nullptr) xmlFreeDoc(doc);
-					xmlCleanupParser();
-					return false;
+			if(node_name == "a2e_shader") {
+				cur_node = cur_node->children;
+			}
+			else if(node_name == "vertex_shader" ||
+					node_name == "geometry_shader" ||
+					node_name == "fragment_shader") {
+				// get glsl version
+#if !defined(A2E_IOS)
+				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_150;
+#else
+				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_ES_100;
+#endif
+				ext::GLSL_VERSION glsl_version = default_glsl_version;
+				if(x->is_attribute(cur_elem->attributes, "version")) {
+					glsl_version = exts->to_glsl_version(x->get_attribute<size_t>(cur_elem->attributes, "version"));
+					if(glsl_version == ext::GLSL_NO_VERSION) {
+						// reset to default
+						glsl_version = default_glsl_version;
+					}
 				}
 				
-				valid_shader = true;
-				cur_node = cur_node->children;
-					
-#if defined(A2E_IOS)
-				// always include this in glsl es
-				if(node_name == "a2e_shader") a2e_shd->includes.push_back("glsles_compat");
-#endif
-			}
-			
-			if(valid_shader) {
-				if(node_name == "includes") {
-					string includes_str = (const char*)xmlNodeGetContent((xmlNode*)cur_elem);
-					vector<string> includes = core::tokenize(includes_str, ' ');
-					for(const auto& include : includes) {
-						if(a2e_shader_includes.count(include) == 0) {
-							a2e_error("unknown include \"%s\"! - will be ignored!", include);
-						}
-						else {
-							a2e_shd->includes.push_back(include);
-						}
-					}
-				}
-				if(node_name == "options") {
-					// get shader options list
-					if(!x->is_attribute(cur_elem->attributes, "list")) {
-						a2e_error("options tag found, but no list attribute! - defaulting to standard option!");
-					}
-					else {
-						const string option_list = x->get_attribute<string>(cur_elem->attributes, "list");
-						vector<string> options = core::tokenize(option_list, ' ');
-						if(options.size() == 0) {
-							a2e_error("options list is empty! - defaulting to standard option!");
-						}
-						else {
-							// check if options list contains '#'
-							const auto std_option = find(options.cbegin(), options.cend(), "#");
-							if(std_option == options.cend()) {
-								// no default option, delete it
-								a2e_shd->remove_option("#");
-							}
-							
-							// add options to shader options set, allocate memory
-							for(const auto& option : options) {
-								a2e_shd->add_option(option);
-							}
-						}
-					}
-				}
-				else if(node_name == "vertex_shader" ||
-						node_name == "geometry_shader" ||
-						node_name == "fragment_shader") {
-					// get glsl version
-#if !defined(A2E_IOS)
-					static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_150;
-#else
-					static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_ES_100;
-#endif
-					ext::GLSL_VERSION glsl_version = default_glsl_version;
-					if(x->is_attribute(cur_elem->attributes, "version")) {
-						glsl_version = exts->to_glsl_version(x->get_attribute<size_t>(cur_elem->attributes, "version"));
-						if(glsl_version == ext::GLSL_NO_VERSION) {
-							// reset to default
-							glsl_version = default_glsl_version;
-						}
-					}
-					
-					// check for preprocessing
-					SHADER_PREPROCESSING shd_preprocessing = a2e_shader::SP_NONE;
-					if(x->is_attribute(cur_elem->attributes, "preprocessing")) {
-						const string preprocessing = x->get_attribute<string>(cur_elem->attributes, "preprocessing");
-						if(preprocessing == "NONE") shd_preprocessing = a2e_shader::SP_NONE;
-						else {
-							a2e_error("unknown preprocessing method \"%s\"!", preprocessing.c_str());
-						}
-					}
-					
-					// get combiner options if there are any in the shader (this is done implicitly)
-					const set<string> combiners(get_shader_combiner_options(cur_elem->children));
-					const set<string> options(a2e_shd->options);
-					for(const auto& option : options) {
-						for(const auto& combiner : combiners) {
-							const string combined_option(option + combiner);
-							const size_t last_hash_pos(option.rfind("#"));
-							//cout << ">> checking to add: " << combined_option << endl;
-							// don't add combiner twice!
-							if(option != combiner &&
-							   !(last_hash_pos != string::npos && option.find(combiner, last_hash_pos) != string::npos) &&
-							   a2e_shd->options.count(combined_option) == 0) {
-								//cout << ">> adding option: " << combined_option << endl;
-								// add option#combiner
-								a2e_shd->add_option(combined_option);
-								
-								// copy data from option
-								*a2e_shd->vertex_shader[combined_option] = *a2e_shd->vertex_shader[option];
-								*a2e_shd->geometry_shader[combined_option] = *a2e_shd->geometry_shader[option];
-								*a2e_shd->fragment_shader[combined_option] = *a2e_shd->fragment_shader[option];
-							}
-						}
-					}
-					
-					// traverse xml nodes and combine shader code for each option
-					for(const auto& option : a2e_shd->options) {
-						a2e_shader_code* shd = (node_name == "vertex_shader" ? a2e_shd->vertex_shader[option] :
-												(node_name == "geometry_shader" ? a2e_shd->geometry_shader[option] :
-												 a2e_shd->fragment_shader[option]));
-						
-						shd->version = glsl_version;
-						shd->preprocessing = shd_preprocessing;
-						
-						//
-						get_shader_content(shd, cur_elem->children, option);
-					}
+				// traverse xml nodes and combine shader code for each option
+				for(const auto& option : a2e_shd->options) {
+					a2e_shader_code* shd = (node_name == "vertex_shader" ? a2e_shd->vertex_shader[option] :
+											(node_name == "geometry_shader" ? a2e_shd->geometry_shader[option] :
+											 a2e_shd->fragment_shader[option]));
+					shd->version = glsl_version;
+					get_shader_content(shd, cur_elem->children, option);
 				}
 			}
 		}
@@ -263,105 +403,37 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	if(doc != nullptr) xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
-	if(!valid_shader) {
-		a2e_error("invalid a2e-shader file %s!", filename.c_str());
-		return false;
-	}
-	
 	return true;
 }
 
-set<string> a2e_shader::get_shader_combiner_options(xmlNode* node) {
-	set<string> ret;
+void a2e_shader::process_node(const xml::xml_node* cur_node, const xml::xml_node* parent, std::function<void(const xml::xml_node* node)> fnc) {
+	// process node itself
+	fnc(cur_node);
 	
-	deque<xmlNode*> node_stack;
-	node_stack.push_back(node);
-	
-	for(;;) {
-		if(node_stack.size() == 0) break;
-		
-		xmlNode* cur_node = node_stack.back();
-		node_stack.pop_back();
-		
-		while(cur_node != nullptr) {
-			string node_name = (const char*)cur_node->name;
-			
-			if(node_name == "preprocessor" ||
-			   node_name == "variables" ||
-			   node_name == "program" ||
-			   node_name == "condition" ||
-			   node_name == "option") {
-				
-				bool traverse_child_node = true;
-				if(node_name == "condition") {
-					if(!x->is_attribute(((xmlElement*)cur_node)->attributes, "type") ||
-					   !x->is_attribute(((xmlElement*)cur_node)->attributes, "value")) {
-						a2e_error("invalid condition (no type and/or value attribute)!");
-						traverse_child_node = false;
-					}
-					else {
-						A2E_SHADER_CONDITION_TYPE condition_type = get_condition_type(x->get_attribute<string>(((xmlElement*)cur_node)->attributes, "type"));
-						if(condition_type == a2e_shader::INVALID) {
-							traverse_child_node = false;
-						}
-						else {
-							if(!check_shader_condition(condition_type, x->get_attribute<string>(((xmlElement*)cur_node)->attributes, "value"))) {
-								traverse_child_node = false;
-							}
-						}
-					}
-				}
-				else if(node_name == "option") {
-					const bool match_attr(x->is_attribute(((xmlElement*)cur_node)->attributes, "match"));
-					const bool nomatch_attr(x->is_attribute(((xmlElement*)cur_node)->attributes, "nomatch"));
-					if(!match_attr && !nomatch_attr) {
-						a2e_error("option tag found, but no match or nomatch attribute!");
-						traverse_child_node = false;
-					}
-					else if(match_attr && nomatch_attr) {
-						a2e_error("option tag found, but both match and nomatch attribute are specified (only one is allowed)!");
-						traverse_child_node = false;
-					}
-					else {
-						// get option, check if it's a combiner and insert to set
-						const string option_value = x->get_attribute<string>(((xmlElement*)cur_node)->attributes, (match_attr ? "match" : "nomatch"));
-						const vector<string> options(core::tokenize(option_value, ' '));
-						for(const auto& option : options) {
-							const size_t hash_pos(option.find("#"));
-							if(hash_pos != string::npos && option.length() > 1) {
-								ret.insert(option.substr(hash_pos, option.length()-hash_pos));
-							}
-						}
-						traverse_child_node = true;
-					}
-				}
-				
-				if(traverse_child_node) {
-					node_stack.push_back(cur_node->next);
-					cur_node = cur_node->children;
-					continue;
-				}
-			}
-			cur_node = cur_node->next;
-		}
+	// process child nodes
+	for(const auto& child : cur_node->children) {
+		process_node(child.second, cur_node, fnc);
 	}
-	
-	return ret;
 }
 
 void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const string& option) {
 	deque<xmlNode*> node_stack;
 	node_stack.push_back(node);
 	
-	// split option into <non-combiner><#combiner>
-	const size_t last_hash_pos(option.rfind("#"));
-	const string non_combiner_option((last_hash_pos == string::npos || option.length() == 1) ?
-									 option : option.substr(0, last_hash_pos));
-	const string combiner_option((last_hash_pos == string::npos || option.length() == 1) ?
-								 "" : option.substr(last_hash_pos, option.length()-last_hash_pos));
+	// split option into <non-combiner><*combiner>...
+	const size_t first_comb_pos(option.find("*"));
+	const string non_combiner_option(first_comb_pos == string::npos ? option : option.substr(0, first_comb_pos));
+	set<string> combiners;
+	if(first_comb_pos != string::npos) {
+		const vector<string> combiners_vec(core::tokenize(option.substr(first_comb_pos, option.length()-first_comb_pos), '*'));
+		for(const auto& combiner : combiners_vec) {
+			if(combiner.length() == 0) continue;
+			combiners.insert("*"+combiner);
+		}
+	}
 	
 	// current code dump string
-	string* text = &shd->preprocessor;
+	string* text = &shd->program;
 	
 	for(;;) {
 		if(node_stack.size() == 0) break;
@@ -370,18 +442,14 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 		node_stack.pop_back();
 		
 		while(cur_node != nullptr) {
-			string node_name = (const char*)cur_node->name;
+			const string node_name((const char*)cur_node->name);
 			
-			if(node_name == "preprocessor" ||
-			   node_name == "variables" ||
-			   node_name == "program" ||
+			if(node_name == "header" ||
 			   node_name == "condition" ||
 			   node_name == "option") {
 				
 				bool traverse_child_node = true;
-				if(node_name == "preprocessor") text = &shd->preprocessor;
-				else if(node_name == "variables") text = &shd->variables;
-				else if(node_name == "program") text = &shd->program;
+				if(node_name == "header") text = &shd->header;
 				else if(node_name == "condition") {
 					if(!x->is_attribute(((xmlElement*)cur_node)->attributes, "type") ||
 					   !x->is_attribute(((xmlElement*)cur_node)->attributes, "value")) {
@@ -389,8 +457,8 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 						traverse_child_node = false;
 					}
 					else {
-						A2E_SHADER_CONDITION_TYPE condition_type = get_condition_type(x->get_attribute<string>(((xmlElement*)cur_node)->attributes, "type"));
-						if(condition_type == a2e_shader::INVALID) {
+						const CONDITION_TYPE condition_type = get_condition_type(x->get_attribute<string>(((xmlElement*)cur_node)->attributes, "type"));
+						if(condition_type == CONDITION_TYPE::INVALID) {
 							traverse_child_node = false;
 						}
 						else {
@@ -420,7 +488,7 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 						traverse_child_node = !match_attr; // xor to true if found and match, xor to false if found and nomatch
 						
 						// for non-combiner options:
-						if(combiner_option.empty()) {
+						if(combiners.empty()) {
 							for(const auto& voption : valid_options) {
 								if(voption == option) {
 									traverse_child_node ^= true;
@@ -433,7 +501,7 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 							for(const auto& voption : valid_options) {
 								if(voption == option ||
 								   voption == non_combiner_option ||
-								   voption == combiner_option) {
+								   combiners.count(voption) > 0) {
 									traverse_child_node ^= true;
 									break;
 								}
@@ -450,6 +518,12 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 			}
 			else if(node_name == "text") {
 				*text += (const char*)xmlNodeGetContent(cur_node);
+				
+				// if we reached the end of a header tag, switch back to program string
+				if(cur_node->parent != nullptr && cur_node->next == nullptr &&
+				   string((const char*)cur_node->parent->name) == "header") {
+					text = &shd->program;
+				}
 			}
 			
 			cur_node = cur_node->next;
@@ -459,15 +533,8 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 	return;
 }
 
-bool a2e_shader::check_shader_condition(const A2E_SHADER_CONDITION_TYPE type, const string& value) {
-	bool ret = false;
-	string tmp;
-	string tmp2;
-	tmp.reserve(32);
-	tmp2.reserve(32);
-	
-	core::reset(&buffer);
-	buffer << value;
+bool a2e_shader::check_shader_condition(const CONDITION_TYPE type, const string& value) const {
+	const vector<string> condition_tokens(core::tokenize(value, ' '));
 	
 	// EQUAL: all strings are matched
 	// NEQUAL: no string is matched
@@ -475,37 +542,32 @@ bool a2e_shader::check_shader_condition(const A2E_SHADER_CONDITION_TYPE type, co
 	// LEQUAL/GEQUAL/NLEQUAL/NGEQUAL: see explanation in shader.h
 	switch(type) {
 		// EQUAL, NEQUAL and OR apply to all conditions
-		case a2e_shader::EQUAL:
-			ret = true;
-			while(buffer >> tmp) {
-				if(conditions.count(tmp) == 0 ||
-				   (conditions.count(tmp) == 1 && !conditions[tmp])) {
-					ret = false;
-					break;
+		case CONDITION_TYPE::EQUAL:
+			for(const auto& condition : condition_tokens) {
+				if(conditions.count(condition) == 0 ||
+				   (conditions.count(condition) == 1 && !conditions.find(condition)->second)) {
+					return false;
 				}
 			}
-			break;
-		case a2e_shader::NEQUAL:
-			ret = true;
-			while(buffer >> tmp) {
-				if(conditions.count(tmp) == 1 && conditions[tmp]) {
-					ret = false;
-					break;
+			return true;
+		case CONDITION_TYPE::NEQUAL:
+			for(const auto& condition : condition_tokens) {
+				if(conditions.count(condition) == 1 && conditions.find(condition)->second) {
+					return false;
 				}
 			}
-			break;
-		case a2e_shader::OR:
-			while(buffer >> tmp) {
-				if(conditions.count(tmp) == 1 && conditions[tmp]) {
-					ret = true;
-					break;
+			return true;
+		case CONDITION_TYPE::OR:
+			for(const auto& condition : condition_tokens) {
+				if(conditions.count(condition) == 1 && conditions.find(condition)->second) {
+					return true;
 				}
 			}
-			break;
+			return false;
 			
 		// GEQUAL, LEQUAL, NGEQUAL and NLEQUAL only apply to graphic cards
-		case a2e_shader::GEQUAL:
-		case a2e_shader::LEQUAL: {
+		case CONDITION_TYPE::GEQUAL:
+		case CONDITION_TYPE::LEQUAL: {
 			ext::GRAPHIC_CARD graphic_card = exts->get_graphic_card();
 			ext::GRAPHIC_CARD_VENDOR vendor = exts->get_vendor();
 			
@@ -532,262 +594,42 @@ bool a2e_shader::check_shader_condition(const A2E_SHADER_CONDITION_TYPE type, co
 			}
 			
 			// some better function binding or lambda expressions would really come in handy here ...
-			while(buffer >> tmp) {
+			for(const auto& condition : condition_tokens) {
 				for(ssize_t card = min_card; card <= max_card; card++) {
-					if(tmp == ext::GRAPHIC_CARD_DEFINE_STR[card] &&
-					   ((type == a2e_shader::GEQUAL && graphic_card >= card) ||
-						(type == a2e_shader::LEQUAL && graphic_card <= card))) {
-						ret = true;
-						break;
+					if(condition == ext::GRAPHIC_CARD_DEFINE_STR[card] &&
+					   ((type == CONDITION_TYPE::GEQUAL && graphic_card >= card) ||
+						(type == CONDITION_TYPE::LEQUAL && graphic_card <= card))) {
+						return true;
 					}
 				}
 			}
 		}
-			break;
-		case a2e_shader::NGEQUAL:
-			ret = check_shader_condition(a2e_shader::GEQUAL, value) ^ true;
-			break;
-		case a2e_shader::NLEQUAL:
-			ret = check_shader_condition(a2e_shader::LEQUAL, value) ^ true;
-			break;
-		default:
-			break;
+		break;
+		case CONDITION_TYPE::NGEQUAL:
+			return (check_shader_condition(CONDITION_TYPE::GEQUAL, value) ^ true);
+		case CONDITION_TYPE::NLEQUAL:
+			return (check_shader_condition(CONDITION_TYPE::LEQUAL, value) ^ true);
+		default: break;
 	}
-
-	return ret;
+	return false;
 }
 
-a2e_shader::A2E_SHADER_CONDITION_TYPE a2e_shader::get_condition_type(const string& condition_type) {
-	if(condition_type == "EQUAL") return a2e_shader::EQUAL;
-	else if(condition_type == "GEQUAL") return a2e_shader::GEQUAL;
-	else if(condition_type == "LEQUAL") return a2e_shader::LEQUAL;
-	else if(condition_type == "NGEQUAL") return a2e_shader::NGEQUAL;
-	else if(condition_type == "NLEQUAL") return a2e_shader::NLEQUAL;
-	else if(condition_type == "NEQUAL") return a2e_shader::NEQUAL;
-	else if(condition_type == "OR") return a2e_shader::OR;
+a2e_shader::CONDITION_TYPE a2e_shader::get_condition_type(const string& condition_type) const {
+	if(condition_type == "EQUAL") return a2e_shader::CONDITION_TYPE::EQUAL;
+	else if(condition_type == "GEQUAL") return a2e_shader::CONDITION_TYPE::GEQUAL;
+	else if(condition_type == "LEQUAL") return a2e_shader::CONDITION_TYPE::LEQUAL;
+	else if(condition_type == "NGEQUAL") return a2e_shader::CONDITION_TYPE::NGEQUAL;
+	else if(condition_type == "NLEQUAL") return a2e_shader::CONDITION_TYPE::NLEQUAL;
+	else if(condition_type == "NEQUAL") return a2e_shader::CONDITION_TYPE::NEQUAL;
+	else if(condition_type == "OR") return a2e_shader::CONDITION_TYPE::OR;
 	else {
 		// invalid type
-		a2e_error("unknown condition type \"%s\"!", condition_type.c_str());
-		return a2e_shader::INVALID;
+		a2e_error("unknown condition type \"%s\"!", condition_type);
+		return a2e_shader::CONDITION_TYPE::INVALID;
 	}
 }
 
-bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
-	bool ret = true;
-	
-	// create/modify/extend/combine the option list of the actual shader and its includes:
-	// in case both the actual shader and the include shader contain an options list:
-	//	* both don't contain a default version: only the intersection will be processed and compiled
-	//		example: (A B C) (A C D) -> (AA CC), valid options: (A C)
-	//	* only the include contains a default version: the intersection + the include default version
-	//		and all remaining actual shader options will be compiled
-	//		example: (A B C) (# B C D) -> (A# BB CC), valid options: (A B C)
-	//	* only the actual shader contains a default version: this effectively removes the default version,
-	//		and all include options will be compiled with the actual shaders default version, excluding
-	//		the intersection, which will be compiled together separately
-	//		example: (# A B) (B C D E) -> (BB #C #D #E), valid options: (B C D E)
-	//	* both contain a default version:
-	//		both default version will be combined + the intersection of both + all remaining actual shader
-	//		options and the include shader default version + all remaining include shader options and the
-	//		actual shader default version
-	//		example: (# A B) (# B D) -> (## #D A# BB), valid options: (# A B D)
-	//	* include contains a #linear-combiner:
-	//		#combiners are basically handled like default options, but both a version w/o them and a version w/ them
-	//		will be produced (former: w/o #combiner suffix (as if it didn't exist), latter: w/ #combiner suffix)
-	//		furthermore, all prior rules apply and #combiners are applied at the end
-	//		example: (# A B) (# #combiner) -> (## A# B# ##combiner A#combiner B#combiner)
-	//		example^2: (# A) (#combiner #combiner2) -> (# A ##combiner A#combiner ##combiner2 A#combiner2)
-	//
-	//	TODO/WIP: the method below is not implemented yet!
-	//	* include contains a *mul-combiner:
-	//		-WIP-
-	//		example: (# A B) (# *combiner) -> (## A# B# #*combiner A*combiner B*combiner)
-	//		example^2: (# A) (*combiner *combiner2) ->
-	//		           (# A #*combiner A*combiner #*combiner2 A*combiner2 #*combiner*combiner2 A*combiner*combiner2)
-	bool default_opt = (shd->options.count("#") != 0);
-	set<string> active_combiners; // this will contain all combiners that are actually active
-	set<string> in_combiners; // this contains all existing combiners
-	for(const auto& option : shd->options) {
-		const size_t last_hash_pos(option.rfind("#"));
-		if(last_hash_pos != string::npos && option.length() > 1) {
-			in_combiners.insert(option.substr(last_hash_pos, option.length()-last_hash_pos));
-		}
-	}
-	
-	//cout << "!!##############" << endl;
-	//cout << "<in> options for: " << shd->identifier << endl;
-	/*for(const auto& option : shd->options) {
-		cout << "\t" << option << endl;
-	}*/
-	for(const auto& include : shd->includes) {
-		if(a2e_shader_includes.count(include) == 0) {
-			a2e_error("unknown include \"%s\"! - will be ignored!", include);
-			continue;
-		}
-		
-		// create set of non-#combiner options of the include
-		const a2e_shader_include_object* inc_obj = a2e_shader_includes[include]->shader_include_object;
-		set<string> inc_non_combiner_options(inc_obj->options);
-		for(auto iter = inc_non_combiner_options.cbegin(); iter != inc_non_combiner_options.cend(); ) {
-			if((*iter)[0] == '#' && iter->length() > 1) {
-				inc_non_combiner_options.erase(iter++);
-			}
-			else ++iter;
-		}
-		if(inc_non_combiner_options.empty()) {
-			// if there are only #combiners in the include, add a default option
-			inc_non_combiner_options.insert("#");
-		}
-		//cout << "----------------------" << endl;
-		//cout << "inc_non_combiner_options:" << endl;
-		/*for(const auto& nc : inc_non_combiner_options) {
-			cout << "\t" << nc << endl;
-		}*/
-		const bool inc_default_opt = (inc_non_combiner_options.count("#") != 0);
-		
-		// for explanations, see above
-		set<string> new_options(shd->options); // we will operate on a copy
-		if(!default_opt && !inc_default_opt) {
-			//cout << "[INTERSECT]" << endl;
-			// intersect
-			for(const auto& option : shd->options) {
-				if(inc_non_combiner_options.count(option) == 0) {
-					new_options.erase(option);
-				}
-			}
-			// TODO: handle combiners
-		}
-		else if(!default_opt && inc_default_opt) {
-			//cout << "[INTERSECT + REM]" << endl;
-			// intersect + remaining == same/original actual shader set/options
-		}
-		else if(default_opt && !inc_default_opt) {
-			//cout << "[INTERSECT - REM]" << endl;
-			// intersect, remove '#', add remaining include options == include options set
-			new_options = inc_non_combiner_options;
-			
-			// add pre-existing combiners
-			set<string> combiners(in_combiners);
-			combiners.insert(cbegin(active_combiners), cend(active_combiners));
-			for(const auto& noption : inc_non_combiner_options) {
-				for(const auto& combiner : combiners) {
-					new_options.insert(noption+combiner);
-				}
-			}
-		}
-		else if(default_opt && inc_default_opt) {
-			//cout << "[NEW + DEF]" << endl;
-			//
-			for(const auto& inc_option : inc_non_combiner_options) {
-				if(new_options.count(inc_option) == 0) {
-					new_options.insert(inc_option);
-				}
-			}
-		}
-		
-		// apply #combiners
-		const set<string> uncombined_options(new_options);
-		for(const auto& inc_option : inc_obj->options) {
-			// only check for all #combiners
-			if(inc_option[0] == '#' && inc_option.length() > 1) {
-				for(const auto& option : uncombined_options) {
-					// don't add if a combiner exists already
-					if(!(option.find("#") != string::npos && option.length() > 1)) {
-						// add option#combiner
-						//cout << "> adding: " << (option + inc_option) << endl;
-						new_options.insert(option + inc_option);
-					}
-				}
-				active_combiners.insert(inc_option);
-			}
-		}
-		
-		// assign/add new options, ...
-		const set<string> old_options(shd->options); // need to copy again, since we're operating on it
-		/*for(const auto& act_comb : active_combiners) {
-			cout << ">> active combiner: " << act_comb << endl;
-		}*/
-		for(const auto& option : new_options) {
-			if(shd->options.count(option) == 0) {
-				//cout << "> adding to shader obj: " << option << endl;
-				shd->add_option(option);
-				
-				// copy data from non-combiner or standard/default option
-				const size_t last_hash_pos(option.rfind("#"));
-				const string non_combiner_option(option.substr(0, option.find("#")));
-				const string combiner_option(last_hash_pos != string::npos ? option.substr(last_hash_pos, option.length()-last_hash_pos) : "");
-				
-				// copy from default combiner option
-				if(last_hash_pos != string::npos && option.length() > 1 &&
-				   shd->options.count("#"+combiner_option) != 0) {
-					//cout << "> COPY 0" << ("#"+combiner_option) << endl;
-					*shd->vertex_shader[option] = *shd->vertex_shader["#"+combiner_option];
-					*shd->geometry_shader[option] = *shd->geometry_shader["#"+combiner_option];
-					*shd->fragment_shader[option] = *shd->fragment_shader["#"+combiner_option];
-					/*if(combiner_option == "#env_probe") {
-						cout << "#############################" << endl;
-						cout << "#############################" << endl;
-						cout << option << ": " << endl;
-						cout << shd->vertex_shader["#"+combiner_option]->program << endl;
-						cout << "#############################" << endl;
-						cout << shd->geometry_shader["#"+combiner_option]->program << endl;
-						cout << "#############################" << endl;
-						cout << "#############################" << endl;
-					}*/
-				}
-				// copy from non-combiner option
-				else if(last_hash_pos != string::npos && option.length() > 1 &&
-						shd->options.count(non_combiner_option) != 0) {
-					//cout << "> COPY 1: " << non_combiner_option << endl;
-					*shd->vertex_shader[option] = *shd->vertex_shader[non_combiner_option];
-					*shd->geometry_shader[option] = *shd->geometry_shader[non_combiner_option];
-					*shd->fragment_shader[option] = *shd->fragment_shader[non_combiner_option];
-				}
-				// copy from default, non-combiner option
-				else {
-					//cout << "> COPY 2: #" << endl;
-					*shd->vertex_shader[option] = *shd->vertex_shader["#"];
-					*shd->geometry_shader[option] = *shd->geometry_shader["#"];
-					*shd->fragment_shader[option] = *shd->fragment_shader["#"];
-				}
-			}
-		}
-		// ... delete old ones, ...
-		for(const auto& option : old_options) {
-			if(new_options.count(option) == 0 &&
-			   // don't remove combiner options for now
-			   !(option.find("#") != string::npos && option.length() > 1)) {
-				//cout << "> removing: " << (option) << endl;
-				shd->remove_option(option);
-				if(default_opt && option == "#") {
-					default_opt = false;
-				}
-			}
-		}
-		// ... and continue with next include
-		
-		//
-		//cout << "##############" << endl;
-		//cout << "options for: " << shd->identifier << endl;
-		/*for(const auto& option : shd->options) {
-			cout << "\t" << option << endl;
-		}*/
-	}
-	
-	// remove all inactive combiner options
-	const set<string> options(shd->options);
-	for(const auto& option : options) {
-		const size_t hash_pos(option.find("#"));
-		if(hash_pos != string::npos && option.length() > 1) {
-			const string combiner(option.substr(hash_pos, option.length()-hash_pos));
-			if(active_combiners.count(combiner) == 0) {
-				// this combiner is inactive, remove this option
-				//cout << "> removing inactive combiner: " << option << endl;
-				shd->remove_option(option);
-			}
-		}
-	}
-	
+bool a2e_shader::process_and_compile_a2e_shader(a2e_shader_object* shd) {
 	// do this for each option
 	for(const auto& option : shd->options) {
 		//
@@ -795,84 +637,77 @@ bool a2e_shader::preprocess_and_compile_a2e_shader(a2e_shader_object* shd) {
 		a2e_shader_code* geometry_shd = shd->geometry_shader[option];
 		a2e_shader_code* fragment_shd = shd->fragment_shader[option];
 		
+		// split option into <non-combiner><*combiner>...
+		const size_t first_comb_pos(option.find("*"));
+		const string non_combiner_option(first_comb_pos == string::npos ? option : option.substr(0, first_comb_pos));
+		set<string> combiners;
+		if(first_comb_pos != string::npos) {
+			const vector<string> combiners_vec(core::tokenize(option.substr(first_comb_pos, option.length()-first_comb_pos), '*'));
+			for(const auto& combiner : combiners_vec) {
+				if(combiner.length() == 0) continue;
+				combiners.insert("*"+combiner);
+			}
+		}
+		
 		// add include code
 		// (since we're inserting the include at the beginning, do this in reverse order, so the first include is the first in the code/shader)
 		for(auto include = shd->includes.crbegin(); include != shd->includes.crend(); include++) {
-			if(a2e_shader_includes.count(*include) == 0) {
-				a2e_error("unknown include \"%s\"! - will be ignored!", *include);
-				continue;
-			}
-			
-			a2e_shader_include* include_shd = a2e_shader_includes[*include];
-			a2e_shader_include_object* include_obj = include_shd->shader_include_object;
+			const a2e_shader_include* include_shd = a2e_shader_includes[*include];
+			const a2e_shader_include_object* include_obj = include_shd->shader_include_object;
 			
 			// check for option compatibility
 			string include_option = option;
-			const size_t hash_pos(option.find("#"));
-			bool is_combiner = false;
-			if(hash_pos != string::npos && include_option.length() > 1) {
-				include_option = include_option.substr(hash_pos, include_option.length()-hash_pos);
-				is_combiner = true;
-			}
 			if(include_obj->options.count(include_option) == 0) {
-				// first: check if this is a combiner-only include
-				bool has_non_combiner_options = false;
-				for(const auto& inc_option : include_obj->options) {
-					if(inc_option[0] != '#' || inc_option == "#") {
-						has_non_combiner_options = true;
-						break;
+				if(combiners.empty()) {
+					// no combiners, no compatible include option -> include must have default option
+					if(include_obj->options.count("#") == 0) {
+						a2e_error("include \"%s\" has no compatible option to \"%s\" in shader \"%s\"!",
+								  *include, option, shd->identifier);
+						return false;
 					}
-				}
-				// if so: just ignore the current option and continue (there is nothing to add/include for this option)
-				if(!has_non_combiner_options) continue;
-				
-				// second: check if the include contains the non-combiner option (and use that if available)
-				const string non_combiner_option(option.substr(0, hash_pos));
-				if(is_combiner && include_obj->options.count(non_combiner_option) != 0) {
-					include_option = non_combiner_option;
+					include_option = "#";
 				}
 				else {
-					// third: this include has non-combiner options, check if it has a default option:
-					if(include_obj->options.count("#") == 0) {
-						// if not, fail and continue
-						a2e_error("incompatible include (%s) - no match for option \"%s\" and include contains no standard option!", *include, include_option);
-						continue;
+					// create most compatible option*combiners
+					include_option = (include_obj->options.count(non_combiner_option) > 0 ? non_combiner_option : "#");
+					if(include_option == "#" && include_obj->options.count("#") == 0) {
+						a2e_error("include \"%s\" has no compatible option to \"%s\" in shader \"%s\"!",
+								  *include, option, shd->identifier);
+						return false;
 					}
-					// if so, only use the default option
-					else include_option = "#";
+					
+					for(const auto& combiner : combiners) {
+						if(include_obj->combiners.count(combiner) > 0) {
+							include_option += combiner;
+						}
+					}
+					
+					if(include_obj->options.count(include_option) == 0) {
+						a2e_error("tried to create compatible include option for \"%s\" in include \"%s\", but failed with non-existing \"%s\" in shader \"%s\"!",
+								  option, *include, include_option, shd->identifier);
+						return false;
+					}
 				}
 			}
 			
-			a2e_shader_code* inc_vs = include_obj->vertex_shader[include_option];
-			a2e_shader_code* inc_gs = include_obj->geometry_shader[include_option];
-			a2e_shader_code* inc_fs = include_obj->fragment_shader[include_option];
+			const a2e_shader_code* inc_vs = include_obj->vertex_shader.find(include_option)->second;
+			const a2e_shader_code* inc_gs = include_obj->geometry_shader.find(include_option)->second;
+			const a2e_shader_code* inc_fs = include_obj->fragment_shader.find(include_option)->second;
 			
 			// copy include
-			vertex_shd->preprocessor.insert(0, inc_vs->preprocessor);
-			vertex_shd->variables.insert(0, inc_vs->variables);
+			vertex_shd->header.insert(0, inc_vs->header);
 			vertex_shd->program.insert(0, inc_vs->program);
 			
-			geometry_shd->preprocessor.insert(0, inc_gs->preprocessor);
-			geometry_shd->variables.insert(0, inc_gs->variables);
+			geometry_shd->header.insert(0, inc_gs->header);
 			geometry_shd->program.insert(0, inc_gs->program);
 			
-			fragment_shd->preprocessor.insert(0, inc_fs->preprocessor);
-			fragment_shd->variables.insert(0, inc_fs->variables);
+			fragment_shd->header.insert(0, inc_fs->header);
 			fragment_shd->program.insert(0, inc_fs->program);
-						
-			if(vertex_shd->preprocessing == a2e_shader::SP_NONE) vertex_shd->preprocessing = vertex_shd->preprocessing;
-			if(geometry_shd->preprocessing == a2e_shader::SP_NONE) geometry_shd->preprocessing = inc_gs->preprocessing;
-			if(fragment_shd->preprocessing == a2e_shader::SP_NONE) fragment_shd->preprocessing = inc_fs->preprocessing;
 		}
-		
-		// TODO: check for preprocessing!
-		// removed lighting and gui preprocessing, since it isn't needed any more
 	}
 	
 	// compile
-	ret = compile_a2e_shader(shd);
-	
-	return ret;
+	return compile_a2e_shader(shd);
 }
 
 bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
@@ -894,8 +729,7 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		if(geometry_shd->program.find_first_not_of(" \n\r\t") == string::npos ||
 		   geometry_shd->program.find("void main(") == string::npos) {
 			shd->geometry_shader_available = false;
-			geometry_shd->preprocessor = "";
-			geometry_shd->variables = "";
+			geometry_shd->header = "";
 			geometry_shd->program = "";
 		}
 		else shd->geometry_shader_available = true;
@@ -919,11 +753,6 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		shd->fs_program[option] += def_prec_quals;
 #endif
 		
-		// preprocessor
-		shd->vs_program[option] += vertex_shd->preprocessor;
-		shd->fs_program[option] += fragment_shd->preprocessor;
-		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd->preprocessor;
-		
 		// add pre-defines
 		shd->vs_program[option] += string("#define ") + ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[exts->get_vendor()] + string("\n");
 		shd->vs_program[option] += string("#define ") + ext::GRAPHIC_CARD_DEFINE_STR[exts->get_graphic_card()] + string("\n");
@@ -934,22 +763,15 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 			shd->gs_program[option] += string("#define ") + ext::GRAPHIC_CARD_DEFINE_STR[exts->get_graphic_card()] + string("\n");
 		}
 		
-		// variables
-		shd->vs_program[option] += vertex_shd->variables;
-		shd->fs_program[option] += fragment_shd->variables;
-		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd->variables;
+		// header
+		shd->vs_program[option] += vertex_shd->header;
+		shd->fs_program[option] += fragment_shd->header;
+		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd->header;
 		
 		// programs
 		shd->vs_program[option] += vertex_shd->program;
 		shd->fs_program[option] += fragment_shd->program;
 		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd->program;
-		
-		// delete unneeded stuff ...
-		shd->vs_program[option] = core::find_and_replace(shd->vs_program[option], "builtin ", "");
-		shd->fs_program[option] = core::find_and_replace(shd->fs_program[option], "builtin ", "");
-		if(shd->geometry_shader_available) {
-			shd->gs_program[option] = core::find_and_replace(shd->gs_program[option], "builtin ", "");
-		}
 		
 #if defined(A2E_IOS)
 		make_glsl_es_compat(shd, option);

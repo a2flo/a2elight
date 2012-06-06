@@ -127,15 +127,19 @@ void shader_gl3::use(const size_t& program) {
 #endif
 }
 
-void shader_gl3::use(const string& option) {
-	cur_option = option;
+void shader_gl3::use(const string& option, const set<string> combiners) {
+	const string combined_option(option + accumulate(cbegin(combiners), cend(combiners), string(),
+													 [](string& ret, const string& in) {
+														 return ret + in;
+													 }));
 #if A2E_DEBUG
-	if(shd_obj.options.count(option) == 0) {
-		a2e_error("no option \"%s\" exists in shader \"%s\"!", option, shd_obj.name);
+	if(shd_obj.options.count(combined_option) == 0) {
+		a2e_error("no option \"%s\" exists in shader \"%s\"!", combined_option, shd_obj.name);
 		return;
 	}
 #endif
-	const shader_object::internal_shader_object* int_shd_obj = shd_obj.options.find(option)->second;
+	cur_option = combined_option;
+	const shader_object::internal_shader_object* int_shd_obj = shd_obj.options.find(cur_option)->second;
 	const auto piter = find(shd_obj.programs.cbegin(), shd_obj.programs.cend(), int_shd_obj);
 	cur_program = piter - shd_obj.programs.begin();
 	use(cur_program);

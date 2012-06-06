@@ -200,16 +200,15 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	const bool has_env_map(env_map != 0);
 	const string shd_option = (masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
 							   masked_draw_mode == DRAW_MODE::MATERIAL_PASS ?
-							   (env_pass ?
-								(has_env_map ? "opaque_env#env_probe" : "opaque#env_probe") :
-								(has_env_map ? "opaque_env" : "opaque")) :
-							   (env_pass ?
-								(has_env_map ? "alpha_env#env_probe" : "alpha#env_probe") :
-								(has_env_map ? "alpha_env" : "alpha")));
+							   "opaque" : "alpha");
+	set<string> shd_combiners;
+	if(env_pass) shd_combiners.insert("*env_probe");
+	if(has_env_map) shd_combiners.insert("*env_map");
+	
 	string shd_name = select_shader(draw_mode);
 	if(shd_name != "") {
 		shd = s->get_gl3shader(shd_name);
-		shd->use(shd_option);
+		shd->use(shd_option, shd_combiners);
 	}
 	
 	if(masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
@@ -222,7 +221,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 					shd_name = material->is_parallax_occlusion(sub_object_num) ? "IR_GP_GBUFFER_PARALLAX" : "IR_GP_GBUFFER_PARALLAX";
 					
 					shd = s->get_gl3shader(shd_name);
-					shd->use(shd_option);
+					shd->use(shd_option, shd_combiners);
 					shd->uniform("cam_position", -float3(*e->get_position()));
 					shd->uniform("model_position", position);
 					
@@ -234,7 +233,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				case a2ematerial::DIFFUSE:
 				default: {
 					shd = s->get_gl3shader("IR_GP_GBUFFER");
-					shd->use(shd_option);
+					shd->use(shd_option, shd_combiners);
 				}
 				break;
 			}
@@ -278,7 +277,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 					shd_name = material->is_parallax_occlusion(sub_object_num) ? "IR_MP_PARALLAX" : "IR_MP_PARALLAX";
 					
 					shd = s->get_gl3shader(shd_name);
-					shd->use(shd_option);
+					shd->use(shd_option, shd_combiners);
 					shd->uniform("cam_position", -float3(*e->get_position()));
 					shd->uniform("model_position", position);
 					
@@ -290,14 +289,14 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				case a2ematerial::DIFFUSE:
 				default: {
 					shd = s->get_gl3shader("IR_MP_DIFFUSE");
-					shd->use(shd_option);
+					shd->use(shd_option, shd_combiners);
 				}
 				break;
 			}
 		}
 		
 		// inferred rendering setup
-		ir_mp_setup(shd, shd_option);
+		ir_mp_setup(shd, shd_option, shd_combiners);
 		
 		// custom pre-draw setup
 		pre_draw_material(shd, attr_array_mask, texture_mask);
@@ -354,16 +353,16 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	}
 }
 
-void a2emodel::ir_mp_setup(gl3shader& shd, const string& option) {
+void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<string>& combiners) {
 	const rtt::fbo* cur_buffer = e->get_rtt()->get_current_buffer();
 	const float2 screen_size = float2(float(cur_buffer->width), float(cur_buffer->height));
 	shd->uniform("screen_size", screen_size);
 	
-	if(option.find("opaque") != string::npos) {
+	if(option == "opaque") {
 		shd->texture("light_buffer_diffuse", l_buffer->tex_id[0]);
 		shd->texture("light_buffer_specular", l_buffer->tex_id[1]);
 	}
-	else if(option.find("alpha") != string::npos) {
+	else if(option == "alpha") {
 		shd->texture("light_buffer_diffuse", l_buffer->tex_id[0]);
 		shd->texture("light_buffer_specular", l_buffer->tex_id[1]);
 		
@@ -385,16 +384,15 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	}
 	
-	if(option.find("_env") != string::npos) {
-		// TODO: better way?
+	if(combiners.count("*env_map") > 0) {
 		shd->uniform("local_mview", mview_mat);
 		shd->uniform("local_scale", scale_mat);
 		shd->uniform("model_position", position);
 		shd->uniform("cam_position", -float3(*e->get_position()));
-		if(option.find("opaque") != string::npos) {
+		if(option == "opaque") {
 			shd->texture("normal_buffer", g_buffer->tex_id[0]);
 		}
-		else if(option.find("alpha") != string::npos) {
+		else if(option == "alpha") {
 			shd->texture("normal_buffer", g_buffer_alpha->tex_id[0]);
 		}
 	}

@@ -42,9 +42,29 @@ void logger::destroy() {
 
 void logger::prepare_log(stringstream& buffer, const LOG_TYPE& type, const char* file, const char* func) {
 	if(type != logger::LT_NONE) {
+		switch(type) {
+			case LT_ERROR:
+				buffer << "\033[31m";
+				break;
+			case LT_DEBUG:
+				buffer << "\033[32m";
+				break;
+			case LT_MSG:
+				buffer << "\033[34m";
+				break;
+			default: break;
+		}
 		buffer << logger::type_to_str(type);
-		if(type == logger::LT_ERROR) buffer << " #" << AtomicFetchThenIncrement(&err_counter);
-		buffer << ": ";
+		switch(type) {
+			case LT_ERROR:
+			case LT_DEBUG:
+			case LT_MSG:
+				buffer << "\E[m";
+				break;
+			default: break;
+		}
+		if(type == logger::LT_ERROR) buffer << " #" << AtomicFetchThenIncrement(&err_counter) << ":";
+		buffer << " ";
 		// prettify file string (aka strip path)
 		string file_str = file;
 		size_t slash_pos = string::npos;
@@ -67,8 +87,16 @@ void logger::_log(stringstream& buffer, const char* str) {
 	
 	// finally: output
 	SDL_AtomicLock(&slock);
-	cout << buffer.str();
-	log_file << buffer.str();
+	string bstr(buffer.str());
+	cout << bstr;
+	if(bstr[0] != 0x1B) {
+		log_file << bstr;
+	}
+	else {
+		bstr.erase(0, 5);
+		bstr.erase(7, 3);
+		log_file << bstr;
+	}
 	log_file.flush();
 	SDL_AtomicUnlock(&slock);
 }

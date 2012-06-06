@@ -174,7 +174,7 @@ protected:
 	
 	// internal draw functions (override these in derived classes if you have to do custom rendering)
 	virtual void draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_object_num, const size_t& mask_id);
-	virtual void ir_mp_setup(gl3shader& shd, const string& option);
+	virtual void ir_mp_setup(gl3shader& shd, const string& option, const set<string>& combiners);
 	virtual void pre_draw_setup(const ssize_t sub_object_num = -1); // -1, no sub-object
 	virtual void post_draw_setup(const ssize_t sub_object_num = -1);
 	virtual void pre_draw_geometry(gl3shader& shd, size_t& attr_array_mask, size_t& texture_mask);

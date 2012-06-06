@@ -64,13 +64,15 @@ public:
 		template<typename T> const T get(const string& path, const T default_val = default_value<T>::def()) const;
 	};
 	struct xml_node {
-		xml_node(const string& name, const xmlNode* node);
+		xml_node(const xmlNode* node);
 		~xml_node();
 		const string node_name;
+		const string node_content;
 		unordered_multimap<string, xml_node*> children;
 		unordered_map<string, const string> attributes;
 		
 		const string& name() const { return node_name; }
+		const string& content() const { return node_content; }
 		const string& operator[](const string& attr_name) const {
 			static const string invalid_attr = "INVALID";
 			const auto attr = attributes.find(attr_name);
@@ -79,6 +81,7 @@ public:
 		}
 	};
 	xml_doc process_file(const string& filename, const bool validate = true) const;
+	xml_doc process_data(const string& data, const bool validate = true) const;
 
 	// for manual reading
 	template <typename T> T get_attribute(const xmlAttribute* attr, const char* attr_name) {
@@ -101,6 +104,8 @@ public:
 
 protected:
 	engine* e;
+	
+	void create_node_structure(xml_doc& doc, xmlDocPtr xmldoc) const;
 
 };
 

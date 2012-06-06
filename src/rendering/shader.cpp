@@ -36,9 +36,6 @@ shader::shader(engine* e_) {
 	
 	gui_shader_rendering = false;
 	
-	// add pre-shader-compilation built-in vars
-	// SHADER TODO
-	
 	// load shader includes
 	a2e_shd->load_a2e_shader_includes();
 
@@ -559,8 +556,7 @@ bool shader::load_internal_shaders() {
 				ret = false;
 			}
 			else {
-				// SHADER TODO: cleanup preprocess
-				if(!a2e_shd->preprocess_and_compile_a2e_shader(a2e_shd->get_a2e_shader(shader_identifier))) {
+				if(!a2e_shd->process_and_compile_a2e_shader(a2e_shd->get_a2e_shader(shader_identifier))) {
 					err_cur_shader = true;
 					ret = false;
 				}
@@ -595,8 +591,8 @@ bool shader::add_a2e_shader(const string& identifier, const string& filename) {
 		return false;
 	}
 	else {
-		if(!a2e_shd->preprocess_and_compile_a2e_shader(a2e_shd->get_a2e_shader(identifier))) {
-			a2e_error("couldn't preprocess and/or compile a2e-shader \"%s\"!", filename);
+		if(!a2e_shd->process_and_compile_a2e_shader(a2e_shd->get_a2e_shader(identifier))) {
+			a2e_error("couldn't process and/or compile a2e-shader \"%s\"!", filename);
 			return false;
 		}
 	}

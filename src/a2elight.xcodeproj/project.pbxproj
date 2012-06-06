@@ -825,6 +825,7 @@
 					"-Wconditional-uninitialized",
 					"-Wextra-semi",
 					"-Wsometimes-uninitialized",
+					"-Wunique-enum",
 				);
 			};
 			name = Debug;
@@ -907,6 +908,7 @@
 					"-Wconditional-uninitialized",
 					"-Wextra-semi",
 					"-Wsometimes-uninitialized",
+					"-Wunique-enum",
 				);
 			};
 			name = Release;

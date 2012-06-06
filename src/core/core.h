@@ -69,6 +69,22 @@ public:
 	static float rand(const float& max);
 	static float rand(const float& min, const float& max);
 	
+	template<typename T> static set<T> power_set(set<T> input_set) {
+		if(input_set.empty()) return {};
+		
+		const T elem(*input_set.begin());
+		input_set.erase(elem);
+		
+		set<T> subset(power_set(input_set));
+		set<T> ret(subset);
+		ret.insert(elem);
+		for(const auto& sub_elem : subset) {
+			ret.insert(elem + sub_elem);
+		}
+		
+		return ret;
+	}
+	
 	// string functions
 	static string find_and_replace(const string& str, const string& find, const string& repl);
 	static string trim(const string& str);

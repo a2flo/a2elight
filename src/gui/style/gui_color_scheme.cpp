@@ -58,7 +58,7 @@ void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_no
 		return;
 	}
 	if(colors.count(name) > 0) {
-		a2e_error("a color defintion with such a name (%s) already exists!", name);
+		a2e_error("a color definition with such a name (%s) already exists!", name);
 		return;
 	}
 	

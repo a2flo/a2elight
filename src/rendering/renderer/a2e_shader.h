@@ -26,7 +26,7 @@
 #include "rendering/rtt.h"
 #include "core/xml.h"
 
-#define A2E_SHADER_VERSION 1
+#define A2E_SHADER_VERSION 2
 
 /*! @class shader
  *  @brief shader class
@@ -35,8 +35,7 @@
 class shader;
 class A2E_API a2e_shader {
 protected:
-
-	enum A2E_SHADER_CONDITION_TYPE {
+	enum class CONDITION_TYPE : unsigned int {
 		INVALID,
 		EQUAL,		//!< enum all conditions must be fulfilled
 		NEQUAL,		//!< enum all conditions may not be fulfilled
@@ -54,16 +53,10 @@ public:
 	a2e_shader(engine* eng);
 	~a2e_shader();
 	
-	enum SHADER_PREPROCESSING {
-		SP_NONE
-	};
-	
 	struct a2e_shader_code {
-		string preprocessor = "";
-		string variables = "";
+		string header = "";
 		string program = "";
 		ext::GLSL_VERSION version;
-		SHADER_PREPROCESSING preprocessing = SP_NONE;
 		
 		a2e_shader_code() :
 #if !defined(A2E_IOS)
@@ -73,22 +66,23 @@ public:
 #endif
 		{}
 		a2e_shader_code& operator=(const a2e_shader_code& shd_code) {
-			this->preprocessor = shd_code.preprocessor;
-			this->variables = shd_code.variables;
+			this->header = shd_code.header;
 			this->program = shd_code.program;
 			this->version = shd_code.version;
-			this->preprocessing = shd_code.preprocessing;
 			return *this;
 		}
 	};
 	
 	struct a2e_shader_object_base {
-		// <option, code>
+		string identifier = "";
+		set<string> includes;
+		set<string> options;
+		set<string> combiners;
+		
+		// <option*combiner..., code>
 		map<string, a2e_shader_code*> vertex_shader;
 		map<string, a2e_shader_code*> geometry_shader;
 		map<string, a2e_shader_code*> fragment_shader;
-		string identifier;
-		set<string> options;
 		
 		void add_option(const string& opt_name) {
 			if(options.count(opt_name) != 0) return;
@@ -108,8 +102,7 @@ public:
 			fragment_shader.erase(opt_name);
 		}
 		
-		a2e_shader_object_base() : vertex_shader(), geometry_shader(), fragment_shader(),
-		identifier(""), options() {
+		a2e_shader_object_base() {
 			add_option("#");
 		}
 		virtual ~a2e_shader_object_base() {
@@ -120,14 +113,13 @@ public:
 	};
 	
 	struct a2e_shader_object : public a2e_shader_object_base {
-		vector<string> includes;
-		// <option, program>
+		// <option*combiner..., program>
 		map<string, string> vs_program;
 		map<string, string> gs_program;
 		map<string, string> fs_program;
-		bool geometry_shader_available;
+		bool geometry_shader_available = false;
 		
-		a2e_shader_object() : a2e_shader_object_base(), includes(), vs_program(), gs_program(), fs_program(), geometry_shader_available(false) {}
+		a2e_shader_object() : a2e_shader_object_base() {}
 	};
 	
 	struct a2e_shader_include_object : public a2e_shader_object_base {
@@ -135,7 +127,7 @@ public:
 		a2e_shader_include_object() : a2e_shader_object_base() {}
 	};
 	
-	struct a2e_shader_include{
+	struct a2e_shader_include {
 		string filename;
 		a2e_shader_include_object* shader_include_object;
 	};
@@ -147,14 +139,12 @@ public:
 	
 	//
 	bool compile_a2e_shader(a2e_shader_object* shd);
-	bool preprocess_and_compile_a2e_shader(a2e_shader_object* shd);
+	bool process_and_compile_a2e_shader(a2e_shader_object* shd);
 	
 	//
-	void get_shader_data(a2e_shader_code* shd, const char* shader_type);
 	void get_shader_content(a2e_shader_code* shd, xmlNode* node, const string& option);
-	set<string> get_shader_combiner_options(xmlNode* node);
-	bool check_shader_condition(const A2E_SHADER_CONDITION_TYPE type, const string& value);
-	A2E_SHADER_CONDITION_TYPE get_condition_type(const string& condition_type);
+	bool check_shader_condition(const CONDITION_TYPE type, const string& value) const;
+	CONDITION_TYPE get_condition_type(const string& condition_type) const;
 
 	//
 	void load_a2e_shader_includes();
@@ -175,17 +165,16 @@ protected:
 	xml* x;
 	shader* shader_obj;
 	
-	stringstream buffer;
-	stringstream buffer2;
-	
 	vector<a2e_shader_object*> a2e_shader_objects;
 	vector<a2e_shader_include_object*> a2e_shader_include_objects;
 	map<string, a2e_shader_include*> a2e_shader_includes;
 	map<string, vector<a2e_shader_object*>> a2e_shaders;
 	
-	map<string, bool> conditions;
+	const map<string, bool> conditions;
 	
 	void make_glsl_es_compat(a2e_shader_object* shd, const string& option);
+	void process_node(const xml::xml_node* cur_node, const xml::xml_node* parent,
+					  std::function<void(const xml::xml_node* node)> fnc = [](const xml::xml_node* node){});
 	
 };
 

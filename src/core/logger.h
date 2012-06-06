@@ -48,9 +48,9 @@ public:
 	static const char* type_to_str(const LOG_TYPE& type) {
 		switch(type) {
 			case LT_NONE: return "";
-			case LT_MSG: return "MSG";
-			case LT_ERROR: return "ERROR";
-			case LT_DEBUG: return "DEBUG";
+			case LT_MSG: return "[ MSG ]";
+			case LT_ERROR: return "[ERROR]";
+			case LT_DEBUG: return "[DEBUG]";
 		}
 		assert(false && "invalid log type");
 		return "UNKNOWN";
