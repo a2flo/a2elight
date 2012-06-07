@@ -204,6 +204,14 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	set<string> shd_combiners;
 	if(env_pass) shd_combiners.insert("*env_probe");
 	if(has_env_map) shd_combiners.insert("*env_map");
+	if((masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
+	   masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS) &&
+	   lm_type == a2ematerial::LM_ASHIKHMIN_SHIRLEY) {
+		const a2ematerial::ashikhmin_shirley_model* aslm = (const a2ematerial::ashikhmin_shirley_model*)material->get_lighting_model(sub_object_num);
+		if(aslm->anisotropic_texture != nullptr) {
+			shd_combiners.insert("*aux_texture");
+		}
+	}
 	
 	string shd_name = select_shader(draw_mode);
 	if(shd_name != "") {
@@ -249,7 +257,10 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 			// ashikhmin/shirley lighting
 			case a2ematerial::LM_ASHIKHMIN_SHIRLEY: {
 				const a2ematerial::ashikhmin_shirley_model* aslm = (const a2ematerial::ashikhmin_shirley_model*)material->get_lighting_model(sub_object_num);
-				shd->uniform("Nuv", aslm->anisotropic_roughness.u, aslm->anisotropic_roughness.v);
+				if(aslm->anisotropic_texture != nullptr) {
+					shd->texture("aux_texture", aslm->anisotropic_texture);
+				}
+				else shd->uniform("Nuv", aslm->anisotropic_roughness.u, aslm->anisotropic_roughness.v);
 			}
 			break;
 			// phong lighting
