@@ -75,7 +75,7 @@ public:
 	
 	struct a2e_shader_object_base {
 		string identifier = "";
-		set<string> includes;
+		vector<string> includes;
 		set<string> options;
 		set<string> combiners;
 		

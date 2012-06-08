@@ -203,7 +203,11 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 							   "opaque" : "alpha");
 	set<string> shd_combiners;
 	if(env_pass) shd_combiners.insert("*env_probe");
-	if(has_env_map) shd_combiners.insert("*env_map");
+	if((masked_draw_mode == DRAW_MODE::MATERIAL_PASS ||
+		masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) &&
+	   has_env_map) {
+		shd_combiners.insert("*env_map");
+	}
 	if((masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
 	   masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS) &&
 	   lm_type == a2ematerial::LM_ASHIKHMIN_SHIRLEY) {

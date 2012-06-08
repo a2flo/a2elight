@@ -186,6 +186,10 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	a2e_shd->identifier = identifier;
 	
 	// process includes
+#if defined(A2E_IOS)
+	// always include this in glsl es
+	if(node_name == "a2e_shader") a2e_shd->includes.push_back("glsles_compat");
+#endif
 	const string include_str(shd_doc.get<string>("a2e_shader.includes.content", ""));
 	if(include_str.length() > 0) {
 		const vector<string> includes(core::tokenize(include_str, ' '));
@@ -195,14 +199,12 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 				a2e_error("unknown include \"%s\" in shader \"%s\"! - will be ignored!", include, identifier);
 			}
 			else {
-				a2e_shd->includes.insert(include);
+				if(find(cbegin(a2e_shd->includes), cend(a2e_shd->includes), include) == cend(a2e_shd->includes)) {
+					a2e_shd->includes.push_back(include);
+				}
 			}
 		}
 	}
-#if defined(A2E_IOS)
-	// always include this in glsl es
-	if(node_name == "a2e_shader") a2e_shd->includes.push_back("glsles_compat");
-#endif
 	
 	// process (initial) options
 	const string options_str(shd_doc.get<string>("a2e_shader.options.content", ""));
