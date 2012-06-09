@@ -76,7 +76,7 @@ void thread_base::finish() {
 	// this will block until the thread is finished
 	// TODO: since the thread can't be killed and join doesn't have a timeout, start an extra thread
 	// to join so we don't block forever if the thread gets unexpectedly blocked/terminated/...?
-	thread_obj->join();
+	if(thread_obj->joinable()) thread_obj->join();
 	
 	set_thread_status(thread_base::FINISHED);
 }
