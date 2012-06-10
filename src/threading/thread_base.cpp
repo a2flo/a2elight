@@ -67,6 +67,10 @@ int thread_base::_thread_run(thread_base* this_thread_obj) {
 }
 
 void thread_base::finish() {
+	if(get_thread_status() == thread_base::FINISHED && !thread_obj->joinable()) {
+		return; // nothing to do here
+	}
+	
 	// signal thread to finish
 	set_thread_should_finish();
 	

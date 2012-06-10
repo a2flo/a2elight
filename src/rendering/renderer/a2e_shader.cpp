@@ -100,6 +100,17 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 		"header", "option", "condition"
 	};
 	
+	// TODO: remove this gcc workaround when gcc starts to conform to the spec
+#if !defined(__clang__)
+	const auto str_insert = [&shader_data](string::iterator& iter, std::initializer_list<char> char_list) {
+		iter++;
+		for(const auto& elem : char_list) {
+			iter = shader_data.insert(iter, elem);
+			iter++;
+		}
+	};
+#endif
+	
 	bool inside_tag = false;
 	bool inside_comment = false;
 	size_t hyphen_count = 0;
@@ -113,7 +124,11 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 		
 		switch(*iter) {
 			case '&':
+#if defined(__clang__)
 				iter = shader_data.insert(iter+1, { 'a', 'm', 'p', ';' });
+#else
+				str_insert(iter, { 'a', 'm', 'p', ';' });
+#endif
 				continue;
 			case '<':
 				if(inside_tag) break;
@@ -142,7 +157,11 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 					}
 				}
 				*iter = '&';
+#if defined(__clang__)
 				iter = shader_data.insert(iter+1, { 'l', 't', ';' });
+#else
+				str_insert(iter, { 'l', 't', ';' });
+#endif
 				continue;
 			case '>':
 				if(inside_comment) {
@@ -159,7 +178,11 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 					break;
 				}
 				*iter = '&';
+#if defined(__clang__)
 				iter = shader_data.insert(iter+1, { 'g', 't', ';' });
+#else
+				str_insert(iter, { 'g', 't', ';' });
+#endif
 				continue;
 			default: break;
 		}

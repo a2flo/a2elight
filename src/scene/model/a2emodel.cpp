@@ -114,7 +114,7 @@ void a2emodel::pre_draw_setup(const ssize_t sub_object_num) {
 	mvm = scale_mat;
 	
 	// rotate the model (use local inverse model view matrix that we already calculated)
-	mvm *= mview_mat;
+	mvm *= rot_mat;
 	
 	// translate the model
 	mvm *= *e->get_translation_matrix();
@@ -326,7 +326,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 		shd->uniform("id", model_id);
 	}
 	
-	if(attr_array_mask & VA_NORMAL) shd->uniform("local_mview", mview_mat);
+	if(attr_array_mask & VA_NORMAL) shd->uniform("local_mview", rot_mat);
 	if(attr_array_mask & VA_NORMAL) shd->uniform("local_scale", scale_mat);
 	
 	//
@@ -400,7 +400,7 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 	}
 	
 	if(combiners.count("*env_map") > 0) {
-		shd->uniform("local_mview", mview_mat);
+		shd->uniform("local_mview", rot_mat);
 		shd->uniform("local_scale", scale_mat);
 		shd->uniform("model_position", position);
 		shd->uniform("cam_position", -float3(*e->get_position()));
@@ -462,14 +462,13 @@ void a2emodel::set_position(const float3& pos) {
  *  @param z the z rotation
  */
 void a2emodel::set_rotation(const float x, const float y, const float z) {
-	rotation.set(x, y, z);
-	
-	update_mview_matrix();
+	rot_mat = matrix4f().rotate_x(rotation.x) * matrix4f().rotate_y(rotation.y) * matrix4f().rotate_z(rotation.z);
+	rot_mat.invert();
 	
 	// update bounding boxes mview matrix
-	bbox.mview = mview_mat;
+	bbox.mview = rot_mat;
 	for(unsigned int i = 0; i < object_count; i++) {
-		sub_bboxes[i].mview = mview_mat;
+		sub_bboxes[i].mview = rot_mat;
 	}
 }
 
@@ -567,23 +566,15 @@ const float3& a2emodel::get_scale() const {
 
 /*! returns the rotation of the model
  */
-float3& a2emodel::get_rotation() {
-	return rotation;
+matrix4f& a2emodel::get_rotation_matrix() {
+	return rot_mat;
 }
-const float3& a2emodel::get_rotation() const {
-	return rotation;
-}
-
-void a2emodel::set_mview_matrix(const matrix4f& mat) {
-	mview_mat = mat;
+const matrix4f& a2emodel::get_rotation_matrix() const {
+	return rot_mat;
 }
 
-/*! updates the local modelview matrix
- */
-void a2emodel::update_mview_matrix() {
-	// TODO: fix parallax mapping ...
-	mview_mat = matrix4f().rotate_x(rotation.x) * matrix4f().rotate_y(rotation.y) * matrix4f().rotate_z(rotation.z);
-	mview_mat.invert();
+void a2emodel::set_rotation_matrix(const matrix4f& mat) {
+	rot_mat = mat;
 }
 
 /*! updates the local scale matrix
@@ -614,7 +605,7 @@ void a2emodel::build_bounding_box() {
 		sbbox.max = smax;
 		sbbox.min.scale(scale);
 		sbbox.max.scale(scale);
-		sbbox.mview = mview_mat;
+		sbbox.mview = rot_mat;
 		sbbox.pos.set(position);
 	}
 	
@@ -626,7 +617,7 @@ void a2emodel::build_bounding_box() {
 	bbox.max.scale(scale);
 	
 	// rotate bbox
-	bbox.mview = mview_mat;
+	bbox.mview = rot_mat;
 	
 	// set bbox position
 	bbox.pos.set(position);
@@ -704,44 +695,44 @@ void a2emodel::set_material(a2ematerial* material_) {
 
 /*! returns a pointer to the vertices
  */
-float3** a2emodel::get_vertices() {
+float3**const a2emodel::get_vertices() const {
 	return model_vertices;
 }
 
 /*! returns a pointer to the vertices
  */
-float3* a2emodel::get_vertices(unsigned int obj_num) {
+const float3* a2emodel::get_vertices(unsigned int obj_num) const {
 	return model_vertices[obj_num];
 }
 
 /*! returns a pointer to the tex coords
  */
-coord** a2emodel::get_tex_coords() {
+coord**const a2emodel::get_tex_coords() const {
 	return model_tex_coords;
 }
 
 /*! returns a pointer to the tex coords
  */
-coord* a2emodel::get_tex_coords(unsigned int obj_num) {
+const coord* a2emodel::get_tex_coords(unsigned int obj_num) const {
 	return model_tex_coords[obj_num];
 }
 
 /*! returns a pointer to all the indices
  */
-index3** a2emodel::get_indices() {
+index3**const a2emodel::get_indices() const {
 	return model_indices;
 }
 
 /*! returns a pointer to the specified (by obj_num) indices
  *  @param obj_num sub-object number we want the indices from
  */
-index3* a2emodel::get_indices(unsigned int obj_num) {
+const index3* a2emodel::get_indices(unsigned int obj_num) const {
 	return model_indices[obj_num];
 }
 
 /*! returns the vertex count
  */
-unsigned int a2emodel::get_vertex_count() {
+unsigned int a2emodel::get_vertex_count() const {
 	unsigned int model_total_vertex_count = 0;
 	for(unsigned int i = 0; i < object_count; i++) {
 		model_total_vertex_count += model_vertex_count[i];
@@ -751,13 +742,13 @@ unsigned int a2emodel::get_vertex_count() {
 
 /*! returns the vertex count of the specified sub-object
  */
-unsigned int a2emodel::get_vertex_count(unsigned int obj_num) {
+unsigned int a2emodel::get_vertex_count(unsigned int obj_num) const {
 	return model_vertex_count[obj_num];
 }
 
 /*! returns the index count
  */
-unsigned int a2emodel::get_index_count() {
+unsigned int a2emodel::get_index_count() const {
 	unsigned int model_total_index_count = 0;
 	for(unsigned int i = 0; i < object_count; i++) {
 		model_total_index_count += model_index_count[i];
@@ -768,7 +759,7 @@ unsigned int a2emodel::get_index_count() {
 /*! returns the index count of the sub-object obj_num
  *  @param obj_num sub-object we want to get the index count from
  */
-unsigned int a2emodel::get_index_count(unsigned int obj_num) {
+unsigned int a2emodel::get_index_count(unsigned int obj_num) const {
 	return model_index_count[obj_num];
 }
 
@@ -780,7 +771,7 @@ string* a2emodel::get_object_names() {
 
 /*! returns the models sub-object count
  */
-unsigned int a2emodel::get_object_count() {
+unsigned int a2emodel::get_object_count() const {
 	return a2emodel::object_count;
 }
 

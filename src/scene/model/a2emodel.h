@@ -67,13 +67,12 @@ public:
 	virtual void set_hard_position(const float3& hpos);
 	virtual void scale_tex_coords(const float su, const float sv);
 	virtual float3& get_position();
-	virtual float3& get_rotation();
 	virtual float3& get_scale();
 	virtual const float3& get_position() const;
-	virtual const float3& get_rotation() const;
 	virtual const float3& get_scale() const;
-	virtual void set_mview_matrix(const matrix4f& mat);
-	virtual void update_mview_matrix();
+	virtual void set_rotation_matrix(const matrix4f& mat);
+	virtual matrix4f& get_rotation_matrix();
+	virtual const matrix4f& get_rotation_matrix() const;
 	virtual void update_scale_matrix();
 	virtual void build_bounding_box();
 	virtual extbbox* get_bounding_box();
@@ -100,18 +99,18 @@ public:
 	virtual void set_material(a2ematerial* material);
 	
 	// model data functions
-	virtual float3** get_vertices();
-	virtual float3* get_vertices(unsigned int obj_num);
-	virtual coord** get_tex_coords();
-	virtual coord* get_tex_coords(unsigned int obj_num);
-	virtual index3** get_indices();
-	virtual index3* get_indices(unsigned int obj_num);
-	virtual unsigned int get_vertex_count();
-	virtual unsigned int get_vertex_count(unsigned int obj_num);
-	virtual unsigned int get_index_count();
-	virtual unsigned int get_index_count(unsigned int obj_num);
+	virtual float3**const get_vertices() const;
+	virtual const float3* get_vertices(unsigned int obj_num) const;
+	virtual coord**const get_tex_coords() const;
+	virtual const coord* get_tex_coords(unsigned int obj_num) const;
+	virtual index3**const get_indices() const;
+	virtual const index3* get_indices(unsigned int obj_num) const;
+	virtual unsigned int get_vertex_count() const;
+	virtual unsigned int get_vertex_count(unsigned int obj_num) const;
+	virtual unsigned int get_index_count() const;
+	virtual unsigned int get_index_count(unsigned int obj_num) const;
 	virtual string* get_object_names();
-	virtual unsigned int get_object_count();
+	virtual unsigned int get_object_count() const;
 	
 	// stuff for collision detection
 	virtual void set_radius(float radius);
@@ -201,7 +200,7 @@ protected:
 	void delete_sub_bboxes();
 	
 	//
-	matrix4f mview_mat;
+	matrix4f rot_mat;
 	matrix4f scale_mat;
 	matrix4f mvpm; // only used while rendering (global mvpm)
 	matrix4f mvpm_backside; // only used while rendering (global mvm)
