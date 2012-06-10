@@ -30,15 +30,22 @@ xml::xml(engine* e_) : e(e_) {
 	LIBXML_TEST_VERSION
 	xmlInitializeCatalog();
 	xmlCatalogSetDefaults(XML_CATA_ALLOW_ALL);
+	
+#if !defined(__WINDOWS__)
+#define A2E_XML_DTD_PATH_PREFIX "file://"
+#else
+#define A2E_XML_DTD_PATH_PREFIX "file:///"
+#endif
+	
 	if(xmlCatalogAdd(BAD_CAST "public",
 					 BAD_CAST "-//A2E//DTD config 1.0//EN",
-					 BAD_CAST ("file://"+e->data_path("dtd/config.dtd")).c_str()) != 0) {
+					 BAD_CAST (A2E_XML_DTD_PATH_PREFIX+e->data_path("dtd/config.dtd")).c_str()) != 0) {
 		const auto error_ptr = xmlGetLastError();
 		a2e_error("failed to add catalog for config: %s", (error_ptr != nullptr ? error_ptr->message : ""));
 	}
 	if(xmlCatalogAdd(BAD_CAST "public",
 					 BAD_CAST "-//A2E//DTD a2e_shader 2.0//EN",
-					 BAD_CAST ("file://"+e->data_path("dtd/a2e_shader.dtd")).c_str()) != 0) {
+					 BAD_CAST (A2E_XML_DTD_PATH_PREFIX+e->data_path("dtd/a2e_shader.dtd")).c_str()) != 0) {
 		const auto error_ptr = xmlGetLastError();
 		a2e_error("failed to add catalog for a2e_shader: %s", (error_ptr != nullptr ? error_ptr->message : ""));
 	}
