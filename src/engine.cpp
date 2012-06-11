@@ -375,9 +375,8 @@ void engine::init(const char* ico) {
 	}
 #if !defined(A2E_IOS)
 	SDL_GL_SetSwapInterval(config.vsync ? 1 : 0); // has to be set after context creation
-#else
-	acquire_gl_context();
 #endif
+	acquire_gl_context();
 	
 	// TODO: this is only a rudimentary solution, think of or wait for a better one ...
 #if !defined(A2E_NO_OPENCL)
@@ -399,7 +398,9 @@ void engine::init(const char* ico) {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	swap();
+	release_gl_context(); // release, before we call handle_events, since this might acquire the context!
 	e->handle_events(); // this will effectively create/open the window on some platforms
+	acquire_gl_context();
 
 	// create extension class object
 	exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
@@ -514,10 +515,8 @@ void engine::init(const char* ico) {
 	stop_2d_draw();
 	stop_draw();
 	
-#if defined(A2E_IOS)
 	// ctx is acquired 2 times, so release it 2 times
 	release_gl_context();
-#endif
 	
 	//
 	acquire_gl_context();
