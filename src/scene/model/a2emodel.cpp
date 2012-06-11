@@ -31,7 +31,6 @@ static size_t _create_model_id() {
 a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
 	scale.set(1.0f, 1.0f, 1.0f);
 	phys_scale.set(1.0f, 1.0f, 1.0f);
-	rotation.set(0.0f, 0.0f, 0.0f);
 	sub_bboxes = nullptr;
 	
 	model_vertices = nullptr;
@@ -462,7 +461,7 @@ void a2emodel::set_position(const float3& pos) {
  *  @param z the z rotation
  */
 void a2emodel::set_rotation(const float x, const float y, const float z) {
-	rot_mat = matrix4f().rotate_x(rotation.x) * matrix4f().rotate_y(rotation.y) * matrix4f().rotate_z(rotation.z);
+	rot_mat = matrix4f().rotate_x(x) * matrix4f().rotate_y(y) * matrix4f().rotate_z(z);
 	rot_mat.invert();
 	
 	// update bounding boxes mview matrix

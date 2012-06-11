@@ -155,7 +155,9 @@ bool gui::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 bool gui::window_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 	if(type == EVENT_TYPE::WINDOW_RESIZE) {
 		const window_resize_event& evtobj = (const window_resize_event&)*obj;
+		e->acquire_gl_context();
 		recreate_buffers(evtobj.size);
+		e->release_gl_context();
 	}
 	return true;
 }

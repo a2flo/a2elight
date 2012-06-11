@@ -194,7 +194,6 @@ protected:
 	// orientation
 	float3 position;
 	float3 scale;
-	float3 rotation;
 	extbbox bbox;
 	extbbox* sub_bboxes;
 	void delete_sub_bboxes();

@@ -120,6 +120,9 @@ public:
 	void reload_shaders();
 	void reload_kernels();
 	
+	void acquire_gl_context();
+	void release_gl_context();
+	
 	// misc position/rotation/matrix functions
 	void push_projection_matrix();
 	void pop_projection_matrix();
@@ -207,7 +210,6 @@ protected:
 	// actual engine constructor
 	void create();
 	void load_ico(const char* ico);
-	void make_current();
 	
 	struct engine_config {
 		// screen
@@ -257,6 +259,7 @@ protected:
 		// sdl
 		SDL_Window* wnd;
 		SDL_GLContext ctx;
+		recursive_mutex ctx_lock;
 		unsigned int flags;
 		
 		engine_config() :
@@ -270,7 +273,7 @@ protected:
 		disabled_extensions(""), force_device(""), force_vendor(""),
 		inferred_scale(4),
 		opencl_platform(0), clear_cache(false),
-		wnd(nullptr), ctx(nullptr), flags(0)
+		wnd(nullptr), ctx(nullptr), ctx_lock(), flags(0)
 		{}
 	};
 	engine_config config;

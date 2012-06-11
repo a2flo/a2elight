@@ -376,7 +376,7 @@ void engine::init(const char* ico) {
 #if !defined(A2E_IOS)
 	SDL_GL_SetSwapInterval(config.vsync ? 1 : 0); // has to be set after context creation
 #else
-	make_current();
+	acquire_gl_context();
 #endif
 	
 	// TODO: this is only a rudimentary solution, think of or wait for a better one ...
@@ -514,6 +514,14 @@ void engine::init(const char* ico) {
 	stop_2d_draw();
 	stop_draw();
 	
+#if defined(A2E_IOS)
+	// ctx is acquired 2 times, so release it 2 times
+	release_gl_context();
+#endif
+	
+	//
+	acquire_gl_context();
+	
 	// create scene
 	sce = new scene(this);
 	
@@ -524,6 +532,8 @@ void engine::init(const char* ico) {
 	// init opencl
 	ocl->init(false, config.opencl_platform);
 #endif
+	
+	release_gl_context();
 }
 
 /*! sets the windows width
@@ -547,9 +557,7 @@ void engine::set_height(unsigned int height) {
 /*! starts drawing the window
  */
 void engine::start_draw() {
-#if defined(A2E_IOS)
-	make_current();
-#endif
+	acquire_gl_context();
 	
 	// draws ogl stuff
 	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
@@ -638,6 +646,8 @@ void engine::stop_draw() {
 		ocl->reload_kernels();
 #endif
 	}
+	
+	release_gl_context();
 }
 
 void engine::push_ogl_state() {
@@ -1190,14 +1200,23 @@ const xml::xml_doc& engine::get_config_doc() const {
 	return config_doc;
 }
 
-void engine::make_current() {
-#if defined(A2E_IOS)
+void engine::acquire_gl_context() {
+	config.ctx_lock.lock();
 	if(SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
 		a2e_error("couldn't make gl context current: %s!", SDL_GetError());
 		return;
 	}
+#if defined(A2E_IOS)
 	glBindFramebuffer(GL_FRAMEBUFFER, 1);
 #endif
+}
+
+void engine::release_gl_context() {
+	if(SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
+		a2e_error("couldn't release current gl context: %s!", SDL_GetError());
+		return;
+	}
+	config.ctx_lock.unlock();
 }
 
 bool engine::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
@@ -1205,7 +1224,9 @@ bool engine::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj)
 		const window_resize_event& evt = (const window_resize_event&)*obj;
 		config.width = evt.size.x;
 		config.height = evt.size.y;
+		acquire_gl_context();
 		resize_window();
+		release_gl_context();
 	}
 	return true;
 }
