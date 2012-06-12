@@ -30,6 +30,7 @@
 #include "core/vector3.h"
 #include "core/matrix4.h"
 #include "gui/unicode.h"
+#include "threading/atomics.h"
 
 #define A2M_VERSION 2
 
@@ -260,6 +261,7 @@ protected:
 		SDL_Window* wnd;
 		SDL_GLContext ctx;
 		recursive_mutex ctx_lock;
+		atomic_t ctx_active_locks;
 		unsigned int flags;
 		
 		engine_config() :
@@ -273,8 +275,10 @@ protected:
 		disabled_extensions(""), force_device(""), force_vendor(""),
 		inferred_scale(4),
 		opencl_platform(0), clear_cache(false),
-		wnd(nullptr), ctx(nullptr), ctx_lock(), flags(0)
-		{}
+		wnd(nullptr), ctx(nullptr), ctx_lock(), ctx_active_locks(), flags(0)
+		{
+			AtomicSet(&ctx_active_locks, 0);
+		}
 	};
 	engine_config config;
 	xml::xml_doc config_doc;

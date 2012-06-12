@@ -1200,8 +1200,14 @@ const xml::xml_doc& engine::get_config_doc() const {
 }
 
 void engine::acquire_gl_context() {
+	// note: the context lock is recursive, so one thread can lock
+	// it multiple times. however, SDL_GL_MakeCurrent should only
+	// be called once (this is the purpose of ctx_active_locks).
 	config.ctx_lock.lock();
-	if(SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
+	// note: not a race, since there can only be one active gl thread
+	const int cur_active_locks = AtomicFetchThenIncrement(&config.ctx_active_locks);
+	if(cur_active_locks == 0 &&
+	   SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
 		a2e_error("couldn't make gl context current: %s!", SDL_GetError());
 		return;
 	}
@@ -1211,7 +1217,10 @@ void engine::acquire_gl_context() {
 }
 
 void engine::release_gl_context() {
-	if(SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
+	// only call SDL_GL_MakeCurrent will nullptr, when this is the last lock
+	const int cur_active_locks = AtomicFetchThenDecrement(&config.ctx_active_locks);
+	if(cur_active_locks == 1 &&
+	   SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
 		a2e_error("couldn't release current gl context: %s!", SDL_GetError());
 		return;
 	}

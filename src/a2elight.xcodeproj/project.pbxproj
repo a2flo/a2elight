@@ -339,6 +339,8 @@
 				5C61BDED1232A25500FD3451 /* logger.h */,
 				5C3975B3123189750075C168 /* matrix4.cpp */,
 				5C3975B4123189750075C168 /* matrix4.h */,
+				5C1AC477157410460011CC41 /* quaternion.cpp */,
+				5C1AC478157410460011CC41 /* quaternion.h */,
 				5C3975BA123189750075C168 /* ray.h */,
 				5C3975BB123189750075C168 /* type_list.h */,
 				5C3975BC123189750075C168 /* util.cpp */,
@@ -351,8 +353,6 @@
 				5C3975C1123189750075C168 /* vector4.h */,
 				5C3975C2123189750075C168 /* xml.cpp */,
 				5C3975C3123189750075C168 /* xml.h */,
-				5C1AC477157410460011CC41 /* quaternion.cpp */,
-				5C1AC478157410460011CC41 /* quaternion.h */,
 			);
 			path = core;
 			sourceTree = SOURCE_ROOT;
