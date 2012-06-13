@@ -29,9 +29,10 @@
  *  @brief (sdl) event handler
  */
 
+class engine;
 class A2E_API event : public thread_base {
 public:
-	event();
+	event(engine* e);
 	virtual ~event();
 
 	void handle_events();
@@ -62,6 +63,7 @@ public:
 	void set_mdouble_click_time(unsigned int dctime);
 
 protected:
+	engine* e;
 	SDL_Event event_handle;
 	
 	virtual void run();

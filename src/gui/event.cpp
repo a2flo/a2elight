@@ -17,8 +17,9 @@
  */
 
 #include "event.h"
+#include "engine.h"
 
-event::event() : thread_base("event"),
+event::event(engine* e_) : thread_base("event"), e(e_),
 user_queue_lock(), handlers_lock()
 {
 	mouse_down_state[0] = mouse_down_state[1] = mouse_down_state[2] =
@@ -58,6 +59,9 @@ void event::run() {
 /*! handles the sdl events
  */
 void event::handle_events() {
+	// always acquire the gl context for internal handlers, since these are very likely to modify gl data
+	e->acquire_gl_context();
+	
 	// internal engine event handler
 	while(SDL_PollEvent(&event_handle)) {
 		const unsigned int event_type = event_handle.type;
@@ -245,6 +249,8 @@ void event::handle_events() {
 			}
 		}
 	}
+	
+	e->release_gl_context();
 }
 
 /*! gets the mouses position (pnt)

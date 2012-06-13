@@ -175,9 +175,7 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 buffer_size, co
 bool scene::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 	if(type == EVENT_TYPE::WINDOW_RESIZE) {
 		const window_resize_event& evt = (const window_resize_event&)*obj;
-		e->acquire_gl_context();
 		recreate_buffers(frames[0], evt.size);
-		e->release_gl_context();
 	}
 	return true;
 }

@@ -179,7 +179,7 @@ void engine::create() {
 	f = new file_io();
 	c = new core();
 	x = new xml(this);
-	e = new event();
+	e = new event(this);
 	
 	window_handler = new event::handler(this, &engine::window_event_handler);
 	e->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
@@ -1232,9 +1232,7 @@ bool engine::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj)
 		const window_resize_event& evt = (const window_resize_event&)*obj;
 		config.width = evt.size.x;
 		config.height = evt.size.y;
-		acquire_gl_context();
 		resize_window();
-		release_gl_context();
 	}
 	return true;
 }
