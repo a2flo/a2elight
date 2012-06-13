@@ -77,6 +77,8 @@ engine::engine(const char* callpath_, const char* datapath_) {
  */
 engine::~engine() {
 	a2e_debug("deleting engine object");
+	
+	acquire_gl_context();
 
 	for(const auto& cursor : cursors) {
 		if(cursor.first != "STANDARD") {
@@ -103,6 +105,8 @@ engine::~engine() {
 	
 	// delete this at the end, b/c other classes will remove event handlers
 	if(e != nullptr) delete e;
+	
+	release_gl_context();
 
 	a2e_debug("engine object deleted");
 	
@@ -398,9 +402,7 @@ void engine::init(const char* ico) {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	swap();
-	release_gl_context(); // release, before we call handle_events, since this might acquire the context!
 	e->handle_events(); // this will effectively create/open the window on some platforms
-	acquire_gl_context();
 
 	// create extension class object
 	exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
@@ -514,12 +516,6 @@ void engine::init(const char* ico) {
 								  coord(0.0f, 1.0f), coord(1.0f, 0.0f));
 	stop_2d_draw();
 	stop_draw();
-	
-	// ctx is acquired 2 times, so release it 2 times
-	release_gl_context();
-	
-	//
-	acquire_gl_context();
 	
 	// create scene
 	sce = new scene(this);
@@ -1206,7 +1202,9 @@ void engine::acquire_gl_context() {
 	config.ctx_lock.lock();
 	// note: not a race, since there can only be one active gl thread
 	const int cur_active_locks = AtomicFetchThenIncrement(&config.ctx_active_locks);
+	cout << "#locks: " << cur_active_locks << ", " << AtomicGet(&config.ctx_active_locks) << endl;
 	if(cur_active_locks == 0 &&
+	   (cout << "acquiring gl ctx: " << this_thread::get_id() << endl, true) &&
 	   SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
 		a2e_error("couldn't make gl context current: %s!", SDL_GetError());
 		return;
@@ -1219,7 +1217,9 @@ void engine::acquire_gl_context() {
 void engine::release_gl_context() {
 	// only call SDL_GL_MakeCurrent will nullptr, when this is the last lock
 	const int cur_active_locks = AtomicFetchThenDecrement(&config.ctx_active_locks);
+	cout << "#locks: " << cur_active_locks << ", " << AtomicGet(&config.ctx_active_locks) << endl;
 	if(cur_active_locks == 1 &&
+	   (cout << "releasing gl ctx: " << this_thread::get_id() << endl, true) &&
 	   SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
 		a2e_error("couldn't release current gl context: %s!", SDL_GetError());
 		return;
