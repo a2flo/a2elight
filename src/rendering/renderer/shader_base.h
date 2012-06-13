@@ -183,7 +183,12 @@ public:
 	// basic functions
 	virtual void use() { cur_program = 0; }
 	virtual void use(const size_t& program) { cur_program = program; }
+#if !defined(__clang__)
+	virtual void use(const string& option) = 0;
+	virtual void use(const string& option, const set<string> combiners) = 0;
+#else
 	virtual void use(const string& option, const set<string> combiners = {}) = 0;
+#endif
 	virtual void disable() = 0;
 	virtual size_t get_cur_program() const = 0;
 	virtual const string& get_cur_option() const = 0;

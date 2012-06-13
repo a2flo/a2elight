@@ -33,7 +33,12 @@ public:
 	
 	virtual void use();
 	virtual void use(const size_t& program);
+#if !defined(__clang__)
+	virtual void use(const string& option);
+	virtual void use(const string& option, const set<string> combiners);
+#else
 	virtual void use(const string& option, const set<string> combiners = {});
+#endif
 	virtual void disable();
 	virtual size_t get_cur_program() const;
 	virtual const string& get_cur_option() const;

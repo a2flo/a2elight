@@ -190,7 +190,12 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	}
 	
 	// process data and check if we have a valid xml file
+#if !defined(__WINDOWS__)
 	xml::xml_doc shd_doc = x->process_data(shader_data);
+#else
+	// TODO: fix validation on windows
+	xml::xml_doc shd_doc = x->process_data(shader_data, false);
+#endif
 	if(!shd_doc.valid) {
 		a2e_error("invalid a2e-shader file %s!", filename.c_str());
 		return false;

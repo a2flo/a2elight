@@ -127,6 +127,12 @@ void shader_gl3::use(const size_t& program) {
 #endif
 }
 
+#if !defined(__clang__)
+void shader_gl3::use(const string& option) {
+	use(option, {});
+}
+#endif
+
 void shader_gl3::use(const string& option, const set<string> combiners) {
 	const string combined_option(option + accumulate(cbegin(combiners), cend(combiners), string(),
 													 [](string& ret, const string& in) {

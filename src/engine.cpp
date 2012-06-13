@@ -1202,9 +1202,7 @@ void engine::acquire_gl_context() {
 	config.ctx_lock.lock();
 	// note: not a race, since there can only be one active gl thread
 	const int cur_active_locks = AtomicFetchThenIncrement(&config.ctx_active_locks);
-	cout << "#locks: " << cur_active_locks << ", " << AtomicGet(&config.ctx_active_locks) << endl;
 	if(cur_active_locks == 0 &&
-	   (cout << "acquiring gl ctx: " << this_thread::get_id() << endl, true) &&
 	   SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
 		a2e_error("couldn't make gl context current: %s!", SDL_GetError());
 		return;
@@ -1217,9 +1215,7 @@ void engine::acquire_gl_context() {
 void engine::release_gl_context() {
 	// only call SDL_GL_MakeCurrent will nullptr, when this is the last lock
 	const int cur_active_locks = AtomicFetchThenDecrement(&config.ctx_active_locks);
-	cout << "#locks: " << cur_active_locks << ", " << AtomicGet(&config.ctx_active_locks) << endl;
 	if(cur_active_locks == 1 &&
-	   (cout << "releasing gl ctx: " << this_thread::get_id() << endl, true) &&
 	   SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
 		a2e_error("couldn't release current gl context: %s!", SDL_GetError());
 		return;
