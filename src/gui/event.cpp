@@ -20,8 +20,10 @@
 #include "engine.h"
 
 event::event(engine* e_) : thread_base("event"), e(e_),
-user_queue_lock(), handlers_lock()
+user_queue_lock()
 {
+	AtomicSet(&handlers_lock, 0);
+	
 	mouse_down_state[0] = mouse_down_state[1] = mouse_down_state[2] =
 	mouse_up_state[0] = mouse_up_state[1] = mouse_up_state[2] =
 		ipnt(-1, -1);
@@ -274,15 +276,19 @@ void event::set_mdouble_click_time(unsigned int dctime) {
 }
 
 void event::add_event_handler(handler& handler_, EVENT_TYPE type) {
-	handlers_lock.lock();
+	while(!AtomicCAS(&handlers_lock, 0, handlers_locked)) {
+		this_thread::yield();
+	}
 	handlers.insert(pair<EVENT_TYPE, handler&>(type, handler_));
-	handlers_lock.unlock();
+	AtomicSet(&handlers_lock, 0);
 }
 
 void event::add_internal_event_handler(handler& handler_, EVENT_TYPE type) {
-	handlers_lock.lock();
+	while(!AtomicCAS(&handlers_lock, 0, handlers_locked)) {
+		this_thread::yield();
+	}
 	internal_handlers.insert(pair<EVENT_TYPE, handler&>(type, handler_));
-	handlers_lock.unlock();
+	AtomicSet(&handlers_lock, 0);
 }
 
 void event::add_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
@@ -295,13 +301,20 @@ void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 	prev_events[type] = obj;
 	
 	// call internal event handlers directly
-	handlers_lock.lock();
+	int cur_hl = AtomicGet(&handlers_lock);
+	while(cur_hl == handlers_locked ||
+		  !AtomicCAS(&handlers_lock, cur_hl, cur_hl+1)) {
+		this_thread::yield();
+		cur_hl = AtomicGet(&handlers_lock);
+	}
+	
 	const auto range = internal_handlers.equal_range(type);
 	for(auto iter = range.first; iter != range.second; iter++) {
 		// ignore return value for now (TODO: actually use this?)
 		iter->second(type, obj);
 	}
-	handlers_lock.unlock();
+	
+	AtomicFetchThenDecrement(&handlers_lock);
 	
 	// push to user event queue (these will be handled later on)
 	user_queue_lock.lock();
@@ -316,17 +329,27 @@ void event::handle_user_events() {
 		user_event_queue_processing.pop();
 		
 		// call user event handlers
-		handlers_lock.lock();
+		int cur_hl = AtomicGet(&handlers_lock);
+		while(cur_hl == handlers_locked ||
+			  !AtomicCAS(&handlers_lock, cur_hl, cur_hl+1)) {
+			this_thread::yield();
+			cur_hl = AtomicGet(&handlers_lock);
+		}
+		
 		const auto range = handlers.equal_range(evt.first);
 		for(auto iter = range.first; iter != range.second; iter++) {
 			iter->second(evt.first, evt.second);
 		}
-		handlers_lock.unlock();
+		
+		AtomicFetchThenDecrement(&handlers_lock);
 	}
 }
 
 void event::remove_event_handler(const handler& handler_) {
-	handlers_lock.lock();
+	while(!AtomicCAS(&handlers_lock, 0, handlers_locked)) {
+		this_thread::yield();
+	}
+	
 	for(auto handler_iter = handlers.cbegin(); handler_iter != handlers.cend(); ) {
 		// good old pointer comparison ...
 		if(&handler_iter->second == &handler_) {
@@ -340,16 +363,21 @@ void event::remove_event_handler(const handler& handler_) {
 		}
 		else ++handler_iter;
 	}
-	handlers_lock.unlock();
+	
+	AtomicSet(&handlers_lock, 0);
 }
 
 void event::remove_event_types_from_handler(const handler& handler_, const set<EVENT_TYPE>& types) {
-	handlers_lock.lock();
+	while(!AtomicCAS(&handlers_lock, 0, handlers_locked)) {
+		this_thread::yield();
+	}
+	
 	for(const auto& type : types) {
 		const auto range_0 = handlers.equal_range(type);
 		handlers.erase(range_0.first, range_0.second);
 		const auto range_1 = internal_handlers.equal_range(type);
 		internal_handlers.erase(range_1.first, range_1.second);
 	}
-	handlers_lock.unlock();
+	
+	AtomicSet(&handlers_lock, 0);
 }

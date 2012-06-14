@@ -73,7 +73,8 @@ protected:
 	unordered_multimap<EVENT_TYPE, handler&> handlers;
 	queue<pair<EVENT_TYPE, shared_ptr<event_object>>> user_event_queue, user_event_queue_processing;
 	recursive_mutex user_queue_lock;
-	recursive_mutex handlers_lock;
+	atomic_t handlers_lock;
+	static constexpr int handlers_locked = 0x80000000;
 	void handle_user_events();
 	void handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj);
 	

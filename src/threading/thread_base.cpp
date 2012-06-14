@@ -56,6 +56,7 @@ int thread_base::_thread_run(thread_base* this_thread_obj) {
 			// reduce system load and make other locks possible
 			this_thread::sleep_for(chrono::milliseconds(this_thread_obj->get_thread_delay()));
 		}
+		else this_thread::yield();
 		
 		if(this_thread_obj->thread_should_finish()) {
 			break;
