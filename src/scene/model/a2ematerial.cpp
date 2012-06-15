@@ -28,8 +28,6 @@ a2ematerial::a2ematerial(engine* eng) : e(eng), t(eng->get_texman()), exts(eng->
 /*! a2ematerial destructor
  */
 a2ematerial::~a2ematerial() {
-	a2e_debug("deleting a2ematerial object");
-
 	for(const auto& material : materials) {
 		switch(material.mat_type) {
 			case PARALLAX:
@@ -68,8 +66,6 @@ a2ematerial::~a2ematerial() {
 		delete m.second;
 	}
 	mapping.clear();
-
-	a2e_debug("a2ematerial object deleted");
 }
 
 /*! loads an .a2mtl material file

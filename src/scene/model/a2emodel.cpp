@@ -82,14 +82,10 @@ a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
 /*! a2emodel destructor
  */
 a2emodel::~a2emodel() {
-	a2e_debug("deleting a2emodel object");
-	
 	if(object_names != nullptr) { delete [] object_names; }
 	delete_sub_bboxes();
 	
 	is_sub_object_transparent.clear();
-	
-	a2e_debug("a2emodel object deleted");
 }
 
 void a2emodel::delete_sub_bboxes() {

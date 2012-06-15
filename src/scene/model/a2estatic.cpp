@@ -40,8 +40,6 @@ a2estatic::a2estatic(engine* e, shader* s, scene* sce) : a2emodel(e, s, sce) {
 /*! a2estatic destructor
  */
 a2estatic::~a2estatic() {
-	a2e_debug("deleting a2estatic object");
-
 	if(vertices != nullptr) { delete [] vertices; }
 	if(tex_coords != nullptr) { delete [] tex_coords; }
 	if(indices != nullptr) { // no additional delete for tex_indices needed, b/c it points to the same data as indices
@@ -75,8 +73,6 @@ a2estatic::~a2estatic() {
 	if(glIsBuffer(vbo_normals_id)) { glDeleteBuffers(1, &vbo_normals_id); }
 	if(glIsBuffer(vbo_binormals_id)) { glDeleteBuffers(1, &vbo_binormals_id); }
 	if(glIsBuffer(vbo_tangents_id)) { glDeleteBuffers(1, &vbo_tangents_id); }
-
-	a2e_debug("a2estatic object deleted");
 }
 
 /*! draws the model
