@@ -551,6 +551,9 @@ void engine::init(const char* ico) {
 #endif
 	}
 	
+	// set dpi lower bound to 72
+	if(config.dpi < 72) config.dpi = 72;
+	
 	// create scene
 	sce = new scene(this);
 	
