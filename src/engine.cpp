@@ -23,6 +23,10 @@
 #include "rendering/gfx2d.h"
 #include "scene/scene.h"
 
+#if defined(__APPLE__)
+#include <CoreGraphics/CoreGraphics.h>
+#endif
+
 // dll main for windows dll export
 #ifdef __WINDOWS__
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
@@ -253,10 +257,6 @@ void engine::create() {
 
 /*! initializes the engine in console + graphical or console only mode
  *  @param console the initialization mode (false = gfx/console, true = console only)
- *  @param width the window width
- *  @param height the window height
- *  @param depth the color depth of the window (16, 24 or 32)
- *  @param fullscreen bool if the window is drawn in fullscreen mode
  */
 void engine::init(bool console, unsigned int width, unsigned int height,
 				  bool fullscreen, bool vsync, const char* ico) {
@@ -516,6 +516,35 @@ void engine::init(const char* ico) {
 								  coord(0.0f, 1.0f), coord(1.0f, 0.0f));
 	stop_2d_draw();
 	stop_draw();
+	
+	// retrieve dpi info
+#if defined(__APPLE__)
+#if !defined(A2E_IOS)
+	const size2 display_res(CGDisplayPixelsWide(CGMainDisplayID()), CGDisplayPixelsHigh(CGMainDisplayID()));
+	const CGSize display_phys_size(CGDisplayScreenSize(CGMainDisplayID()));
+	const float2 display_dpi((float(display_res.x) / display_phys_size.width) * 25.4f,
+							 (float(display_res.y) / display_phys_size.height) * 25.4f);
+	config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
+	// NOTE: [[NSScreen mainScreen] userSpaceScaleFactor] might be relevant
+#else
+	// TODO: iOS
+#endif
+#elif defined(__WINDOWS__)
+	HDC hdc = wglGetCurrentDC();
+	const int2 display_dpi(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
+	config.dpi = (size_t)std::max(display_dpi.x, display_dpi.y);
+#else // x11
+	SDL_SysWMinfo wm_info;
+	SDL_VERSION(&wm_info.version);
+	if(SDL_GetWindowWMInfo(sdl_wnd, &wm_info) == 1) {
+		Display* display = wm_info.info.x11.display;
+		const size2 display_res(DisplayWidth(display, 0), DisplayHeight(display, 0));
+		const float2 display_phys_size(DisplayWidthMM(display, 0), DisplayHeightMM(display, 0));
+		const float2 display_dpi((float(display_res.x) / display_phys_size.width) * 25.4f,
+								 (float(display_res.y) / display_phys_size.height) * 25.4f);
+		config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
+	}
+#endif
 	
 	// create scene
 	sce = new scene(this);
@@ -1189,6 +1218,10 @@ const float& engine::get_fov() const {
 
 const float2& engine::get_near_far_plane() const {
 	return config.near_far_plane;
+}
+
+const size_t& engine::get_dpi() const {
+	return config.dpi;
 }
 
 const xml::xml_doc& engine::get_config_doc() const {

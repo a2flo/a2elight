@@ -155,7 +155,7 @@ project "a2elight"
 			if(not mingw) then
 				defines { "_GLIBCXX__PTHREADS" }
 			end
-			defines { "_GLIBCXX_USE_NANOSLEEP" }
+			defines { "_GLIBCXX_USE_NANOSLEEP", "_GLIBCXX_USE_SCHED_YIELD" }
 		end
 	end
 	

@@ -196,13 +196,6 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		context = new cl::Context(internal_devices, cl_properties, clLogMessagesToStdoutAPPLE, nullptr, &ierr);
 		
 #else
-		SDL_SysWMinfo wm_info;
-		SDL_VERSION(&wm_info.version);
-		if(SDL_GetWindowWMInfo(sdl_wnd, &wm_info) != 1) {
-			a2e_error("couldn't get window manger info!");
-			return;
-		}
-		
 		// context with gl share group (cl/gl interop)
 #if __WINDOWS__
 		cl_context_properties cl_properties[] = {
@@ -212,6 +205,13 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			0
 		};
 #else // Linux, hopefully *BSD too
+		SDL_SysWMinfo wm_info;
+		SDL_VERSION(&wm_info.version);
+		if(SDL_GetWindowWMInfo(sdl_wnd, &wm_info) != 1) {
+			a2e_error("couldn't get window manger info!");
+			return;
+		}
+		
 		cl_context_properties cl_properties[] = {
 			CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platform_index](),
 			CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),

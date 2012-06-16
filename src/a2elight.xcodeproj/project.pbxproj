@@ -103,6 +103,7 @@
 		5CA9BB5E14F18153004B7851 /* gui_color_scheme.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5814F18153004B7851 /* gui_color_scheme.h */; };
 		5CA9BB5F14F18153004B7851 /* gui_theme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB5914F18153004B7851 /* gui_theme.cpp */; };
 		5CA9BB6014F18153004B7851 /* gui_theme.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5A14F18153004B7851 /* gui_theme.h */; };
+		5CBCBF53158C139E007A661C /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CBCBF52158C139E007A661C /* ApplicationServices.framework */; };
 		5CBF520B123458FD00971741 /* texture_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CBF520A123458FD00971741 /* texture_object.h */; };
 		5CC97E3E1501677200AB0D95 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3C1501677200AB0D95 /* SDL2.framework */; };
 		5CC97E3F1501677200AB0D95 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3D1501677200AB0D95 /* SDL2_image.framework */; };
@@ -220,6 +221,7 @@
 		5CA9BB6514F1830B004B7851 /* shader_gles2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = shader_gles2.cpp; sourceTree = "<group>"; };
 		5CA9BB6614F1830B004B7851 /* shader_gles2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shader_gles2.h; sourceTree = "<group>"; };
 		5CA9BB6814F183E2004B7851 /* gles_compat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gles_compat.h; sourceTree = "<group>"; };
+		5CBCBF52158C139E007A661C /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		5CBF520A123458FD00971741 /* texture_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture_object.h; sourceTree = "<group>"; };
 		5CC97E3C1501677200AB0D95 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Library/Frameworks/SDL2.framework; sourceTree = SDKROOT; };
 		5CC97E3D1501677200AB0D95 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Library/Frameworks/SDL2_image.framework; sourceTree = SDKROOT; };
@@ -237,6 +239,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5CBCBF53158C139E007A661C /* ApplicationServices.framework in Frameworks */,
 				5C61BDAC1231D32000FD3451 /* AppKit.framework in Frameworks */,
 				5C61BDAD1231D32000FD3451 /* Cocoa.framework in Frameworks */,
 				5C61BDAE1231D32000FD3451 /* OpenCL.framework in Frameworks */,
@@ -295,6 +298,7 @@
 			children = (
 				5CD83A3D1540FB4F002E5954 /* libfreetype.6.dylib */,
 				5C2C9274140AA9D900AC808C /* libxml2.dylib */,
+				5CBCBF52158C139E007A661C /* ApplicationServices.framework */,
 				5CC97E3C1501677200AB0D95 /* SDL2.framework */,
 				5CC97E3D1501677200AB0D95 /* SDL2_image.framework */,
 				5C61BDA81231D32000FD3451 /* AppKit.framework */,
