@@ -268,7 +268,7 @@ protected:
 		width(640), height(480),
 		fullscreen(false), vsync(false), stereo(false),
 		fov(72.0f), near_far_plane(1.0f, 1000.0f),
-		dpi(72),
+		dpi(0),
 		key_repeat(200), ldouble_click_time(200), mdouble_click_time(200), rdouble_click_time(200),
 		fps_limit(0),
 		server(), client(),

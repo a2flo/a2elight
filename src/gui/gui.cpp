@@ -118,8 +118,8 @@ void gui::draw() {
 	e->start_2d_draw();
 	
 	blend_shd->use();
-	blend_shd->texture("src_buffer", main_fbo->tex_id[0]);
-	blend_shd->texture("dst_buffer", sce->get_scene_buffer()->tex_id[0]);
+	blend_shd->texture("src_buffer", main_fbo->tex[0]);
+	blend_shd->texture("dst_buffer", sce->get_scene_buffer()->tex[0]);
 	
 	glFrontFace(GL_CW);
 	gfx2d::draw_fullscreen_triangle();

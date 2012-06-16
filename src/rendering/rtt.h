@@ -68,27 +68,39 @@ public:
 	};
 
 	struct fbo {
-		unsigned int fbo_id;
-		unsigned int attachment_count;
-		unsigned int* tex_id;
-		unsigned int width;
-		unsigned int height;
-		unsigned int draw_width;
-		unsigned int draw_height;
-		unsigned int color_buffer;
-		unsigned int depth_buffer;
-		unsigned int stencil_buffer;
-		unsigned int* resolve_buffer;
-		bool color;
-		DEPTH_TYPE depth_type;
-		size_t samples;
-		bool stencil;
-		bool* auto_mipmap;
-		GLenum* target;
-		TEXTURE_ANTI_ALIASING* anti_aliasing;
+		const unsigned int attachment_count = 0;
+		unsigned int fbo_id = 0;
+		unsigned int width = 0;
+		unsigned int height = 0;
+		unsigned int draw_width = 0;
+		unsigned int draw_height = 0;
+		unsigned int color_buffer = 0;
+		unsigned int depth_buffer = 0;
+		unsigned int stencil_buffer = 0;
+		bool color = false;
+		DEPTH_TYPE depth_type = DT_NONE;
+		size_t samples = 0;
+		bool stencil = false;
+		
+		vector<unsigned int> tex;
+		vector<unsigned int> resolve_buffer;
+		vector<bool> auto_mipmap;
+		vector<GLenum> target;
+		vector<TEXTURE_ANTI_ALIASING> anti_aliasing;
 
-		fbo() : fbo_id(0), attachment_count(0), tex_id(nullptr), width(0), height(0), draw_width(0), draw_height(0), color_buffer(0), depth_buffer(0), stencil_buffer(0),
-			resolve_buffer(nullptr), color(false), depth_type(DT_NONE), samples(0), stencil(false), auto_mipmap(nullptr), target(nullptr), anti_aliasing(nullptr) {}
+		fbo(const unsigned int& count) : attachment_count(count) {
+			tex.resize(count);
+			resolve_buffer.resize(count);
+			auto_mipmap.resize(count);
+			target.resize(count);
+			anti_aliasing.resize(count);
+			
+			tex.assign(count, 0);
+			resolve_buffer.assign(count, 0);
+			auto_mipmap.assign(count, false);
+			target.assign(count, GL_TEXTURE_2D);
+			anti_aliasing.assign(count, TAA_NONE);
+		}
 	};
 
 	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum target = GL_TEXTURE_2D, texture_object::TEXTURE_FILTERING filtering = texture_object::TF_POINT, TEXTURE_ANTI_ALIASING taa = TAA_NONE, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT, GLint internal_format = GL_RGBA8, GLenum format = GL_RGBA, GLenum type = GL_UNSIGNED_BYTE, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = rtt::DT_NONE);

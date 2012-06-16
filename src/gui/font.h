@@ -47,10 +47,9 @@ public:
 	void draw_cached(const GLuint& ubo, const size_t& character_count, const float2& position, const float4 color = float4(1.0f)) const;
 	
 	// style functions
-	//void set_size(const unsigned int& size);
-	//const unsigned int& get_size() const;
-	
 	const vector<string> get_available_styles() const;
+	const unsigned int& get_size() const;
+	const unsigned int& get_display_size() const;
 	
 	//! http://en.wikipedia.org/wiki/Basic_Multilingual_Plane#Basic_Multilingual_Plane
 	enum class BMP_BLOCK : unsigned int {
@@ -82,7 +81,7 @@ public:
 	//void clear_cache();
 	
 	// texture cache info
-	static constexpr unsigned int font_texture_size = 1024;
+	static constexpr unsigned int font_texture_size = 2048;
 	
 protected:
 	engine* e = nullptr;
@@ -102,9 +101,10 @@ protected:
 	};
 	// style -> (unicode -> glyph data)
 	unordered_map<string, unordered_map<unsigned int, glyph_data>> glyph_map;
-	unsigned int font_size = 13;
-	unsigned int glyphs_per_line = font_texture_size/font_size; // TODO: do this when setting the font size
-	unsigned int glyphs_per_layer = glyphs_per_line * glyphs_per_line;
+	unsigned int font_size = 10;
+	unsigned int display_font_size = font_size;
+	unsigned int glyphs_per_line = 0;
+	unsigned int glyphs_per_layer = 0;
 	
 	void recreate_texture_array(const size_t& layers);
 	GLuint tex_array = 0;
@@ -118,6 +118,9 @@ protected:
 	void reload_shaders();
 	event::handler shader_reload_fnctr;
 	bool shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
+	
+	// size functions (TODO: will be made public when dynamic size changes are supported)
+	void set_size(const unsigned int& size);
 	
 };
 

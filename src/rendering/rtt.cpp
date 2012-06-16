@@ -67,10 +67,9 @@ rtt::~rtt() {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 
-	for(const auto& buffer : buffers) {
-		glDeleteTextures(buffer->attachment_count, buffer->tex_id);
-		glDeleteFramebuffers(1, &buffer->fbo_id);
-		delete buffer;
+	const vector<fbo*> buffer_copy(buffers); // copy, b/c delete_buffer will operate on buffers
+	for(const auto& buffer : buffer_copy) {
+		delete_buffer(buffer);
 	}
 	buffers.clear();
 
@@ -113,17 +112,12 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target
 }
 
 rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* target, texture_object::TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count, rtt::DEPTH_TYPE depth_type) {
-	rtt::fbo* buffer = new rtt::fbo();
+	rtt::fbo* buffer = new rtt::fbo(attachment_count);
 	buffers.push_back(buffer);
 	buffer->width = width;
 	buffer->height = height;
 	buffer->draw_width = width;
 	buffer->draw_height = height;
-	buffer->attachment_count = attachment_count;
-	buffer->tex_id = new unsigned int[buffer->attachment_count];
-	buffer->auto_mipmap = new bool[buffer->attachment_count];
-	buffer->target = new GLenum[buffer->attachment_count];
-	buffer->anti_aliasing = new rtt::TEXTURE_ANTI_ALIASING[buffer->attachment_count];
 	buffer->depth_type = depth_type;
 	buffer->samples = 0;
 	
@@ -183,7 +177,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		glGenFramebuffers(1, &buffer->fbo_id);
 		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 		
-		glGenTextures(attachment_count, buffer->tex_id);
+		glGenTextures(attachment_count, &buffer->tex[0]);
 		for(unsigned int i = 0; i < buffer->attachment_count; i++) {
 #if defined(A2E_IOS)
 			if(i > 0) {
@@ -193,7 +187,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 #endif
 			
 			buffer->target[i] = target[i];
-			glBindTexture(buffer->target[i], buffer->tex_id[i]);
+			glBindTexture(buffer->target[i], buffer->tex[i]);
 			
 			glTexParameteri(buffer->target[i], GL_TEXTURE_MAG_FILTER, (filtering[i] == 0 ? GL_NEAREST : GL_LINEAR));
 			glTexParameteri(buffer->target[i], GL_TEXTURE_MIN_FILTER, filter[filtering[i]]);
@@ -236,7 +230,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			}
 			else buffer->auto_mipmap[i] = false;
 			
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex_id[i], 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex[i], 0);
 			
 #if !defined(A2E_IOS)
 #if A2E_DEBUG
@@ -299,11 +293,10 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 				case rtt::TAA_MSAA_64: {
 					GLsizei samples = (GLsizei)get_sample_count(buffer->anti_aliasing[0]);
 
-					buffer->resolve_buffer = new GLuint[attachment_count];
-					glGenFramebuffers(attachment_count, buffer->resolve_buffer);
+					glGenFramebuffers(attachment_count, &buffer->resolve_buffer[0]);
 					for(size_t i = 0; i < attachment_count; i++) {
 						glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[i]);
-						glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)(GL_COLOR_ATTACHMENT0+i), target[i], buffer->tex_id[i], 0);
+						glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)(GL_COLOR_ATTACHMENT0+i), target[i], buffer->tex[i], 0);
 					}
 					check_fbo(current_buffer);
 					
@@ -376,11 +369,10 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 					glGenRenderbuffers(1, &buffer->depth_buffer);
 					glGenRenderbuffers(1, &buffer->color_buffer);
 
-					buffer->resolve_buffer = new GLuint[1];
 					glGenFramebuffers(1, &buffer->resolve_buffer[0]);
 					
 					glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[0]);
-					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->tex_id[0], 0);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->tex[0], 0);
 					check_fbo(current_buffer);
 					
 					glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
@@ -428,10 +420,42 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 }
 
 void rtt::delete_buffer(rtt::fbo* buffer) {
-	glDeleteTextures(buffer->attachment_count, buffer->tex_id);
+	glDeleteTextures(buffer->attachment_count, &buffer->tex[0]);
+	for(size_t i = 0; i < buffer->attachment_count; i++) {
+		if(buffer->resolve_buffer[i] == 0) break;
+		glDeleteFramebuffers(1, &buffer->resolve_buffer[i]);
+	}
+	
+	// depending on how these were created, they can either be renderbuffers or textures
+	if(glIsRenderbuffer(buffer->color_buffer)) {
+		glDeleteRenderbuffers(1, &buffer->color_buffer);
+		buffer->color_buffer = 0;
+	}
+	if(glIsRenderbuffer(buffer->depth_buffer)) {
+		glDeleteRenderbuffers(1, &buffer->depth_buffer);
+		buffer->depth_buffer = 0;
+	}
+	if(glIsRenderbuffer(buffer->stencil_buffer)) {
+		glDeleteRenderbuffers(1, &buffer->stencil_buffer);
+		buffer->stencil_buffer = 0;
+	}
+	if(glIsTexture(buffer->color_buffer)) {
+		glDeleteTextures(1, &buffer->color_buffer);
+		buffer->color_buffer = 0;
+	}
+	if(glIsTexture(buffer->depth_buffer)) {
+		glDeleteTextures(1, &buffer->depth_buffer);
+		buffer->depth_buffer = 0;
+	}
+	if(glIsTexture(buffer->stencil_buffer)) {
+		glDeleteTextures(1, &buffer->stencil_buffer);
+		buffer->stencil_buffer = 0;
+	}
+	
+	//
 	glDeleteFramebuffers(1, &buffer->fbo_id);
-	delete buffer;
 	buffers.erase(remove(buffers.begin(), buffers.end(), buffer), end(buffers));
+	delete buffer;
 }
 
 void rtt::start_draw(rtt::fbo* buffer) {
@@ -444,7 +468,7 @@ void rtt::start_draw(rtt::fbo* buffer) {
 	   buffer->anti_aliasing[0] == rtt::TAA_SSAA_2_FXAA) {
 		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 		for(unsigned int i = 0; i < buffer->attachment_count; i++) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex_id[i], 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex[i], 0);
 		}
 		
 		if(buffer->depth_type == DT_RENDERBUFFER) {
@@ -498,7 +522,7 @@ void rtt::stop_draw() {
 	for(unsigned int i = 0; i < current_buffer->attachment_count; i++) {
 		if(current_buffer->auto_mipmap[i]) {
 			// TODO: fix this
-			//glBindTexture(current_buffer->target[i], current_buffer->tex_id[i]);
+			//glBindTexture(current_buffer->target[i], current_buffer->tex[i]);
 			//glGenerateMipmap(current_buffer->target[i]);
 		}
 	}
@@ -529,7 +553,7 @@ void rtt::check_fbo(rtt::fbo* buffer) {
 	GLint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE) {
 		a2e_error("framebuffer (size: %u*%upx; depth: %i; tex id: %u; fbo id: %u) didn't pass status check!",
-				  buffer->width, buffer->height, buffer->depth_type, buffer->tex_id, buffer->fbo_id);
+				  buffer->width, buffer->height, buffer->depth_type, buffer->tex[0], buffer->fbo_id);
 	}
 	
 	switch(status) {

@@ -36,6 +36,8 @@ font::font(engine* e_, font_manager* fm_, const vector<string> filenames_) :
 e(e_), s(e_->get_shader()), fm(fm_), filenames(filenames_),
 shader_reload_fnctr(this, &font::shader_reload_handler)
 {
+	set_size(10);
+	
 	// load fonts
 	for(const auto& filename : filenames) {
 		// load first face of file
@@ -70,8 +72,7 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 			}
 			
 			if(face != nullptr) {
-				// TODO: add config setting for dpi (default: 72)
-				if(FT_Set_Char_Size(face, 0, font_size * 64, 0, 72) != 0) {
+				if(FT_Set_Char_Size(face, 0, font_size * 64, 0, (FT_UInt)e->get_dpi()) != 0) {
 					a2e_error("couldn't set char size for face #%u in font %s!", face_index, filename);
 					return;
 				}
@@ -253,7 +254,7 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 									glyph_data {
 										texture_index,
 										int4(slot->bitmap_left,
-											 int(font_size) - slot->bitmap_top,
+											 int(display_font_size) - slot->bitmap_top,
 											 (int)slot->advance.x,
 											 (int)slot->advance.y)
 									}));
@@ -263,7 +264,7 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 							  layer);
 			
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0,
-							offset.x * font_size, offset.y * font_size, offset.z,
+							offset.x * display_font_size, offset.y * display_font_size, offset.z,
 							slot->bitmap.width, slot->bitmap.rows, 1,
 							GL_RED, GL_UNSIGNED_BYTE, buffer);
 		}
@@ -381,36 +382,36 @@ vector<uint2> font::create_text_ubo_data(const string& text,
 	const decltype(glyph_map)::value_type::second_type* cur_style_map = &regular_map;
 	
 	static const unsigned int tab_multiplier = 4;
-	static const float leading_multiplier = 1.25f;
+	static const float leading_multiplier = 1.125f;
 	const unordered_map<string, unordered_map<unsigned int, unsigned int>> whitespace_sizes {
 		{
 			"Regular", {
-				{ 0x0A, float(font_size) * leading_multiplier },
-				{ 0x0D, float(font_size) * leading_multiplier },
+				{ 0x0A, float(display_font_size) * leading_multiplier },
+				{ 0x0D, float(display_font_size) * leading_multiplier },
 				{ 0x09, (regular_map.find(0x20)->second.size.z >> 6) * tab_multiplier },
 				{ 0x20, (regular_map.find(0x20)->second.size.z >> 6) },
 			}
 		},
 		{
 			"Italic", {
-				{ 0x0A, float(font_size) * leading_multiplier },
-				{ 0x0D, float(font_size) * leading_multiplier },
+				{ 0x0A, float(display_font_size) * leading_multiplier },
+				{ 0x0D, float(display_font_size) * leading_multiplier },
 				{ 0x09, (italic_map.find(0x20)->second.size.z >> 6) * tab_multiplier },
 				{ 0x20, (italic_map.find(0x20)->second.size.z >> 6) },
 			}
 		},
 		{
 			"Bold", {
-				{ 0x0A, float(font_size) * leading_multiplier },
-				{ 0x0D, float(font_size) * leading_multiplier },
+				{ 0x0A, float(display_font_size) * leading_multiplier },
+				{ 0x0D, float(display_font_size) * leading_multiplier },
 				{ 0x09, (bold_map.find(0x20)->second.size.z >> 6) * tab_multiplier },
 				{ 0x20, (bold_map.find(0x20)->second.size.z >> 6) },
 			}
 		},
 		{
 			"Bold Italic", {
-				{ 0x0A, float(font_size) * leading_multiplier },
-				{ 0x0D, float(font_size) * leading_multiplier },
+				{ 0x0A, float(display_font_size) * leading_multiplier },
+				{ 0x0D, float(display_font_size) * leading_multiplier },
 				{ 0x09, (bold_italic_map.find(0x20)->second.size.z >> 6) * tab_multiplier },
 				{ 0x20, (bold_italic_map.find(0x20)->second.size.z >> 6) },
 			}
@@ -492,7 +493,7 @@ void font::draw_cached(const GLuint& ubo, const size_t& character_count, const f
 	font_shd->use();
 	font_shd->uniform("mvpm", matrix4f().translate(position.x, position.y, 0.0f) * *e->get_mvp_matrix());
 	font_shd->uniform("glyph_count", uint2(glyphs_per_line, glyphs_per_line));
-	font_shd->uniform("glyph_size", float2(font_size));
+	font_shd->uniform("glyph_size", float2(display_font_size));
 	font_shd->uniform("page_size", float2(font_texture_size));
 	font_shd->uniform("font_color", color);
 	font_shd->texture("font_texture", tex_array, GL_TEXTURE_2D_ARRAY);
@@ -505,14 +506,21 @@ void font::draw_cached(const GLuint& ubo, const size_t& character_count, const f
 	font_shd->disable();
 }
 
-/*void font::set_size(const unsigned int& size) {
-	// TODO: !
+void font::set_size(const unsigned int& size) {
 	font_size = size;
+	// slightly weird, but it seems to work for misc dpi sizes
+	display_font_size = (unsigned int)ceilf((float(font_size * e->get_dpi()) / 64.0f) * (72.0f / 64.0f));
+	glyphs_per_line = font_texture_size / display_font_size;
+	glyphs_per_layer = glyphs_per_line * glyphs_per_line;
 }
 
 const unsigned int& font::get_size() const {
 	return font_size;
-}*/
+}
+
+const unsigned int& font::get_display_size() const {
+	return display_font_size;
+}
 
 const vector<string> font::get_available_styles() const {
 	vector<string> ret;

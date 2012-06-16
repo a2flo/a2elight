@@ -156,13 +156,13 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 buffer_size, co
 	buffers.fxaa_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_LINEAR, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
 	
 #if defined(A2E_INFERRED_RENDERING_CL)
-	buffers.cl_normal_nuv_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->tex_id[0]);
+	buffers.cl_normal_nuv_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->tex[0]);
 	buffers.cl_depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->depth_buffer);
-	buffers.cl_light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[0]->tex_id[0]);
+	buffers.cl_light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[0]->tex[0]);
 #if !defined(A2E_IOS)
-	buffers.cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->tex_id[0]);
+	buffers.cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->tex[0]);
 	buffers.cl_depth_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->depth_buffer);
-	buffers.cl_light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[1]->tex_id[0]);
+	buffers.cl_light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[1]->tex[0]);
 #endif
 #endif
 	
@@ -516,7 +516,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 			ir_lighting->uniform("screen_size", screen_size);
 			ir_lighting->uniform("projection_ab", projection_ab);
 			ir_lighting->texture("normal_nuv_buffer",
-								 buffers.g_buffer[light_pass]->tex_id[0], GL_TEXTURE_2D);
+								 buffers.g_buffer[light_pass]->tex[0], GL_TEXTURE_2D);
 			
 			//
 			ir_lighting->texture("depth_buffer",
@@ -660,7 +660,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 		r->start_2d_draw();
 		
 		gl3shader luma_shd = s->get_gl3shader("LUMA");
-		luma_shd->texture("src_buffer", scene_buffer->tex_id[0]);
+		luma_shd->texture("src_buffer", scene_buffer->tex[0]);
 		gfx2d::draw_fullscreen_triangle();
 		luma_shd->disable();
 		
@@ -672,7 +672,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 		r->start_2d_draw();
 		
 		gl3shader fxaa_shd = s->get_gl3shader("FXAA");
-		fxaa_shd->texture("src_buffer", fxaa_buffer->tex_id[0]);
+		fxaa_shd->texture("src_buffer", fxaa_buffer->tex[0]);
 		fxaa_shd->uniform("texel_size",
 						  float2(1.0f) / float2(fxaa_buffer->width, fxaa_buffer->height));
 		

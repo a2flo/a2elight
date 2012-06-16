@@ -105,11 +105,11 @@ void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned i
 	}
 	
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, src_buffer->fbo_id);
-	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+src_attachment, src_buffer->target[src_attachment], src_buffer->tex_id[src_attachment], 0);
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+src_attachment, src_buffer->target[src_attachment], src_buffer->tex[src_attachment], 0);
 	glReadBuffer(GL_COLOR_ATTACHMENT0+src_attachment);
 	
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest_buffer->fbo_id);
-	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+dest_attachment, dest_buffer->target[dest_attachment], dest_buffer->tex_id[dest_attachment], 0);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+dest_attachment, dest_buffer->target[dest_attachment], dest_buffer->tex[dest_attachment], 0);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0+dest_attachment);
 	
 	glBlitFramebuffer(0, 0, src_buffer->width, src_buffer->height,

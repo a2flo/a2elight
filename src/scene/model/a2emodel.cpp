@@ -369,12 +369,12 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 	shd->uniform("screen_size", screen_size);
 	
 	if(option == "opaque") {
-		shd->texture("light_buffer_diffuse", l_buffer->tex_id[0]);
-		shd->texture("light_buffer_specular", l_buffer->tex_id[1]);
+		shd->texture("light_buffer_diffuse", l_buffer->tex[0]);
+		shd->texture("light_buffer_specular", l_buffer->tex[1]);
 	}
 	else if(option == "alpha") {
-		shd->texture("light_buffer_diffuse", l_buffer->tex_id[0]);
-		shd->texture("light_buffer_specular", l_buffer->tex_id[1]);
+		shd->texture("light_buffer_diffuse", l_buffer->tex[0]);
+		shd->texture("light_buffer_specular", l_buffer->tex[1]);
 		
 		// global mvm is currently only used in the material alpha pass
 		shd->uniform("mvm", mvm);
@@ -389,7 +389,7 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 		shd->uniform("l_buffer_size", l_buffer_size);
 		shd->uniform("texel_size", float2(1.0f)/l_buffer_size);
 		
-		shd->texture("dsf_buffer", g_buffer_alpha->tex_id[1]);
+		shd->texture("dsf_buffer", g_buffer_alpha->tex[1]);
 		shd->texture("depth_buffer", g_buffer_alpha->depth_buffer);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	}
@@ -400,10 +400,10 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 		shd->uniform("model_position", position);
 		shd->uniform("cam_position", -float3(*e->get_position()));
 		if(option == "opaque") {
-			shd->texture("normal_buffer", g_buffer->tex_id[0]);
+			shd->texture("normal_buffer", g_buffer->tex[0]);
 		}
 		else if(option == "alpha") {
-			shd->texture("normal_buffer", g_buffer_alpha->tex_id[0]);
+			shd->texture("normal_buffer", g_buffer_alpha->tex[0]);
 		}
 	}
 }

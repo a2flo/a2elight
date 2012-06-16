@@ -211,6 +211,8 @@ void engine::create() {
 		config.near_far_plane.x = config_doc.get<float>("config.projection.near", 1.0f);
 		config.near_far_plane.y = config_doc.get<float>("config.projection.far", 1000.0f);
 		
+		config.dpi = config_doc.get<size_t>("config.screen.dpi", 0);
+		
 		config.key_repeat = config_doc.get<size_t>("config.input.key_repeat", 200);
 		config.ldouble_click_time = config_doc.get<size_t>("config.input.ldouble_click_time", 200);
 		config.mdouble_click_time = config_doc.get<size_t>("config.input.mdouble_click_time", 200);
@@ -518,33 +520,36 @@ void engine::init(const char* ico) {
 	stop_draw();
 	
 	// retrieve dpi info
+	if(config.dpi == 0) {
 #if defined(__APPLE__)
 #if !defined(A2E_IOS)
-	const size2 display_res(CGDisplayPixelsWide(CGMainDisplayID()), CGDisplayPixelsHigh(CGMainDisplayID()));
-	const CGSize display_phys_size(CGDisplayScreenSize(CGMainDisplayID()));
-	const float2 display_dpi((float(display_res.x) / display_phys_size.width) * 25.4f,
-							 (float(display_res.y) / display_phys_size.height) * 25.4f);
-	config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
-	// NOTE: [[NSScreen mainScreen] userSpaceScaleFactor] might be relevant
+		const size2 display_res(CGDisplayPixelsWide(CGMainDisplayID()), CGDisplayPixelsHigh(CGMainDisplayID()));
+		const CGSize display_phys_size(CGDisplayScreenSize(CGMainDisplayID()));
+		const float2 display_dpi((float(display_res.x) / display_phys_size.width) * 25.4f,
+								 (float(display_res.y) / display_phys_size.height) * 25.4f);
+		config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
+		// NOTE: [[NSScreen mainScreen] userSpaceScaleFactor] might be relevant
 #else
-	// TODO: iOS
+		// TODO: iOS
+		config.dpi = 326;
 #endif
 #elif defined(__WINDOWS__)
-	HDC hdc = wglGetCurrentDC();
-	const int2 display_dpi(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
-	config.dpi = (size_t)std::max(display_dpi.x, display_dpi.y);
+		HDC hdc = wglGetCurrentDC();
+		const int2 display_dpi(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
+		config.dpi = (size_t)std::max(display_dpi.x, display_dpi.y);
 #else // x11
-	SDL_SysWMinfo wm_info;
-	SDL_VERSION(&wm_info.version);
-	if(SDL_GetWindowWMInfo(config.wnd, &wm_info) == 1) {
-		Display* display = wm_info.info.x11.display;
-		const size2 display_res(DisplayWidth(display, 0), DisplayHeight(display, 0));
-		const float2 display_phys_size(DisplayWidthMM(display, 0), DisplayHeightMM(display, 0));
-		const float2 display_dpi((float(display_res.x) / display_phys_size.x) * 25.4f,
-								 (float(display_res.y) / display_phys_size.y) * 25.4f);
-		config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
-	}
+		SDL_SysWMinfo wm_info;
+		SDL_VERSION(&wm_info.version);
+		if(SDL_GetWindowWMInfo(config.wnd, &wm_info) == 1) {
+			Display* display = wm_info.info.x11.display;
+			const size2 display_res(DisplayWidth(display, 0), DisplayHeight(display, 0));
+			const float2 display_phys_size(DisplayWidthMM(display, 0), DisplayHeightMM(display, 0));
+			const float2 display_dpi((float(display_res.x) / display_phys_size.x) * 25.4f,
+									 (float(display_res.y) / display_phys_size.y) * 25.4f);
+			config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
+		}
 #endif
+	}
 	
 	// create scene
 	sce = new scene(this);
