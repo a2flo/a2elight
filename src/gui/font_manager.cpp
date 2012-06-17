@@ -98,6 +98,7 @@ e(e_), r(e_->get_rtt()), fonts(), ft_library(nullptr) {
 #endif
 	
 	// start actual font_manager thread after everything has been initialized
+	this->set_thread_delay(50);
 	this->start();
 }
 

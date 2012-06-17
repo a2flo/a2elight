@@ -133,6 +133,11 @@ public:
 	const rtt::fbo* get_light_buffer(const size_t type = 0) const { return frames[0].l_buffer[type]; }
 	const rtt::fbo* get_fxaa_buffer() const { return frames[0].fxaa_buffer; }
 	const rtt::fbo* get_scene_buffer() const { return frames[0].scene_buffer; }
+	
+	const vector<a2emodel*>& get_models() const;
+	const vector<light*>& get_lights() const;
+	const vector<particle_manager*>& get_particle_managers() const;
+	const set<env_probe*>& get_env_probes() const;
 
 protected:
 	engine* e;

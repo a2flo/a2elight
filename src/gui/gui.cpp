@@ -69,6 +69,7 @@ window_handler_fnctr(this, &gui::window_handler) {
 	reload_shaders();
 	
 	// start actual gui thread after everything has been initialized
+	this->set_thread_delay(50);
 	this->start();
 }
 

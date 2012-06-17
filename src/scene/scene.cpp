@@ -872,3 +872,19 @@ position(pos_), rotation(rot_), buffer_size(buffer_size_), capture_alpha(capture
 
 scene::env_probe::~env_probe() {
 }
+
+const vector<a2emodel*>& scene::get_models() const {
+	return models;
+}
+
+const vector<light*>& scene::get_lights() const {
+	return lights;
+}
+
+const vector<particle_manager*>& scene::get_particle_managers() const {
+	return particle_managers;
+}
+
+const set<scene::env_probe*>& scene::get_env_probes() const {
+	return env_probes;
+}
