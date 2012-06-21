@@ -56,7 +56,7 @@ case $( uname | tr [:upper:] [:lower:] ) in
 		A2_LIB_PATH="/c/MinGW/msys/1.0/local/lib"
 		if [[ $A2_PLATFORM == "x64" ]]; then
 			A2_INCLUDE_PATH="/c/mingw64/msys/include"
-			A2_BIN_PATH="/c/mingw64/msys/bin"
+			A2_BIN_PATH="/c/mingw64/bin"
 			A2_LIB_PATH="/c/mingw64/msys/lib"
 		fi
 	

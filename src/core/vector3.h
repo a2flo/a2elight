@@ -30,6 +30,8 @@ typedef vector3<unsigned int> uint3;
 typedef vector3<int> int3;
 typedef vector3<short> short3;
 typedef vector3<unsigned short> ushort3;
+typedef vector3<char> char3;
+typedef vector3<unsigned char> uchar3;
 typedef vector3<bool> bool3;
 typedef vector3<size_t> size3;
 typedef vector3<ssize_t> ssize3;
@@ -39,7 +41,7 @@ typedef vector3<ssize_t> ssize3;
 #pragma clang diagnostic ignored "-Wtautological-compare"
 #endif
 
-template <typename T> class A2E_API __attribute__((packed, aligned(4))) vector3 {
+template <typename T> class A2E_API __attribute__((packed)) vector3 {
 public:
 	union {
 		T x, r;
@@ -588,11 +590,13 @@ template<typename T> vector3<T>& vector3<T>::rotate(const T& x_rotation, const T
 }
 
 template<> vector3<float> vector3<float>::operator%(const float3& v) const; // specialize for float (mod)
+template<> vector3<double> vector3<double>::operator%(const double3& v) const; // specialize for double (mod)
 template<typename T> vector3<T> vector3<T>::operator%(const vector3<T>& v) const {
 	return vector3<T>(x % v.x, y % v.y, z % v.z);
 }
 
 template<> vector3<float>& vector3<float>::operator%=(const float3& v); // specialize for float (mod)
+template<> vector3<double>& vector3<double>::operator%=(const double3& v); // specialize for double (mod)
 template<typename T> vector3<T>& vector3<T>::operator%=(const vector3<T>& v) {
 	x %= v.x;
 	y %= v.y;
@@ -648,9 +652,13 @@ template<typename T> vector3<T> vector3<T>::sign() const {
 #if defined(A2E_EXPORT)
 // only instantiate this in the vector3.cpp
 extern template class vector3<float>;
+extern template class vector3<double>;
 extern template class vector3<unsigned int>;
 extern template class vector3<int>;
 extern template class vector3<short>;
+extern template class vector3<unsigned short>;
+extern template class vector3<char>;
+extern template class vector3<unsigned char>;
 extern template class vector3<bool>;
 extern template class vector3<size_t>;
 extern template class vector3<ssize_t>;

@@ -82,12 +82,27 @@ template<> A2E_API float3 vector3<float>::rounded() {
 	return float3(roundf(x), roundf(y), roundf(z));
 }
 
+template<> A2E_API double3 vector3<double>::operator%(const double3& v) const {
+	return double3(fmod(x, v.x), fmod(y, v.y), fmod(z, v.z));
+}
+
+template<> A2E_API double3& vector3<double>::operator%=(const double3& v) {
+	x = fmod(x, v.x);
+	y = fmod(y, v.y);
+	z = fmod(z, v.z);
+	return *this;
+}
+
 #if defined(A2E_EXPORT)
 // instantiate
 A2E_API template class vector3<float>;
+A2E_API template class vector3<double>;
 A2E_API template class vector3<unsigned int>;
 A2E_API template class vector3<int>;
 A2E_API template class vector3<short>;
+A2E_API template class vector3<unsigned short>;
+A2E_API template class vector3<char>;
+A2E_API template class vector3<unsigned char>;
 A2E_API template class vector3<bool>;
 A2E_API template class vector3<size_t>;
 A2E_API template class vector3<ssize_t>;
