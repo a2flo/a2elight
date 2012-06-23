@@ -284,6 +284,14 @@ void engine::init(const char* ico) {
 	engine::mode = engine::GRAPHICAL;
 	a2e_debug("initializing albion 2 engine in console + graphical mode");
 
+	// in order to use multi-threaded opengl with x11/xlib, we have to tell it to actually be thread safe
+#if !defined(__APPLE__) && !defined(__WINDOWS__)
+	if(XInitThreads() == 0) {
+		a2e_error("XInitThreads failed!");
+		exit(1);
+	}
+#endif
+
 	// initialize sdl
 	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
 		a2e_error("can't init SDL: %s", SDL_GetError());

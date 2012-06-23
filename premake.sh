@@ -23,6 +23,9 @@ case $( uname | tr [:upper:] [:lower:] ) in
 	"linux")
 		A2_OS="linux"
 		A2_CPU_COUNT=$(cat /proc/cpuinfo | grep -m 1 'cpu cores' | sed -E 's/.*(: )([:digit:]*)/\2/g')
+		if [[ $(cat /proc/cpuinfo | grep -m 1 "flags.* ht " | wc -l) == 1 ]]; then
+			A2_CPU_COUNT=$(expr ${A2_CPU_COUNT} + ${A2_CPU_COUNT})
+		fi 
 		;;
 	[a-z0-9]*"BSD")
 		A2_OS="bsd"
