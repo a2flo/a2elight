@@ -11,6 +11,7 @@
 		5C08D66E152F45660066381D /* gfx2d.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C08D66C152F45660066381D /* gfx2d.h */; };
 		5C1AC479157410460011CC41 /* quaternion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C1AC477157410460011CC41 /* quaternion.cpp */; };
 		5C1AC47A157410460011CC41 /* quaternion.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C1AC478157410460011CC41 /* quaternion.h */; };
+		5C20264F159612C700D52A32 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CBCBF52158C139E007A661C /* ApplicationServices.framework */; };
 		5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C2C9274140AA9D900AC808C /* libxml2.dylib */; };
 		5C32C6BB135526C300164662 /* atomics.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C32C6BA135526C300164662 /* atomics.h */; };
 		5C32C6BE135528F300164662 /* vector2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C32C6BD135528F300164662 /* vector2.cpp */; };
@@ -103,7 +104,6 @@
 		5CA9BB5E14F18153004B7851 /* gui_color_scheme.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5814F18153004B7851 /* gui_color_scheme.h */; };
 		5CA9BB5F14F18153004B7851 /* gui_theme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB5914F18153004B7851 /* gui_theme.cpp */; };
 		5CA9BB6014F18153004B7851 /* gui_theme.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5A14F18153004B7851 /* gui_theme.h */; };
-		5CBCBF53158C139E007A661C /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CBCBF52158C139E007A661C /* ApplicationServices.framework */; };
 		5CBF520B123458FD00971741 /* texture_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CBF520A123458FD00971741 /* texture_object.h */; };
 		5CC97E3E1501677200AB0D95 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3C1501677200AB0D95 /* SDL2.framework */; };
 		5CC97E3F1501677200AB0D95 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3D1501677200AB0D95 /* SDL2_image.framework */; };
@@ -239,7 +239,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5CBCBF53158C139E007A661C /* ApplicationServices.framework in Frameworks */,
+				5C20264F159612C700D52A32 /* ApplicationServices.framework in Frameworks */,
 				5C61BDAC1231D32000FD3451 /* AppKit.framework in Frameworks */,
 				5C61BDAD1231D32000FD3451 /* Cocoa.framework in Frameworks */,
 				5C61BDAE1231D32000FD3451 /* OpenCL.framework in Frameworks */,
@@ -811,6 +811,7 @@
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = liba2elightd;
+				SDKROOT = macosx10.8;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",
@@ -898,6 +899,7 @@
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = liba2elight;
+				SDKROOT = macosx10.8;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",
