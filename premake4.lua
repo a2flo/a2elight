@@ -35,28 +35,6 @@ solution "albion2"
 	configurations { "Release", "Debug" }
 
 project "a2elight"
-	targetname "a2elight"
-	kind "SharedLib"
-	language "C++"
-
-	files { "src/**.h", "src/**.hpp", "src/**.cpp" }
-	defines { "A2E_NET_PROTOCOL=TCP_protocol" }
-
-	basedir "src"
-	targetdir "lib"
-	includedirs { "src/",
-				  "src/cl/",
-				  "src/core/",
-				  "src/gui/",
-				  "src/gui/objects/",
-				  "src/gui/style/",
-				  "src/particle/",
-				  "src/rendering/",
-				  "src/rendering/renderer/",
-				  "src/rendering/renderer/gl3/",
-				  "src/scene/",
-				  "src/scene/model/" }
-
 	-- scan args
 	local argc = 1
 	while(_ARGS[argc] ~= nil) do
@@ -86,6 +64,29 @@ project "a2elight"
 		end
 		argc=argc+1
 	end
+
+	-- project settings
+	targetname "a2elight"
+	kind "SharedLib"
+	language "C++"
+
+	files { "src/**.h", "src/**.hpp", "src/**.cpp" }
+	defines { "A2E_NET_PROTOCOL=TCP_protocol" }
+
+	basedir "src"
+	targetdir "lib"
+	includedirs { "src/",
+				  "src/cl/",
+				  "src/core/",
+				  "src/gui/",
+				  "src/gui/objects/",
+				  "src/gui/style/",
+				  "src/particle/",
+				  "src/rendering/",
+				  "src/rendering/renderer/",
+				  "src/rendering/renderer/gl3/",
+				  "src/scene/",
+				  "src/scene/model/" }
 	
 	-- os specifics
 	if(not os.is("windows") or win_unixenv) then

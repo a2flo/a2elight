@@ -21,6 +21,7 @@
 
 // engine version and build/compiler info
 #include "build_version.h"
+#include "core/util.h"
 #define A2E_MAJOR_VERSION "0"
 #define A2E_MINOR_VERSION "2"
 #define A2E_REVISION_VERSION "1"
@@ -46,16 +47,11 @@
 #define A2E_COMPILER "unknown compiler"
 #endif
 
-string _A2E_VERSION_TO_STR(const size_t& version);
-string _A2E_VERSION_TO_STR(const size_t& version) {
-	stringstream buffer; buffer << version; return buffer.str();
-}
-
 #define A2E_LIBCXX_PREFIX " and "
 #if defined(_LIBCPP_VERSION)
-#define A2E_LIBCXX A2E_LIBCXX_PREFIX+"libc++ "+_A2E_VERSION_TO_STR(_LIBCPP_VERSION)
+#define A2E_LIBCXX A2E_LIBCXX_PREFIX+"libc++ "+size_t2string(_LIBCPP_VERSION)
 #elif defined(__GLIBCXX__)
-#define A2E_LIBCXX A2E_LIBCXX_PREFIX+"libstdc++ "+_A2E_VERSION_TO_STR(__GLIBCXX__)
+#define A2E_LIBCXX A2E_LIBCXX_PREFIX+"libstdc++ "+size_t2string(__GLIBCXX__)
 #else
 #define A2E_LIBCXX ""
 #endif
