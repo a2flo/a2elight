@@ -21,7 +21,6 @@
 
 #include "global.h"
 #include "gui/event.h"
-#include "gui/event_objects.h"
 
 /*! @class font
  *  @brief stores a font and can be used for drawing
@@ -33,6 +32,8 @@ class font_manager;
 typedef struct FT_FaceRec_* FT_Face;
 class shader_gl3;
 typedef shared_ptr<shader_gl3> gl3shader;
+enum class EVENT_TYPE : unsigned int;
+struct event_object;
 class A2E_API font {
 public:
 	//! single font file or font collection

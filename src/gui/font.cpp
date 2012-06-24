@@ -21,6 +21,7 @@
 #include "core/vector2.h"
 #include "core/vector3.h"
 #include "gui/unicode.h"
+#include "gui/event_objects.h"
 #include "engine.h"
 #include "rendering/shader.h"
 #include "rendering/renderer/gl3/shader_gl3.h"

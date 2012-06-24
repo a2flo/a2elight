@@ -19,6 +19,10 @@
 #ifndef __A2E_EVENT_OBJECTS_H__
 #define __A2E_EVENT_OBJECTS_H__
 
+#if !defined(A2E_USER_EVENT_TYPES)
+#define A2E_USER_EVENT_TYPES
+#endif
+
 // general/global event types
 enum class EVENT_TYPE : unsigned int {
 	MOUSE_LEFT_DOWN,
@@ -52,6 +56,8 @@ enum class EVENT_TYPE : unsigned int {
 	QUIT,
 	WINDOW_RESIZE,
 	SHADER_RELOAD,
+	
+	A2E_USER_EVENT_TYPES
 	
 	// TODO: add code for these:
 	// TOUCH, GESTURE, ...

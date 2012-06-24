@@ -22,8 +22,8 @@
 #include "global.h"
 
 #include "core/core.h"
-#include "event_objects.h"
 #include "threading/thread_base.h"
+#include "event_objects.h"
 
 /*! @class event
  *  @brief (sdl) event handler
@@ -36,7 +36,7 @@ public:
 	virtual ~event();
 
 	void handle_events();
-	void add_event(const EVENT_TYPE& type, shared_ptr<event_object> obj);
+	void add_event(const EVENT_TYPE type, shared_ptr<event_object> obj);
 	
 	// <returns true if handled, pointer to object, event type>
 	typedef functor<bool, EVENT_TYPE, shared_ptr<event_object>> handler;

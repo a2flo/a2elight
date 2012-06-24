@@ -291,7 +291,7 @@ void event::add_internal_event_handler(handler& handler_, EVENT_TYPE type) {
 	AtomicSet(&handlers_lock, 0);
 }
 
-void event::add_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
+void event::add_event(const EVENT_TYPE type, shared_ptr<event_object> obj) {
 	// for now, just pass it through
 	handle_event(type, obj);
 }
