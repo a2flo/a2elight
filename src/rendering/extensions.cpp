@@ -43,6 +43,7 @@ const char* ext::GRAPHIC_CARD_STR[] = {
 	"Radeon HD7",
 	"PowerVR SGX535",
 	"PowerVR SGX543",
+	"Ivy Bridge",
 };
 
 const char* ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[] = {
@@ -50,6 +51,7 @@ const char* ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[] = {
 	"GCV_NVIDIA",
 	"GCV_ATI",
 	"GCV_POWERVR",
+	"GCV_INTEL",
 };
 
 const char* ext::GRAPHIC_CARD_DEFINE_STR[] = {
@@ -69,6 +71,7 @@ const char* ext::GRAPHIC_CARD_DEFINE_STR[] = {
 	"GC_RADEON_HD7",
 	"GC_SGX_535",
 	"GC_SGX_543",
+	"GC_IVY_BRIDGE",
 };
 
 /*! create and initialize the extension class
@@ -237,6 +240,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 		// imagin(ati)on needs to be checked first ...
 		else if(vendor_str.find("imagination") != string::npos) vendor = ext::GCV_POWERVR;
 		else if(vendor_str.find("ati") != string::npos) vendor = ext::GCV_ATI;
+		else if(vendor_str.find("intel") != string::npos) vendor = ext::GCV_INTEL;
 		else vendor = ext::GCV_UNKNOWN;
 	}
 	else {
@@ -333,32 +337,32 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			}
 			// yes, these are all actually geforce 9 cards ... and thank you nvidia for this totally fucked up naming scheme ...
 			else if(renderer_str.find("geforce 9") != string::npos ||		// 9xxx(M)
-					renderer_str.find("geforce 1") != string::npos ||			// 1xx(M)
+					renderer_str.find("geforce 1") != string::npos ||		// 1xx(M)
 					renderer_str.find("geforce g 1") != string::npos ||		// G 1xx(M)
 					renderer_str.find("geforce g1") != string::npos ||		// G1xx(M)
-					renderer_str.find("geforce gt 1") != string::npos ||		// GT 1xx(M)
+					renderer_str.find("geforce gt 1") != string::npos ||	// GT 1xx(M)
 					renderer_str.find("geforce gts 1") != string::npos ||	// GTS 1xx(M)
 					(renderer_str.find("geforce gts 2") != string::npos && renderer_str.find("m") == string::npos) || // GTS 2xx (!M)
 					(renderer_str.find("geforce gtx 2") != string::npos && renderer_str.find("m") != string::npos)) { // GTX 2xxM
 				graphic_card = ext::GC_GEFORCE_9;
 			}
 			else if(renderer_str.find("geforce 2") != string::npos ||		// 2xx(M)
-					renderer_str.find("geforce 3") != string::npos ||			// 3xx(M)
+					renderer_str.find("geforce 3") != string::npos ||		// 3xx(M)
 					renderer_str.find("geforce g 2") != string::npos ||		// G 2xx(M)
 					renderer_str.find("geforce g2") != string::npos ||		// G2xx(M)
-					renderer_str.find("geforce gt 2") != string::npos ||		// GT 2xx(M)
+					renderer_str.find("geforce gt 2") != string::npos ||	// GT 2xx(M)
 					renderer_str.find("geforce gts 2") != string::npos ||	// GTS 2xx(M)
 					renderer_str.find("geforce gtx 2") != string::npos ||	// GTX 2xx
-					renderer_str.find("geforce gt 3") != string::npos ||		// GT 3xx(M)
+					renderer_str.find("geforce gt 3") != string::npos ||	// GT 3xx(M)
 					renderer_str.find("geforce gts 3") != string::npos) {	// GTS 3xx(M)
 				graphic_card = ext::GC_GEFORCE_GT200;
 			}
 			else if(renderer_str.find("geforce gtx 4") != string::npos ||	// GTX 4xx
 					renderer_str.find("geforce gts 4") != string::npos ||	// GTS 4xx
-					renderer_str.find("geforce gt 4") != string::npos ||		// GT 4xx
+					renderer_str.find("geforce gt 4") != string::npos ||	// GT 4xx
 					renderer_str.find("geforce gtx 5") != string::npos ||	// GTX 5xx
 					renderer_str.find("geforce gts 5") != string::npos ||	// GTS 5xx
-					renderer_str.find("geforce gt 5") != string::npos ||		// GT 5xx
+					renderer_str.find("geforce gt 5") != string::npos ||	// GT 5xx
 					// this is getting out of hand ...
 					(renderer_str.find("geforce gtx 6") != string::npos &&
 					 renderer_str.find("m") != string::npos &&
@@ -374,7 +378,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			}
 			else if(renderer_str.find("geforce gtx 6") != string::npos ||	// GTX 6xx
 					renderer_str.find("geforce gts 6") != string::npos ||	// GTS 6xx
-					renderer_str.find("geforce gt 6") != string::npos) {		// GT 6xx
+					renderer_str.find("geforce gt 6") != string::npos) {	// GT 6xx
 				graphic_card = ext::GC_GEFORCE_GK100;
 			}
 		}
@@ -404,6 +408,12 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			}
 			else if(renderer_str.find("sgx 543") != string::npos) {
 				graphic_card = ext::GC_SGX_543;
+			}
+		}
+		else if(vendor == ext::GCV_INTEL) {
+			if(renderer_str.find("hd graphics 2500") != string::npos ||
+			   renderer_str.find("hd graphics 4000") != string::npos) {
+				graphic_card = ext::GC_IVY_BRIDGE;
 			}
 		}
 		else {

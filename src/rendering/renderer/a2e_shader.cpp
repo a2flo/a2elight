@@ -618,6 +618,10 @@ bool a2e_shader::check_shader_condition(const CONDITION_TYPE type, const string&
 				min_card = ext::min_powervr_card;
 				max_card = ext::max_powervr_card;
 			}
+			else if(vendor == ext::GCV_INTEL && graphic_card <= ext::max_intel_card) {
+				min_card = ext::min_intel_card;
+				max_card = ext::max_intel_card;
+			}
 			else {
 				a2e_error("unknown card %d!", graphic_card);
 				break;

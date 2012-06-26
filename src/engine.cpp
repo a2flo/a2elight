@@ -393,23 +393,26 @@ void engine::init(const char* ico) {
 	}
 #if !defined(A2E_IOS)
 	SDL_GL_SetSwapInterval(config.vsync ? 1 : 0); // has to be set after context creation
+	
+	// enable multi-threaded opengl context when on os x
+#if defined(__APPLE__) && 0
+	CGLContextObj cgl_ctx = CGLGetCurrentContext();
+	CGLError cgl_err = CGLEnable(cgl_ctx, kCGLCEMPEngine);
+	if(cgl_err != kCGLNoError) {
+		a2e_error("unable to set multi-threaded opengl context (%X: %X): %s!",
+				  (size_t)cgl_ctx, cgl_err, CGLErrorString(cgl_err));
+	}
+	else {
+		a2e_debug("multi-threaded opengl context enabled!");
+	}
 #endif
+#endif
+	
 	acquire_gl_context();
 	
 	// TODO: this is only a rudimentary solution, think of or wait for a better one ...
 #if !defined(A2E_NO_OPENCL)
 	ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), f, config.wnd, config.clear_cache); // use absolute path
-#endif
-	
-	// enable multi-threaded opengl context when on os x
-#if defined(__APPLE__) && 0
-	CGLError cgl_err = CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
-	if(cgl_err != kCGLNoError) {
-		a2e_error("unable to set multi-threaded opengl context (%X)!", cgl_err);
-	}
-	else {
-		a2e_debug("multi-threaded opengl context enabled!");
-	}
 #endif
 	
 	// make an early clear

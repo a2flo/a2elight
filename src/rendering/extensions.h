@@ -70,7 +70,8 @@ public:
 		GCV_UNKNOWN,
 		GCV_NVIDIA,
 		GCV_ATI,
-		GCV_POWERVR
+		GCV_POWERVR,
+		GCV_INTEL,
 	};
 
 	// these are only the most important and widely used models
@@ -91,6 +92,7 @@ public:
 		GC_RADEON_HD7,
 		GC_SGX_535,
 		GC_SGX_543,
+		GC_IVY_BRIDGE,
 	};
 	static const GRAPHIC_CARD min_generic_card = GC_GENERIC_SM4;
 	static const GRAPHIC_CARD max_generic_card = GC_GENERIC_SM5;
@@ -100,6 +102,8 @@ public:
 	static const GRAPHIC_CARD max_ati_card = GC_RADEON_HD7;
 	static const GRAPHIC_CARD min_powervr_card = GC_SGX_535;
 	static const GRAPHIC_CARD max_powervr_card = GC_SGX_543;
+	static const GRAPHIC_CARD min_intel_card = GC_IVY_BRIDGE;
+	static const GRAPHIC_CARD max_intel_card = GC_IVY_BRIDGE;
 
 	GRAPHIC_CARD_VENDOR get_vendor();
 	GRAPHIC_CARD get_graphic_card();
