@@ -25,8 +25,8 @@
  *  @param y the lights y position
  *  @param z the lights z position
  */
-light::light(engine* e_, const float& x, const float& y, const float& z) 
-: e(e_), type(LT_POINT)
+light::light(const float& x, const float& y, const float& z) 
+: type(LT_POINT)
 {
 	position.set(x, y, z);
 	color.set(0.0f, 0.0f, 0.0f);

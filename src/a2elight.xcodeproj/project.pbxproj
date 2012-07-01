@@ -604,7 +604,7 @@
 		5C05F783123171DA00D122BF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0440;
+				LastUpgradeCheck = 0450;
 			};
 			buildConfigurationList = 5C05F786123171DA00D122BF /* Build configuration list for PBXProject "a2elight" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -696,7 +696,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				COMBINE_HIDPI_IMAGES = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_SSE3_EXTENSIONS = YES;
 				GCC_ENABLE_SSE41_EXTENSIONS = YES;
@@ -726,7 +725,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				COMBINE_HIDPI_IMAGES = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_SSE3_EXTENSIONS = YES;
 				GCC_ENABLE_SSE41_EXTENSIONS = YES;
@@ -762,6 +760,7 @@
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				CONFIGURATION_BUILD_DIR = ../lib;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 0.2.1;
@@ -808,7 +807,11 @@
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fno-elide-type",
+					"-fdiagnostics-show-template-tree",
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = liba2elightd;
 				SDKROOT = macosx;
@@ -852,6 +855,7 @@
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				CONFIGURATION_BUILD_DIR = ../lib;
 				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 0.2.1;
@@ -896,7 +900,11 @@
 				LLVM_LTO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fno-elide-type",
+					"-fdiagnostics-show-template-tree",
+				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = liba2elight;
 				SDKROOT = macosx;

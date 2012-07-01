@@ -97,6 +97,7 @@ public:
 	virtual bool get_transparent(const size_t& sub_object) const;
 	
 	virtual void set_material(a2ematerial* material);
+	virtual a2ematerial* get_material() const;
 	
 	// model data functions
 	virtual float3**const get_vertices() const;

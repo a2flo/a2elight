@@ -684,6 +684,10 @@ void a2emodel::set_material(a2ematerial* material_) {
 	a2emodel::is_material = true;
 }
 
+a2ematerial* a2emodel::get_material() const {
+	return material;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// model data functions                                                                                    ////

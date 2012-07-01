@@ -29,8 +29,8 @@
 class engine;
 class A2E_API light {
 public:
-	light(engine* e, const float& x, const float& y, const float& z);
-	light(engine* e_, const float3& pos) : light(e_, pos.x, pos.y, pos.z) {}
+	light(const float& x, const float& y, const float& z);
+	light(const float3& pos) : light(pos.x, pos.y, pos.z) {}
 	~light();
 	
 	enum LIGHT_TYPE {
@@ -70,8 +70,6 @@ public:
 	bool is_enabled() const;
 
 protected:
-	engine* e;
-
 	LIGHT_TYPE type;
 	float3 position;
 	float3 color;
