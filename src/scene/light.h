@@ -53,7 +53,6 @@ public:
 	void set_spot_direction(const float3& sdir);
 	void set_spot_cutoff(const float& angle);
 	void set_radius(const float& radius);
-	
 	void set_enabled(const bool& state);
 	void set_spot_light(const bool& state);
 
@@ -70,18 +69,17 @@ public:
 	bool is_enabled() const;
 
 protected:
-	LIGHT_TYPE type;
+	LIGHT_TYPE type = LT_POINT;
 	float3 position;
 	float3 color;
 	float3 ambient;
-	float3 spot_dir;
-	float cutoff;
-	float radius;
-	float sqr_radius;
-	float inv_sqr_radius;
-
-	bool spot_light;
-	bool enabled;
+	float3 spot_dir = float3(0.0f, 1.0f, 0.0f);
+	float cutoff = 180.0f;
+	float radius = 1.0f;
+	float sqr_radius = 0.0f;
+	float inv_sqr_radius = 0.0f;
+	bool spot_light = false;
+	bool enabled = true;
 
 };
 

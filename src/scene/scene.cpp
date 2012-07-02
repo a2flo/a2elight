@@ -491,15 +491,16 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	/////////////////////////////////////////////////////
 	// light pass - using shaders
 	// light 1st: opaque geometry, 2nd: alpha geometry
+	
+	// set blend mode (add all light results)
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+	
 	for(size_t light_pass = 0; light_pass < (light_alpha_objects ? 2 : 1); light_pass++) {
 		r->start_draw(buffers.l_buffer[light_pass]);
 		r->clear();
 		static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glDrawBuffers(2, draw_buffers);
-		
-		// set blend mode (add all light results)
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 		
 		// shader init
 		//gl3shader ir_lighting = s->get_gl3shader("IR_LP_PHONG");
@@ -519,8 +520,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 								 buffers.g_buffer[light_pass]->tex[0], GL_TEXTURE_2D);
 			
 			//
-			ir_lighting->texture("depth_buffer",
-								 buffers.g_buffer[light_pass]->depth_buffer, GL_TEXTURE_2D);
+			ir_lighting->texture("depth_buffer", buffers.g_buffer[light_pass]->depth_buffer, GL_TEXTURE_2D);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 			
 			// first: all point and spot (TODO) lights
@@ -530,17 +530,14 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 					if(li->get_type() != light::LT_POINT) continue;
 					
 					// TODO: light visibility test? (not visible if: player !facing light && dist(player, light) > r)
-					
-					ir_lighting->uniform("light_position", float4(li->get_position(), li->get_sqr_radius()));
-					ir_lighting->uniform("light_color", float4(li->get_color(), li->get_inv_sqr_radius()));
-					
 					const float radius = li->get_radius();
-					const float half_far_plane = e->get_near_far_plane().y - 0.1f;
-					const float ls_radius = (radius < 0.0f || radius > half_far_plane ?
-											 half_far_plane : radius); // clamp to (far plane)/2
-					// radius + 1, b/c we have to account for the near plane (= 1.0)
-					const float light_dist = (cam_position - li->get_position()).length() - 1.0f;
-					if(light_dist <= ls_radius) {
+					//const float half_far_plane = e->get_near_far_plane().y - 0.1f;
+					//const float ls_radius = (radius < 0.0f || radius > half_far_plane ?
+					//						 half_far_plane : radius); // clamp to far plane - small offset
+					// radius + near plane, b/c we have to account for that too
+					const float light_dist = (cam_position - li->get_position()).length() - e->get_near_far_plane().x;
+					//if(light_dist <= ls_radius) {
+					if(light_dist <= radius) {
 						glFrontFace(GL_CW);
 						glDepthFunc(GL_GREATER);
 					}
@@ -549,15 +546,15 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 						glDepthFunc(GL_LEQUAL);
 					}
 					
-					ir_lighting->uniform("light_radius", ls_radius);
+					ir_lighting->uniform("light_position", float4(li->get_position(), li->get_radius()));
+					ir_lighting->uniform("light_color", float4(li->get_color(), li->get_inv_sqr_radius()));
 					ir_lighting->attribute_array("in_vertex", light_sphere->get_vbo_vertices(), 3, GL_FLOAT);
 					
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, light_sphere->get_vbo_indices(0));
-					
 					glDrawElements(GL_TRIANGLES, (GLsizei)light_sphere->get_index_count(0) * 3, GL_UNSIGNED_INT, nullptr);
 					
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 				}
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			}
 			// second: all directional lights
 			else if(light_type == 1) {
@@ -577,12 +574,14 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 			
 			ir_lighting->disable();
 		}
-		glDepthFunc(GL_LEQUAL);
-		glDisable(GL_BLEND);
 		
 		// done
 		r->stop_draw();
 	}
+	
+	glDepthFunc(GL_LEQUAL);
+	glDisable(GL_BLEND);
+	
 #else // defined(A2E_INFERRED_RENDERING_CL)
 	/////////////////////////////////////////////////////
 #endif

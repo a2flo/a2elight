@@ -366,8 +366,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	
 	bool print_debug_info = false;
 	//if(identifier == "SIMPLE") {
-	/*if(identifier == "IR_GP_SKINNING" ||
-	   identifier == "IR_MP_SKINNING") {
+	/*if(identifier == "IR_LP_ASHIKHMIN_SHIRLEY") {
 		print_debug_info = true;
 		cout << endl << "## " << identifier << "::" << option << endl;
 	}*/

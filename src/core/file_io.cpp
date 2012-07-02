@@ -23,8 +23,8 @@
 file_io::file_io() {
 }
 
-file_io::file_io(const string& filename, FIO_OPEN_TYPE open_type) {
-	open(filename, open_type);
+file_io::file_io(const string& filename, FIO_OPEN_TYPE open_type_) {
+	open(filename, open_type_);
 }
 
 /*! there is no function currently
@@ -36,12 +36,13 @@ file_io::~file_io() {
  *  @param filename the name of the file
  *  @param open_type enum that specifies how we want to open the file (like "r", "wb", etc. ...)
  */
-bool file_io::open(const string& filename, FIO_OPEN_TYPE open_type) {
+bool file_io::open(const string& filename, FIO_OPEN_TYPE open_type_) {
 	if(check_open()) {
 		a2e_error("a file is already opened! can't open another file!");
 		return false;
 	}
 
+	open_type = open_type_;
 	switch(open_type) {
 		case file_io::OT_READ:
 			filestream.open(filename, fstream::in);
@@ -177,13 +178,37 @@ uint64_t file_io::get_filesize() {
  *  @param offset the offset we you want to seek the file
  */
 void file_io::seek(size_t offset) {
+	if(open_type != OT_WRITE && open_type != OT_WRITE_BINARY &&
+	   open_type != OT_APPEND && open_type != OT_APPEND_BINARY) {
+		seek_read(offset);
+	}
+	else seek_write(offset);
+}
+
+void file_io::seek_read(size_t offset) {
 	filestream.seekg(offset, ios::beg);
+}
+
+void file_io::seek_write(size_t offset) {
+	filestream.seekp(offset, ios::beg);
 }
 
 /*! returns the current file offset
  */
 streampos file_io::get_current_offset() {
+	if(open_type != OT_WRITE && open_type != OT_WRITE_BINARY &&
+	   open_type != OT_APPEND && open_type != OT_APPEND_BINARY) {
+		return get_current_read_offset();
+	}
+	return get_current_write_offset();
+}
+
+streampos file_io::get_current_read_offset() {
 	return filestream.tellg();
+}
+
+streampos file_io::get_current_write_offset() {
+	return filestream.tellp();
 }
 
 /*! writes a block to the current file (offset)
@@ -255,7 +280,6 @@ bool file_io::check_open() {
 	}
 	return false;
 }
-
 
 /*! checks if we reached the end of file 
  */

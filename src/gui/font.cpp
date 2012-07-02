@@ -137,8 +137,6 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 }
 
 font::~font() {
-	a2e_debug("deleting font object");
-	
 	// different styles may point to the same FT_Font -> create a set
 	set<FT_Face> ft_faces;
 	for(const auto& face : faces) {
@@ -156,8 +154,6 @@ font::~font() {
 	if(glIsTexture(tex_array)) glDeleteTextures(1, &tex_array);
 	
 	e->get_event()->remove_event_handler(shader_reload_fnctr);
-	
-	a2e_debug("font object deleted");
 }
 
 bool font::add_face(const string& style, FT_Face face) {

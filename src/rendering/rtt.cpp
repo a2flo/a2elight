@@ -483,7 +483,10 @@ void rtt::start_draw(rtt::fbo* buffer) {
 #endif
 								   buffer->depth_buffer, 0);
 		}
-		else glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+		else {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+		}
 	}
 	else {
 		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);

@@ -25,19 +25,8 @@
  *  @param y the lights y position
  *  @param z the lights z position
  */
-light::light(const float& x, const float& y, const float& z) 
-: type(LT_POINT)
-{
+light::light(const float& x, const float& y, const float& z) {
 	position.set(x, y, z);
-	color.set(0.0f, 0.0f, 0.0f);
-	ambient.set(0.0f, 0.0f, 0.0f);
-
-	spot_dir.set(0.0f, 1.0f, 0.0f);
-	cutoff = 180.0f;
-	
-	enabled = true;
-	spot_light = false;
-	
 	set_radius(1.0f);
 }
 

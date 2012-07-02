@@ -68,6 +68,8 @@ public:
 	void close();
 	uint64_t get_filesize();
 	fstream* get_filestream();
+	void seek(size_t offset);
+	streampos get_current_offset();
 	
 	// file input:
 	void read_file(stringstream* buffer);
@@ -78,8 +80,8 @@ public:
 	unsigned short int get_usint();
 	unsigned int get_uint();
 	float get_float();
-	void seek(size_t offset);
-	streampos get_current_offset();
+	void seek_read(size_t offset);
+	streampos get_current_read_offset();
 	
 	// file output:
 	void write_block(const char* data, size_t size, bool check_size = false);
@@ -87,6 +89,8 @@ public:
 	void write_char(const unsigned char& ch);
 	void write_uint(const unsigned int& ui);
 	void write_float(const float& f);
+	void seek_write(size_t offset);
+	streampos get_current_write_offset();
 
 
 	//
@@ -99,6 +103,7 @@ public:
 
 protected:
 	fstream filestream;
+	FIO_OPEN_TYPE open_type = OT_READ;
 
 	bool check_open();
 
