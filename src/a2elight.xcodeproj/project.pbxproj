@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5C03756515A465350030C37B /* osx_helper.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C03756315A465350030C37B /* osx_helper.h */; };
+		5C03756615A465350030C37B /* osx_helper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5C03756415A465350030C37B /* osx_helper.mm */; };
 		5C08D66D152F45660066381D /* gfx2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C08D66B152F45660066381D /* gfx2d.cpp */; };
 		5C08D66E152F45660066381D /* gfx2d.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C08D66C152F45660066381D /* gfx2d.h */; };
 		5C1AC479157410460011CC41 /* quaternion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C1AC477157410460011CC41 /* quaternion.cpp */; };
@@ -117,6 +119,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5C03756315A465350030C37B /* osx_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osx_helper.h; sourceTree = "<group>"; };
+		5C03756415A465350030C37B /* osx_helper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = osx_helper.mm; sourceTree = "<group>"; };
 		5C05F790123171DA00D122BF /* liba2elightd.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liba2elightd.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C05F792123171DA00D122BF /* a2e_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e_Prefix.pch; sourceTree = "<group>"; };
 		5C08D66B152F45660066381D /* gfx2d.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gfx2d.cpp; sourceTree = "<group>"; };
@@ -254,6 +258,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5C03756215A465350030C37B /* osx */ = {
+			isa = PBXGroup;
+			children = (
+				5C03756415A465350030C37B /* osx_helper.mm */,
+				5C03756315A465350030C37B /* osx_helper.h */,
+			);
+			path = osx;
+			sourceTree = SOURCE_ROOT;
+		};
 		5C05F781123171DA00D122BF = {
 			isa = PBXGroup;
 			children = (
@@ -275,6 +288,7 @@
 				5C3975A3123189750075C168 /* cl */,
 				5C3975A7123189750075C168 /* core */,
 				5C3975C4123189750075C168 /* gui */,
+				5C03756215A465350030C37B /* osx */,
 				5CA73B3B1466A34200B1B268 /* particle */,
 				5C397612123189750075C168 /* rendering */,
 				5C39762D123189750075C168 /* scene */,
@@ -574,6 +588,7 @@
 				5CCAF698153A3DDB0084D604 /* font_manager.h in Headers */,
 				5CCAF69A153A3DDB0084D604 /* font.h in Headers */,
 				5C1AC47A157410460011CC41 /* quaternion.h in Headers */,
+				5C03756515A465350030C37B /* osx_helper.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -686,6 +701,7 @@
 				5CCAF697153A3DDB0084D604 /* font_manager.cpp in Sources */,
 				5CCAF699153A3DDB0084D604 /* font.cpp in Sources */,
 				5C1AC479157410460011CC41 /* quaternion.cpp in Sources */,
+				5C03756615A465350030C37B /* osx_helper.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

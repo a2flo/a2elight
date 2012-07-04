@@ -24,11 +24,7 @@
 #include "scene/scene.h"
 
 #if defined(__APPLE__)
-#if !defined(__MAC_10_8)
-#include "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreGraphics.framework/Headers/CoreGraphics.h"
-#else
-#include <CoreGraphics/CoreGraphics.h>
-#endif
+#include "osx/osx_helper.h"
 #endif
 
 // dll main for windows dll export
@@ -538,12 +534,7 @@ void engine::init(const char* ico) {
 	if(config.dpi == 0) {
 #if defined(__APPLE__)
 #if !defined(A2E_IOS)
-		const size2 display_res(CGDisplayPixelsWide(CGMainDisplayID()), CGDisplayPixelsHigh(CGMainDisplayID()));
-		const CGSize display_phys_size(CGDisplayScreenSize(CGMainDisplayID()));
-		const float2 display_dpi((float(display_res.x) / display_phys_size.width) * 25.4f,
-								 (float(display_res.y) / display_phys_size.height) * 25.4f);
-		config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
-		// NOTE: [[NSScreen mainScreen] userSpaceScaleFactor] might be relevant
+		config.dpi = osx_helper::get_dpi(config.wnd);
 #else
 		// TODO: iOS
 		config.dpi = 326;
