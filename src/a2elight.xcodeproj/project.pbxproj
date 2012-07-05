@@ -854,6 +854,7 @@
 					"-Wsometimes-uninitialized",
 					"-Wunique-enum",
 					"-Wdynamic-class-memaccess",
+					"-Wthread-safety",
 				);
 			};
 			name = Debug;
@@ -947,6 +948,7 @@
 					"-Wsometimes-uninitialized",
 					"-Wunique-enum",
 					"-Wdynamic-class-memaccess",
+					"-Wthread-safety",
 				);
 			};
 			name = Release;

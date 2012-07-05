@@ -24,18 +24,6 @@
  */
 camera::camera(engine* e_) : e(e_), evt(e_->get_event()),
 keyboard_handler(this, &camera::key_handler) {
-	up_down = 0.0f;
-
-	keyboard_input = true;
-	mouse_input = false;
-	wasd_input = false;
-	ignore_next_rotation = 0;
-
-	rotation_speed = 100.0f;
-	cam_speed = 1.0f;
-	
-	key_state[0] = key_state[1] = key_state[2] = key_state[3] = false;
-	
 	evt->add_event_handler(keyboard_handler, EVENT_TYPE::KEY_DOWN, EVENT_TYPE::KEY_UP);
 }
 
@@ -77,7 +65,7 @@ void camera::run() {
 	
 ////////////////////////////////
 // linux/windows version
-#ifndef __APPLE__
+#if !defined(__APPLE__)
 		SDL_GetMouseState(&cursor_pos_x, &cursor_pos_y);
 
 		float xpos = (1.0f / (float)e->get_width()) * (float)cursor_pos_x;
@@ -102,7 +90,9 @@ void camera::run() {
 				rotation.y -= xpos * rotation_speed;
 			}
 			else ignore_next_rotation--;
-			SDL_WarpMouseInWindow(e->get_window(), e->get_width()/2, e->get_height()/2);
+			
+			const float2 center_point(float2(e->get_width(), e->get_height()) * 0.5f);
+			SDL_WarpMouseInWindow(e->get_window(), roundf(center_point.x), roundf(center_point.y));
 		}
 #endif
 ////////////////////////////////
@@ -168,7 +158,7 @@ void camera::set_keyboard_input(const bool& state) {
 	keyboard_input = state;
 	
 	// reset key state, in case a move key is still held
-	key_state[0] = key_state[1] = key_state[2] = key_state[3] = false;
+	key_state = { { false, false, false, false } };
 }
 
 /*! if mouse_input is set true then the cameras rotation is controlled via
@@ -180,14 +170,15 @@ void camera::set_mouse_input(const bool& state) {
 	// grab input
 	SDL_SetWindowGrab(e->get_window(), (state ? SDL_TRUE : SDL_FALSE));
 	
-#ifdef __APPLE__
+#if defined(__APPLE__)
 	// this effictively calls CGAssociateMouseAndMouseCursorPosition (which will lock the cursor to the window)
 	// and subsequently handles all mouse moves in relative/delta mode
 	SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
 	
 	// this fixes some weird mouse positioning when switching from grab to non-grab mode
 	if(mouse_input && !state) {
-		SDL_WarpMouseInWindow(e->get_window(), e->get_width()/2, e->get_height()/2);
+		const float2 center_point(float2(e->get_width(), e->get_height()) * 0.5f);
+		SDL_WarpMouseInWindow(e->get_window(), roundf(center_point.x), roundf(center_point.y));
 	}
 #endif
 	
@@ -212,7 +203,7 @@ void camera::set_wasd_input(const bool& state) {
 	wasd_input = state;
 	
 	// reset key state, in case a wasd key triggered it before
-	key_state[0] = key_state[1] = key_state[2] = key_state[3] = false;
+	key_state = { { false, false, false, false } };
 }
 
 bool camera::get_wasd_input() const {

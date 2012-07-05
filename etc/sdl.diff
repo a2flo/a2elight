@@ -1,6 +1,6 @@
 diff -r 6bb657898f55 Xcode/SDL/Info-Framework.plist
 --- a/Xcode/SDL/Info-Framework.plist	Tue Feb 28 21:58:36 2012 -0500
-+++ b/Xcode/SDL/Info-Framework.plist	Wed Jul 04 22:19:47 2012 +0200
++++ b/Xcode/SDL/Info-Framework.plist	Thu Jul 05 18:40:48 2012 +0200
 @@ -19,10 +19,10 @@
  	<key>CFBundlePackageType</key>
  	<string>FMWK</string>
@@ -16,7 +16,7 @@ diff -r 6bb657898f55 Xcode/SDL/Info-Framework.plist
  </plist>
 diff -r 6bb657898f55 Xcode/SDL/SDL.xcodeproj/project.pbxproj
 --- a/Xcode/SDL/SDL.xcodeproj/project.pbxproj	Tue Feb 28 21:58:36 2012 -0500
-+++ b/Xcode/SDL/SDL.xcodeproj/project.pbxproj	Wed Jul 04 22:19:47 2012 +0200
++++ b/Xcode/SDL/SDL.xcodeproj/project.pbxproj	Thu Jul 05 18:40:48 2012 +0200
 @@ -2316,7 +2316,7 @@
  		00CFA621106A567900758660 /* Release */ = {
  			isa = XCBuildConfiguration;
@@ -37,7 +37,15 @@ diff -r 6bb657898f55 Xcode/SDL/SDL.xcodeproj/project.pbxproj
  				STRIP_STYLE = "non-global";
  			};
  			name = Release;
-@@ -2380,14 +2380,14 @@
+@@ -2333,6 +2333,7 @@
+ 		00CFA622106A567900758660 /* Release */ = {
+ 			isa = XCBuildConfiguration;
+ 			buildSettings = {
++				CONFIGURATION_BUILD_DIR = "build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+ 				DYLIB_COMPATIBILITY_VERSION = 1;
+ 				DYLIB_CURRENT_VERSION = 1;
+ 				FRAMEWORK_VERSION = A;
+@@ -2380,14 +2381,14 @@
  		00CFA627106A568900758660 /* Debug */ = {
  			isa = XCBuildConfiguration;
  			buildSettings = {
@@ -55,9 +63,17 @@ diff -r 6bb657898f55 Xcode/SDL/SDL.xcodeproj/project.pbxproj
  				STRIP_INSTALLED_PRODUCT = NO;
  			};
  			name = Debug;
+@@ -2395,6 +2396,7 @@
+ 		00CFA628106A568900758660 /* Debug */ = {
+ 			isa = XCBuildConfiguration;
+ 			buildSettings = {
++				CONFIGURATION_BUILD_DIR = "build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+ 				DYLIB_COMPATIBILITY_VERSION = 1;
+ 				DYLIB_CURRENT_VERSION = 1;
+ 				FRAMEWORK_VERSION = A;
 diff -r 6bb657898f55 src/events/scancodes_darwin.h
 --- a/src/events/scancodes_darwin.h	Tue Feb 28 21:58:36 2012 -0500
-+++ b/src/events/scancodes_darwin.h	Wed Jul 04 22:19:47 2012 +0200
++++ b/src/events/scancodes_darwin.h	Thu Jul 05 18:40:48 2012 +0200
 @@ -91,7 +91,7 @@
      /*  61 */   SDL_SCANCODE_RALT,
      /*  62 */   SDL_SCANCODE_RCTRL,
@@ -78,9 +94,25 @@ diff -r 6bb657898f55 src/events/scancodes_darwin.h
      /*  81 */   SDL_SCANCODE_KP_EQUALS,
      /*  82 */   SDL_SCANCODE_KP_0,
      /*  83 */   SDL_SCANCODE_KP_1,
+diff -r 6bb657898f55 src/video/cocoa/SDL_cocoamouse.m
+--- a/src/video/cocoa/SDL_cocoamouse.m	Tue Feb 28 21:58:36 2012 -0500
++++ b/src/video/cocoa/SDL_cocoamouse.m	Thu Jul 05 18:40:48 2012 +0200
+@@ -110,9 +110,12 @@
+ Cocoa_WarpMouse(SDL_Window * window, int x, int y)
+ {
+     CGPoint point;
++    SDL_WindowData* data = (SDL_WindowData*)window->driverdata;
+ 
+     point.x = (float)window->x + x;
+     point.y = (float)window->y + y;
++    point.x /= data->scaleFactor;
++    point.y /= data->scaleFactor;
+     CGWarpMouseCursorPosition(point);
+ }
+ 
 diff -r 6bb657898f55 src/video/cocoa/SDL_cocoaopengl.m
 --- a/src/video/cocoa/SDL_cocoaopengl.m	Tue Feb 28 21:58:36 2012 -0500
-+++ b/src/video/cocoa/SDL_cocoaopengl.m	Wed Jul 04 22:19:47 2012 +0200
++++ b/src/video/cocoa/SDL_cocoaopengl.m	Thu Jul 05 18:40:48 2012 +0200
 @@ -91,6 +91,16 @@
  
      attr[i++] = NSOpenGLPFADepthSize;
@@ -98,37 +130,157 @@ diff -r 6bb657898f55 src/video/cocoa/SDL_cocoaopengl.m
  
      if (_this->gl_config.double_buffer) {
          attr[i++] = NSOpenGLPFADoubleBuffer;
+diff -r 6bb657898f55 src/video/cocoa/SDL_cocoawindow.h
+--- a/src/video/cocoa/SDL_cocoawindow.h	Tue Feb 28 21:58:36 2012 -0500
++++ b/src/video/cocoa/SDL_cocoawindow.h	Thu Jul 05 18:40:48 2012 +0200
+@@ -87,6 +87,7 @@
+     SDL_bool created;
+     Cocoa_WindowListener *listener;
+     struct SDL_VideoData *videodata;
++    float scaleFactor;
+ };
+ 
+ extern int Cocoa_CreateWindow(_THIS, SDL_Window * window);
 diff -r 6bb657898f55 src/video/cocoa/SDL_cocoawindow.m
 --- a/src/video/cocoa/SDL_cocoawindow.m	Tue Feb 28 21:58:36 2012 -0500
-+++ b/src/video/cocoa/SDL_cocoawindow.m	Wed Jul 04 22:19:47 2012 +0200
-@@ -154,7 +154,7 @@
++++ b/src/video/cocoa/SDL_cocoawindow.m	Thu Jul 05 18:40:48 2012 +0200
+@@ -36,9 +36,9 @@
+ 
+ static Uint32 s_moveHack;
+ 
+-static __inline__ void ConvertNSRect(NSRect *r)
++static __inline__ void ConvertNSRect(NSRect *r, const float scaleFactor)
+ {
+-    r->origin.y = CGDisplayPixelsHigh(kCGDirectMainDisplay) - r->origin.y - r->size.height;
++    r->origin.y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) * scaleFactor) - r->origin.y - r->size.height;
+ }
+ 
+ @implementation Cocoa_WindowListener
+@@ -122,8 +122,8 @@
+     SDL_VideoDevice *device = SDL_GetVideoDevice();
+     SDL_Window *window = _data->window;
+     NSWindow *nswindow = _data->nswindow;
+-    NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
+-    ConvertNSRect(&rect);
++    NSRect rect = [nswindow convertRectToBacking:[nswindow contentRectForFrameRect:[nswindow frame]]];
++    ConvertNSRect(&rect, _data->scaleFactor);
+ 
+     if (s_moveHack) {
+         SDL_bool blockMove = ((SDL_GetTicks() - s_moveHack) < 500);
+@@ -134,7 +134,7 @@
+             /* Cocoa is adjusting the window in response to a mode change */
+             rect.origin.x = window->x;
+             rect.origin.y = window->y;
+-            ConvertNSRect(&rect);
++            ConvertNSRect(&rect, _data->scaleFactor);
+             [nswindow setFrameOrigin:rect.origin];
+             return;
+         }
+@@ -154,8 +154,8 @@
  {
      SDL_VideoDevice *device = SDL_GetVideoDevice();
      int x, y, w, h;
 -    NSRect rect = [_data->nswindow contentRectForFrameRect:[_data->nswindow frame]];
+-    ConvertNSRect(&rect);
 +    NSRect rect = [_data->nswindow convertRectToBacking:[_data->nswindow contentRectForFrameRect:[_data->nswindow frame]]];
-     ConvertNSRect(&rect);
++    ConvertNSRect(&rect, _data->scaleFactor);
      x = (int)rect.origin.x;
      y = (int)rect.origin.y;
-@@ -534,9 +534,21 @@
-         /* Create view if not already exists */
-         if (!contentView) {
-             contentView = [[SDLView alloc] initWithFrame:rect];
-+            [contentView setWantsBestResolutionOpenGLSurface:YES];
+     w = (int)rect.size.width;
+@@ -196,6 +196,8 @@
+         int x, y;
+ 
+         point = [_data->nswindow mouseLocationOutsideOfEventStream];
++        point.x *= _data->scaleFactor;
++        point.y *= _data->scaleFactor;
+         x = (int)point.x;
+         y = (int)(window->h - point.y);
+ 
+@@ -304,12 +306,17 @@
+             CGPoint cgpoint;
+ 
+             point = [theEvent locationInWindow];
++            point.x *= _data->scaleFactor;
++            point.y *= _data->scaleFactor;
++			
+             point.y = window->h - point.y;
+ 
+             SDL_SendMouseMotion(window, 0, (int)point.x, (int)point.y);
+             SDL_GetMouseState(&x, &y);
+             cgpoint.x = window->x + x;
+             cgpoint.y = window->y + y;
++            cgpoint.x /= _data->scaleFactor;
++            cgpoint.y /= _data->scaleFactor;
+             CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
+         } else {
+             SDL_SetMouseFocus(NULL);
+@@ -521,6 +528,7 @@
+     data->nswindow = nswindow;
+     data->created = created;
+     data->videodata = videodata;
++    data->scaleFactor = 1.0f;
+ 
+     pool = [[NSAutoreleasePool alloc] init];
+ 
+@@ -537,8 +545,15 @@
              [nswindow setContentView: contentView];
-+            NSPoint offset = rect.origin;
-+            rect = [contentView convertRectToBacking:[contentView bounds]];
-+            offset = [contentView convertPointToBacking:offset];
-+            rect.origin = offset;
              [contentView release];
          }
-+        else {
-+            [contentView setWantsBestResolutionOpenGLSurface:YES];
-+            NSPoint offset = rect.origin;
-+            rect = [contentView convertRectToBacking:[contentView bounds]];
-+            offset = [contentView convertPointToBacking:offset];
-+            rect.origin = offset;
-+        }
++        
++        [[nswindow contentView] setWantsBestResolutionOpenGLSurface:YES];
++        NSPoint offset = rect.origin;
++        rect = [[nswindow contentView] convertRectToBacking:[[nswindow contentView] bounds]];
++        offset = [[nswindow contentView] convertPointToBacking:offset];
++        rect.origin = offset;
++        data->scaleFactor = [nswindow backingScaleFactor];
  
-         ConvertNSRect(&rect);
+-        ConvertNSRect(&rect);
++        ConvertNSRect(&rect, data->scaleFactor);
          window->x = (int)rect.origin.x;
+         window->y = (int)rect.origin.y;
+         window->w = (int)rect.size.width;
+@@ -596,15 +611,13 @@
+     NSWindow *nswindow;
+     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+     NSRect rect;
+-    SDL_Rect bounds;
+     unsigned int style;
+ 
+-    Cocoa_GetDisplayBounds(_this, display, &bounds);
+     rect.origin.x = window->x;
+     rect.origin.y = window->y;
+     rect.size.width = window->w;
+     rect.size.height = window->h;
+-    ConvertNSRect(&rect);
++    ConvertNSRect(&rect, 1.0f);
+ 
+     style = GetWindowStyle(window);
+ 
+@@ -699,7 +712,7 @@
+     rect.origin.y = window->y;
+     rect.size.width = window->w;
+     rect.size.height = window->h;
+-    ConvertNSRect(&rect);
++    ConvertNSRect(&rect, ((SDL_WindowData *) window->driverdata)->scaleFactor);
+ 
+     moveHack = s_moveHack;
+     s_moveHack = 0;
+@@ -842,7 +855,8 @@
+         rect.origin.y = bounds.y;
+         rect.size.width = bounds.w;
+         rect.size.height = bounds.h;
+-        ConvertNSRect(&rect);
++        rect = [nswindow convertRectToBacking:rect];
++        ConvertNSRect(&rect, data->scaleFactor);
+ 
+         /* Hack to fix origin on Mac OS X 10.4 */
+         NSRect screenRect = [[nswindow screen] frame];
+@@ -860,7 +874,7 @@
+         rect.origin.y = window->windowed.y;
+         rect.size.width = window->windowed.w;
+         rect.size.height = window->windowed.h;
+-        ConvertNSRect(&rect);
++        ConvertNSRect(&rect, data->scaleFactor);
+ 
+         if ([nswindow respondsToSelector: @selector(setStyleMask:)]) {
+             [nswindow performSelector: @selector(setStyleMask:) withObject: (id)(uintptr_t)GetWindowStyle(window)];

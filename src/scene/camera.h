@@ -68,17 +68,17 @@ protected:
 	float3 position;
 	float3 rotation;
 	float3 direction;
-	float up_down;
-	float rotation_speed;
-	float cam_speed;
+	float up_down = 0.0f;
+	float rotation_speed = 100.0f;
+	float cam_speed = 1.0f;
 
-	bool keyboard_input;
-	bool mouse_input;
-	bool wasd_input;
-	unsigned int ignore_next_rotation;
+	bool keyboard_input = true;
+	bool mouse_input = false;
+	bool wasd_input = false;
+	unsigned int ignore_next_rotation = 0;
 	
 	// [right, left, up, down]
-	bool key_state[4];
+	array<bool, 4> key_state = { { false, false, false, false } };
 	
 	event::handler keyboard_handler;
 	bool key_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
