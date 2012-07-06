@@ -163,6 +163,7 @@ public:
 	
 	// gui
 	const size_t& get_dpi() const;
+	const size_t& get_ui_anti_aliasing() const;
 	
 	// input
 	unsigned int get_key_repeat();
@@ -223,6 +224,7 @@ protected:
 		
 		// gui
 		size_t dpi;
+		size_t ui_anti_aliasing;
 		
 		// input
 		size_t key_repeat;
@@ -268,7 +270,7 @@ protected:
 		width(640), height(480),
 		fullscreen(false), vsync(false), stereo(false),
 		fov(72.0f), near_far_plane(1.0f, 1000.0f),
-		dpi(0),
+		dpi(0), ui_anti_aliasing(8),
 		key_repeat(200), ldouble_click_time(200), mdouble_click_time(200), rdouble_click_time(200),
 		fps_limit(0),
 		server(), client(),

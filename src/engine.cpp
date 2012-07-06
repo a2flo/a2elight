@@ -211,7 +211,8 @@ void engine::create() {
 		config.near_far_plane.x = config_doc.get<float>("config.projection.near", 1.0f);
 		config.near_far_plane.y = config_doc.get<float>("config.projection.far", 1000.0f);
 		
-		config.dpi = config_doc.get<size_t>("config.screen.dpi", 0);
+		config.dpi = config_doc.get<size_t>("config.gui.dpi", 0);
+		config.ui_anti_aliasing = config_doc.get<size_t>("config.gui.anti_aliasing", 8);
 		
 		config.key_repeat = config_doc.get<size_t>("config.input.key_repeat", 200);
 		config.ldouble_click_time = config_doc.get<size_t>("config.input.ldouble_click_time", 200);
@@ -564,6 +565,13 @@ void engine::init(const char* ico) {
 	sce = new scene(this);
 	
 	// create gui
+	if(config.ui_anti_aliasing > 2) config.ui_anti_aliasing = core::next_pot((unsigned int)config.ui_anti_aliasing);
+	if(exts->get_max_samples() < config.ui_anti_aliasing) {
+		config.ui_anti_aliasing = exts->get_max_samples();
+		a2e_error("your chosen gui anti-aliasing mode isn't supported by your graphic card - using \"%u\" instead!",
+				  config.ui_anti_aliasing);
+	}
+	else a2e_debug("using \"%ux\" gui anti-aliasing", config.ui_anti_aliasing);
 	ui = new gui(this);
 	
 #if !defined(A2E_NO_OPENCL)
@@ -1236,6 +1244,10 @@ const float2& engine::get_near_far_plane() const {
 
 const size_t& engine::get_dpi() const {
 	return config.dpi;
+}
+
+const size_t& engine::get_ui_anti_aliasing() const {
+	return config.ui_anti_aliasing;
 }
 
 const xml::xml_doc& engine::get_config_doc() const {

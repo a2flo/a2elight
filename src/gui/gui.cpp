@@ -203,7 +203,18 @@ void gui::recreate_buffers(const size2 size) {
 	delete_buffers();
 	
 	// create main gui buffer
-	const auto gui_aa = rtt::TAA_MSAA_8; // TODO: config option
+	rtt::TEXTURE_ANTI_ALIASING gui_aa = rtt::TAA_MSAA_8;
+	switch(e->get_ui_anti_aliasing()) {
+		case 0: gui_aa = rtt::TAA_NONE; break;
+		case 1: gui_aa = rtt::TAA_MSAA_1; break;
+		case 2: gui_aa = rtt::TAA_MSAA_2; break;
+		case 4: gui_aa = rtt::TAA_MSAA_4; break;
+		case 8: gui_aa = rtt::TAA_MSAA_8; break;
+		case 16: gui_aa = rtt::TAA_MSAA_16; break;
+		case 32: gui_aa = rtt::TAA_MSAA_32; break;
+		case 64: gui_aa = rtt::TAA_MSAA_64; break;
+		default: break;
+	}
 	const auto gui_filter = texture_object::TF_LINEAR;
 	main_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, gui_filter, gui_aa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
 }
