@@ -54,6 +54,7 @@ public:
 	};
 	
 	constexpr vector3() noexcept : x((T)0), y((T)0), z((T)0) {}
+	constexpr vector3(vector3<T>&& vec3) noexcept : x(vec3.x), y(vec3.y), z(vec3.z) {}
 	constexpr vector3(const vector3<T>& vec3) noexcept : x(vec3.x), y(vec3.y), z(vec3.z) {}
 	constexpr vector3(const vector3<T>* vec3) noexcept : x(vec3->x), y(vec3->y), z(vec3->z) {}
 	constexpr vector3(const T& vx, const T& vy, const T& vz) noexcept : x(vx), y(vy), z(vz) {}
