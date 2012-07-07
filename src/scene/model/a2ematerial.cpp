@@ -71,7 +71,9 @@ a2ematerial::~a2ematerial() {
 /*! loads an .a2mtl material file
  *  @param filename the materials filename
  */
-void a2ematerial::load_material(const string& filename) {
+void a2ematerial::load_material(const string& filename_) {
+	filename = filename_;
+	
 	// read mat data
 	file_io f;
 	if(!f.file_to_buffer(filename, buffer)) return;
@@ -382,6 +384,10 @@ void a2ematerial::load_material(const string& filename) {
 	
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
+}
+
+const string& a2ematerial::get_filename() const {
+	return filename;
 }
 
 const a2ematerial::material& a2ematerial::get_material(const size_t& material_id) const {

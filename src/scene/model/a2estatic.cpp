@@ -119,11 +119,12 @@ void a2estatic::post_draw_setup(const ssize_t sub_object_num) {
  *  @param filename the name of the .a2m model file
  *  @param vbo flag that specifies if vertex buffer objects should be used
  */
-void a2estatic::load_model(const string& filename) {
-	file_io file(filename, file_io::OT_READ_BINARY);
+void a2estatic::load_model(const string& filename_) {
+	file_io file(filename_, file_io::OT_READ_BINARY);
 	if(!file.is_open()) {
 		return;
 	}
+	filename = filename_;
 
 	// get type and name
 	char* file_type = new char[9];
@@ -290,6 +291,7 @@ void a2estatic::load_model(const string& filename) {
 void a2estatic::load_from_memory(unsigned int object_count_, unsigned int vertex_count_,
 								 float3* vertices_, coord* tex_coords_,
 								 unsigned int* index_count_, index3** indices_) {
+	filename = "<memory>";
 	a2estatic::vertex_count = vertex_count_;
 	a2estatic::vertices = vertices_;
 	

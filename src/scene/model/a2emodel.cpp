@@ -99,6 +99,10 @@ void a2emodel::delete_sub_bboxes() {
 	}
 }
 
+const string& a2emodel::get_filename() const {
+	return filename;
+}
+
 void a2emodel::model_setup() {
 	is_sub_object_transparent.resize(object_count);
 	is_sub_object_transparent.assign(object_count, is_transparent);

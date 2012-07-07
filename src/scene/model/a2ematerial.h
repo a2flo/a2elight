@@ -120,6 +120,7 @@ public:
 
 	//// functions
 	void load_material(const string& filename);
+	const string& get_filename() const;
 	
 	bool is_blending(const size_t& object_id) const;
 	bool is_parallax_occlusion(const size_t& object_id) const;
@@ -141,6 +142,8 @@ protected:
 	texman* t;
 	ext* exts;
 	xml* x;
+	
+	string filename = "";
 	
 	stringstream buffer;
 	

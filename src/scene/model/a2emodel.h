@@ -49,6 +49,7 @@ public:
 	typedef functor<void, const DRAW_MODE&, const size_t&, const size_t&> draw_callback;
 	
 	virtual void load_model(const string& filename) = 0;
+	virtual const string& get_filename() const;
 	
 	// draw functions
 	virtual void draw(const DRAW_MODE draw_mode) = 0;
@@ -142,6 +143,7 @@ protected:
 	opencl* ocl;
 	a2ematerial* material;
 	scene* sce;
+	string filename = "";
 	
 	// model 3D/file data, these are actually just pointers to the real 3D data,
 	// so no actual memory is allocated for these - they must also be set manually
