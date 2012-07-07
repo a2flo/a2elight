@@ -71,7 +71,7 @@ project "a2elight"
 	language "C++"
 
 	files { "src/**.h", "src/**.hpp", "src/**.cpp" }
-	defines { "A2E_NET_PROTOCOL=TCP_protocol" }
+	defines { "A2E_NET_PROTOCOL=TCP_protocol", "A2E_EXPORT=1" }
 
 	basedir "src"
 	targetdir "lib"

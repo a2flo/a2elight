@@ -70,7 +70,7 @@ public:
 	static float rand(const float& min, const float& max);
 	
 	template<typename T> static set<T> power_set(set<T> input_set) {
-		if(input_set.empty()) return {};
+		if(input_set.empty()) return set<T> {};
 		
 		const T elem(*input_set.begin());
 		input_set.erase(elem);

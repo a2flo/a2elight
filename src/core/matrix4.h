@@ -35,26 +35,32 @@ template <typename T> class A2E_API __attribute__((packed, aligned(16))) matrix4
 public:
 	array<T, 16> data;
 	
-	matrix4() { identity(); }
-	matrix4(matrix4&& m4) : data(m4.data) {}
-	matrix4(const matrix4<T>& m4) { memcpy(&data[0], &m4.data[0], sizeof(T)*16); }
-	matrix4(const matrix4<T>* m4) { memcpy(&data[0], &m4->data[0], sizeof(T)*16); }
-	matrix4(const T& m0, const T& m1, const T& m2, const T& m3,
-			const T& m4, const T& m5, const T& m6, const T& m7,
-			const T& m8, const T& m9, const T& m10, const T& m11,
-			const T& m12, const T& m13, const T& m14, const T& m15) :
+	constexpr matrix4() noexcept :
+	data({{
+		(T)1, (T)0, (T)0, (T)0,
+		(T)0, (T)1, (T)0, (T)0,
+		(T)0, (T)0, (T)1, (T)0,
+		(T)0, (T)0, (T)0, (T)1}}) {}
+	constexpr matrix4(matrix4&& m4) noexcept : data(m4.data) {}
+	constexpr matrix4(const matrix4<T>& m4) noexcept : data(m4.data) {}
+	constexpr matrix4(const matrix4<T>* m4) noexcept : data(m4->data) {}
+	constexpr matrix4(const T& m0, const T& m1, const T& m2, const T& m3,
+					  const T& m4, const T& m5, const T& m6, const T& m7,
+					  const T& m8, const T& m9, const T& m10, const T& m11,
+					  const T& m12, const T& m13, const T& m14, const T& m15) noexcept :
 	data({{m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15}}) {}
-	matrix4(const vector4<T>& col_0, const vector4<T>& col_1, const vector4<T>& col_2, const vector4<T>& col_3) :
-	data({{ ((T*)&col_0)[0], ((T*)&col_0)[1], ((T*)&col_0)[2], ((T*)&col_0)[3],
+	constexpr matrix4(const vector4<T>& col_0, const vector4<T>& col_1, const vector4<T>& col_2, const vector4<T>& col_3) noexcept :
+	data({{
+		((T*)&col_0)[0], ((T*)&col_0)[1], ((T*)&col_0)[2], ((T*)&col_0)[3],
 		((T*)&col_1)[0], ((T*)&col_1)[1], ((T*)&col_1)[2], ((T*)&col_1)[3],
 		((T*)&col_2)[0], ((T*)&col_2)[1], ((T*)&col_2)[2], ((T*)&col_2)[3],
 		((T*)&col_3)[0], ((T*)&col_3)[1], ((T*)&col_3)[2], ((T*)&col_3)[3] }}) {}
-	template <typename U> matrix4(const matrix4<U>& mat4) {
-		for(size_t mi = 0; mi < 16; mi++) {
-			data[mi] = mat4.data[mi];
-		}
-	}
-	~matrix4() {}
+	template <typename U> constexpr matrix4(const matrix4<U>& mat4) noexcept :
+	data({{
+		mat4.data[0], mat4.data[1], mat4.data[2], mat4.data[3],
+		mat4.data[4], mat4.data[5], mat4.data[6], mat4.data[7],
+		mat4.data[8], mat4.data[9], mat4.data[10], mat4.data[11],
+		mat4.data[12], mat4.data[13], mat4.data[14], mat4.data[15] }}) {}
 	
 	matrix4& operator=(const matrix4& mat) {
 		memcpy(&data[0], &mat.data[0], sizeof(T)*16);

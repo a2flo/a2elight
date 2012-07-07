@@ -42,13 +42,12 @@ public:
 		T w, a;
 	};
 	
-	vector4() : vector3<T>((T)0, (T)0, (T)0), w((T)0) {}
-	vector4(const vector3<T>& vec3) : vector3<T>(vec3.x, vec3.y, vec3.z), w((T)0) {}
-	vector4(const vector3<T>& vec3, const T& vw) : vector3<T>(vec3.x, vec3.y, vec3.z), w(vw) {}
-	vector4(const vector4<T>& vec4) : vector3<T>(vec4.x, vec4.y, vec4.z), w(vec4.w) {}
-	vector4(const T& vx, const T& vy, const T& vz, const T& vw) : vector3<T>(vx, vy, vz), w(vw) {}
-	vector4(const T& f) : vector3<T>(f, f, f), w(f) {}
-	~vector4() {}
+	constexpr vector4() noexcept : vector3<T>((T)0, (T)0, (T)0), w((T)0) {}
+	constexpr vector4(const vector3<T>& vec3) noexcept : vector3<T>(vec3.x, vec3.y, vec3.z), w((T)0) {}
+	constexpr vector4(const vector3<T>& vec3, const T& vw) noexcept : vector3<T>(vec3.x, vec3.y, vec3.z), w(vw) {}
+	constexpr vector4(const vector4<T>& vec4) noexcept : vector3<T>(vec4.x, vec4.y, vec4.z), w(vec4.w) {}
+	constexpr vector4(const T& vx, const T& vy, const T& vz, const T& vw) noexcept : vector3<T>(vx, vy, vz), w(vw) {}
+	constexpr vector4(const T& f) noexcept : vector3<T>(f, f, f), w(f) {}
 	
 	// overloading routines
 	T& operator[](size_t index);
@@ -99,20 +98,6 @@ public:
 	// no need for a separate "+-*/" vector4 definition at the moment
 
 };
-
-#if defined(A2E_EXPORT)
-// only instantiate this in the vector4.cpp
-extern template class vector4<float>;
-extern template class vector4<unsigned int>;
-extern template class vector4<int>;
-extern template class vector4<short>;
-extern template class vector4<char>;
-extern template class vector4<unsigned short>;
-extern template class vector4<unsigned char>;
-extern template class vector4<bool>;
-extern template class vector4<size_t>;
-extern template class vector4<ssize_t>;
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // additional vector types
@@ -229,5 +214,20 @@ template<typename T> void vector4<T>::scale(const vector4<T>& v) {
 	this->z *= v.z;
 	this->w *= v.w;
 }
+		
+		
+#if defined(A2E_EXPORT)
+// only instantiate this in the vector4.cpp
+extern template class vector4<float>;
+extern template class vector4<unsigned int>;
+extern template class vector4<int>;
+extern template class vector4<short>;
+extern template class vector4<char>;
+extern template class vector4<unsigned short>;
+extern template class vector4<unsigned char>;
+extern template class vector4<bool>;
+extern template class vector4<size_t>;
+extern template class vector4<ssize_t>;
+#endif
 
 #endif

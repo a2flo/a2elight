@@ -53,13 +53,12 @@ public:
 		T z, b;
 	};
 	
-	vector3() : x((T)0), y((T)0), z((T)0) {}
-	vector3(const vector3<T>& vec3) : x(vec3.x), y(vec3.y), z(vec3.z) {}
-	vector3(const vector3<T>* vec3) : x(vec3->x), y(vec3->y), z(vec3->z) {}
-	vector3(const T& vx, const T& vy, const T& vz) : x(vx), y(vy), z(vz) {}
-	vector3(const T& f) : x(f), y(f), z(f) {}
-	template <typename U> vector3(const vector3<U>& vec3) : x((T)vec3.x), y((T)vec3.y), z((T)vec3.z) {}
-	~vector3() {}
+	constexpr vector3() noexcept : x((T)0), y((T)0), z((T)0) {}
+	constexpr vector3(const vector3<T>& vec3) noexcept : x(vec3.x), y(vec3.y), z(vec3.z) {}
+	constexpr vector3(const vector3<T>* vec3) noexcept : x(vec3->x), y(vec3->y), z(vec3->z) {}
+	constexpr vector3(const T& vx, const T& vy, const T& vz) noexcept : x(vx), y(vy), z(vz) {}
+	constexpr vector3(const T& f) noexcept : x(f), y(f), z(f) {}
+	template <typename U> constexpr vector3(const vector3<U>& vec3) noexcept : x((T)vec3.x), y((T)vec3.y), z((T)vec3.z) {}
 	
 	T& operator[](size_t index);
 	const T& operator[](size_t index) const;
@@ -659,7 +658,7 @@ extern template class vector3<short>;
 extern template class vector3<unsigned short>;
 extern template class vector3<char>;
 extern template class vector3<unsigned char>;
-extern template class vector3<bool>;
+//extern template class vector3<bool>;
 extern template class vector3<size_t>;
 extern template class vector3<ssize_t>;
 #endif

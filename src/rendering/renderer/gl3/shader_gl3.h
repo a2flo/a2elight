@@ -37,7 +37,7 @@ public:
 	virtual void use(const string& option);
 	virtual void use(const string& option, const set<string> combiners);
 #else
-	virtual void use(const string& option, const set<string> combiners = {});
+	virtual void use(const string& option, const set<string> combiners = set<string> {});
 #endif
 	virtual void disable();
 	virtual size_t get_cur_program() const;

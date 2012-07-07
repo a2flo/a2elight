@@ -18,6 +18,18 @@
 
 #include "vector2.h"
 
+#if defined(A2E_EXPORT)
+// instantiate
+template class vector2<float>;
+template class vector2<double>;
+template class vector2<unsigned int>;
+template class vector2<int>;
+template class vector2<short>;
+template class vector2<bool>;
+template class vector2<size_t>;
+template class vector2<ssize_t>;
+#endif
+
 template<> A2E_API float2& vector2<float>::round() {
 	x = roundf(x);
 	y = roundf(y);
@@ -51,15 +63,3 @@ template<> A2E_API vector2<float> vector2<float>::abs() const {
 template<> A2E_API vector2<bool> vector2<bool>::abs() const {
 	return vector2<bool>(*this);
 }
-
-#if defined(A2E_EXPORT)
-// instantiate
-template class vector2<float>;
-template class vector2<double>;
-template class vector2<unsigned int>;
-template class vector2<int>;
-template class vector2<short>;
-template class vector2<bool>;
-template class vector2<size_t>;
-template class vector2<ssize_t>;
-#endif

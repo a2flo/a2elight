@@ -18,12 +18,27 @@
 
 #include "vector3.h"
 
+#if defined(A2E_EXPORT)
+// instantiate
+A2E_API template class vector3<float>;
+A2E_API template class vector3<double>;
+A2E_API template class vector3<unsigned int>;
+A2E_API template class vector3<int>;
+A2E_API template class vector3<short>;
+A2E_API template class vector3<unsigned short>;
+A2E_API template class vector3<char>;
+A2E_API template class vector3<unsigned char>;
+//A2E_API template class vector3<bool>;
+A2E_API template class vector3<size_t>;
+A2E_API template class vector3<ssize_t>;
+#endif
+
 template<> A2E_API vector3<float> vector3<float>::abs() const {
 	return vector3<float>(fabs(x), fabs(y), fabs(z));
 }
 
 template<> A2E_API vector3<bool> vector3<bool>::abs() const {
-	return vector3<bool>(*this);
+	return vector3<bool>(x, y, z);
 }
 
 template<> A2E_API bool vector3<bool>::any() const {
@@ -92,18 +107,3 @@ template<> A2E_API double3& vector3<double>::operator%=(const double3& v) {
 	z = fmod(z, v.z);
 	return *this;
 }
-
-#if defined(A2E_EXPORT)
-// instantiate
-A2E_API template class vector3<float>;
-A2E_API template class vector3<double>;
-A2E_API template class vector3<unsigned int>;
-A2E_API template class vector3<int>;
-A2E_API template class vector3<short>;
-A2E_API template class vector3<unsigned short>;
-A2E_API template class vector3<char>;
-A2E_API template class vector3<unsigned char>;
-A2E_API template class vector3<bool>;
-A2E_API template class vector3<size_t>;
-A2E_API template class vector3<ssize_t>;
-#endif

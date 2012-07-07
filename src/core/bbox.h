@@ -36,10 +36,9 @@ public:
 	float3 min;
 	float3 max;
 	
-	bbox() : min(__FLT_MAX__), max(-__FLT_MAX__) {}
-	bbox(const bbox& box) : min(box.min), max(box.max) {}
-	bbox(const float3& bmin, const float3& bmax) : min(bmin), max(bmax) {}
-	~bbox() {}
+	constexpr bbox() noexcept : min(__FLT_MAX__), max(__FLT_MIN__) {}
+	constexpr bbox(const bbox& box) noexcept : min(box.min), max(box.max) {}
+	constexpr bbox(const float3& bmin, const float3& bmax) noexcept : min(bmin), max(bmax) {}
 
 	void extend(const float3& v) {
 		min.min(v);
@@ -54,7 +53,7 @@ public:
 	static bbox empty() {
 		bbox ret;
 		ret.min = float3(__FLT_MAX__);
-		ret.max = float3(-__FLT_MAX__);
+		ret.max = float3(__FLT_MIN__);
 		return ret;
 	}
 	
@@ -116,10 +115,9 @@ public:
 	float3 pos;
 	matrix4f mview;
 	
-	extbbox() : pos(), mview() {}
-	extbbox(const extbbox& ebox) : pos(ebox.pos), mview(ebox.mview) {}
-	extbbox(const float3& bmin, const float3& bmax, const float3& bpos, const matrix4f& bmview) : bbox(bmin, bmax), pos(bpos), mview(bmview) {}
-	~extbbox() {}
+	constexpr extbbox() noexcept : pos(), mview() {}
+	constexpr extbbox(const extbbox& ebox) noexcept  : pos(ebox.pos), mview(ebox.mview) {}
+	constexpr extbbox(const float3& bmin, const float3& bmax, const float3& bpos, const matrix4f& bmview) noexcept  : bbox(bmin, bmax), pos(bpos), mview(bmview) {}
 	
 	extbbox& operator=(const extbbox& box) {
 		min = box.min;
@@ -168,7 +166,7 @@ public:
 	static extbbox empty() {
 		extbbox ret;
 		ret.min = float3(__FLT_MAX__);
-		ret.max = float3(-__FLT_MAX__);
+		ret.max = float3(__FLT_MIN__);
 		ret.mview.identity();
 		ret.pos = float3(0.0f);
 		return ret;
