@@ -357,7 +357,7 @@ template<typename T> matrix4<T>& matrix4<T>::perspective(const T fov, const T as
 	data[8] = (T)0;
 	data[9] = (T)0;
 	data[10] = (z_far + z_near) / (z_near - z_far);
-	data[11] = -1.0f;
+	data[11] = (T)-1;
 	
 	data[12] = (T)0;
 	data[13] = (T)0;

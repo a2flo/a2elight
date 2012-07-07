@@ -125,7 +125,6 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 	const size_t max_tex_size = exts->get_max_texture_size();
 	const float fmax_tex_size = max_tex_size;
 	size2 orig_resolution = size2(width, height);
-	size2 cur_resolution = orig_resolution;
 	float ssaa = 0.0f;
 	for(unsigned int i = 0; i < buffer->attachment_count; i++) {
 		buffer->anti_aliasing[i] = taa[i];
