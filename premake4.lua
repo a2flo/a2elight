@@ -71,7 +71,7 @@ project "a2elight"
 	language "C++"
 
 	files { "src/**.h", "src/**.hpp", "src/**.cpp" }
-	defines { "A2E_NET_PROTOCOL=TCP_protocol", "A2E_EXPORT=1" }
+	defines { "A2E_NET_PROTOCOL=TCP_protocol" }
 
 	basedir "src"
 	targetdir "lib"
@@ -103,6 +103,7 @@ project "a2elight"
 			buildoptions { "-stdlib=libc++ -integrated-as" }
 			buildoptions { "-Wno-delete-non-virtual-dtor -Wno-overloaded-virtual -Wunreachable-code -Wdangling-else" }
 			linkoptions { "-fvisibility=default" }
+			defines { "A2E_EXPORT=1" }
 			if(not win_unixenv) then
 				linkoptions { "-stdlib=libc++" }
 			else
