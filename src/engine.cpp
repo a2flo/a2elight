@@ -251,7 +251,9 @@ void engine::create() {
 		config.force_device = config_doc.get<string>("config.graphic_device.force_device", "");
 		config.force_vendor = config_doc.get<string>("config.graphic_device.force_vendor", "");
 		
-		config.inferred_scale = config_doc.get<size_t>("config.inferred.scale", 4);
+		config.upscaling = config_doc.get<float>("config.inferred.upscaling", 1.0f);
+		config.geometry_light_scaling = config_doc.get<float>("config.inferred.geometry_light_scaling", 1.0f);
+		config.geometry_light_scaling = core::clamp(config.geometry_light_scaling, 0.5f, 1.0f);
 		
 		config.opencl_platform = config_doc.get<size_t>("config.opencl.platform", 0);
 		config.clear_cache = config_doc.get<bool>("config.opencl.clear_cache", false);
@@ -1190,8 +1192,12 @@ SDL_Window* engine::get_window() const {
 	return config.wnd;
 }
 
-size_t engine::get_inferred_scale() const {
-	return config.inferred_scale;
+float engine::get_upscaling() const {
+	return config.upscaling;
+}
+
+float engine::get_geometry_light_scaling() const {
+	return config.geometry_light_scaling;
 }
 
 const string engine::get_version() const {

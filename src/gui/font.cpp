@@ -30,6 +30,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+constexpr unsigned int font::font_texture_size;
+
 font::font(engine* e_, font_manager* fm_, const string& filename_) : font(e_, fm_, vector<string> { filename_ }) {
 }
 

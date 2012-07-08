@@ -193,7 +193,8 @@ public:
 	string* get_force_vendor();
 	
 	// inferred rendering
-	size_t get_inferred_scale() const;
+	float get_upscaling() const;
+	float get_geometry_light_scaling() const;
 
 protected:
 	core* c = nullptr;
@@ -215,25 +216,25 @@ protected:
 	
 	struct engine_config {
 		// screen
-		size_t width, height;
-		bool fullscreen, vsync, stereo;
+		size_t width = 1280, height = 720;
+		bool fullscreen = false, vsync = false, stereo = false;
 		
 		// projection
-		float fov;
-		float2 near_far_plane;
+		float fov = 72.0f;
+		float2 near_far_plane = float2(0.1f, 1000.0f);
 		
 		// gui
-		size_t dpi;
-		size_t ui_anti_aliasing;
+		size_t dpi = 0;
+		size_t ui_anti_aliasing = 8;
 		
 		// input
-		size_t key_repeat;
-		size_t ldouble_click_time;
-		size_t mdouble_click_time;
-		size_t rdouble_click_time;
+		size_t key_repeat = 200;
+		size_t ldouble_click_time = 200;
+		size_t mdouble_click_time = 200;
+		size_t rdouble_click_time = 200;
 		
 		// sleep / fps limit
-		size_t fps_limit;
+		size_t fps_limit = 0;
 		
 		// server
 		server_data server;
@@ -242,43 +243,33 @@ protected:
 		client_data client;
 		
 		// graphic
-		texture_object::TEXTURE_FILTERING filtering;
-		rtt::TEXTURE_ANTI_ALIASING anti_aliasing;
-		size_t anisotropic;
+		texture_object::TEXTURE_FILTERING filtering = texture_object::TF_POINT;
+		rtt::TEXTURE_ANTI_ALIASING anti_aliasing = rtt::TAA_NONE;
+		size_t anisotropic = 0;
 		
 		// graphic device
-		string disabled_extensions;
-		string force_device;
-		string force_vendor;
+		string disabled_extensions = "";
+		string force_device = "";
+		string force_vendor = "";
 		
 		// inferred rendering
-		// 0: 50%, 1: 62.5%, 2: 75%, 3: 87.5%, 4: 100%
-		ssize_t inferred_scale;
+		float upscaling = 1.0f;
+		float geometry_light_scaling = 1.0f;
 		
 		// opencl
-		size_t opencl_platform;
-		bool clear_cache;
+		size_t opencl_platform = 0;
+		bool clear_cache = false;
 
 		// sdl
-		SDL_Window* wnd;
-		SDL_GLContext ctx;
+		SDL_Window* wnd = nullptr;
+		SDL_GLContext ctx = nullptr;
 		recursive_mutex ctx_lock;
 		atomic_t ctx_active_locks;
-		unsigned int flags;
+		unsigned int flags = 0;
 		
 		engine_config() :
-		width(640), height(480),
-		fullscreen(false), vsync(false), stereo(false),
-		fov(72.0f), near_far_plane(1.0f, 1000.0f),
-		dpi(0), ui_anti_aliasing(8),
-		key_repeat(200), ldouble_click_time(200), mdouble_click_time(200), rdouble_click_time(200),
-		fps_limit(0),
 		server(), client(),
-		filtering(texture_object::TF_POINT), anti_aliasing(rtt::TAA_NONE), anisotropic(0),
-		disabled_extensions(""), force_device(""), force_vendor(""),
-		inferred_scale(4),
-		opencl_platform(0), clear_cache(false),
-		wnd(nullptr), ctx(nullptr), ctx_lock(), ctx_active_locks(), flags(0)
+		ctx_lock(), ctx_active_locks()
 		{
 			AtomicSet(&ctx_active_locks, 0);
 		}

@@ -19,6 +19,8 @@
 #include "event.h"
 #include "engine.h"
 
+constexpr int event::handlers_locked;
+
 event::event(engine* e_) : thread_base("event"), e(e_),
 user_queue_lock()
 {

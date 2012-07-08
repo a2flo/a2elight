@@ -74,8 +74,10 @@ void scene::delete_buffers(frame_buffers& buffers) {
 #endif
 }
 
-void scene::recreate_buffers(frame_buffers& buffers, const size2 buffer_size, const bool create_alpha_buffer) {
+void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer_size, const bool create_alpha_buffer) {
 	if(e->get_init_mode() != engine::GRAPHICAL) return;
+	
+	const size2 buffer_size = size2(float2(unscaled_buffer_size) / e->get_upscaling());
 	
 	// check if buffers have already been created (and delete them, if so)
 	delete_buffers(buffers);
@@ -107,9 +109,8 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 buffer_size, co
 	GLenum types[] = { f16_format_type, f16_format_type };
 	
 	//
-	float2 inferred_scale(float2(e->get_inferred_scale())*12.5f + 50.0f);
+	float2 inferred_scale(e->get_geometry_light_scaling());
 	inferred_scale *= float2(buffer_size);
-	inferred_scale /= 100.0f;
 	uint2 render_buffer_size = uint2(inferred_scale);
 	if(render_buffer_size.x % 2 == 1) render_buffer_size.x++;
 	if(render_buffer_size.y % 2 == 1) render_buffer_size.y++;
