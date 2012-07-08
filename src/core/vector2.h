@@ -44,13 +44,13 @@ public:
 		T y, v;
 	};
 	
-	constexpr vector2() noexcept : x((T)0), y((T)0) {}
-	constexpr vector2(vector2<T>&& vec2) noexcept : x(vec2.x), y(vec2.y) {}
-	constexpr vector2(const vector2<T>& vec2) noexcept : x(vec2.x), y(vec2.y) {}
-	constexpr vector2(const pair<T, T>& vec2) noexcept : x(vec2.first), y(vec2.second) {}
-	constexpr vector2(const T& vx, const T& vy) noexcept : x(vx), y(vy) {}
-	constexpr vector2(const T& f) noexcept : x(f), y(f) {}
-	template <typename U> constexpr vector2(const vector2<U>& vec2) noexcept : x((T)vec2.x), y((T)vec2.y) {}
+	a2e_constexpr vector2() noexcept : x((T)0), y((T)0) {}
+	a2e_constexpr vector2(vector2<T>&& vec2) noexcept : x(vec2.x), y(vec2.y) {}
+	a2e_constexpr vector2(const vector2<T>& vec2) noexcept : x(vec2.x), y(vec2.y) {}
+	a2e_constexpr vector2(const pair<T, T>& vec2) noexcept : x(vec2.first), y(vec2.second) {}
+	a2e_constexpr vector2(const T& vx, const T& vy) noexcept : x(vx), y(vy) {}
+	a2e_constexpr vector2(const T& f) noexcept : x(f), y(f) {}
+	template <typename U> a2e_constexpr vector2(const vector2<U>& vec2) noexcept : x((T)vec2.x), y((T)vec2.y) {}
 	
 	vector2& operator=(const vector2& vec2) {
 		this->x = vec2.x;

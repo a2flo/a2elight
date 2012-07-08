@@ -42,13 +42,13 @@ public:
 		T w, a;
 	};
 	
-	constexpr vector4() noexcept : vector3<T>((T)0, (T)0, (T)0), w((T)0) {}
-	constexpr vector4(const vector3<T>& vec3) noexcept : vector3<T>(vec3.x, vec3.y, vec3.z), w((T)0) {}
-	constexpr vector4(const vector3<T>& vec3, const T& vw) noexcept : vector3<T>(vec3.x, vec3.y, vec3.z), w(vw) {}
-	constexpr vector4(vector4<T>&& vec4) noexcept : vector3<T>(vec4.x, vec4.y, vec4.z), w(vec4.w) {}
-	constexpr vector4(const vector4<T>& vec4) noexcept : vector3<T>(vec4.x, vec4.y, vec4.z), w(vec4.w) {}
-	constexpr vector4(const T& vx, const T& vy, const T& vz, const T& vw) noexcept : vector3<T>(vx, vy, vz), w(vw) {}
-	constexpr vector4(const T& f) noexcept : vector3<T>(f, f, f), w(f) {}
+	a2e_constexpr vector4() noexcept : vector3<T>((T)0, (T)0, (T)0), w((T)0) {}
+	a2e_constexpr vector4(const vector3<T>& vec3) noexcept : vector3<T>(vec3.x, vec3.y, vec3.z), w((T)0) {}
+	a2e_constexpr vector4(const vector3<T>& vec3, const T& vw) noexcept : vector3<T>(vec3.x, vec3.y, vec3.z), w(vw) {}
+	a2e_constexpr vector4(vector4<T>&& vec4) noexcept : vector3<T>(vec4.x, vec4.y, vec4.z), w(vec4.w) {}
+	a2e_constexpr vector4(const vector4<T>& vec4) noexcept : vector3<T>(vec4.x, vec4.y, vec4.z), w(vec4.w) {}
+	a2e_constexpr vector4(const T& vx, const T& vy, const T& vz, const T& vw) noexcept : vector3<T>(vx, vy, vz), w(vw) {}
+	a2e_constexpr vector4(const T& f) noexcept : vector3<T>(f, f, f), w(f) {}
 	
 	// overloading routines
 	T& operator[](size_t index);

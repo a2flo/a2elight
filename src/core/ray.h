@@ -27,9 +27,9 @@ public:
 	float3 origin;
 	float3 direction;
 	
-	constexpr ray() noexcept : origin(), direction() {}
-	constexpr ray(const ray& r) noexcept : origin(r.origin), direction(r.direction) {}
-	constexpr ray(const float3& rorigin, const float3& rdirection) noexcept : origin(rorigin), direction(rdirection) {}
+	a2e_constexpr ray() noexcept : origin(), direction() {}
+	a2e_constexpr ray(const ray& r) noexcept : origin(r.origin), direction(r.direction) {}
+	a2e_constexpr ray(const float3& rorigin, const float3& rdirection) noexcept : origin(rorigin), direction(rdirection) {}
 	
 	float3 get_point(const float& distance) {
 		return origin + distance * direction;

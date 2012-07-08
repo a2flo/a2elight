@@ -71,6 +71,13 @@
 
 using namespace std;
 
+// don't use constexpr constructors with gcc
+#if defined(__clang__)
+#define a2e_constexpr constexpr
+#else
+#define a2e_constexpr
+#endif
+
 // we don't need these
 #undef min
 #undef max

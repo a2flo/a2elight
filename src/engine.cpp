@@ -445,6 +445,13 @@ void engine::init(const char* ico) {
 	a2e_debug("renderer: %s", glGetString(GL_RENDERER));
 	a2e_debug("version: %s", glGetString(GL_VERSION));
 	
+	// no support for ms gdi driver ...
+	if(strcmp((const char*)glGetString(GL_RENDERER), "GDI Generic") == 0) {
+		a2e_error("A2E doesn't support the MS GDI Generic driver!\nGo and install one of these (that match your graphics card):\nhttp://www.ati.com  http://www.nvidia.com  http://www.intel.com");
+		SDL_Delay(10000);
+		exit(1);
+	}
+	
 	if(SDL_GetCurrentVideoDriver() == nullptr) {
 		a2e_error("couldn't get video driver: %s!", SDL_GetError());
 	}
@@ -492,14 +499,6 @@ void engine::init(const char* ico) {
 	t = new texman(f, u, exts, datapath, config.anisotropic);
 	r = new rtt(this, exts, (unsigned int)config.width, (unsigned int)config.height);
 	
-	// if GL_RENDERER is that damn m$ gdi driver, exit a2e 
-	// no official support for this crappy piece of software 
-	if(strcmp((const char*)glGetString(GL_RENDERER), "GDI Generic") == 0) {
-		a2e_error("A2E doesn't support the MS GDI Generic driver!\nGo and install one of these (that match your grapic card):\nhttp://www.ati.com  http://www.nvidia.com  http://www.intel.com");
-		SDL_Delay(10000);
-		exit(1);
-	}
-
 	// set standard texture filtering + anisotropic filtering
 	t->set_filtering(config.filtering);
 

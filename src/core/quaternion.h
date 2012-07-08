@@ -29,9 +29,9 @@ typedef quaternion<double> quaterniond;
 template <typename T> class A2E_API __attribute__((packed, aligned(4))) quaternion {
 public:
 	T x, y, z, r;
-	constexpr quaternion() noexcept : x(0.0f), y(0.0f), z(0.0f), r(1.0f) {}
-	constexpr quaternion(const T& x_, const T& y_, const T& z_, const T& r_) noexcept : x(x_), y(y_), z(z_), r(r_) {}
-	constexpr quaternion(const quaternion& q) noexcept : x(q.x), y(q.y), z(q.z), r(q.r) {}
+	a2e_constexpr quaternion() noexcept : x(0.0f), y(0.0f), z(0.0f), r(1.0f) {}
+	a2e_constexpr quaternion(const T& x_, const T& y_, const T& z_, const T& r_) noexcept : x(x_), y(y_), z(z_), r(r_) {}
+	a2e_constexpr quaternion(const quaternion& q) noexcept : x(q.x), y(q.y), z(q.z), r(q.r) {}
 	quaternion(const T& a, const vector3<T>& v) noexcept { set_rotation(a, v); }
 	
 	//
