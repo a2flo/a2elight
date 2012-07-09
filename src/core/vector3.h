@@ -121,9 +121,9 @@ public:
 	vector3& floor();
 	vector3& ceil();
 	vector3& round();
-	vector3 floored();
-	vector3 ceiled();
-	vector3 rounded();
+	vector3 floored() const;
+	vector3 ceiled() const;
+	vector3 rounded() const;
 	vector3 sign() const;
 	void scale(const vector3& v);
 	void clamp(const T& min, const T& max);
@@ -628,18 +628,18 @@ template<typename T> vector3<T>& vector3<T>::round() {
 	return *this;
 }
 
-template<> vector3<float> vector3<float>::floored();
-template<typename T> vector3<T> vector3<T>::floored() {
+template<> vector3<float> vector3<float>::floored() const;
+template<typename T> vector3<T> vector3<T>::floored() const {
 	return vector3<T>(::floor(x), ::floor(y), ::floor(z));
 }
 
-template<> vector3<float> vector3<float>::ceiled();
-template<typename T> vector3<T> vector3<T>::ceiled() {
+template<> vector3<float> vector3<float>::ceiled() const;
+template<typename T> vector3<T> vector3<T>::ceiled() const {
 	return vector3<T>(::ceil(x), ::ceil(y), ::ceil(z));
 }
 
-template<> vector3<float> vector3<float>::rounded();
-template<typename T> vector3<T> vector3<T>::rounded() {
+template<> vector3<float> vector3<float>::rounded() const;
+template<typename T> vector3<T> vector3<T>::rounded() const {
 	return vector3<T>(::round(x), ::round(y), ::round(z));
 }
 

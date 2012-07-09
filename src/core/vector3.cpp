@@ -85,15 +85,15 @@ template<> A2E_API float3& vector3<float>::round() {
 	return *this;
 }
 
-template<> A2E_API float3 vector3<float>::floored() {
+template<> A2E_API float3 vector3<float>::floored() const {
 	return float3(floorf(x), floorf(y), floorf(z));
 }
 
-template<> A2E_API float3 vector3<float>::ceiled() {
+template<> A2E_API float3 vector3<float>::ceiled() const {
 	return float3(ceilf(x), ceilf(y), ceilf(z));
 }
 
-template<> A2E_API float3 vector3<float>::rounded() {
+template<> A2E_API float3 vector3<float>::rounded() const {
 	return float3(roundf(x), roundf(y), roundf(z));
 }
 
