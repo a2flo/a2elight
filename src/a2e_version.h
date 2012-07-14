@@ -78,15 +78,8 @@
 
 // clang check
 #elif defined(__clang__)
-#if !__has_feature(cxx_rvalue_references) || \
-	!__has_feature(cxx_auto_type) || \
-	!__has_feature(cxx_variadic_templates) || \
-	!__has_feature(cxx_range_for) || \
-	!__has_feature(cxx_lambdas) || \
-	!__has_feature(cxx_generalized_initializers) || \
-	!__has_feature(cxx_constexpr) || \
-	!__has_feature(cxx_nonstatic_member_init)
-#error "Sorry, but you need Clang with support for 'rvalue_references', 'auto_type', 'variadic_templates', 'range_for', 'lambdas', 'generalized_initializers', 'constexpr' and 'nonstatic_member_init' to compile A2E"
+#if !defined(__clang_major__) || !defined(__clang_minor__) || (__clang_major__ < 3) || (__clang_major__ == 3 && __clang_minor__ < 1)
+#error "Sorry, but you need Clang 3.1+ to compile A2E"
 #endif
 
 // gcc check

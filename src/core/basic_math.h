@@ -23,8 +23,8 @@
 #define _180DIVPI 57.295779513082322
 #define _PIDIV180 0.01745329251994
 #define _PIDIV360 0.00872664625997
-#define RAD2DEG(rad) float(rad * _180DIVPI)
-#define DEG2RAD(deg) float(deg * _PIDIV180)
+#define RAD2DEG(rad) (rad * _180DIVPI)
+#define DEG2RAD(deg) (deg * _PIDIV180)
 
 #define EPSILON 0.00001f
 #define FLOAT_EQ(x, v) (((v - EPSILON) < x) && (x < (v + EPSILON)))

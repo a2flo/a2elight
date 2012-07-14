@@ -165,7 +165,7 @@ public:
 	}
 	
 	// linear interpolation between the points v1 and v2: v2 + (v1 - v2) * coef
-	static const vector3 mix(const vector3& v1, const vector3& v2, const vector3& v3, float u, float v) {
+	static const vector3 mix(const vector3& v1, const vector3& v2, const vector3& v3, const T& u, const T& v) {
 		return vector3(v1.x * u + v2.x * v + v3.x * ((T)1 - u - v),
 					   v1.y * u + v2.y * v + v3.y * ((T)1 - u - v),
 					   v1.z * u + v2.z * v + v3.z * ((T)1 - u - v));
@@ -177,19 +177,19 @@ public:
 	}
 	
 	static const vector3 faceforward(const vector3& N, const vector3& I, const vector3& Nref) {
-		return ((Nref * I) < 0.0f ? N : -N);
+		return ((Nref * I) < ((T)0) ? N : -N);
 	}
 	
 	//! N must be normalized
-	static const float3 reflect(const float3& N, const float3& I) {
-		return I - 2.0f * (N * I) * N;
+	static const vector3 reflect(const vector3& N, const vector3& I) {
+		return I - ((T)2) * (N * I) * N;
 	}
 	
 	//! N, I must be normalized
-	static const float3 refract(const float3& N, const float3& I, const T& eta) {
-		float dNI = N * I;
-		float k = (1.0f - (eta * eta) * (1.0f - dNI * dNI));
-		return (k < 0.0f ? float3(0.0f) : (eta * I - (eta * dNI + sqrtf(k)) * N));
+	static const vector3 refract(const vector3& N, const vector3& I, const T& eta) {
+		const T dNI(N * I);
+		const T k(((T)1) - (eta * eta) * (((T)1) - dNI * dNI));
+		return (k < ((T)0) ? vector3((T)0) : (eta * I - (eta * dNI + sqrt(k)) * N));
 	}
 	
 	T dot(const vector3& v) const;
@@ -288,11 +288,11 @@ template<typename T> vector3<T>& vector3<T>::operator*=(const vector3<T>& v) {
 }
 
 template<typename T> vector3<T> vector3<T>::operator*(const matrix4f& mat) const {
-	vector3<T> v3;
-	v3.x = mat.data[0] * vector3::x + mat.data[4] * vector3::y + mat.data[8] * vector3::z + mat.data[12] * 1.0f;
-	v3.y = mat.data[1] * vector3::x + mat.data[5] * vector3::y + mat.data[9] * vector3::z + mat.data[13] * 1.0f;
-	v3.z = mat.data[2] * vector3::x + mat.data[6] * vector3::y + mat.data[10] * vector3::z + mat.data[14] * 1.0f;
-	return v3;
+	return {
+		mat.data[0] * x + mat.data[4] * y + mat.data[8] * z + mat.data[12],
+		mat.data[1] * x + mat.data[5] * y + mat.data[9] * z + mat.data[13],
+		mat.data[2] * x + mat.data[6] * y + mat.data[10] * z + mat.data[14],
+	};
 }
 
 template<typename T> vector3<T>& vector3<T>::operator*=(const matrix4f& mat) {
@@ -419,19 +419,19 @@ template<typename T> void vector3<T>::clamp(const T& vmin, const T& vmax) {
 }
 
 template<typename T> vector3<T> vector3<T>::clamped(const T& vmax) const {
-	vector3<T> vec;
-	vec.x = (x < ((T)0) ? ((T)0) : (x > vmax ? vmax : x));
-	vec.y = (y < ((T)0) ? ((T)0) : (y > vmax ? vmax : y));
-	vec.z = (z < ((T)0) ? ((T)0) : (z > vmax ? vmax : z));
-	return vec;
+	return {
+		(x < ((T)0) ? ((T)0) : (x > vmax ? vmax : x)),
+		(y < ((T)0) ? ((T)0) : (y > vmax ? vmax : y)),
+		(z < ((T)0) ? ((T)0) : (z > vmax ? vmax : z))
+	};
 }
 
 template<typename T> vector3<T> vector3<T>::clamped(const T& vmin, const T& vmax) const {
-	vector3<T> vec;
-	vec.x = (x < vmin ? vmin : (x > vmax ? vmax : x));
-	vec.y = (y < vmin ? vmin : (y > vmax ? vmax : y));
-	vec.z = (z < vmin ? vmin : (z > vmax ? vmax : z));
-	return vec;
+	return {
+		(x < vmin ? vmin : (x > vmax ? vmax : x)),
+		(y < vmin ? vmin : (y > vmax ? vmax : y)),
+		(z < vmin ? vmin : (z > vmax ? vmax : z))
+	};
 }
 
 template<typename T> void vector3<T>::scale(const vector3<T>& v) {
@@ -530,7 +530,7 @@ template<typename T> bool vector3<T>::is_null() const {
 template<typename T> bool vector3<T>::is_nan() const {
 	if(!numeric_limits<T>::has_quiet_NaN) return false;
 	
-	T nan = numeric_limits<T>::quiet_NaN();
+	const T nan(numeric_limits<T>::quiet_NaN());
 	if(x == nan || y == nan || z == nan) {
 		return true;
 	}
@@ -540,7 +540,7 @@ template<typename T> bool vector3<T>::is_nan() const {
 template<typename T> bool vector3<T>::is_inf() const {
 	if(!numeric_limits<T>::has_infinity) return false;
 	
-	T inf = numeric_limits<T>::infinity();
+	const T inf(numeric_limits<T>::infinity());
 	if(x == inf || x == -inf || y == inf || y == -inf || z == inf || z == -inf) {
 		return true;
 	}
@@ -571,21 +571,19 @@ template<typename T> vector3<T> vector3<T>::refract(const vector3& I, const T& e
 }
 
 template<typename T> vector3<T>& vector3<T>::rotate(const T& x_rotation, const T& y_rotation, const T& z_rotation) {
-	float sinx, siny, sinz, cosx, cosy, cosz;
-	sinx = sinf(x_rotation);
-	siny = sinf(y_rotation);
-	sinz = sinf(z_rotation);
-	cosx = cosf(x_rotation);
-	cosy = cosf(y_rotation);
-	cosz = cosf(z_rotation);
+	const T sinx(sin(x_rotation));
+	const T siny(sin(y_rotation));
+	const T sinz(sin(z_rotation));
+	const T cosx(cos(x_rotation));
+	const T cosy(cos(y_rotation));
+	const T cosz(cos(z_rotation));
 	
-	vector3<T> tmp(*this);
 	// is this correct? -- works at least for the camera stuff
-	tmp.y = cosy * cosz * x + (-cosx * sinz + sinx * siny * cosz) * z + (sinx * sinz + cosx * siny * cosz) * y;
-	tmp.x = -siny * x + sinx * cosy * z + cosx * cosy * y;
-	tmp.z = cosy * sinz * x + (cosx * cosz + sinx * siny * sinz) * z + (-sinx * cosz + cosx * siny * sinz) * y;
-	*this = tmp;
-	
+	*this = {
+		cosy * cosz * x + (-cosx * sinz + sinx * siny * cosz) * z + (sinx * sinz + cosx * siny * cosz) * y,
+		-siny * x + sinx * cosy * z + cosx * cosy * y,
+		cosy * sinz * x + (cosx * cosz + sinx * siny * sinz) * z + (-sinx * cosz + cosx * siny * sinz) * y,
+	};
 	return *this;
 }
 

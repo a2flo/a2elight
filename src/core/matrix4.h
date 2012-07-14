@@ -41,6 +41,12 @@ public:
 		(T)0, (T)1, (T)0, (T)0,
 		(T)0, (T)0, (T)1, (T)0,
 		(T)0, (T)0, (T)0, (T)1}}) {}
+	a2e_constexpr matrix4(const T& val) noexcept :
+	data({{
+		val, val, val, val,
+		val, val, val, val,
+		val, val, val, val,
+		val, val, val, val}}) {}
 	a2e_constexpr matrix4(matrix4&& m4) noexcept : data(m4.data) {}
 	a2e_constexpr matrix4(const matrix4<T>& m4) noexcept : data(m4.data) {}
 	a2e_constexpr matrix4(const matrix4<T>* m4) noexcept : data(m4->data) {}
@@ -112,10 +118,9 @@ public:
 };
 
 template<typename T> matrix4<T> matrix4<T>::operator*(const matrix4<T>& mat) const {
-	matrix4 mul_mat;
+	matrix4 mul_mat((T)0);
 	for(size_t mi = 0; mi < 4; mi++) { // column
 		for(size_t mj = 0; mj < 4; mj++) { // row
-			mul_mat.data[(mi*4) + mj] = ((T)0);
 			for(size_t mk = 0; mk < 4; mk++) { // mul iteration
 				mul_mat.data[(mi*4) + mj] += data[(mi*4) + mk] * mat.data[(mk*4) + mj];
 			}
@@ -132,18 +137,18 @@ template<typename T> matrix4<T>& matrix4<T>::operator*=(const matrix4<T>& mat) {
 template<typename T> matrix4<T>& matrix4<T>::invert() {
 	matrix4<T> mat;
 	
-	float p00 = data[10] * data[15];
-	float p01 = data[14] * data[11];
-	float p02 = data[6] * data[15];
-	float p03 = data[14] * data[7];
-	float p04 = data[6] * data[11];
-	float p05 = data[10] * data[7];
-	float p06 = data[2] * data[15];
-	float p07 = data[14] * data[3];
-	float p08 = data[2] * data[11];
-	float p09 = data[10] * data[3];
-	float p10 = data[2] * data[7];
-	float p11 = data[6] * data[3];
+	const T p00(data[10] * data[15]);
+	const T p01(data[14] * data[11]);
+	const T p02(data[6] * data[15]);
+	const T p03(data[14] * data[7]);
+	const T p04(data[6] * data[11]);
+	const T p05(data[10] * data[7]);
+	const T p06(data[2] * data[15]);
+	const T p07(data[14] * data[3]);
+	const T p08(data[2] * data[11]);
+	const T p09(data[10] * data[3]);
+	const T p10(data[2] * data[7]);
+	const T p11(data[6] * data[3]);
 	
 	mat.data[0] = (p00 * data[5] + p03 * data[9] + p04 * data[13]) - (p01 * data[5] + p02 * data[9] + p05 * data[13]);
 	mat.data[1] = (p01 * data[1] + p06 * data[9] + p09 * data[13]) - (p00 * data[1] + p07 * data[9] + p08 * data[13]);
@@ -154,18 +159,18 @@ template<typename T> matrix4<T>& matrix4<T>::invert() {
 	mat.data[6] = (p03 * data[0] + p06 * data[4] + p11 * data[12]) - (p02 * data[0] + p07 * data[4] + p10 * data[12]);
 	mat.data[7] = (p04 * data[0] + p09 * data[4] + p10 * data[8]) - (p05 * data[0] + p08 * data[4] + p11 * data[8]);
 	
-	float q00 = data[8] * data[13];
-	float q01 = data[12] * data[9];
-	float q02 = data[4] * data[13];
-	float q03 = data[12] * data[5];
-	float q04 = data[4] * data[9];
-	float q05 = data[8] * data[5];
-	float q06 = data[0] * data[13];
-	float q07 = data[12] * data[1];
-	float q08 = data[0] * data[9];
-	float q09 = data[8] * data[1];
-	float q10 = data[0] * data[5];
-	float q11 = data[4] * data[1];
+	const T q00(data[8] * data[13]);
+	const T q01(data[12] * data[9]);
+	const T q02(data[4] * data[13]);
+	const T q03(data[12] * data[5]);
+	const T q04(data[4] * data[9]);
+	const T q05(data[8] * data[5]);
+	const T q06(data[0] * data[13]);
+	const T q07(data[12] * data[1]);
+	const T q08(data[0] * data[9]);
+	const T q09(data[8] * data[1]);
+	const T q10(data[0] * data[5]);
+	const T q11(data[4] * data[1]);
 	
 	mat.data[8] = (q00 * data[7] + q03 * data[11] + q04 * data[15]) - (q01 * data[7] + q02 * data[11] + q05 * data[15]);
 	mat.data[9] = (q01 * data[3] + q06 * data[11] + q09 * data[15]) - (q00 * data[3] + q07 * data[11] + q08 * data[15]);
@@ -176,8 +181,7 @@ template<typename T> matrix4<T>& matrix4<T>::invert() {
 	mat.data[14] = (q06 * data[6] + q11 * data[14] + q03 * data[2]) - (q10 * data[14] + q02 * data[2] + q07 * data[6]);
 	mat.data[15] = (q10 * data[10] + q04 * data[2] + q09 * data[6]) - (q08 * data[6] + q11 * data[10] + q05 * data[2]);
 	
-	float mx = 1.0f / (data[0] * mat.data[0] + data[4] * mat.data[1] + data[8] * mat.data[2] + data[12] * mat.data[3]);
-	
+	const T mx(((T)1) / (data[0] * mat.data[0] + data[4] * mat.data[1] + data[8] * mat.data[2] + data[12] * mat.data[3]));
 	for(size_t mi = 0; mi < 4; mi++) {
 		for(size_t mj = 0; mj < 4; mj++) {
 			mat.data[(mi*4) + mj] *= mx;
@@ -189,36 +193,36 @@ template<typename T> matrix4<T>& matrix4<T>::invert() {
 }
 
 template<typename T> matrix4<T>& matrix4<T>::identity() {
-	data[0] = 1.0f;
-	data[1] = 0.0f;
-	data[2] = 0.0f;
-	data[3] = 0.0f;
+	data[0] = ((T)1);
+	data[1] = ((T)0);
+	data[2] = ((T)0);
+	data[3] = ((T)0);
 	
-	data[4] = 0.0f;
-	data[5] = 1.0f;
-	data[6] = 0.0f;
-	data[7] = 0.0f;
+	data[4] = ((T)0);
+	data[5] = ((T)1);
+	data[6] = ((T)0);
+	data[7] = ((T)0);
 	
-	data[8] = 0.0f;
-	data[9] = 0.0f;
-	data[10] = 1.0f;
-	data[11] = 0.0f;
+	data[8] = ((T)0);
+	data[9] = ((T)0);
+	data[10] = ((T)1);
+	data[11] = ((T)0);
 	
-	data[12] = 0.0f;
-	data[13] = 0.0f;
-	data[14] = 0.0f;
-	data[15] = 1.0f;
+	data[12] = ((T)0);
+	data[13] = ((T)0);
+	data[14] = ((T)0);
+	data[15] = ((T)1);
 	
 	return *this;
 }
 
 template<typename T> matrix4<T>& matrix4<T>::transpose() {
-	matrix4 tmp = *this;
-	for(size_t mi = 0; mi < 4; mi++) {
-		for(size_t mj = 0; mj < 4; mj++) {
-			data[(mi*4) + mj] = tmp.data[(mj*4) + mi];
-		}
-	}
+	std::swap(data[1], data[4]);
+	std::swap(data[2], data[8]);
+	std::swap(data[3], data[12]);
+	std::swap(data[6], data[9]);
+	std::swap(data[7], data[13]);
+	std::swap(data[11], data[14]);
 	return *this;
 }
 
@@ -253,95 +257,92 @@ template<typename T> matrix4<T>& matrix4<T>::scale(const T x, const T y, const T
 }
 
 template<typename T> matrix4<T>& matrix4<T>::rotate_x(const T x) {
-	T angle = DEG2RAD(x);
-	T sinx, cosx;
-	sinx = sin(angle);
-	cosx = cos(angle);
+	const T angle(DEG2RAD(x));
+	const T sinx(sin(angle));
+	const T cosx(cos(angle));
 	
-	data[0] = 1.0f;
-	data[1] = 0.0f;
-	data[2] = 0.0f;
-	data[3] = 0.0f;
+	data[0] = ((T)1);
+	data[1] = ((T)0);
+	data[2] = ((T)0);
+	data[3] = ((T)0);
 	
-	data[4] = 0.0f;
+	data[4] = ((T)0);
 	data[5] = cosx;
 	data[6] = sinx;
-	data[7] = 0.0f;
+	data[7] = ((T)0);
 	
-	data[8] = 0.0f;
+	data[8] = ((T)0);
 	data[9] = -sinx;
 	data[10] = cosx;
-	data[11] = 0.0f;
+	data[11] = ((T)0);
 	
-	data[12] = 0.0f;
-	data[13] = 0.0f;
-	data[14] = 0.0f;
-	data[15] = 1.0f;
+	data[12] = ((T)0);
+	data[13] = ((T)0);
+	data[14] = ((T)0);
+	data[15] = ((T)1);
 	
 	return *this;
 }
 
 template<typename T> matrix4<T>& matrix4<T>::rotate_y(const T y) {
-	T angle = DEG2RAD(y);
-	T siny, cosy;
-	siny = sin(angle);
-	cosy = cos(angle);
+	const T angle(DEG2RAD(y));
+	const T siny(sin(angle));
+	const T cosy(cos(angle));
 	
 	data[0] = cosy;
-	data[1] = 0.0f;
+	data[1] = ((T)0);
 	data[2] = -siny;
-	data[3] = 0.0f;
+	data[3] = ((T)0);
 	
-	data[4] = 0.0f;
-	data[5] = 1.0f;
-	data[6] = 0.0f;
-	data[7] = 0.0f;
+	data[4] = ((T)0);
+	data[5] = ((T)1);
+	data[6] = ((T)0);
+	data[7] = ((T)0);
 	
 	data[8] = siny;
-	data[9] = 0.0f;
+	data[9] = ((T)0);
 	data[10] = cosy;
-	data[11] = 0.0f;
+	data[11] = ((T)0);
 	
-	data[12] = 0.0f;
-	data[13] = 0.0f;
-	data[14] = 0.0f;
-	data[15] = 1.0f;
+	data[12] = ((T)0);
+	data[13] = ((T)0);
+	data[14] = ((T)0);
+	data[15] = ((T)1);
 	
 	return *this;
 }
 
 template<typename T> matrix4<T>& matrix4<T>::rotate_z(const T z) {
-	T angle = DEG2RAD(z);
-	T sinz, cosz;
-	sinz = sin(angle);
-	cosz = cos(angle);
+	const T angle(DEG2RAD(z));
+	const T sinz(sin(angle));
+	const T cosz(cos(angle));
 	
 	data[0] = cosz;
 	data[1] = sinz;
-	data[2] = 0.0f;
-	data[3] = 0.0f;
+	data[2] = ((T)0);
+	data[3] = ((T)0);
 	
 	data[4] = -sinz;
 	data[5] = cosz;
-	data[6] = 0.0f;
-	data[7] = 0.0f;
+	data[6] = ((T)0);
+	data[7] = ((T)0);
 	
-	data[8] = 0.0f;
-	data[9] = 0.0f;
-	data[10] = 1.0f;
-	data[11] = 0.0f;
+	data[8] = ((T)0);
+	data[9] = ((T)0);
+	data[10] = ((T)1);
+	data[11] = ((T)0);
 	
-	data[12] = 0.0f;
-	data[13] = 0.0f;
-	data[14] = 0.0f;
-	data[15] = 1.0f;
+	data[12] = ((T)0);
+	data[13] = ((T)0);
+	data[14] = ((T)0);
+	data[15] = ((T)1);
 	
 	return *this;
 }
 
 // projection
 template<typename T> matrix4<T>& matrix4<T>::perspective(const T fov, const T aspect, const T z_near, const T z_far) {
-	const float f = ((T)1) / tanf(fov * _PIDIV360);
+	const typename conditional<is_floating_point<T>::value, T, float>::type f = ((T)1) / tan(fov * _PIDIV360);
 	
 	////
 	data[0] = f / aspect;
@@ -368,9 +369,9 @@ template<typename T> matrix4<T>& matrix4<T>::perspective(const T fov, const T as
 }
 
 template<typename T> matrix4<T>& matrix4<T>::ortho(const T left, const T right, const T bottom, const T top, const T z_near, const T z_far) {
-	T r_l = right - left;
-	T t_b = top - bottom;
-	T f_n = z_far - z_near;
+	const T r_l(right - left);
+	const T t_b(top - bottom);
+	const T f_n(z_far - z_near);
 	
 	data[0] = ((T)2) / r_l;
 	data[1] = ((T)0);

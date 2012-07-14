@@ -234,7 +234,7 @@ template<typename T> bool vector2<T>::is_null() const {
 template<typename T> bool vector2<T>::is_nan() const {
 	if(!numeric_limits<T>::has_quiet_NaN) return false;
 	
-	T nan = numeric_limits<T>::quiet_NaN();
+	const T nan(numeric_limits<T>::quiet_NaN());
 	if(x == nan || y == nan) {
 		return true;
 	}
@@ -244,7 +244,7 @@ template<typename T> bool vector2<T>::is_nan() const {
 template<typename T> bool vector2<T>::is_inf() const {
 	if(!numeric_limits<T>::has_infinity) return false;
 	
-	T inf = numeric_limits<T>::infinity();
+	const T inf(numeric_limits<T>::infinity());
 	if(x == inf || x == -inf || y == inf || y == -inf) {
 		return true;
 	}

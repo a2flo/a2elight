@@ -60,6 +60,7 @@
 #include <locale>
 #include <memory>
 #include <stdexcept>
+#include <type_traits>
 #include <ctime>
 #include <cstring>
 #include <cmath>
