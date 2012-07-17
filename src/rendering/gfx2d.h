@@ -420,13 +420,13 @@ struct gfx2d::draw_style_texture {
 		draw(props, texture->tex(), args...);
 	}
 	
-	//
+	// texture 2d
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
 					 const coord bottom_left = coord(0.0f),
 					 const coord top_right = coord(1.0f),
 					 const float draw_depth = 0.0f) {
-		draw(props, texture, bottom_left, top_right, draw_depth, "#");
+		draw(props, texture, false, 0.0f, bottom_left, top_right, draw_depth, "#");
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
@@ -434,7 +434,7 @@ struct gfx2d::draw_style_texture {
 					 const coord bottom_left = coord(0.0f),
 					 const coord top_right = coord(1.0f),
 					 const float draw_depth = 0.0f) {
-		draw(props, texture, bottom_left, top_right, draw_depth, "passthrough");
+		draw(props, texture, false, 0.0f, bottom_left, top_right, draw_depth, "passthrough");
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
@@ -443,7 +443,7 @@ struct gfx2d::draw_style_texture {
 					 const coord bottom_left = coord(0.0f),
 					 const coord top_right = coord(1.0f),
 					 const float draw_depth = 0.0f) {
-		draw(props, texture, mul_color, add_color, bottom_left, top_right, draw_depth, "madd_color");
+		draw(props, texture, false, 0.0f, mul_color, add_color, bottom_left, top_right, draw_depth, "madd_color");
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
@@ -460,39 +460,95 @@ struct gfx2d::draw_style_texture {
 		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
 							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
 								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
-		draw(props, texture, mul_color, add_color, gradient_positions, gradient_colors, gradient_mul_interpolator, gradient_add_interpolator, bottom_left, top_right, draw_depth, option);
+		draw(props, texture, false, 0.0f, mul_color, add_color, gradient_positions, gradient_colors, gradient_mul_interpolator,
+			 gradient_add_interpolator, bottom_left, top_right, draw_depth, option);
 	}
+	
+	// texture 2d array
+	static void draw(const primitive_properties& props,
+					 const GLuint texture,
+					 const float layer,
+					 const coord bottom_left = coord(0.0f),
+					 const coord top_right = coord(1.0f),
+					 const float draw_depth = 0.0f) {
+		draw(props, texture, true, layer, bottom_left, top_right, draw_depth, "#");
+	}
+	static void draw(const primitive_properties& props,
+					 const GLuint texture,
+					 const float layer,
+					 const bool passthrough,
+					 const coord bottom_left = coord(0.0f),
+					 const coord top_right = coord(1.0f),
+					 const float draw_depth = 0.0f) {
+		draw(props, texture, true, layer, bottom_left, top_right, draw_depth, "passthrough");
+	}
+	static void draw(const primitive_properties& props,
+					 const GLuint texture,
+					 const float layer,
+					 const float4 mul_color,
+					 const float4 add_color,
+					 const coord bottom_left = coord(0.0f),
+					 const coord top_right = coord(1.0f),
+					 const float draw_depth = 0.0f) {
+		draw(props, texture, true, layer, mul_color, add_color, bottom_left, top_right, draw_depth, "madd_color");
+	}
+	static void draw(const primitive_properties& props,
+					 const GLuint texture,
+					 const float layer,
+					 const float4 mul_color,
+					 const float4 add_color,
+					 const gfx2d::GRADIENT_TYPE type,
+					 const float4& gradient_positions,
+					 const vector<float4>& gradient_colors,
+					 const float4 gradient_mul_interpolator = float4(0.5f),
+					 const float4 gradient_add_interpolator = float4(0.0f),
+					 const coord bottom_left = coord(0.0f),
+					 const coord top_right = coord(1.0f),
+					 const float draw_depth = 0.0f) {
+		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
+							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
+								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
+		draw(props, texture, true, layer, mul_color, add_color, gradient_positions, gradient_colors, gradient_mul_interpolator,
+			 gradient_add_interpolator, bottom_left, top_right, draw_depth, option);
+	}
+	
 protected:
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
+					 const bool is_tex_array,
+					 const float layer,
 					 const coord bottom_left,
 					 const coord top_right,
 					 const float draw_depth,
 					 const string& option) {
-		texture_shd->use(option);
+		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));
 		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
-		texture_shd->texture("tex", texture);
+		texture_shd->texture("tex", texture, is_tex_array ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D);
+		if(is_tex_array) texture_shd->uniform("layer", layer);
 		
 		// draw
 		upload_points_and_draw(texture_shd, props);
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
+					 const bool is_tex_array,
+					 const float layer,
 					 const float4 mul_color,
 					 const float4 add_color,
 					 const coord bottom_left,
 					 const coord top_right,
 					 const float draw_depth,
 					 const string& option) {
-		texture_shd->use(option);
+		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));
 		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
-		texture_shd->texture("tex", texture);
+		texture_shd->texture("tex", texture, is_tex_array ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D);
+		if(is_tex_array) texture_shd->uniform("layer", layer);
 		
 		texture_shd->uniform("mul_color", mul_color);
 		texture_shd->uniform("add_color", add_color);
@@ -502,6 +558,8 @@ protected:
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
+					 const bool is_tex_array,
+					 const float layer,
 					 const float4 mul_color,
 					 const float4 add_color,
 					 const float4& gradient_positions,
@@ -512,12 +570,13 @@ protected:
 					 const coord top_right,
 					 const float draw_depth,
 					 const string& option) {
-		texture_shd->use(option);
+		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));
 		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
-		texture_shd->texture("tex", texture);
+		texture_shd->texture("tex", texture, is_tex_array ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D);
+		if(is_tex_array) texture_shd->uniform("layer", layer);
 		
 		texture_shd->uniform("mul_color", mul_color);
 		texture_shd->uniform("add_color", add_color);

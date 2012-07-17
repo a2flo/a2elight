@@ -357,7 +357,8 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		}
 		
 		// make the first recognized device the active device
-		set_active_device(opencl::FASTEST_GPU);
+		if(is_gpu_support()) set_active_device(opencl::FASTEST_GPU);
+		else if(is_cpu_support()) set_active_device(opencl::FASTEST_CPU);
 		
 		if(fastest_cpu != nullptr) a2e_debug("fastest CPU device: %s %s (score: %u)", fastest_cpu->vendor.c_str(), fastest_cpu->name.c_str(), fastest_cpu_score);
 		if(fastest_gpu != nullptr) a2e_debug("fastest GPU device: %s %s (score: %u)", fastest_gpu->vendor.c_str(), fastest_gpu->name.c_str(), fastest_gpu_score);
@@ -708,8 +709,8 @@ void opencl::reload_kernels() {
 void opencl::load_internal_kernels() {
 	reload_kernels();
 	
-	set_active_device(opencl::FASTEST_GPU);
-	//set_active_device(opencl::FASTEST_CPU);
+	if(is_gpu_support()) set_active_device(opencl::FASTEST_GPU);
+	else if(is_cpu_support()) set_active_device(opencl::FASTEST_CPU);
 }
 
 void opencl::use_kernel(const string& identifier) {

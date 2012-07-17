@@ -82,7 +82,7 @@ public:
 	//void clear_cache();
 	
 	// texture cache info
-	static constexpr unsigned int font_texture_size = 2048;
+	static constexpr unsigned int font_texture_size = 1024;
 	
 protected:
 	engine* e = nullptr;

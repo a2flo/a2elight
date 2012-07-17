@@ -239,14 +239,12 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 				continue;
 			}
 			
-			// TODO: add support for FT_LOAD_TARGET_LCD
-			if(FT_Load_Char(face.second, code, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT) != 0) {
+			if(FT_Load_Char(face.second, code, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT | FT_LOAD_TARGET_LCD) != 0) {
 				a2e_error("couldn't cache character %X!", code);
 				continue;
 			}
 			
-			// glyph pixel buffer
-			const unsigned char* buffer = slot->bitmap.buffer;
+			//
 			const unsigned int texture_index = (unsigned int)glyph_counter++;
 			// TODO: -> emplace
 			glyphs.insert(make_pair(code,
@@ -262,10 +260,27 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 							  (texture_index - (layer*glyphs_per_layer)) / glyphs_per_line,
 							  layer);
 			
+			// ignore 0px writes ...
+			if(slot->bitmap.width == 0 || slot->bitmap.rows == 0) continue;
+			
+			// copy glyph bitmap rows to a correctly sized bitmap (display_font_size^2 or max glyph size^2),
+			// this is necessary, because of row padding "provided" by freetype
+			const size_t glyph_mem_size(display_font_size * display_font_size * 3);
+			unsigned char* glyph_buffer = new unsigned char[glyph_mem_size];
+			memset(glyph_buffer, 0, glyph_mem_size);
+			
+			const size_t row_data_length(display_font_size * 3);
+			for(size_t row = 0; row < (size_t)slot->bitmap.rows; row++) {
+				memcpy(glyph_buffer + (row * row_data_length),
+					   slot->bitmap.buffer + (row * slot->bitmap.pitch),
+					   slot->bitmap.width);
+			}
+			
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0,
 							offset.x * display_font_size, offset.y * display_font_size, offset.z,
-							slot->bitmap.width, slot->bitmap.rows, 1,
-							GL_RED, GL_UNSIGNED_BYTE, buffer);
+							display_font_size, display_font_size, 1,
+							GL_RGB, GL_UNSIGNED_BYTE, glyph_buffer);
+			delete [] glyph_buffer;
 		}
 	}
 	
@@ -297,6 +312,27 @@ uint2 font::cache_text(const string& text, const GLuint existing_ubo) {
 }
 
 void font::recreate_texture_array(const size_t& layers) {
+	const size_t prev_layers(tex_array_layers);
+	
+	// this works around an intel and ati driver bug (an array must at least have 2 layers)
+	tex_array_layers = std::max(layers, (size_t)2);
+	
+	const size_t layer_size(font_texture_size * font_texture_size * 3);
+	const size_t tex_size(layer_size * tex_array_layers);
+	unsigned char* tex_data = new unsigned char[tex_size];
+	
+	// check if we need to copy data from the old tex layers
+	if(prev_layers != 0 && tex_array != 0) {
+		glBindTexture(GL_TEXTURE_2D_ARRAY, tex_array);
+		glGetTexImage(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_data);
+		
+		const size_t layer_diff(tex_array_layers - prev_layers);
+		memset(tex_data + prev_layers * layer_size, 0, layer_diff * layer_size); // clear new layers
+	}
+	else {
+		memset(tex_data, 0, tex_size);
+	}
+	
 	//
 	if(tex_array == 0) {
 		glGenTextures(1, &tex_array);
@@ -307,20 +343,12 @@ void font::recreate_texture_array(const size_t& layers) {
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	
-	unsigned char* black_data = new unsigned char[font_texture_size*font_texture_size*layers];
-	memset(black_data, 0, font_texture_size*font_texture_size*layers);
+	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB8,
+				 font_texture_size, font_texture_size, (GLsizei)tex_array_layers,
+				 0, GL_RGB, GL_UNSIGNED_BYTE, tex_data);
 	
-	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_R8,
-				 font_texture_size, font_texture_size,
-				 (GLsizei)layers,
-				 0, GL_RED, GL_UNSIGNED_BYTE, black_data);
-	
-	// TODO: copy old layers
-	
-	delete [] black_data;
+	delete [] tex_data;
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-	
-	tex_array_layers = layers;
 }
 
 void font::reload_shaders() {

@@ -366,7 +366,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	
 	bool print_debug_info = false;
 	//if(identifier == "SIMPLE") {
-	/*if(identifier == "IR_LP_ASHIKHMIN_SHIRLEY") {
+	/*if(identifier == "FONT") {
 		print_debug_info = true;
 		cout << endl << "## " << identifier << "::" << option << endl;
 	}*/
