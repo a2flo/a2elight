@@ -496,6 +496,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 						(sizeof(float4) * 2) * A2E_MAX_PARTICLE_LIGHTS,
 						&lights_data[0]);
 		particle_draw->block("light_buffer", lights_ubo);
+		particle_draw->attribute_array("in_aux", pdata->ocl_gl_dir_vbo, 4);
 	}
 #endif
 	
@@ -503,7 +504,6 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_draw->uniform("size", ps->get_size());
 	particle_draw->texture("particle_tex", ps->get_texture());
 	particle_draw->attribute_array("in_vertex", pdata->ocl_gl_pos_time_vbo, 4);
-	particle_draw->attribute_array("in_aux", pdata->ocl_gl_dir_vbo, 4);
 	
 	if(!ps->is_sorting() ||
 	   (ps->is_sorting() && !ps->is_reentrant_sorting()) ||
