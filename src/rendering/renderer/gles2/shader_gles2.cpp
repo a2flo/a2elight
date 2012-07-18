@@ -506,24 +506,55 @@ void shader_gles2::attribute_array(const char* name, const GLuint& buffer, const
 	
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glEnableVertexAttribArray((GLuint)location);
-	if(size <= 4) {
-		glVertexAttribPointer((GLuint)location, size, type, normalized, stride, nullptr);
-	}
-	else if(size == 9) {
-		glVertexAttribPointer((GLuint)location, 3, type, normalized, 36, nullptr);
-		glEnableVertexAttribArray((GLuint)location+1);
-		glVertexAttribPointer((GLuint)location+1, 3, type, normalized, 36, (void*)12);
-		glEnableVertexAttribArray((GLuint)location+2);
-		glVertexAttribPointer((GLuint)location+2, 3, type, normalized, 36, (void*)24);
-	}
-	else if(size == 16) {
-		glVertexAttribPointer((GLuint)location, 4, type, normalized, 64, nullptr);
-		glEnableVertexAttribArray((GLuint)location+1);
-		glVertexAttribPointer((GLuint)location+1, 4, type, normalized, 64, (void*)16);
-		glEnableVertexAttribArray((GLuint)location+2);
-		glVertexAttribPointer((GLuint)location+2, 4, type, normalized, 64, (void*)32);
-		glEnableVertexAttribArray((GLuint)location+3);
-		glVertexAttribPointer((GLuint)location+3, 4, type, normalized, 64, (void*)48);
+	
+	switch(type) {
+		case GL_BYTE:
+		case GL_UNSIGNED_BYTE:
+		case GL_SHORT:
+		case GL_UNSIGNED_SHORT:
+		case GL_INT:
+		case GL_UNSIGNED_INT:
+			if(size <= 4) {
+				glVertexAttribIPointer((GLuint)location, size, type, stride, nullptr);
+			}
+			else if(size == 9) {
+				glVertexAttribIPointer((GLuint)location, 3, type, 36, nullptr);
+				glEnableVertexAttribArray((GLuint)location+1);
+				glVertexAttribIPointer((GLuint)location+1, 3, type, 36, (void*)12);
+				glEnableVertexAttribArray((GLuint)location+2);
+				glVertexAttribIPointer((GLuint)location+2, 3, type, 36, (void*)24);
+			}
+			else if(size == 16) {
+				glVertexAttribIPointer((GLuint)location, 4, type, 64, nullptr);
+				glEnableVertexAttribArray((GLuint)location+1);
+				glVertexAttribIPointer((GLuint)location+1, 4, type, 64, (void*)16);
+				glEnableVertexAttribArray((GLuint)location+2);
+				glVertexAttribIPointer((GLuint)location+2, 4, type, 64, (void*)32);
+				glEnableVertexAttribArray((GLuint)location+3);
+				glVertexAttribIPointer((GLuint)location+3, 4, type, 64, (void*)48);
+			}
+			break;
+		default:
+			if(size <= 4) {
+				glVertexAttribPointer((GLuint)location, size, type, normalized, stride, nullptr);
+			}
+			else if(size == 9) {
+				glVertexAttribPointer((GLuint)location, 3, type, normalized, 36, nullptr);
+				glEnableVertexAttribArray((GLuint)location+1);
+				glVertexAttribPointer((GLuint)location+1, 3, type, normalized, 36, (void*)12);
+				glEnableVertexAttribArray((GLuint)location+2);
+				glVertexAttribPointer((GLuint)location+2, 3, type, normalized, 36, (void*)24);
+			}
+			else if(size == 16) {
+				glVertexAttribPointer((GLuint)location, 4, type, normalized, 64, nullptr);
+				glEnableVertexAttribArray((GLuint)location+1);
+				glVertexAttribPointer((GLuint)location+1, 4, type, normalized, 64, (void*)16);
+				glEnableVertexAttribArray((GLuint)location+2);
+				glVertexAttribPointer((GLuint)location+2, 4, type, normalized, 64, (void*)32);
+				glEnableVertexAttribArray((GLuint)location+3);
+				glVertexAttribPointer((GLuint)location+3, 4, type, normalized, 64, (void*)48);
+			}
+			break;
 	}
 	// SHADER TODO: support for other matrix types
 }
