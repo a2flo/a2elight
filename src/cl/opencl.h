@@ -67,7 +67,7 @@ public:
 	opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache);
 	~opencl();
 	
-	bool is_supported() { return true; }
+	bool is_supported() { return supported; }
 	bool is_cpu_support();
 	bool is_gpu_support();
 	
@@ -246,6 +246,7 @@ public:
 protected:
 	file_io* f;
 	SDL_Window* sdl_wnd;
+	bool supported = true;
 	
 	string build_options;
 	string nv_build_options;

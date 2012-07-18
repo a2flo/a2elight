@@ -261,7 +261,6 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			dev_type_str = "";
 			
 			opencl::device_object* device = new opencl::device_object();
-			devices.push_back(device);
 			device->device = &internal_device;
 			device->internal_type = internal_device.getInfo<CL_DEVICE_TYPE>();
 			device->units = internal_device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
@@ -306,13 +305,13 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 				dev_type_str += "CPU ";
 				
 				if(fastest_cpu == nullptr) {
-					fastest_cpu = devices.back();
+					fastest_cpu = device;
 					fastest_cpu_score = device->units * device->clock;
 				}
 				else {
 					cpu_score = device->units * device->clock;
 					if(cpu_score > fastest_cpu_score) {
-						fastest_cpu = devices.back();
+						fastest_cpu = device;
 					}
 				}
 			}
@@ -322,13 +321,13 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 				dev_type_str += "GPU ";
 				
 				if(fastest_gpu == nullptr) {
-					fastest_gpu = devices.back();
+					fastest_gpu = device;
 					fastest_gpu_score = device->units * device->clock;
 				}
 				else {
 					gpu_score = device->units * device->clock;
 					if(gpu_score > fastest_gpu_score) {
-						fastest_gpu = devices.back();
+						fastest_gpu = device;
 					}
 				}
 			}
@@ -338,6 +337,14 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			if(device->internal_type & CL_DEVICE_TYPE_DEFAULT) {
 				dev_type_str += "Default ";
 			}
+			
+			// cl_khr_byte_addressable_store support is mandatory
+			if(device->extensions.find("cl_khr_byte_addressable_store") == string::npos) {
+				a2e_msg("opencl device \"%s %s\" does not support \"cl_khr_byte_addressable_store\"!", device->vendor, device->name);
+				delete device;
+				continue;
+			}
+			devices.push_back(device);
 			
 			// TYPE (Units: %, Clock: %): Name, Vendor, Version, Driver Version
 			a2e_debug("%s(Units: %u, Clock: %u MHz, Memory: %u MB): %s %s, %s / %s",
@@ -349,6 +356,11 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 					 device->name,
 					 device->version,
 					 device->driver_version);
+		}
+		
+		// no supported devices found
+		if(devices.empty()) {
+			throw a2e_exception("no supported device found for this platform!");
 		}
 		
 		// create a (single) command queue for each device
@@ -401,6 +413,20 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			init(use_platform_devices, platform_index+1);
 		}
 	__HANDLE_CL_EXCEPTION_END
+	catch(a2e_exception& e) {
+		a2e_debug("%s", e.what());
+		// try another time w/o using the platform devices
+		if(platform_index+1 < platforms.size()) {
+			a2e_debug("trying next platform ...");
+			init(use_platform_devices, platform_index+1);
+		}
+	}
+	
+	// if absolutely no devices on any platform are supported, disable opencl support
+	if(devices.empty()) {
+		supported = false;
+		return;
+	}
 	
 	if(ro_formats.empty() && wo_formats.empty() && rw_formats.empty()) {
 #if 0
