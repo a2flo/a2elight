@@ -114,6 +114,11 @@ public:
 		output << "(" << v.x << ", " << v.y << ", " << v.z << ")";
 		return output;
 	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
+	}
 	
 	vector3 normalized() const;
 	vector3 scaled(const vector3& v) const;

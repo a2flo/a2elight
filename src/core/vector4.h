@@ -61,6 +61,11 @@ public:
 		output << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
 		return output;
 	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
+	}
 	
 	void set(const T& vx, const T& vy, const T& vz, const T& vw);
 	void set(const vector4& v);
@@ -121,6 +126,11 @@ public:
 		o << ")";
 		return o;
 	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
+	}
 };
 typedef vector8<float> float8;
 typedef vector8<unsigned int> uint8;
@@ -151,6 +161,11 @@ public:
 		<< v.hi.lo[0] << ", " << v.hi.lo[1] << ", " << v.hi.lo[2] << ", " << v.hi.lo[3] << ", " << v.hi.hi[0] << ", " << v.hi.hi[1] << ", " << v.hi.hi[2] << ", " << v.hi.hi[3];
 		o << ")";
 		return o;
+	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
 	}
 };
 typedef vector16<float> float16;

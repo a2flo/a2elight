@@ -66,6 +66,11 @@ public:
 		output << "(" << vec2.x << ", " << vec2.y << ")";
 		return output;
 	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
+	}
 	
 	void set(const T& vx, const T& vy) {
 		x = vx;

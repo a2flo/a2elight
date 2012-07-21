@@ -39,6 +39,11 @@ public:
 		output << "(" << q.r << ": " << q.x << ", " << q.y << ", " << q.z << ")";
 		return output;
 	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
+	}
 	
 	quaternion operator+(const quaternion& q) const;
 	quaternion operator-(const quaternion& q) const;

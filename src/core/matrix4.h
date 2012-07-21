@@ -83,6 +83,11 @@ public:
 		output.flags(cur_flags);
 		return output;
 	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
+	}
 	
 	T& operator[](const size_t index) { return data[index]; }
 	const T& operator[](const size_t index) const { return data[index]; }

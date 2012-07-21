@@ -75,6 +75,11 @@ public:
 		output << "(Min: " << box.min << ", Max: " << box.max << ")";
 		return output;
 	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
+	}
 	
 	virtual void intersect(pair<float, float>& ret, const ray& r) const {
 		float3 v1 = min, v2 = max;
@@ -177,6 +182,11 @@ public:
 		output << ", Pos: " << box.pos << ")" << endl;
 		output << box.mview << endl;
 		return output;
+	}
+	string to_string() const {
+		stringstream sstr;
+		sstr << *this;
+		return sstr.str();
 	}
 	
 };
