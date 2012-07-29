@@ -6,6 +6,7 @@ local mingw = false
 local clang_libcxx = false
 local gcc_compat = false
 local platform = "x32"
+local system_includes = ""
 
 -- this function returns the first result of "find basepath -name filename", this is needed on some platforms to determine the include path of a library
 function find_include(filename, base_path)
@@ -27,6 +28,10 @@ function find_include(filename, base_path)
 	end
 	
 	return string.sub(path_names, 0, newline-1)
+end
+
+function add_include(path)
+	system_includes = system_includes.." -isystem "..path
 end
 
 
@@ -91,19 +96,23 @@ project "a2elight"
 	-- os specifics
 	if(not os.is("windows") or win_unixenv) then
 		if(not cygwin) then
-			includedirs { "/usr/include" }
+			add_include("/usr/include")
 		else
-			includedirs { "/usr/include/w32api", "/usr/include/w32api/GL" }
+			add_include("/usr/include/w32api")
+			add_include("/usr/include/w32api/GL")
 		end
-		includedirs { "/usr/local/include", "/usr/include/libxml2", "/usr/include/libxml",
-					  "/usr/include/freetype2", "/usr/local/include/freetype2" }
+		add_include("/usr/local/include")
+		add_include("/usr/include/libxml2")
+		add_include("/usr/include/libxml")
+		add_include("/usr/include/freetype2")
+		add_include("/usr/local/include/freetype2")
 		buildoptions { "-Wall -x c++ -std=c++11" }
 		
 		if(clang_libcxx) then
 			buildoptions { "-stdlib=libc++ -integrated-as" }
 			buildoptions { "-Weverything" }
-			buildoptions { "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-header-hygiene -Wno-gnu -Wno-float-equal }
-			buildoptions { "-Wno-documentation -Wno-system-headers -Wno-global-constructors -Wno-padded -Wno-packed }
+			buildoptions { "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-header-hygiene -Wno-gnu -Wno-float-equal" }
+			buildoptions { "-Wno-documentation -Wno-system-headers -Wno-global-constructors -Wno-padded -Wno-packed" }
 			buildoptions { "-Wno-switch-enum -Wno-sign-conversion -Wno-conversion -Wno-exit-time-destructors" }
 			-- buildoptions { "-Wno-delete-non-virtual-dtor -Wno-overloaded-virtual -Wunreachable-code -Wdangling-else" }
 			linkoptions { "-fvisibility=default" }
@@ -129,7 +138,7 @@ project "a2elight"
 		end
 		if(mingw) then
 			defines { "__WINDOWS__", "MINGW" }
-			includedirs { "/mingw/include" }
+			add_include("/mingw/include")
 			libdirs { "/usr/lib", "/usr/local/lib" }
 			buildoptions { "-Wno-unknown-pragmas" }
 		end
@@ -155,7 +164,8 @@ project "a2elight"
 			buildoptions { "`sdl2-config --cflags | sed -E 's/-Dmain=SDL_main//g'`" }
 			linkoptions { "`sdl2-config --libs`" }
 		end
-		includedirs { "/usr/include/SDL2", "/usr/local/include/SDL2" }
+		add_include("/usr/include/SDL2")
+		add_include("/usr/local/include/SDL2")
 
 		if(gcc_compat) then
 			if(not mingw) then
@@ -171,6 +181,9 @@ project "a2elight"
 			postbuildcommands { "./../install.sh" }
 		end
 	end
+
+	-- set system includes
+	includedirs { ". "..system_includes }
 
 	-- prefer system platform
 	if(platform == "x64") then
