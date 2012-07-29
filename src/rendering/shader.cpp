@@ -481,18 +481,18 @@ void shader::log_pretty_print(const char* log, const char* code) const {
 	vector<string> code_lines = core::tokenize(string(code), '\n');
 	for(const string& line : lines) {
 		if(line.size() == 0) continue;
-		a2e_log("## \033[31m%s\\E[m", line);
+		a2e_log("## \033[31m%s\033[m", line);
 		
 		// find code line and print it (+/- 1 line)
 		if(regex_match(line, regex_result, rx_log_line)) {
 			const size_t src_line_num = string2size_t(regex_result[1]) - 1;
 			if(src_line_num < code_lines.size()) {
 				if(src_line_num != 0) {
-					a2e_log("\033[37m%s\\E[m", code_lines[src_line_num-1]);
+					a2e_log("\033[37m%s\033[m", code_lines[src_line_num-1]);
 				}
-				a2e_log("\033[31m%s\\E[m", code_lines[src_line_num]);
+				a2e_log("\033[31m%s\033[m", code_lines[src_line_num]);
 				if(src_line_num+1 < code_lines.size()) {
-					a2e_log("\033[37m%s\\E[m", code_lines[src_line_num+1]);
+					a2e_log("\033[37m%s\033[m", code_lines[src_line_num+1]);
 				}
 			}
 			a2e_log("");

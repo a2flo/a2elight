@@ -59,7 +59,7 @@ void logger::prepare_log(stringstream& buffer, const LOG_TYPE& type, const char*
 			case LT_ERROR:
 			case LT_DEBUG:
 			case LT_MSG:
-				buffer << "\\E[m";
+				buffer << "\033[m";
 				break;
 			case LT_NONE: break;
 		}

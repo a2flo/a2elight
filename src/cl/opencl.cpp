@@ -1377,8 +1377,9 @@ string opencl::platform_vendor_to_str(const OPENCL_PLATFORM_VENDOR pvendor) cons
 		case CLPV_INTEL: return "INTEL";
 		case CLPV_AMD: return "AMD";
 		case CLPV_APPLE: return "APPLE";
-		case CLPV_UNKNOWN: return "UNKNOWN";
+		case CLPV_UNKNOWN: break;
 	}
+	return "UNKNOWN";
 }
 
 #endif
