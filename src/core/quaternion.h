@@ -26,7 +26,7 @@ template <typename T> class quaternion;
 typedef quaternion<float> quaternionf;
 typedef quaternion<double> quaterniond;
 
-#ifdef __clang__
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpacked"
 #endif
@@ -246,8 +246,8 @@ template<typename T> void quaternion<T>::from_euler(const vector3<T>& v) {
 extern template class quaternion<float>;
 extern template class quaternion<double>;
 #endif
-
-#ifdef __clang__
+		
+#if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 

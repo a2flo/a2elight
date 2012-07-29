@@ -134,15 +134,15 @@ string core::strip_path(const string& in_path) {
 	size_t pos = 0, erase_pos;
 	while((pos = path.find("../", 0)) != string::npos) {
 		erase_pos = path.rfind("/", pos-2);
-#ifdef __WINDOWS__
+#if defined(__WINDOWS__)
 		if(erase_pos == string::npos) erase_pos = path.rfind("\\", pos-2);
 #endif
 		if(erase_pos != string::npos) {
 			path.erase(erase_pos+1, pos+2-erase_pos);
 		}
 	}
-
-#ifdef __WINDOWS__ // additional windows path handling
+	
+#if defined(__WINDOWS__) // additional windows path handling
 	pos = 0;
 	while((pos = path.find("..\\", 0)) != string::npos) {
 		erase_pos = path.rfind("/", pos-2);
@@ -223,7 +223,7 @@ map<string, file_io::FILE_TYPE> core::get_file_list(const string& directory, con
 	size_t pos;
 
 	// get file list (os specific)
-#ifdef __WINDOWS__
+#if defined(__WINDOWS__)
 	struct _finddata_t c_file;
 	intptr_t h_file;
 	

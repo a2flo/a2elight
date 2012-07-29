@@ -32,7 +32,7 @@
 #include <direct.h>
 
 // defines
-#ifndef __WINDOWS__
+#if !defined(__WINDOWS__)
 #define __WINDOWS__ 1
 #endif
 
@@ -81,7 +81,7 @@
 
 
 // general includes
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_cpuinfo.h>

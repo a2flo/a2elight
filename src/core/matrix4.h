@@ -31,7 +31,7 @@ typedef matrix4<bool> matrix4b;
 
 template <typename T> class vector4;
 
-#ifdef __clang__
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpacked"
 #endif
@@ -415,7 +415,7 @@ extern template class matrix4<unsigned int>;
 extern template class matrix4<bool>;
 #endif
 
-#ifdef __clang__
+#if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 

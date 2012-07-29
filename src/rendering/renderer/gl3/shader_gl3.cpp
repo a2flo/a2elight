@@ -87,7 +87,7 @@ a2e_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s
 // shader_gl3 functions
 shader_gl3::shader_gl3(const shader_object& shd_obj_) : shader_base<shader_gl3>(shd_obj_) {
 	use(0);
-#if A2E_DEBUG
+#if defined(A2E_DEBUG)
 	if(shd_obj.programs.size() == 0) {
 		a2e_error("shader \"%s\" has no programs!", shd_obj.name.c_str());
 	}
@@ -120,7 +120,7 @@ void shader_gl3::use() {
 void shader_gl3::use(const size_t& program) {
 	shader_base::use(program);
 	glUseProgram(shd_obj.programs[cur_program]->program);
-#if A2E_DEBUG
+#if defined(A2E_DEBUG)
 	if(shd_obj.programs.size() == 0) {
 		a2e_error("no program #%u exists in shader \"%s\"!", program, shd_obj.name.c_str());
 	}
@@ -138,7 +138,7 @@ void shader_gl3::use(const string& option, const set<string> combiners) {
 													 [](string& ret, const string& in) {
 														 return ret + in;
 													 }));
-#if A2E_DEBUG
+#if defined(A2E_DEBUG)
 	if(shd_obj.options.count(combined_option) == 0) {
 		a2e_error("no option \"%s\" exists in shader \"%s\"!", combined_option, shd_obj.name);
 		return;
@@ -474,7 +474,7 @@ void shader_gl3::uniform(const char* name, const matrix4f* arg1, const size_t& c
 
 void shader_gl3::set_texture(const char* name, const GLuint& tex, const GLenum& texture_type) const {
 	A2E_CHECK_UNIFORM_EXISTENCE(name);
-#if A2E_DEBUG
+#if defined(A2E_DEBUG)
 	// check texture number (0 == uninitialized)
 	if(tex == 0) {
 		a2e_error("invalid texture number %u for texture uniform \"%s\" (in shader \"%s\")!", tex, name, shd_obj.name.c_str());
@@ -491,7 +491,7 @@ void shader_gl3::set_texture(const char* name, const GLuint& tex, const GLenum& 
 #endif
 	
 	const size_t tex_num = shd_obj.programs[cur_program]->samplers.find(name)->second;
-#if A2E_DEBUG
+#if defined(A2E_DEBUG)
 	if(tex_num >= 32) {
 		a2e_error("invalid texture number #%u for texture uniform \"%s\" - only 32 textures are allowed (in shader \"%s\")!", tex_num, name, shd_obj.name.c_str());
 	}

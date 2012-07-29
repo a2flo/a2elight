@@ -30,7 +30,7 @@
 #define ProcType GLubyte*
 #endif
 
-#ifndef __APPLE__
+#if !defined(__APPLE__)
 OGL_API PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC _glRenderbufferStorageMultisampleCoverageNV_ptr = nullptr; // NV_framebuffer_multisample_coverage
 
 #if !defined(__LINUX__)
@@ -517,7 +517,7 @@ template <size_t N> void a2e_null_func() {
 }
 
 void ext::check_gl_funcs() {
-#ifndef __APPLE__
+#if !defined(__APPLE__)
 #if !defined(__LINUX__) && !defined(WIN_UNIXENV) // TODO: make this work under linux/cygwin/gcc/clang (-> real dummy functions)
 	if(_glRenderbufferStorageMultisampleCoverageNV_ptr == nullptr) _glRenderbufferStorageMultisampleCoverageNV_ptr = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)a2e_null_func<0>;
 	if(_glBlendColor_ptr == nullptr) _glBlendColor_ptr = (PFNGLBLENDCOLORPROC)a2e_null_func<1>;
@@ -976,7 +976,7 @@ void ext::check_gl_funcs() {
 
 // gl funcs init, get proc address
 void ext::init_gl_funcs() {
-#ifndef __APPLE__
+#if !defined(__APPLE__)
 	_glRenderbufferStorageMultisampleCoverageNV_ptr = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)glGetProcAddress((ProcType)"glRenderbufferStorageMultisampleCoverageNV"); // NV_framebuffer_multisample_coverage
 	
 #if !defined(__LINUX__)

@@ -36,7 +36,7 @@ typedef vector4<bool> bool4;
 typedef vector4<size_t> size4;
 typedef vector4<ssize_t> ssize4;
 
-#ifdef __clang__
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-compare"
 #pragma clang diagnostic ignored "-Wpacked"
@@ -250,8 +250,8 @@ extern template class vector4<bool>;
 extern template class vector4<size_t>;
 extern template class vector4<ssize_t>;
 #endif
-
-#ifdef __clang__
+		
+#if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 

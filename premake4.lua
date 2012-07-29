@@ -146,6 +146,11 @@ project "a2elight"
 	end
 	
 	if(os.is("linux") or os.is("bsd") or win_unixenv) then
+		add_include("/usr/include/SDL2")
+		add_include("/usr/local/include/SDL2")
+		-- set system includes
+		buildoptions { system_includes }
+		
 		links { "OpenCL", "freetype" }
 		libdirs { os.findlib("GL"), os.findlib("xml2"), os.findlib("OpenCL") }
 		if(not win_unixenv) then
@@ -165,8 +170,6 @@ project "a2elight"
 			buildoptions { "`sdl2-config --cflags | sed -E 's/-Dmain=SDL_main//g'`" }
 			linkoptions { "`sdl2-config --libs`" }
 		end
-		add_include("/usr/include/SDL2")
-		add_include("/usr/local/include/SDL2")
 
 		if(gcc_compat) then
 			if(not mingw) then
@@ -183,8 +186,6 @@ project "a2elight"
 		end
 	end
 
-	-- set system includes
-	buildoptions { system_includes }
 
 	-- prefer system platform
 	if(platform == "x64") then

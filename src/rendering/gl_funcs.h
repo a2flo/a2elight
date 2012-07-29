@@ -21,7 +21,7 @@
 
 #include "global.h"
 
-#ifndef __APPLE__
+#if !defined(__APPLE__)
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 #define GL_RENDERBUFFER_COVERAGE_SAMPLES_NV 0x8CAB

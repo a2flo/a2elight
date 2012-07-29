@@ -134,7 +134,7 @@ buffer(stringstream::in | stringstream::out)
 	build_options += " -cl-denorms-are-zero";
 	build_options += " -w";
 	
-#ifndef __APPLE__
+#if defined(__APPLE__)
 	//nv_build_options = " -cl-nv-verbose";
 	//nv_build_options = " -check-kernel-functions";
 	//nv_build_options += " -nvptx-mad-enable -inline-all";
@@ -144,10 +144,10 @@ buffer(stringstream::in | stringstream::out)
 	
 	// clear opencl cache
 	if(clear_cache) {
-#ifdef __APPLE__
+#if defined(__APPLE__)
 		system("rm -R ~/Library/Caches/com.apple.opencl > /dev/null 2>&1");
 		// TODO: delete app specific cache (~/Library/Caches/$identifier/com.apple.opencl)
-#elif __WINDOWS__
+#elif defined(__WINDOWS__)
 		// TODO: find it (/Users/$user/AppData/Roaming/NVIDIA/ComputeCache)
 #else
 		system("rm -R ~/.nv/ComputeCache > /dev/null 2>&1");
@@ -200,7 +200,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			a2e_debug("%u opencl device%s found!", internal_devices.size(), (internal_devices.size() > 1 ? "s" : ""));
 		}
 		
-#ifdef __APPLE__
+#if defined(__APPLE__)
 		platform_vendor = CLPV_APPLE;
 		
 		cl_context_properties cl_properties[] = {
@@ -215,7 +215,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		
 #else
 		// context with gl share group (cl/gl interop)
-#if __WINDOWS__
+#if defined(__WINDOWS__)
 		cl_context_properties cl_properties[] = {
 			CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platform_index](),
 			CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
@@ -536,10 +536,8 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 	}
 	string kernel_data(buffer.str());
 	
-//#ifdef __APPLE__
 	// work around caching bug and modify source on each load, TODO: check if this still exists (still present in 10.6.2)
 	kernel_data = "#define __" + core::str_to_upper(func_name) +  "_BUILD_TIME__ " + uint2string((unsigned int)time(nullptr)) + "\n" + kernel_data;
-//#endif
 	
 	// check if this is an external kernel (and hasn't been added before)
 	if(external_kernels.count(identifier) == 0 &&
@@ -568,13 +566,13 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 			options += (additional_options[0] != ' ' ? " " : "") + additional_options;
 		}
 		
-#ifdef __APPLE__
+#if defined(__APPLE__)
 		//options += " -D__APPLE__"; // not necessary any more
 #else
 		// workaround for the nvidia compiler which apparently defines __APPLE__
 		options += " -DUNDEF__APPLE__";
 #endif
-#ifdef __WINDOWS__
+#if defined(__WINDOWS__)
 		options += " -D__WINDOWS__"; // TODO: still necessary?
 #endif
 		
@@ -705,7 +703,7 @@ void opencl::log_program_binary(const kernel_object* kernel) {
 					bin_file.flush();
 					bin_file.close();
 					
-#ifdef __APPLE__
+#if defined(__APPLE__)
 					// this is a real elf binary on 10.7 now ...
 					//system(("plutil -convert xml1 "+file_name).c_str());
 #endif

@@ -30,7 +30,7 @@
 #include "rendering/gles_compat.h"
 #endif
 
-#ifndef __APPLE__
+#if !defined(__APPLE__)
 #define A2E_DEFINE_EXTENSIONS
 #endif
 

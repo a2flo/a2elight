@@ -473,7 +473,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 }
 
 void shader::log_pretty_print(const char* log, const char* code) const {
-#ifdef __APPLE__
+#if defined(__APPLE__)
 	static const regex rx_log_line("\\w+: 0:(\\d+):.*");
 	smatch regex_result;
 	

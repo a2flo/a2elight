@@ -35,7 +35,7 @@ typedef vector2<unsigned int> pnt;
 typedef vector2<int> ipnt;
 typedef vector2<float> coord;
 
-#ifdef __clang__
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-compare"
 #pragma clang diagnostic ignored "-Wpacked"
@@ -279,8 +279,8 @@ extern template class vector2<bool>;
 extern template class vector2<size_t>;
 extern template class vector2<ssize_t>;
 #endif
-
-#ifdef __clang__
+		
+#if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 

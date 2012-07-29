@@ -41,14 +41,14 @@ conditions({
 #endif
 	},
 	{ "WINDOWS",
-#ifdef __WINDOWS__
+#if defined(__WINDOWS__)
 		true
 #else
 		false
 #endif
 	},
 	{ "LINUX",
-#ifdef __LINUX__
+#if defined(__LINUX__)
 		true
 #else
 		false

@@ -236,7 +236,7 @@ public:
 	}
 	
 	size_t get_attribute_position(const char* name) const {
-#if A2E_DEBUG
+#if defined(A2E_DEBUG)
 		if(shd_obj.programs.size() <= cur_program) {
 			a2e_error("invalid program #%u!", cur_program);
 			return 0;
@@ -250,7 +250,7 @@ public:
 	}
 	
 	size_t get_uniform_position(const char* name) const {
-#if A2E_DEBUG
+#if defined(A2E_DEBUG)
 		if(shd_obj.programs.size() <= cur_program) {
 			a2e_error("invalid program #%u!", cur_program);
 			return 0;
@@ -264,7 +264,7 @@ public:
 	}
 	
 	size_t get_block_position(const char* name) const {
-#if A2E_DEBUG
+#if defined(A2E_DEBUG)
 		if(shd_obj.programs.size() <= cur_program) {
 			a2e_error("invalid program #%u!", cur_program);
 			return 0;

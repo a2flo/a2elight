@@ -29,7 +29,7 @@
 #endif
 
 // dll main for windows dll export
-#ifdef __WINDOWS__
+#if defined(__WINDOWS__)
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
 	switch(ul_reason_for_call) {
 		case DLL_PROCESS_ATTACH:
@@ -51,8 +51,8 @@ engine::engine(const char* callpath_, const char* datapath_) {
 	engine::callpath = callpath_;
 	engine::datapath = callpath_;
 	engine::rel_datapath = datapath_;
-
-#ifndef __WINDOWS__
+	
+#if !defined(__WINDOWS__)
 	const char dir_slash = '/';
 #else
 	const char dir_slash = '\\';
@@ -158,7 +158,7 @@ void engine::create() {
 
 #endif
 	
-#ifdef __APPLE__
+#if defined(__APPLE__)
 	// check if datapath contains a 'MacOS' string (indicates that the binary is called from within an OS X .app or via complete path from the shell)
 	if(datapath.find("MacOS") != string::npos) {
 		// if so, add "../../../" to the datapath, since we have to relocate the datapath if the binary is inside an .app
