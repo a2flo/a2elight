@@ -114,6 +114,7 @@ project "a2elight"
 			buildoptions { "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-header-hygiene -Wno-gnu -Wno-float-equal" }
 			buildoptions { "-Wno-documentation -Wno-system-headers -Wno-global-constructors -Wno-padded -Wno-packed" }
 			buildoptions { "-Wno-switch-enum -Wno-sign-conversion -Wno-conversion -Wno-exit-time-destructors" }
+			buildoptions { "-Wunknown-warning-option" }
 			-- buildoptions { "-Wno-delete-non-virtual-dtor -Wno-overloaded-virtual -Wunreachable-code -Wdangling-else" }
 			linkoptions { "-fvisibility=default" }
 			defines { "A2E_EXPORT=1" }
@@ -183,7 +184,7 @@ project "a2elight"
 	end
 
 	-- set system includes
-	includedirs { ". "..system_includes }
+	buildoptions { system_includes }
 
 	-- prefer system platform
 	if(platform == "x64") then

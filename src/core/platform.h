@@ -64,7 +64,7 @@
 #pragma warning(disable: 4503) // srsly microsoft? this ain't the '80s ...
 
 // Mac OS X
-#elif __APPLE__
+#elif defined(__APPLE__)
 #include <dirent.h>
 #define A2E_API
 
