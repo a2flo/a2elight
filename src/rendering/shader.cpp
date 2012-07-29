@@ -532,6 +532,7 @@ bool shader::load_internal_shaders() {
 		// inferred rendering
 		{ "IR_GP_GBUFFER", "inferred/gp_gbuffer.a2eshd" },
 		{ "IR_GP_GBUFFER_PARALLAX", "inferred/gp_gbuffer_parallax.a2eshd" },
+		{ "IR_LP_STENCIL", "inferred/lp_stencil.a2eshd" },
 		{ "IR_LP_PHONG", "inferred/lp_phong.a2eshd" },
 		{ "IR_LP_ASHIKHMIN_SHIRLEY", "inferred/lp_ashikhmin_shirley.a2eshd" },
 		{ "IR_MP_DIFFUSE", "inferred/mp_diffuse.a2eshd" },

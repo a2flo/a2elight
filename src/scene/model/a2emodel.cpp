@@ -370,13 +370,13 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<string>& combiners) {
 	const rtt::fbo* cur_buffer = e->get_rtt()->get_current_buffer();
 	const float2 screen_size = float2(float(cur_buffer->width), float(cur_buffer->height));
-	shd->uniform("screen_size", screen_size);
 	
 	if(option == "opaque") {
 		shd->texture("light_buffer_diffuse", l_buffer->tex[0]);
 		shd->texture("light_buffer_specular", l_buffer->tex[1]);
 	}
 	else if(option == "alpha") {
+		shd->uniform("screen_size", screen_size); // TODO: remove this in shader
 		shd->texture("light_buffer_diffuse", l_buffer->tex[0]);
 		shd->texture("light_buffer_specular", l_buffer->tex[1]);
 		

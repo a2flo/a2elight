@@ -199,7 +199,8 @@ void particle_manager_cl::reset_particle_system(particle_system* ps) {
 	cl->set_kernel_argument(10, pdata->ocl_pos_time_buffer);
 	cl->set_kernel_argument(11, pdata->ocl_dir_buffer);
 	//cl->set_kernel_range(pdata->ocl_range_global, init_range_local);
-	cl->set_kernel_range(pdata->ocl_range_global, cl::NDRange(std::min((size_t)256, init_range_local[0]))); // TODO: compute local ws size
+	cl->set_kernel_range(pdata->ocl_range_global,
+						 cl::NDRange(std::min((unsigned long long int)std::min((size_t)256, init_range_local[0]), pdata->particle_count))); // TODO: compute local ws size
 	cl->run_kernel();
 	
 	cl->release_gl_object(pdata->ocl_pos_time_buffer);
@@ -235,7 +236,8 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 		cl->set_kernel_argument(10, pdata->ocl_pos_time_buffer);
 		cl->set_kernel_argument(11, pdata->ocl_dir_buffer);
 		//cl->set_kernel_range(pdata->ocl_range_global, respawn_range_local);
-		cl->set_kernel_range(pdata->ocl_range_global, cl::NDRange(std::min((size_t)256, respawn_range_local[0]))); // TODO: compute local ws size
+		cl->set_kernel_range(pdata->ocl_range_global,
+							 cl::NDRange(std::min((unsigned long long int)std::min((size_t)256, respawn_range_local[0]), pdata->particle_count))); // TODO: compute local ws size
 		cl->run_kernel();
 		
 		pdata->reinit_timer = SDL_GetTicks();
@@ -256,7 +258,8 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 		cl->set_kernel_argument(3, (float4)ps->get_gravity());
 		cl->set_kernel_argument(4, pdata->ocl_pos_time_buffer);
 		cl->set_kernel_argument(5, pdata->ocl_dir_buffer);
-		cl->set_kernel_range(pdata->ocl_range_global, compute_range_local);
+		cl->set_kernel_range(pdata->ocl_range_global,
+							 cl::NDRange(std::min((unsigned long long int)compute_range_local[0], pdata->particle_count)));
 		cl->run_kernel();
 
 		pdata->step_timer = SDL_GetTicks();
@@ -325,7 +328,8 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		cl->set_kernel_argument(arg_num++, camera_pos);
 		cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
 		cl::NDRange compute_distances_global(pdata->particle_count);
-		cl->set_kernel_range(compute_distances_global, compute_distances_local);
+		cl->set_kernel_range(compute_distances_global,
+							 cl::NDRange(std::min((unsigned long long int)compute_distances_local[0], pdata->particle_count)));
 		cl->run_kernel();
 		
 		// first sorting step
@@ -336,7 +340,8 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		cl->set_kernel_argument(arg_num++, pdata->ocl_indices[1 - pdata->particle_indices_swap]);
 		cl::NDRange sort_local1_local(local_size_limit / 2);
 		cl::NDRange sort_local1_global(pdata->particle_count / 2);
-		cl->set_kernel_range(sort_local1_global, sort_local1_local);
+		cl->set_kernel_range(sort_local1_global,
+							 cl::NDRange(std::min((unsigned long long int)sort_local1_local[0], pdata->particle_count)));
 		cl->run_kernel();
 		
 		// this is not needed any more, release it
@@ -395,7 +400,8 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 				cl::NDRange merge_global_global(pdata->particle_count / 2);
 				//cl::NDRange merge_global_local(256); // TODO: compute this
 				cl::NDRange merge_global_local(local_size_limit / 2);
-				cl->set_kernel_range(merge_global_global, merge_global_local);
+				cl->set_kernel_range(merge_global_global,
+									 cl::NDRange(std::min((unsigned long long int)merge_global_local[0], pdata->particle_count)));
 				cl->run_kernel();
 				overall_global_size += merge_global_global[0];
 			}
@@ -411,7 +417,8 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 				
 				cl::NDRange merge_local_local(local_size_limit / 2);
 				cl::NDRange merge_local_global(pdata->particle_count / 2);
-				cl->set_kernel_range(merge_local_global, merge_local_local);
+				cl->set_kernel_range(merge_local_global,
+									 cl::NDRange(std::min((unsigned long long int)merge_local_local[0], pdata->particle_count)));
 				cl->run_kernel();
 				overall_global_size += merge_local_global[0];
 				break;

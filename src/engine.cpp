@@ -22,6 +22,7 @@
 #include "gui/gui.h"
 #include "rendering/gfx2d.h"
 #include "scene/scene.h"
+#include "rendering/gl_timer.h"
 
 #if defined(__APPLE__)
 #include "osx/osx_helper.h"
@@ -102,14 +103,15 @@ engine::~engine() {
 	if(exts != nullptr) delete exts;
 	if(x != nullptr) delete x;
 	if(u != nullptr) delete u;
-	if(ocl != nullptr) delete ocl;
 	if(shd != nullptr) delete shd;
 	if(ui != nullptr) delete ui;
 	if(sce != nullptr) delete sce;
+	if(ocl != nullptr) delete ocl;
 	
 	// delete this at the end, b/c other classes will remove event handlers
 	if(e != nullptr) delete e;
 	
+	gl_timer::destroy();
 	release_gl_context();
 
 	a2e_debug("engine object deleted");
@@ -438,6 +440,9 @@ void engine::init(const char* ico) {
 	}
 #endif
 	
+	//
+	gl_timer::init();
+	
 	int tmp = 0;
 	SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &tmp);
 	a2e_debug("double buffering %s", tmp == 1 ? "enabled" : "disabled");
@@ -559,11 +564,16 @@ void engine::init(const char* ico) {
 #endif
 	}
 	
-	// set dpi lower bound to 72
-	if(config.dpi < 72) config.dpi = 72;
+#if !defined(A2E_NO_OPENCL)
+	// init opencl
+	ocl->init(false, config.opencl_platform);
+#endif
 	
 	// create scene
 	sce = new scene(this);
+	
+	// set dpi lower bound to 72
+	if(config.dpi < 72) config.dpi = 72;
 	
 	// create gui
 	if(config.ui_anti_aliasing > 2) config.ui_anti_aliasing = core::next_pot((unsigned int)config.ui_anti_aliasing);
@@ -574,11 +584,6 @@ void engine::init(const char* ico) {
 	}
 	else a2e_debug("using \"%ux\" gui anti-aliasing", config.ui_anti_aliasing);
 	ui = new gui(this);
-	
-#if !defined(A2E_NO_OPENCL)
-	// init opencl
-	ocl->init(false, config.opencl_platform);
-#endif
 	
 	release_gl_context();
 }
@@ -605,6 +610,9 @@ void engine::set_height(unsigned int height) {
  */
 void engine::start_draw() {
 	acquire_gl_context();
+	gl_timer::stop_frame();
+	gl_timer::state_check();
+	gl_timer::start_frame();
 	
 	// draws ogl stuff
 	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
@@ -694,6 +702,7 @@ void engine::stop_draw() {
 #endif
 	}
 	
+	gl_timer::mark("FRAME_END");
 	release_gl_context();
 }
 
@@ -740,13 +749,15 @@ void engine::init_gl() {
 	// enable depth testing
 	glEnable(GL_DEPTH_TEST);
 	// less/equal depth test
-	glDepthFunc(GL_LEQUAL);
+	glDepthFunc(GL_LESS);
 	// enable backface culling
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glDisable(GL_STENCIL_TEST);
 	
 #if !defined(A2E_IOS)
 	//
@@ -1205,7 +1216,9 @@ const string engine::get_version() const {
 }
 
 void engine::swap() {
+	gl_timer::mark("SWAP_START");
 	SDL_GL_SwapWindow(config.wnd);
+	gl_timer::mark("SWAP_END");
 }
 
 void engine::push_projection_matrix() {

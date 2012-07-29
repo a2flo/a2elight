@@ -107,6 +107,8 @@
 		5CA9BB5F14F18153004B7851 /* gui_theme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA9BB5914F18153004B7851 /* gui_theme.cpp */; };
 		5CA9BB6014F18153004B7851 /* gui_theme.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CA9BB5A14F18153004B7851 /* gui_theme.h */; };
 		5CBF520B123458FD00971741 /* texture_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CBF520A123458FD00971741 /* texture_object.h */; };
+		5CC74A3415C192B5003A602B /* gl_timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CC74A3215C192B5003A602B /* gl_timer.cpp */; };
+		5CC74A3515C192B5003A602B /* gl_timer.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CC74A3315C192B5003A602B /* gl_timer.h */; };
 		5CC97E3E1501677200AB0D95 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3C1501677200AB0D95 /* SDL2.framework */; };
 		5CC97E3F1501677200AB0D95 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3D1501677200AB0D95 /* SDL2_image.framework */; };
 		5CCAF697153A3DDB0084D604 /* font_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CCAF693153A3DDB0084D604 /* font_manager.cpp */; };
@@ -227,6 +229,8 @@
 		5CA9BB6814F183E2004B7851 /* gles_compat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gles_compat.h; sourceTree = "<group>"; };
 		5CBCBF52158C139E007A661C /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		5CBF520A123458FD00971741 /* texture_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture_object.h; sourceTree = "<group>"; };
+		5CC74A3215C192B5003A602B /* gl_timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gl_timer.cpp; sourceTree = "<group>"; };
+		5CC74A3315C192B5003A602B /* gl_timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gl_timer.h; sourceTree = "<group>"; };
 		5CC97E3C1501677200AB0D95 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Library/Frameworks/SDL2.framework; sourceTree = SDKROOT; };
 		5CC97E3D1501677200AB0D95 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Library/Frameworks/SDL2_image.framework; sourceTree = SDKROOT; };
 		5CCAF693153A3DDB0084D604 /* font_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = font_manager.cpp; sourceTree = "<group>"; };
@@ -410,6 +414,8 @@
 				5C08D66C152F45660066381D /* gfx2d.h */,
 				5C397617123189750075C168 /* gl_funcs.cpp */,
 				5C397618123189750075C168 /* gl_funcs.h */,
+				5CC74A3215C192B5003A602B /* gl_timer.cpp */,
+				5CC74A3315C192B5003A602B /* gl_timer.h */,
 				5C397627123189750075C168 /* rtt.cpp */,
 				5C397628123189750075C168 /* rtt.h */,
 				5C397629123189750075C168 /* shader.cpp */,
@@ -589,6 +595,7 @@
 				5CCAF69A153A3DDB0084D604 /* font.h in Headers */,
 				5C1AC47A157410460011CC41 /* quaternion.h in Headers */,
 				5C03756515A465350030C37B /* osx_helper.h in Headers */,
+				5CC74A3515C192B5003A602B /* gl_timer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -702,6 +709,7 @@
 				5CCAF699153A3DDB0084D604 /* font.cpp in Sources */,
 				5C1AC479157410460011CC41 /* quaternion.cpp in Sources */,
 				5C03756615A465350030C37B /* osx_helper.mm in Sources */,
+				5CC74A3415C192B5003A602B /* gl_timer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

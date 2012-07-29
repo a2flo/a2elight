@@ -21,6 +21,7 @@
 #include "rendering/shader.h"
 #include "rendering/gfx2d.h"
 #include "scene/scene.h"
+#include "rendering/gl_timer.h"
 
 gui::gui(engine* e_) :
 thread_base("gui"),
@@ -91,11 +92,13 @@ void gui::reload_shaders() {
 }
 
 void gui::draw() {
+	gl_timer::mark("GUI_START");
 	// draw to gui buffer
 	r->start_draw(main_fbo);
 	r->clear();
 	r->start_2d_draw();
 	glEnable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 	
 	// draw everything else (pre ui)
@@ -111,6 +114,7 @@ void gui::draw() {
 	}
 	
 	// stop
+	glDepthFunc(GL_LESS);
 	glDisable(GL_BLEND);
 	r->stop_2d_draw();
 	r->stop_draw();
@@ -129,6 +133,7 @@ void gui::draw() {
 	blend_shd->disable();
 	
 	e->stop_2d_draw();
+	gl_timer::mark("GUI_END");
 }
 
 void gui::run() {

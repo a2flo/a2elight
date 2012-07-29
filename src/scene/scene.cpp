@@ -18,6 +18,13 @@
 
 #include "scene.h"
 #include "particle/particle.h"
+#include "rendering/gl_timer.h"
+
+#if defined(A2E_INFERRED_RENDERING_CL)
+constexpr size_t scene::frame_buffers::cl_frame_buffers::max_ir_lights;
+#endif
+
+//#define A2E_COPY_DEPTH_BUFFER 1
 
 /*! scene constructor
  */
@@ -33,9 +40,9 @@ window_handler(this, &scene::window_event_handler)
 	e->get_event()->add_internal_event_handler(window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
 	// load light objects/models
-	// TODO: !!! use simpler model!
 	light_sphere = (a2estatic*)create_a2emodel<a2estatic>();
 	light_sphere->load_model(e->data_path("light_sphere.a2m"));
+	light_sphere->set_hard_scale(1.07f, 1.07f, 1.07f);
 }
 
 /*! scene destructor
@@ -57,21 +64,40 @@ scene::~scene() {
 }
 
 void scene::delete_buffers(frame_buffers& buffers) {
+#if defined(A2E_INFERRED_RENDERING_CL)
+	if(buffers.cl.depth_copy_tex != 0) {
+		glDeleteBuffers(1, &buffers.cl.depth_copy_tex);
+		buffers.cl.depth_copy_tex = 0;
+	}
+	if(buffers.cl.depth_copy_fbo != 0) {
+		glDeleteFramebuffers(1, &buffers.cl.depth_copy_fbo);
+		buffers.cl.depth_copy_fbo = 0;
+	}
+	
+	if(buffers.cl.lights_buffer != nullptr) {
+		cl->delete_buffer(buffers.cl.lights_buffer);
+		buffers.cl.lights_buffer = nullptr;
+	}
+	if(buffers.cl._dbg_buffer != nullptr) {
+		cl->delete_buffer(buffers.cl._dbg_buffer);
+		buffers.cl._dbg_buffer = nullptr;
+	}
+	if(buffers.cl.geometry_buffer[0] != nullptr) cl->delete_buffer(buffers.cl.geometry_buffer[0]);
+	if(buffers.cl.geometry_buffer[1] != nullptr) cl->delete_buffer(buffers.cl.geometry_buffer[1]);
+	if(buffers.cl.depth_buffer[0] != nullptr) cl->delete_buffer(buffers.cl.depth_buffer[0]);
+	if(buffers.cl.depth_buffer[1] != nullptr) cl->delete_buffer(buffers.cl.depth_buffer[1]);
+	if(buffers.cl.light_buffer[0] != nullptr) cl->delete_buffer(buffers.cl.light_buffer[0]);
+	if(buffers.cl.light_buffer[1] != nullptr) cl->delete_buffer(buffers.cl.light_buffer[1]);
+	if(buffers.cl.light_buffer[2] != nullptr) cl->delete_buffer(buffers.cl.light_buffer[2]);
+	if(buffers.cl.light_buffer[3] != nullptr) cl->delete_buffer(buffers.cl.light_buffer[3]);
+#endif
+	
 	if(buffers.scene_buffer != nullptr) r->delete_buffer(buffers.scene_buffer);
 	if(buffers.fxaa_buffer != nullptr) r->delete_buffer(buffers.fxaa_buffer);
 	if(buffers.g_buffer[0] != nullptr) r->delete_buffer(buffers.g_buffer[0]);
 	if(buffers.l_buffer[0] != nullptr) r->delete_buffer(buffers.l_buffer[0]);
 	if(buffers.g_buffer[1] != nullptr) r->delete_buffer(buffers.g_buffer[1]);
 	if(buffers.l_buffer[1] != nullptr) r->delete_buffer(buffers.l_buffer[1]);
-	
-#if defined(A2E_INFERRED_RENDERING_CL)
-	if(buffers.cl_normal_nuv_buffer[0] != nullptr) cl->delete_buffer(buffers.cl_normal_nuv_buffer[0]);
-	if(buffers.cl_depth_buffer[0] != nullptr) cl->delete_buffer(buffers.cl_depth_buffer[0]);
-	if(buffers.cl_light_buffer[0] != nullptr) cl->delete_buffer(buffers.cl_light_buffer[0]);
-	if(buffers.cl_normal_nuv_buffer[1] != nullptr) cl->delete_buffer(buffers.cl_normal_nuv_buffer[1]);
-	if(buffers.cl_depth_buffer[1] != nullptr) cl->delete_buffer(buffers.cl_depth_buffer[1]);
-	if(buffers.cl_light_buffer[1] != nullptr) cl->delete_buffer(buffers.cl_light_buffer[1]);
-#endif
 }
 
 void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer_size, const bool create_alpha_buffer) {
@@ -92,10 +118,8 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	
 	// TODO: add 4xSSAA support -> downscale in shader (+enable in engine)
 	
-	// figure out the target type (multi-sampled or not)
-	GLenum target = GL_TEXTURE_2D;
-	
 	//
+	GLenum target = GL_TEXTURE_2D;
 	GLint rgba16_float_internal_format = GL_RGBA16F;
 	GLenum f16_format_type = GL_HALF_FLOAT;
 	
@@ -114,7 +138,9 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	uint2 render_buffer_size = uint2(inferred_scale);
 	if(render_buffer_size.x % 2 == 1) render_buffer_size.x++;
 	if(render_buffer_size.y % 2 == 1) render_buffer_size.y++;
-	const uint2 final_buffer_size = uint2(buffer_size);
+	uint2 final_buffer_size = uint2(buffer_size);
+	if(final_buffer_size.x % 2 == 1) final_buffer_size.x++;
+	if(final_buffer_size.y % 2 == 1) final_buffer_size.y++;
 	
 	const float aa_scale = r->get_anti_aliasing_scale(e->get_anti_aliasing());
 	
@@ -122,22 +148,40 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	// note that depth must be a 2d texture, because we will read it later inside a shader
 	// also: opaque gbuffer doesn't need an additional id buffer
 	buffers.g_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
-										  filters, taas, wraps, wraps, internal_formats, formats,
-										  types, 1, rtt::DT_TEXTURE_2D);
+										filters, taas, wraps, wraps, internal_formats, formats,
+										types, 1, rtt::DT_TEXTURE_2D, rtt::ST_STENCIL_8);
 	if(create_alpha_buffer) {
 #if !defined(A2E_IOS) // TODO: think of a workaround for this
 		buffers.g_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
 											filters, taas, wraps, wraps, internal_formats, formats,
-											types, 2, rtt::DT_TEXTURE_2D);
+											types, 2, rtt::DT_TEXTURE_2D, rtt::ST_STENCIL_8);
 #endif
 	}
 	else buffers.g_buffer[1] = nullptr;
 	
 	// create light buffer
+#if defined(A2E_COPY_DEPTH_BUFFER)
+	buffers.l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_TEXTURE_2D, rtt::ST_STENCIL_8);
+#else
 	buffers.l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
+	buffers.l_buffer[0]->depth_type = rtt::DT_TEXTURE_2D;
+	buffers.l_buffer[0]->stencil_type = rtt::ST_STENCIL_8;
+	buffers.l_buffer[0]->depth_attachment_type = GL_DEPTH_STENCIL_ATTACHMENT;
+	buffers.l_buffer[0]->depth_buffer = buffers.g_buffer[0]->depth_buffer;
+#endif
+	
 	if(create_alpha_buffer) {
 #if !defined(A2E_IOS)
+#if defined(A2E_COPY_DEPTH_BUFFER)
+		buffers.l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_TEXTURE_2D, rtt::ST_STENCIL_8);
+#else
 		buffers.l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
+		// TODO: this isn't correct, since a combination of both depth buffers is actually required
+		buffers.l_buffer[1]->depth_type = rtt::DT_TEXTURE_2D;
+		buffers.l_buffer[1]->stencil_type = rtt::ST_STENCIL_8;
+		buffers.l_buffer[1]->depth_attachment_type = GL_DEPTH_STENCIL_ATTACHMENT;
+		buffers.l_buffer[1]->depth_buffer = buffers.g_buffer[1]->depth_buffer;
+#endif
 #endif
 	}
 	else buffers.l_buffer[1] = nullptr;
@@ -147,6 +191,8 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 		// reuse the g-buffer depth buffer (performance and memory!)
 		buffers.scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
 		buffers.scene_buffer->depth_type = rtt::DT_TEXTURE_2D;
+		buffers.scene_buffer->stencil_type = rtt::ST_STENCIL_8;
+		buffers.scene_buffer->depth_attachment_type = GL_DEPTH_STENCIL_ATTACHMENT;
 		buffers.scene_buffer->depth_buffer = buffers.g_buffer[0]->depth_buffer;
 	}
 	else {
@@ -157,13 +203,31 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	buffers.fxaa_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_LINEAR, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
 	
 #if defined(A2E_INFERRED_RENDERING_CL)
-	buffers.cl_normal_nuv_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->tex[0]);
-	buffers.cl_depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->depth_buffer);
-	buffers.cl_light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[0]->tex[0]);
+	glGenFramebuffers(1, &buffers.cl.depth_copy_fbo); // doesn't need to be bound
+	glGenTextures(1, &buffers.cl.depth_copy_tex);
+	glBindTexture(GL_TEXTURE_2D, buffers.cl.depth_copy_tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, render_buffer_size.x, render_buffer_size.y, 0, GL_RED, GL_FLOAT, nullptr);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	buffers.cl.lights_buffer = cl->create_buffer(opencl::BT_READ, frame_buffers::cl_frame_buffers::max_ir_lights * sizeof(frame_buffers::cl_frame_buffers::ir_light), nullptr);
+	
+	buffers.cl._dbg_buffer = cl->create_buffer(opencl::BT_WRITE | opencl::BT_BLOCK_ON_READ, 921600*4, nullptr);
+	
+	buffers.cl.geometry_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->tex[0]);
+	buffers.cl.depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.cl.depth_copy_tex);
+	//buffers.cl_depth_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[0]->depth_buffer);
+	//buffers.cl_depth_buffer[0] = cl->create_ogl_image2d_renderbuffer(opencl::BT_READ, buffers.g_buffer[0]->depth_buffer);
+	buffers.cl.light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[0]->tex[0]);
+	buffers.cl.light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[0]->tex[1]);
 #if !defined(A2E_IOS)
-	buffers.cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->tex[0]);
+	/*buffers.cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->tex[0]);
 	buffers.cl_depth_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->depth_buffer);
-	buffers.cl_light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[1]->tex[0]);
+	buffers.cl_light_buffer[2] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[1]->tex[0]);
+	buffers.cl_light_buffer[3] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[1]->tex[1]);*/
 #endif
 #endif
 	
@@ -187,11 +251,14 @@ void scene::draw() {
 	// don't draw anything if scene isn't enabled
 	if(!enabled) return;
 	
+	gl_timer::mark("SCE_START");
 	// scene setup (run particle systems, ...)
 	setup_scene();
+	gl_timer::mark("SCE_SETUP");
 	
 	// sort transparency/alpha objects (+assign mask ids)
 	sort_alpha_objects();
+	gl_timer::mark("SCE_ALPHA_SORT");
 	
 	// TODO: stereo rendering
 	
@@ -235,10 +302,13 @@ void scene::draw() {
 		e->set_position(engine_pos.x, engine_pos.y, engine_pos.z);
 		e->set_rotation(engine_rot.x, engine_rot.y);
 	}
+	gl_timer::mark("ENV_PROBES");
 	
 	// render to actual scene frame buffers
 	geometry_pass(frames[0]);
+	gl_timer::mark("GEOM_PASS");
 	light_and_material_pass(frames[0]);
+	gl_timer::mark("SCE_END");
 }
 
 void scene::sort_alpha_objects() {
@@ -462,11 +532,6 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	rtt::fbo* scene_buffer = buffers.scene_buffer;
 	rtt::fbo* fxaa_buffer = buffers.fxaa_buffer;
 	rtt::fbo* l_buffer = buffers.l_buffer[0];
-#if defined(A2E_INFERRED_RENDERING_CL)
-	opencl::buffer_object** cl_normal_nuv_buffer = buffers.cl_normal_nuv_buffer;
-	opencl::buffer_object** cl_depth_buffer = buffers.cl_depth_buffer;
-	opencl::buffer_object** cl_light_buffer = buffers.cl_light_buffer;
-#endif
 	
 	// some parameters required both by the shader and the opencl version
 	// compute projection constants (necessary to reconstruct world pos)
@@ -497,69 +562,148 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 	
+	// shader init
+	gl3shader ir_lighting = s->get_gl3shader("IR_LP_ASHIKHMIN_SHIRLEY");
+	gl3shader ir_stencil = s->get_gl3shader("IR_LP_STENCIL");
+	
+	gl_timer::mark("LIGHT_PASS_START");
 	for(size_t light_pass = 0; light_pass < (light_alpha_objects ? 2 : 1); light_pass++) {
+#if defined(A2E_COPY_DEPTH_BUFFER) // TODO: remove this if it works w/o problems on all graphics cards
+		// blit/copy g_buffer depth buffer to l_buffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers.g_buffer[light_pass]->fbo_id);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, buffers.g_buffer[light_pass]->depth_buffer, 0);
+		
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffers.l_buffer[light_pass]->fbo_id);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, buffers.l_buffer[light_pass]->depth_buffer, 0);
+		
+		glBlitFramebuffer(0, 0, l_buffer->width, l_buffer->height,
+						  0, 0, l_buffer->width, l_buffer->height,
+						  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+#endif
+		
+		//
 		r->start_draw(buffers.l_buffer[light_pass]);
-		r->clear();
+		r->clear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glDrawBuffers(2, draw_buffers);
+		glDepthMask(GL_FALSE);
 		
-		// shader init
-		//gl3shader ir_lighting = s->get_gl3shader("IR_LP_PHONG");
-		gl3shader ir_lighting = s->get_gl3shader("IR_LP_ASHIKHMIN_SHIRLEY");
 		for(size_t light_type = 0; light_type < 2; light_type++) {
-			if(light_type == 0) {
-				ir_lighting->use("#");
-				ir_lighting->uniform("mvpm", mvpm);
-			}
-			else if(light_type == 1) ir_lighting->use("directional");
-			
-			ir_lighting->uniform("imvm", inv_modelview_matrix);
-			ir_lighting->uniform("cam_position", cam_position);
-			ir_lighting->uniform("screen_size", screen_size);
-			ir_lighting->uniform("projection_ab", projection_ab);
-			ir_lighting->texture("normal_nuv_buffer",
-								 buffers.g_buffer[light_pass]->tex[0], GL_TEXTURE_2D);
-			
-			//
-			ir_lighting->texture("depth_buffer", buffers.g_buffer[light_pass]->depth_buffer, GL_TEXTURE_2D);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-			
 			// first: all point and spot (TODO) lights
 			if(light_type == 0) {
+				// render outer lights
+				glEnable(GL_STENCIL_TEST);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, light_sphere->get_vbo_indices(0));
 				for(const auto& li : lights) {
 					if(!li->is_enabled()) continue;
 					if(li->get_type() != light::LT_POINT) continue;
 					
-					// TODO: light visibility test? (not visible if: player !facing light && dist(player, light) > r)
-					const float radius = li->get_radius();
-					//const float half_far_plane = e->get_near_far_plane().y - 0.1f;
-					//const float ls_radius = (radius < 0.0f || radius > half_far_plane ?
-					//						 half_far_plane : radius); // clamp to far plane - small offset
-					// radius + near plane, b/c we have to account for that too
+					//
 					const float light_dist = (cam_position - li->get_position()).length() - e->get_near_far_plane().x;
-					//if(light_dist <= ls_radius) {
-					if(light_dist <= radius) {
-						glFrontFace(GL_CW);
-						glDepthFunc(GL_GREATER);
+					if(light_dist <= li->get_radius()) continue; // if the camera is within a light, skip it for now
+					
+					//
+					for(size_t stencil_light_pass = 0; stencil_light_pass < 2; stencil_light_pass++) {
+						if(stencil_light_pass == 0) {
+							glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
+							glStencilOp(GL_KEEP, GL_INVERT, GL_KEEP);
+							glDisable(GL_CULL_FACE);
+							glEnable(GL_DEPTH_TEST);
+							glDisable(GL_BLEND);
+							glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+							
+							ir_stencil->use();
+							ir_stencil->uniform("mvpm", mvpm);
+							ir_stencil->uniform("light_position", float4(li->get_position(), li->get_radius()));
+							ir_stencil->attribute_array("in_vertex", light_sphere->get_vbo_vertices(), 3, GL_FLOAT);
+						}
+						else {
+							glEnable(GL_CULL_FACE);
+							glCullFace(GL_FRONT);
+							glDisable(GL_DEPTH_TEST);
+							glEnable(GL_BLEND);
+							glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+							
+							//glStencilFuncSeparate(GL_FRONT, GL_ALWAYS, 0, 0xFFFFFFFF);
+							//glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP);
+							glStencilFuncSeparate(GL_FRONT, GL_ALWAYS, 0, 0xFFFFFFFF); // TODO: how can this possibly influence performance with front face culling?
+							glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INVERT);
+							
+							glStencilFuncSeparate(GL_BACK, GL_NOTEQUAL, 0, 0xFFFFFFFF);
+							glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_ZERO);
+							
+							ir_lighting->use("#");
+							ir_lighting->uniform("mvpm", mvpm);
+							ir_lighting->uniform("imvm", inv_modelview_matrix);
+							ir_lighting->uniform("cam_position", cam_position);
+							ir_lighting->uniform("screen_size", screen_size);
+							ir_lighting->uniform("projection_ab", projection_ab);
+							ir_lighting->texture("normal_nuv_buffer",  buffers.g_buffer[light_pass]->tex[0], GL_TEXTURE_2D);
+							ir_lighting->texture("depth_buffer", buffers.g_buffer[light_pass]->depth_buffer, GL_TEXTURE_2D);
+							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+							
+							ir_lighting->uniform("light_position", float4(li->get_position(), li->get_radius()));
+							ir_lighting->uniform("light_color", float4(li->get_color(), li->get_inv_sqr_radius()));
+							ir_lighting->attribute_array("in_vertex", light_sphere->get_vbo_vertices(), 3, GL_FLOAT);
+						}
+						
+						glDrawElements(GL_TRIANGLES, (GLsizei)light_sphere->get_index_count(0) * 3, GL_UNSIGNED_INT, nullptr);
+						
+						if(stencil_light_pass == 0) ir_stencil->disable();
+						else ir_lighting->disable();
 					}
-					else {
-						glFrontFace(GL_CCW);
-						glDepthFunc(GL_LEQUAL);
-					}
+				}
+				gl_timer::mark("LIGHT_PASS_OUTER");
+				
+				glDisable(GL_STENCIL_TEST);
+				glEnable(GL_DEPTH_TEST);
+				glEnable(GL_CULL_FACE);
+				glCullFace(GL_FRONT);
+				
+				// render inner lights
+				glDepthFunc(GL_GREATER);
+				ir_lighting->use("#");
+				ir_lighting->uniform("mvpm", mvpm);
+				ir_lighting->uniform("imvm", inv_modelview_matrix);
+				ir_lighting->uniform("cam_position", cam_position);
+				ir_lighting->uniform("screen_size", screen_size);
+				ir_lighting->uniform("projection_ab", projection_ab);
+				ir_lighting->texture("normal_nuv_buffer", buffers.g_buffer[light_pass]->tex[0], GL_TEXTURE_2D);
+				ir_lighting->texture("depth_buffer", buffers.g_buffer[light_pass]->depth_buffer, GL_TEXTURE_2D);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+				for(const auto& li : lights) {
+					if(!li->is_enabled()) continue;
+					if(li->get_type() != light::LT_POINT) continue;
+					
+					//
+					const float light_dist = (cam_position - li->get_position()).length() - e->get_near_far_plane().x;
+					if(light_dist > li->get_radius()) continue; // skip all outer lights
 					
 					ir_lighting->uniform("light_position", float4(li->get_position(), li->get_radius()));
 					ir_lighting->uniform("light_color", float4(li->get_color(), li->get_inv_sqr_radius()));
 					ir_lighting->attribute_array("in_vertex", light_sphere->get_vbo_vertices(), 3, GL_FLOAT);
-					
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, light_sphere->get_vbo_indices(0));
 					glDrawElements(GL_TRIANGLES, (GLsizei)light_sphere->get_index_count(0) * 3, GL_UNSIGNED_INT, nullptr);
-					
 				}
+				ir_lighting->disable();
+				gl_timer::mark("LIGHT_PASS_INNER");
+				
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			}
 			// second: all directional lights
 			else if(light_type == 1) {
-				glFrontFace(GL_CCW);
+				ir_lighting->use("directional");
+				ir_lighting->uniform("imvm", inv_modelview_matrix);
+				ir_lighting->uniform("cam_position", cam_position);
+				ir_lighting->uniform("screen_size", screen_size);
+				ir_lighting->uniform("projection_ab", projection_ab);
+				ir_lighting->texture("normal_nuv_buffer", buffers.g_buffer[light_pass]->tex[0], GL_TEXTURE_2D);
+				ir_lighting->texture("depth_buffer", buffers.g_buffer[light_pass]->depth_buffer, GL_TEXTURE_2D);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+				
+				glCullFace(GL_BACK);
 				for(const auto& li : lights) {
 					if(!li->is_enabled()) continue;
 					if(li->get_type() != light::LT_DIRECTIONAL) continue;
@@ -571,20 +715,103 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 					ir_lighting->attribute_array("in_vertex", gfx2d::get_fullscreen_quad_vbo(), 2, GL_FLOAT);
 					glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 				}
+				
+				ir_lighting->disable();
+				gl_timer::mark("LIGHT_PASS_DIR");
 			}
-			
-			ir_lighting->disable();
 		}
 		
 		// done
 		r->stop_draw();
 	}
 	
-	glDepthFunc(GL_LEQUAL);
+	// reset state
+	glDisable(GL_STENCIL_TEST);
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
+	
+	gl_timer::mark("LIGHT_PASS_END");
 	
 #else // defined(A2E_INFERRED_RENDERING_CL)
 	/////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////
+	// light pass - using opencl
+	
+	static cl::NDRange render_range_local(1);
+	static cl::NDRange render_range_global(1);
+	static uint2 tile_size(1, 1);
+	static uint2 tiles(l_buffer->width * l_buffer->height);
+	
+	static unsigned int cl_light_count = 0;
+	if(buffers.cl.lights_buffer != nullptr && tile_size.x == 1) {
+		for(const auto& li : lights) {
+			if(!li->is_enabled()) continue;
+			if(cl_light_count >= frame_buffers::cl_frame_buffers::max_ir_lights) break;
+			
+			auto& cur_light(buffers.cl.ir_lights[cl_light_count++]);
+			cur_light.position = li->get_position();
+			cur_light.color = li->get_color();
+			cur_light.position.w = li->get_radius();
+			cur_light.color.w = li->get_inv_sqr_radius();
+		}
+		cl->write_buffer(buffers.cl.lights_buffer, &buffers.cl.ir_lights[0]);
+		
+		//
+		tile_size.set(A2E_IR_TILE_SIZE_X, A2E_IR_TILE_SIZE_Y);
+		render_range_local.set(tile_size.x*tile_size.y);
+		const bool2 oversize = bool2(l_buffer->width % tile_size.x > 0, l_buffer->height % tile_size.y);
+		tiles.set((int)(l_buffer->width / tile_size.x) + (oversize.x > 0 ? 1 : 0),
+				  (int)(l_buffer->height / tile_size.y) + (oversize.y > 0 ? 1 : 0));
+		
+		// we have to consider the oversize (and can't simply use l_buffer w/h here)!
+		render_range_global.set(tiles.y * tiles.x * (tile_size.x * tile_size.y));
+		
+		/*a2e_debug("tile_size: %v", tile_size);
+		a2e_debug("oversize: %v", oversize);
+		a2e_debug("render_range_local: %v", render_range_local[0]);
+		a2e_debug("render_range_global: %v", render_range_global[0]);*/
+	}
+	const float16 IMVM = float16(&inv_modelview_matrix.data[0]);
+	
+	//cout << "wg size: actual: " << wg_size << ", using: " << render_range_local[0] << endl;
+	//cout << "tile info: " << tiles << ", " << tile_size << endl;
+	
+	// copy depth texture
+	glBindFramebuffer(GL_FRAMEBUFFER, buffers.cl.depth_copy_fbo);
+	glBindTexture(GL_TEXTURE_2D, buffers.cl.depth_copy_tex);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffers.g_buffer[0]->depth_buffer, 0);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 0, 0, buffers.g_buffer[0]->width, buffers.g_buffer[0]->height, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
+	r->start_draw(buffers.l_buffer[0]);
+	r->clear();
+	r->stop_draw();
+	
+	cl->use_kernel("INFERRED LIGHTING");
+	unsigned int kindex = 0;
+	// -- in textures:
+	cl->set_kernel_argument(kindex++, buffers.cl.geometry_buffer[0]);
+	cl->set_kernel_argument(kindex++, buffers.cl.depth_buffer[0]);
+	// -- out textures:
+	cl->set_kernel_argument(kindex++, buffers.cl.light_buffer[0]);
+	cl->set_kernel_argument(kindex++, buffers.cl.light_buffer[1]);
+	// -- general parameters:
+	cl->set_kernel_argument(kindex++, cam_position);
+	cl->set_kernel_argument(kindex++, uint2(l_buffer->width, l_buffer->height));
+	cl->set_kernel_argument(kindex++, projection_ab);
+	cl->set_kernel_argument(kindex++, IMVM);
+	cl->set_kernel_argument(kindex++, tiles);
+	// -- lights:
+	cl->set_kernel_argument(kindex++, buffers.cl.lights_buffer);
+	cl->set_kernel_argument(kindex++, std::min(cl_light_count, 16u));
+	cl->set_kernel_argument(kindex++, buffers.cl._dbg_buffer);
+	cl->set_kernel_range(render_range_global, render_range_local);
+	cl->run_kernel();
+	cl->finish();
 #endif
 	
 	/////////////////////////////////////////////////////
@@ -596,9 +823,12 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	// -> anything that has not equal depth will be culled/discarded early
 	// (this gives a nice speed boost and also saves memory)
 	r->start_draw(scene_buffer);
+	static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, draw_buffers);
 	if(scene_buffer->depth_type == rtt::DT_TEXTURE_2D) {
 		r->clear(GL_COLOR_BUFFER_BIT); // only clear color, keep depth
 		glDepthFunc(GL_EQUAL);
+		glDepthMask(GL_FALSE);
 	}
 	else r->clear();
 	
@@ -610,15 +840,18 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 			iter->draw(mat_pass_masked);
 		}
 	}
+	gl_timer::mark("MAT_PASS_OPAQUE");
 	
 	// render callbacks (opaque pass)
 	for(const auto& draw_cb : draw_callbacks) {
 		(*draw_cb.second)(mat_pass_masked);
 	}
+	gl_timer::mark("MAT_PASS_OPAQUE_CB");
 	
 	// for alpha objects and particles rendering, switch back to LEQUAL,
 	// b/c they are not contained in the current depth buffer
-	glDepthFunc(GL_LEQUAL);
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
 	
 #if !defined(A2E_IOS)
 	if(sorted_alpha_objects.size() > 0 || draw_callbacks.size() > 0) {
@@ -629,12 +862,14 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 			const pair<size_t, a2emodel::draw_callback*>& obj = alpha_objects[iter->first];
 			(*obj.second)(mat_alpha_pass_masked, obj.first, iter->second);
 		}
+		gl_timer::mark("MAT_PASS_ALPHA");
 		// render callbacks (alpha pass)
 		for(const auto& draw_cb : draw_callbacks) {
 			(*draw_cb.second)(mat_alpha_pass_masked);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
+		gl_timer::mark("MAT_PASS_ALPHA_CB");
 	}
 #else
 	// TODO: render transparent models in iOS/GLES2.0
@@ -644,6 +879,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	for(const auto& pm : particle_managers) {
 		pm->draw(buffers.g_buffer[0]);
 	}
+	gl_timer::mark("MAT_PASS_PARTICLES");
 	
 	r->stop_draw();
 	
@@ -684,6 +920,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 		
 		r->stop_2d_draw();
 		r->stop_draw();
+		gl_timer::mark("FXAA");
 	}
 	
 	// apply post processing
@@ -691,6 +928,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 		for(const auto& pph : pp_handlers) {
 			(*pph)(scene_buffer);
 		}
+		gl_timer::mark("POST_PROC");
 	}
 }
 

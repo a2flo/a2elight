@@ -52,6 +52,9 @@
 
 #define CLINFO_STR_SIZE 65536*2
 
+#define A2E_IR_TILE_SIZE_X (8)
+#define A2E_IR_TILE_SIZE_Y (16)
+
 /*! @class opencl
  *  @brief opencl routines
  */

@@ -76,7 +76,7 @@ rtt::~rtt() {
 	a2e_debug("rtt object deleted");
 }
 
-rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target, texture_object::TEXTURE_FILTERING filtering, TEXTURE_ANTI_ALIASING taa, GLint wrap_s, GLint wrap_t, GLint internal_format, GLenum format, GLenum type, unsigned int attachment_count, rtt::DEPTH_TYPE depth_type) {
+rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target, texture_object::TEXTURE_FILTERING filtering, TEXTURE_ANTI_ALIASING taa, GLint wrap_s, GLint wrap_t, GLint internal_format, GLenum format, GLenum type, unsigned int attachment_count, rtt::DEPTH_TYPE depth_type, rtt::STENCIL_TYPE stencil_type) {
 	GLenum* targets = new GLenum[attachment_count];
 	texture_object::TEXTURE_FILTERING* filterings = new texture_object::TEXTURE_FILTERING[attachment_count];
 	rtt::TEXTURE_ANTI_ALIASING* taas = new rtt::TEXTURE_ANTI_ALIASING[attachment_count];
@@ -97,7 +97,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target
 		types[i] = type;
 	}
 
-	rtt::fbo* ret_buffer = add_buffer(width, height, targets, filterings, taas, wraps_s, wraps_t, internal_formats, formats, types, attachment_count, depth_type);
+	rtt::fbo* ret_buffer = add_buffer(width, height, targets, filterings, taas, wraps_s, wraps_t, internal_formats, formats, types, attachment_count, depth_type, stencil_type);
 
 	delete [] targets;
 	delete [] filterings;
@@ -111,7 +111,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target
 	return ret_buffer;
 }
 
-rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* target, texture_object::TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count, rtt::DEPTH_TYPE depth_type) {
+rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* target, texture_object::TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count, rtt::DEPTH_TYPE depth_type, rtt::STENCIL_TYPE stencil_type) {
 	rtt::fbo* buffer = new rtt::fbo(attachment_count);
 	buffers.push_back(buffer);
 	buffer->width = width;
@@ -119,6 +119,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 	buffer->draw_width = width;
 	buffer->draw_height = height;
 	buffer->depth_type = depth_type;
+	buffer->stencil_type = stencil_type;
 	buffer->samples = 0;
 	
 	//
@@ -167,253 +168,245 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		buffer->draw_height = height;
 	}
 	
-	// check if a color or stencil should be created
-	if(format[0] != GL_STENCIL_INDEX) {
-		// color buffer
-		buffer->color = true;
-		buffer->stencil = false;
-		
-		glGenFramebuffers(1, &buffer->fbo_id);
-		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
-		
-		glGenTextures(attachment_count, &buffer->tex[0]);
-		for(unsigned int i = 0; i < buffer->attachment_count; i++) {
+	// color buffer
+	buffer->color = true;
+	
+	glGenFramebuffers(1, &buffer->fbo_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
+	
+	glGenTextures(attachment_count, &buffer->tex[0]);
+	for(unsigned int i = 0; i < buffer->attachment_count; i++) {
 #if defined(A2E_IOS)
-			if(i > 0) {
-				a2e_error("too many FBO attachments - only one is allowed on iOS!");
+		if(i > 0) {
+			a2e_error("too many FBO attachments - only one is allowed on iOS!");
+			break;
+		}
+#endif
+		
+		buffer->target[i] = target[i];
+		glBindTexture(buffer->target[i], buffer->tex[i]);
+		
+		glTexParameteri(buffer->target[i], GL_TEXTURE_MAG_FILTER, (filtering[i] == 0 ? GL_NEAREST : GL_LINEAR));
+		glTexParameteri(buffer->target[i], GL_TEXTURE_MIN_FILTER, filter[filtering[i]]);
+		glTexParameteri(buffer->target[i], GL_TEXTURE_WRAP_S, wrap_s[i]);
+		glTexParameteri(buffer->target[i], GL_TEXTURE_WRAP_T, wrap_t[i]);
+		if(exts->is_anisotropic_filtering_support() && filtering[i] >= texture_object::TF_BILINEAR) {
+			glTexParameteri(buffer->target[i], GL_TEXTURE_MAX_ANISOTROPY_EXT, exts->get_max_anisotropic_filtering());
+		}
+		
+		switch(buffer->target[i]) {
+#if !defined(A2E_IOS)
+			case GL_TEXTURE_1D:
+				glTexImage1D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, 0, format[i], type[i], nullptr);
 				break;
-			}
 #endif
-			
-			buffer->target[i] = target[i];
-			glBindTexture(buffer->target[i], buffer->tex[i]);
-			
-			glTexParameteri(buffer->target[i], GL_TEXTURE_MAG_FILTER, (filtering[i] == 0 ? GL_NEAREST : GL_LINEAR));
-			glTexParameteri(buffer->target[i], GL_TEXTURE_MIN_FILTER, filter[filtering[i]]);
-			glTexParameteri(buffer->target[i], GL_TEXTURE_WRAP_S, wrap_s[i]);
-			glTexParameteri(buffer->target[i], GL_TEXTURE_WRAP_T, wrap_t[i]);
-			if(exts->is_anisotropic_filtering_support() && filtering[i] >= texture_object::TF_BILINEAR) {
-				glTexParameteri(buffer->target[i], GL_TEXTURE_MAX_ANISOTROPY_EXT, exts->get_max_anisotropic_filtering());
-			}
-			
-			switch(buffer->target[i]) {
-#if !defined(A2E_IOS)
-				case GL_TEXTURE_1D:
-					glTexImage1D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, 0, format[i], type[i], nullptr);
-					break;
-#endif
-				case GL_TEXTURE_2D:
-					glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
-					break;
+			case GL_TEXTURE_2D:
+				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
+				break;
 				/*case GL_TEXTURE_3D:
-					// TODO: tex3d
-					glTexImage3D(buffer->target[i], 0, internal_format[i], width, height, 1, 0, format[i], type[i], nullptr);
-					break;*/
+				 // TODO: tex3d
+				 glTexImage3D(buffer->target[i], 0, internal_format[i], width, height, 1, 0, format[i], type[i], nullptr);
+				 break;*/
 #if !defined(A2E_IOS)
-				case GL_TEXTURE_2D_MULTISAMPLE:
-					glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), texman::convert_internal_format(internal_format[i]), width, height, false);
-					break;
+			case GL_TEXTURE_2D_MULTISAMPLE:
+				glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), texman::convert_internal_format(internal_format[i]), width, height, false);
+				break;
 #endif
 				/*case GL_TEXTURE_3D_MULTISAMPLE:
-					// TODO: tex3d
-					glTexImage3DMultisample(buffer->target[i], samp, internal_format[i], width, height, 1, false);
-					break;*/
-				default:
-					glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
-					break;
-			}
-			
-			if(filtering[i] > texture_object::TF_LINEAR) {
-				buffer->auto_mipmap[i] = true;
-				//glGenerateMipmap(buffer->target[i]);
-			}
-			else buffer->auto_mipmap[i] = false;
-			
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex[i], 0);
-			
+				 // TODO: tex3d
+				 glTexImage3DMultisample(buffer->target[i], samp, internal_format[i], width, height, 1, false);
+				 break;*/
+			default:
+				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
+				break;
+		}
+		
+		if(filtering[i] > texture_object::TF_LINEAR) {
+			buffer->auto_mipmap[i] = true;
+			//glGenerateMipmap(buffer->target[i]);
+		}
+		else buffer->auto_mipmap[i] = false;
+		
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex[i], 0);
+		
 #if !defined(A2E_IOS)
 #if A2E_DEBUG
-			// TODO: fbo/texture checking
-			GLint check_internal_format = 0, check_type = 0, check_size = 0;
-			glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_INTERNAL_FORMAT, &check_internal_format);
-			glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_TYPE, &check_type);
-			glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_SIZE, &check_size);
-			//a2e_debug("FBO: iformat: %X, type: %X, size: %d", check_internal_format, check_type, check_size);
+		// TODO: fbo/texture checking
+		GLint check_internal_format = 0, check_type = 0, check_size = 0;
+		glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_INTERNAL_FORMAT, &check_internal_format);
+		glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_TYPE, &check_type);
+		glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_SIZE, &check_size);
+		//a2e_debug("FBO: iformat: %X, type: %X, size: %d", check_internal_format, check_type, check_size);
 #endif
 #endif
-		}
-		
-		current_buffer = buffer;
-		check_fbo(current_buffer);
-		
-		if(depth_type != rtt::DT_NONE) {
-			// TODO: ?, this is currently a restriction
-			/*if(depth_type == rtt::DT_TEXTURE_2D) {
-				buffer->anti_aliasing[0] = rtt::TAA_NONE;
-			}*/
-			
-			switch(buffer->anti_aliasing[0]) {
-				case rtt::TAA_NONE:
-				case rtt::TAA_SSAA_2:
-				case rtt::TAA_SSAA_4:
-				case rtt::TAA_FXAA:
-				case rtt::TAA_SSAA_4_3_FXAA:
-				case rtt::TAA_SSAA_2_FXAA:
-					if(depth_type == rtt::DT_RENDERBUFFER) {
-						glGenRenderbuffers(1, &buffer->depth_buffer);
-						glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
-						glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-					}
-					else if(depth_type == rtt::DT_TEXTURE_2D) {
-						glGenTextures(1, &buffer->depth_buffer);
-						glBindTexture(GL_TEXTURE_2D, buffer->depth_buffer);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-						
-						// apparently opencl/opengl depth texture sharing only works with a float format
+	}
+	
+	current_buffer = buffer;
+	check_fbo(current_buffer);
+	
+	// check if a depth attachment should be created
+	if(depth_type != rtt::DT_NONE) {
+		// apparently opencl/opengl depth texture sharing only works with a float format
 #if !defined(A2E_INFERRED_RENDERING_CL)
-						glTexImage2D(GL_TEXTURE_2D, 0, texman::convert_internal_format(GL_DEPTH_COMPONENT24), width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
+		GLenum depth_internel_format = GL_DEPTH_COMPONENT24;
+		GLenum depth_storage_type = GL_UNSIGNED_INT;
 #else
-						glTexImage2D(GL_TEXTURE_2D, 0, texman::convert_internal_format(GL_DEPTH_COMPONENT32F), width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+		GLenum depth_internel_format = GL_DEPTH_COMPONENT32F;
+		GLenum depth_storage_type = GL_FLOAT;
 #endif
-						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, buffer->depth_buffer, 0);
-					}
-					
-					check_fbo(current_buffer);
-					break;
-				case rtt::TAA_MSAA_2:
-				case rtt::TAA_MSAA_4:
-				case rtt::TAA_MSAA_8:
-				case rtt::TAA_MSAA_16:
-				case rtt::TAA_MSAA_32:
-				case rtt::TAA_MSAA_64: {
-					GLsizei samples = (GLsizei)get_sample_count(buffer->anti_aliasing[0]);
-
-					glGenFramebuffers(attachment_count, &buffer->resolve_buffer[0]);
-					for(size_t i = 0; i < attachment_count; i++) {
-						glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[i]);
-						glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)(GL_COLOR_ATTACHMENT0+i), target[i], buffer->tex[i], 0);
-					}
-					check_fbo(current_buffer);
-					
-					glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
-
-					glGenRenderbuffers(1, &buffer->color_buffer);
-					glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
-					glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format[0], buffer->width, buffer->height);
-					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
-					check_fbo(current_buffer);
-					
-					if(depth_type == rtt::DT_RENDERBUFFER) {
-						glGenRenderbuffers(1, &buffer->depth_buffer);
-						glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
-						glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT24, buffer->width, buffer->height);
-						glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
-					}
-#if !defined(A2E_IOS)
-					else if(depth_type == rtt::DT_TEXTURE_2D) {
-						buffer->samples = samples;
-
-						glGenTextures(1, &buffer->depth_buffer);
-						glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer);
-						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-						glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-						glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texman::convert_internal_format(GL_DEPTH_COMPONENT24), width, height, false);
-						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer, 0);
-					}
+		GLenum depth_format = GL_DEPTH_COMPONENT;
+		GLenum depth_attachment_type = GL_DEPTH_ATTACHMENT;
+		if(stencil_type == rtt::ST_STENCIL_8) {
+#if !defined(A2E_INFERRED_RENDERING_CL)
+			depth_internel_format = GL_DEPTH24_STENCIL8;
+			depth_storage_type = GL_UNSIGNED_INT_24_8;
+#else
+			depth_internel_format = GL_DEPTH32F_STENCIL8;
+			depth_storage_type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
 #endif
-					
-					check_fbo(current_buffer);
-				}
-				break;
-#if !defined(A2E_IOS)
-				case rtt::TAA_CSAA_8:
-				case rtt::TAA_CSAA_8Q:
-				case rtt::TAA_CSAA_16:
-				case rtt::TAA_CSAA_16Q:
-				case rtt::TAA_CSAA_32:
-				case rtt::TAA_CSAA_32Q: {
-					int color_samples, coverage_samples;
-					switch(buffer->anti_aliasing[0]) {
-						case rtt::TAA_CSAA_8:
-							color_samples = 4;
-							coverage_samples = 8;
-							break;
-						case rtt::TAA_CSAA_8Q:
-							color_samples = 8;
-							coverage_samples = 8;
-							break;
-						case rtt::TAA_CSAA_16:
-							color_samples = 4;
-							coverage_samples = 16;
-							break;
-						case rtt::TAA_CSAA_16Q:
-							color_samples = 8;
-							coverage_samples = 16;
-							break;
-						case rtt::TAA_CSAA_32: // TODO: ratio?
-						case rtt::TAA_CSAA_32Q: // TODO: ratio?
-						default:
-							color_samples = 4;
-							coverage_samples = 8;
-							break;
-					}
-					
-					glGenRenderbuffers(1, &buffer->depth_buffer);
-					glGenRenderbuffers(1, &buffer->color_buffer);
-
-					glGenFramebuffers(1, &buffer->resolve_buffer[0]);
-					
-					glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[0]);
-					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->tex[0], 0);
-					check_fbo(current_buffer);
-					
-					glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
-					glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
-					
-					glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, format[0], buffer->width, buffer->height);
-					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
-					check_fbo(current_buffer);
-					
-					glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
-					glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, GL_DEPTH_COMPONENT24, buffer->width, buffer->height);
-					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
-					check_fbo(current_buffer);
-				}
-				break;
-#endif
-				default:
-					break;
-			}
+			depth_format = GL_DEPTH_STENCIL;
+			depth_attachment_type = GL_DEPTH_STENCIL_ATTACHMENT;
 		}
+		buffer->depth_attachment_type = depth_attachment_type;
 		
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		switch(buffer->anti_aliasing[0]) {
+			case rtt::TAA_NONE:
+			case rtt::TAA_SSAA_2:
+			case rtt::TAA_SSAA_4:
+			case rtt::TAA_FXAA:
+			case rtt::TAA_SSAA_4_3_FXAA:
+			case rtt::TAA_SSAA_2_FXAA:
+				if(depth_type == rtt::DT_RENDERBUFFER) {
+					glGenRenderbuffers(1, &buffer->depth_buffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
+					glRenderbufferStorage(GL_RENDERBUFFER, depth_internel_format, width, height);
+				}
+				else if(depth_type == rtt::DT_TEXTURE_2D) {
+					glGenTextures(1, &buffer->depth_buffer);
+					glBindTexture(GL_TEXTURE_2D, buffer->depth_buffer);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+					
+					glTexImage2D(GL_TEXTURE_2D, 0, texman::convert_internal_format(depth_internel_format), width, height, 0, depth_format, depth_storage_type, nullptr);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, depth_attachment_type, GL_TEXTURE_2D, buffer->depth_buffer, 0);
+				}
+				
+				check_fbo(current_buffer);
+				break;
+			case rtt::TAA_MSAA_2:
+			case rtt::TAA_MSAA_4:
+			case rtt::TAA_MSAA_8:
+			case rtt::TAA_MSAA_16:
+			case rtt::TAA_MSAA_32:
+			case rtt::TAA_MSAA_64: {
+				GLsizei samples = (GLsizei)get_sample_count(buffer->anti_aliasing[0]);
+				
+				glGenFramebuffers(attachment_count, &buffer->resolve_buffer[0]);
+				for(size_t i = 0; i < attachment_count; i++) {
+					glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[i]);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)(GL_COLOR_ATTACHMENT0+i), target[i], buffer->tex[i], 0);
+				}
+				check_fbo(current_buffer);
+				
+				glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
+				
+				glGenRenderbuffers(1, &buffer->color_buffer);
+				glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format[0], buffer->width, buffer->height);
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
+				check_fbo(current_buffer);
+				
+				if(depth_type == rtt::DT_RENDERBUFFER) {
+					glGenRenderbuffers(1, &buffer->depth_buffer);
+					glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
+					glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, depth_internel_format, buffer->width, buffer->height);
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, depth_attachment_type, GL_RENDERBUFFER, buffer->depth_buffer);
+				}
+#if !defined(A2E_IOS)
+				else if(depth_type == rtt::DT_TEXTURE_2D) {
+					buffer->samples = samples;
+					
+					glGenTextures(1, &buffer->depth_buffer);
+					glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer);
+					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+					
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texman::convert_internal_format(depth_internel_format), width, height, false);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, depth_attachment_type, GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer, 0);
+				}
+#endif
+				
+				check_fbo(current_buffer);
+			}
+			break;
+#if !defined(A2E_IOS)
+			case rtt::TAA_CSAA_8:
+			case rtt::TAA_CSAA_8Q:
+			case rtt::TAA_CSAA_16:
+			case rtt::TAA_CSAA_16Q:
+			case rtt::TAA_CSAA_32:
+			case rtt::TAA_CSAA_32Q: {
+				int color_samples, coverage_samples;
+				switch(buffer->anti_aliasing[0]) {
+					case rtt::TAA_CSAA_8:
+						color_samples = 4;
+						coverage_samples = 8;
+						break;
+					case rtt::TAA_CSAA_8Q:
+						color_samples = 8;
+						coverage_samples = 8;
+						break;
+					case rtt::TAA_CSAA_16:
+						color_samples = 4;
+						coverage_samples = 16;
+						break;
+					case rtt::TAA_CSAA_16Q:
+						color_samples = 8;
+						coverage_samples = 16;
+						break;
+					case rtt::TAA_CSAA_32: // TODO: ratio?
+					case rtt::TAA_CSAA_32Q: // TODO: ratio?
+					default:
+						color_samples = 4;
+						coverage_samples = 8;
+						break;
+				}
+				
+				glGenRenderbuffers(1, &buffer->depth_buffer);
+				glGenRenderbuffers(1, &buffer->color_buffer);
+				
+				glGenFramebuffers(1, &buffer->resolve_buffer[0]);
+				
+				glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[0]);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->tex[0], 0);
+				check_fbo(current_buffer);
+				
+				glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
+				glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
+				
+				glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, format[0], buffer->width, buffer->height);
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
+				check_fbo(current_buffer);
+				
+				glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
+				glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, depth_internel_format, buffer->width, buffer->height);
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, depth_attachment_type, GL_RENDERBUFFER, buffer->depth_buffer);
+				check_fbo(current_buffer);
+			}
+			break;
+#endif
+			default:
+				break;
+		}
 	}
-	else  {
-		// stencil buffer
-		// TODO: this is defined per spec standard, but doesn't work on current graphic cards
-		buffer->color = false;
-		buffer->stencil = true;
-		
-		glGenFramebuffers(1, &buffer->fbo_id);
-		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
-		glGenRenderbuffers(1, &buffer->stencil_buffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, buffer->stencil_buffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, internal_format[0], width, height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer->stencil_buffer);
-		
-		check_fbo(buffer);
-		
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-	}
+	
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	
 	return buffer;
 }
@@ -434,10 +427,6 @@ void rtt::delete_buffer(rtt::fbo* buffer) {
 		glDeleteRenderbuffers(1, &buffer->depth_buffer);
 		buffer->depth_buffer = 0;
 	}
-	if(glIsRenderbuffer(buffer->stencil_buffer)) {
-		glDeleteRenderbuffers(1, &buffer->stencil_buffer);
-		buffer->stencil_buffer = 0;
-	}
 	if(glIsTexture(buffer->color_buffer)) {
 		glDeleteTextures(1, &buffer->color_buffer);
 		buffer->color_buffer = 0;
@@ -445,10 +434,6 @@ void rtt::delete_buffer(rtt::fbo* buffer) {
 	if(glIsTexture(buffer->depth_buffer)) {
 		glDeleteTextures(1, &buffer->depth_buffer);
 		buffer->depth_buffer = 0;
-	}
-	if(glIsTexture(buffer->stencil_buffer)) {
-		glDeleteTextures(1, &buffer->stencil_buffer);
-		buffer->stencil_buffer = 0;
 	}
 	
 	//
@@ -471,10 +456,10 @@ void rtt::start_draw(rtt::fbo* buffer) {
 		}
 		
 		if(buffer->depth_type == DT_RENDERBUFFER) {
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, buffer->depth_attachment_type, GL_RENDERBUFFER, buffer->depth_buffer);
 		}
 		else if(buffer->depth_type == DT_TEXTURE_2D) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+			glFramebufferTexture2D(GL_FRAMEBUFFER, buffer->depth_attachment_type,
 #if !defined(A2E_IOS)
 								   (buffer->samples == 0 ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE),
 #else
@@ -483,8 +468,8 @@ void rtt::start_draw(rtt::fbo* buffer) {
 								   buffer->depth_buffer, 0);
 		}
 		else {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, buffer->depth_attachment_type, GL_TEXTURE_2D, 0, 0);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, buffer->depth_attachment_type, GL_RENDERBUFFER, 0);
 		}
 	}
 	else {
@@ -543,19 +528,17 @@ void rtt::stop_2d_draw() {
 
 void rtt::clear(const unsigned int and_mask) {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	if(current_buffer->depth_type != DT_NONE) {
-		glClear((GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) & and_mask);
-	}
-	else {
-		glClear(GL_COLOR_BUFFER_BIT & and_mask);
-	}
+	GLbitfield bits = GL_COLOR_BUFFER_BIT;
+	bits |= (current_buffer->depth_type != DT_NONE ? GL_DEPTH_BUFFER_BIT : 0);
+	bits |= (current_buffer->stencil_type != ST_NONE ? GL_STENCIL_BUFFER_BIT : 0);
+	glClear(bits & and_mask);
 }
 
 void rtt::check_fbo(rtt::fbo* buffer) {
 	GLint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE) {
-		a2e_error("framebuffer (size: %u*%upx; depth: %i; tex id: %u; fbo id: %u) didn't pass status check!",
-				  buffer->width, buffer->height, buffer->depth_type, buffer->tex[0], buffer->fbo_id);
+		a2e_error("framebuffer (size: %u*%upx; depth: %i; stencil: %i; tex id: %u; fbo id: %u) didn't pass status check!",
+				  buffer->width, buffer->height, buffer->depth_type, buffer->stencil_type, buffer->tex[0], buffer->fbo_id);
 	}
 	
 	switch(status) {

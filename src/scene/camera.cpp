@@ -68,12 +68,12 @@ void camera::run() {
 #if !defined(__APPLE__)
 		SDL_GetMouseState(&cursor_pos_x, &cursor_pos_y);
 
-		float xpos = (1.0f / (float)e->get_width()) * (float)cursor_pos_x;
-		float ypos = (1.0f / (float)e->get_height()) * (float)cursor_pos_y;
+		double xpos = (1.0 / (double)e->get_width()) * (double)cursor_pos_x;
+		double ypos = (1.0 / (double)e->get_height()) * (double)cursor_pos_y;
 		
-		if(xpos != 0.5f || ypos != 0.5f) {
-			rotation.x -= (0.5f - ypos) * rotation_speed;
-			rotation.y -= (0.5f - xpos) * rotation_speed;
+		if(xpos != 0.5 || ypos != 0.5) {
+			rotation.x -= (0.5 - ypos) * (double)rotation_speed;
+			rotation.y -= (0.5 - xpos) * (double)rotation_speed;
 			SDL_WarpMouseInWindow(e->get_window(), e->get_width()/2, e->get_height()/2);
 		}
 ////////////////////////////////
@@ -81,13 +81,13 @@ void camera::run() {
 #else
 		SDL_GetRelativeMouseState(&cursor_pos_x, &cursor_pos_y);
 		
-		float xpos = (1.0f / (float)e->get_width()) * (float)-cursor_pos_x;
-		float ypos = (1.0f / (float)e->get_height()) * (float)-cursor_pos_y;
+		double xpos = (1.0 / (double)e->get_width()) * (double)-cursor_pos_x;
+		double ypos = (1.0 / (double)e->get_height()) * (double)-cursor_pos_y;
 		
-		if(xpos != 0.0f || ypos != 0.0f) {
+		if(xpos != 0.0 || ypos != 0.0) {
 			if(!ignore_next_rotation) {
-				rotation.x -= ypos * rotation_speed;
-				rotation.y -= xpos * rotation_speed;
+				rotation.x -= ypos * (double)rotation_speed;
+				rotation.y -= xpos * (double)rotation_speed;
 			}
 			else ignore_next_rotation--;
 			

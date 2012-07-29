@@ -20,6 +20,7 @@
 #define __A2E_SCENE_H__
 
 #define A2E_CONCURRENT_FRAMES 1
+//#define A2E_INFERRED_RENDERING_CL 1
 
 #include "global.h"
 
@@ -49,9 +50,28 @@ protected:
 		rtt::fbo* l_buffer[2] = { nullptr, nullptr }; // opaque + alpha
 		
 #if defined(A2E_INFERRED_RENDERING_CL)
-		opencl::buffer_object* cl_normal_nuv_buffer[2] = { nullptr, nullptr };
-		opencl::buffer_object* cl_depth_buffer[2] = { nullptr, nullptr };
-		opencl::buffer_object* cl_light_buffer[2] = { nullptr, nullptr };
+		struct cl_frame_buffers {
+			// buffers
+			opencl::buffer_object* geometry_buffer[2] = { nullptr, nullptr };
+			opencl::buffer_object* depth_buffer[2] = { nullptr, nullptr };
+			opencl::buffer_object* light_buffer[4] = { nullptr, nullptr, nullptr, nullptr };
+			
+			// light data storage
+			opencl::buffer_object* lights_buffer = nullptr;
+			struct __attribute__((aligned(32), packed)) ir_light {
+				float4 position;
+				float4 color;
+			};
+			static constexpr size_t max_ir_lights = 128;
+			array<ir_light, max_ir_lights> ir_lights;
+			
+			// used to copy the gl depth buffer to a cl readable float buffer
+			GLuint depth_copy_tex = 0;
+			GLuint depth_copy_fbo = 0;
+			
+			//
+			opencl::buffer_object* _dbg_buffer = nullptr;
+		} cl;
 #endif
 	};
 	
@@ -129,6 +149,7 @@ public:
 	void delete_environment_probe(env_probe* probe);
 	
 	// for debugging and other evil purposes:
+	const frame_buffers& get_frame_buffers(const size_t num = 0) const { return frames[num]; }
 	const rtt::fbo* get_geometry_buffer(const size_t type = 0) const { return frames[0].g_buffer[type]; }
 	const rtt::fbo* get_light_buffer(const size_t type = 0) const { return frames[0].l_buffer[type]; }
 	const rtt::fbo* get_fxaa_buffer() const { return frames[0].fxaa_buffer; }

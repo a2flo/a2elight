@@ -774,6 +774,8 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 #else
 		static const string glsl_version_suffix = "";
 #endif
+		// TODO: 10.8 + kepler allows for: #version 410 core
+		
 		shd->vs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(vertex_shd->version))+glsl_version_suffix+"\n";
 		shd->fs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(fragment_shd->version))+glsl_version_suffix+"\n";
 		if(shd->geometry_shader_available) {

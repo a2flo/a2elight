@@ -66,6 +66,10 @@ public:
 		DT_RENDERBUFFER,
 		DT_TEXTURE_2D
 	};
+	enum STENCIL_TYPE {
+		ST_NONE,
+		ST_STENCIL_8
+	};
 
 	struct fbo {
 		const unsigned int attachment_count = 0;
@@ -76,11 +80,11 @@ public:
 		unsigned int draw_height = 0;
 		unsigned int color_buffer = 0;
 		unsigned int depth_buffer = 0;
-		unsigned int stencil_buffer = 0;
 		bool color = false;
 		DEPTH_TYPE depth_type = DT_NONE;
+		STENCIL_TYPE stencil_type = ST_NONE;
+		GLenum depth_attachment_type = GL_DEPTH_ATTACHMENT;
 		size_t samples = 0;
-		bool stencil = false;
 		
 		vector<unsigned int> tex;
 		vector<unsigned int> resolve_buffer;
@@ -103,8 +107,8 @@ public:
 		}
 	};
 
-	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum target = GL_TEXTURE_2D, texture_object::TEXTURE_FILTERING filtering = texture_object::TF_POINT, TEXTURE_ANTI_ALIASING taa = TAA_NONE, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT, GLint internal_format = GL_RGBA8, GLenum format = GL_RGBA, GLenum type = GL_UNSIGNED_BYTE, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = rtt::DT_NONE);
-	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum* target, texture_object::TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = rtt::DT_NONE);
+	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum target = GL_TEXTURE_2D, texture_object::TEXTURE_FILTERING filtering = texture_object::TF_POINT, TEXTURE_ANTI_ALIASING taa = TAA_NONE, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT, GLint internal_format = GL_RGBA8, GLenum format = GL_RGBA, GLenum type = GL_UNSIGNED_BYTE, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = rtt::DT_NONE, rtt::STENCIL_TYPE stencil_type = rtt::ST_NONE);
+	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum* target, texture_object::TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = rtt::DT_NONE, rtt::STENCIL_TYPE stencil_type = rtt::ST_NONE);
 	void delete_buffer(rtt::fbo* buffer);
 	void start_draw(rtt::fbo* buffer);
 	void stop_draw();

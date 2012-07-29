@@ -34,6 +34,13 @@ F(CL_IMAGE_FORMAT_MISMATCH) \
 F(CL_IMAGE_FORMAT_NOT_SUPPORTED) \
 F(CL_BUILD_PROGRAM_FAILURE) \
 F(CL_MAP_FAILURE) \
+F(CL_MISALIGNED_SUB_BUFFER_OFFSET) \
+F(CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST) \
+F(CL_COMPILE_PROGRAM_FAILURE) \
+F(CL_LINKER_NOT_AVAILABLE) \
+F(CL_LINK_PROGRAM_FAILURE) \
+F(CL_DEVICE_PARTITION_FAILED) \
+F(CL_KERNEL_ARG_INFO_NOT_AVAILABLE) \
 F(CL_INVALID_VALUE) \
 F(CL_INVALID_DEVICE_TYPE) \
 F(CL_INVALID_PLATFORM) \
@@ -66,7 +73,13 @@ F(CL_INVALID_EVENT) \
 F(CL_INVALID_OPERATION) \
 F(CL_INVALID_GL_OBJECT) \
 F(CL_INVALID_BUFFER_SIZE) \
-F(CL_INVALID_MIP_LEVEL)
+F(CL_INVALID_MIP_LEVEL) \
+F(CL_INVALID_GLOBAL_WORK_SIZE) \
+F(CL_INVALID_PROPERTY) \
+F(CL_INVALID_IMAGE_DESCRIPTOR) \
+F(CL_INVALID_COMPILER_OPTIONS) \
+F(CL_INVALID_LINKER_OPTIONS) \
+F(CL_INVALID_DEVICE_PARTITION_COUNT)
 
 #define __DECLARE_ERROR_CODE_TO_STRING(code) case code: return #code;
 
@@ -368,14 +381,12 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			queues[device->device] = new cl::CommandQueue(*context, *device->device, 0, &ierr);
 		}
 		
-		// make the first recognized device the active device
-		if(is_gpu_support()) set_active_device(opencl::FASTEST_GPU);
-		else if(is_cpu_support()) set_active_device(opencl::FASTEST_CPU);
-		
 		if(fastest_cpu != nullptr) a2e_debug("fastest CPU device: %s %s (score: %u)", fastest_cpu->vendor.c_str(), fastest_cpu->name.c_str(), fastest_cpu_score);
 		if(fastest_gpu != nullptr) a2e_debug("fastest GPU device: %s %s (score: %u)", fastest_gpu->vendor.c_str(), fastest_gpu->name.c_str(), fastest_gpu_score);
 		
 		// compile internal kernels
+		//for(const auto& device : devices) cout << "max wg size: " << device->max_wg_size << endl;
+		
 		size_t local_size_limit = std::max((size_t)512, devices[0]->max_wg_size); // default to 512
 		bool local_atomics_support = true;
 		for(const auto& device : devices) {
@@ -389,9 +400,6 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		}
 		const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
 		
-		// TODO: make tile size dependent on #cores
-		string ir_lighting_flags = " -DA2E_IR_TILE_SIZE_X=16 -DA2E_IR_TILE_SIZE_Y=16";
-		if(local_atomics_support) ir_lighting_flags += " -DA2E_LOCAL_ATOMICS";
 		
 		internal_kernels = { // first time init:
 			make_tuple("PARTICLE INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
@@ -400,9 +408,17 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 			make_tuple("PARTICLE SORT LOCAL", "particle_sort.cl", "bitonicSortLocal", lsl_str),
 			make_tuple("PARTICLE SORT MERGE GLOBAL", "particle_sort.cl", "bitonicMergeGlobal", lsl_str),
 			make_tuple("PARTICLE SORT MERGE LOCAL", "particle_sort.cl", "bitonicMergeLocal", lsl_str),
-			make_tuple("PARTICLE COMPUTE DISTANCES", "particle_sort.cl", "compute_distances", lsl_str),
-			make_tuple("INFERRED LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags)
+			make_tuple("PARTICLE COMPUTE DISTANCES", "particle_sort.cl", "compute_distances", lsl_str)
 		};
+		
+		// TODO: make tile size dependent on #cores
+		string ir_lighting_flags = (" -DA2E_IR_TILE_SIZE_X="+uint2string(A2E_IR_TILE_SIZE_X) +
+									" -DA2E_IR_TILE_SIZE_Y="+uint2string(A2E_IR_TILE_SIZE_Y) +
+									" -DA2E_LOCAL_ATOMICS");
+		// only add the inferred lighting kernel if there is support for local memory atomics
+		if(local_atomics_support) {
+			internal_kernels.emplace_back("INFERRED LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags);
+		}
 		
 		load_internal_kernels();
 	}
@@ -436,49 +452,58 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		context->getSupportedImageFormats(CL_MEM_READ_WRITE, CL_MEM_OBJECT_IMAGE2D, &rw_formats);
 		
 		//
-		cout << "## write only formats:" << endl;
-		for(const auto& format : wo_formats) {
-			cout << "\t";
-			switch(format.image_channel_order) {
-				case CL_R: cout << "CL_R"; break;
-				case CL_A: cout << "CL_A"; break;
-				case CL_RG: cout << "CL_RG"; break;
-				case CL_RA: cout << "CL_RA"; break;
-				case CL_RGB: cout << "CL_RGB"; break;
-				case CL_RGBA: cout << "CL_RGBA"; break;
-				case CL_BGRA: cout << "CL_BGRA"; break;
-				case CL_ARGB: cout << "CL_ARGB"; break;
-				case CL_INTENSITY: cout << "CL_INTENSITY"; break;
-				case CL_LUMINANCE: cout << "CL_LUMINANCE"; break;
-				case CL_Rx: cout << "CL_Rx"; break;
-				case CL_RGx: cout << "CL_RGx"; break;
-				case CL_RGBx: cout << "CL_RGBx"; break;
-				default:
-					cout << format.image_channel_order;
-					break;
+		array<pair<vector<cl::ImageFormat>&, string>, 3> formats {
+			{
+				{ ro_formats, "read-only" },
+				{ wo_formats, "write-only" },
+				{ rw_formats, "read-write" },
 			}
-			cout << " ";
-			switch(format.image_channel_data_type) {
-				case CL_SNORM_INT8: cout << "CL_SNORM_INT8"; break;
-				case CL_SNORM_INT16: cout << "CL_SNORM_INT16"; break;
-				case CL_UNORM_INT8: cout << "CL_UNORM_INT8"; break;
-				case CL_UNORM_INT16: cout << "CL_UNORM_INT16"; break;
-				case CL_UNORM_SHORT_565: cout << "CL_UNORM_SHORT_565"; break;
-				case CL_UNORM_SHORT_555: cout << "CL_UNORM_SHORT_555"; break;
-				case CL_UNORM_INT_101010: cout << "CL_UNORM_INT_101010"; break;
-				case CL_SIGNED_INT8: cout << "CL_SIGNED_INT8"; break;
-				case CL_SIGNED_INT16: cout << "CL_SIGNED_INT16"; break;
-				case CL_SIGNED_INT32: cout << "CL_SIGNED_INT32"; break;
-				case CL_UNSIGNED_INT8: cout << "CL_UNSIGNED_INT8"; break;
-				case CL_UNSIGNED_INT16: cout << "CL_UNSIGNED_INT16"; break;
-				case CL_UNSIGNED_INT32: cout << "CL_UNSIGNED_INT32"; break;
-				case CL_HALF_FLOAT: cout << "CL_HALF_FLOAT"; break;
-				case CL_FLOAT: cout << "CL_FLOAT"; break;
-				default:
-					cout << format.image_channel_data_type;
-					break;
+		};
+		for(const auto& frmts : formats) {
+			cout << "## " << frmts.second << " formats:" << endl;
+			for(const auto& format : frmts.first) {
+				cout << "\t";
+				switch(format.image_channel_order) {
+					case CL_R: cout << "CL_R"; break;
+					case CL_A: cout << "CL_A"; break;
+					case CL_RG: cout << "CL_RG"; break;
+					case CL_RA: cout << "CL_RA"; break;
+					case CL_RGB: cout << "CL_RGB"; break;
+					case CL_RGBA: cout << "CL_RGBA"; break;
+					case CL_BGRA: cout << "CL_BGRA"; break;
+					case CL_ARGB: cout << "CL_ARGB"; break;
+					case CL_INTENSITY: cout << "CL_INTENSITY"; break;
+					case CL_LUMINANCE: cout << "CL_LUMINANCE"; break;
+					case CL_Rx: cout << "CL_Rx"; break;
+					case CL_RGx: cout << "CL_RGx"; break;
+					case CL_RGBx: cout << "CL_RGBx"; break;
+					default:
+						cout << format.image_channel_order;
+						break;
+				}
+				cout << " ";
+				switch(format.image_channel_data_type) {
+					case CL_SNORM_INT8: cout << "CL_SNORM_INT8"; break;
+					case CL_SNORM_INT16: cout << "CL_SNORM_INT16"; break;
+					case CL_UNORM_INT8: cout << "CL_UNORM_INT8"; break;
+					case CL_UNORM_INT16: cout << "CL_UNORM_INT16"; break;
+					case CL_UNORM_SHORT_565: cout << "CL_UNORM_SHORT_565"; break;
+					case CL_UNORM_SHORT_555: cout << "CL_UNORM_SHORT_555"; break;
+					case CL_UNORM_INT_101010: cout << "CL_UNORM_INT_101010"; break;
+					case CL_SIGNED_INT8: cout << "CL_SIGNED_INT8"; break;
+					case CL_SIGNED_INT16: cout << "CL_SIGNED_INT16"; break;
+					case CL_SIGNED_INT32: cout << "CL_SIGNED_INT32"; break;
+					case CL_UNSIGNED_INT8: cout << "CL_UNSIGNED_INT8"; break;
+					case CL_UNSIGNED_INT16: cout << "CL_UNSIGNED_INT16"; break;
+					case CL_UNSIGNED_INT32: cout << "CL_UNSIGNED_INT32"; break;
+					case CL_HALF_FLOAT: cout << "CL_HALF_FLOAT"; break;
+					case CL_FLOAT: cout << "CL_FLOAT"; break;
+					default:
+						cout << format.image_channel_data_type;
+						break;
+				}
+				cout << endl;
 			}
-			cout << endl;
 		}
 #endif
 	}
@@ -613,8 +638,11 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 		}*/
 		
 		/*size_t device_num = 0;
-		for(const auto& device : devices) {
-			//cout << "DEBUG: kernel local memory device #" << device_num << ": " << kernels[identifier]->kernel.getWorkGroupInfo<CL_KERNEL_LOCAL_MEM_SIZE>(*(*diter)->device) << endl;
+		for(const auto& device : internal_devices) {
+			a2e_log("%s (dev #%u): kernel local memory: %u", identifier, device_num,
+					kernels[identifier]->kernel->getWorkGroupInfo<CL_KERNEL_LOCAL_MEM_SIZE>(device));
+			a2e_log("%s (dev #%u): work group size: %u", identifier, device_num,
+					kernels[identifier]->kernel->getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device));
 			device_num++;
 		}*/
 	}
@@ -977,7 +1005,8 @@ void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
 	buffer_obj->associated_kernels.clear();
 	if(buffer_obj->buffer != nullptr) delete buffer_obj->buffer;
 	if(buffer_obj->image_buffer != nullptr) delete buffer_obj->image_buffer;
-	buffers.erase(find(begin(buffers), end(buffers), buffer_obj));
+	const auto iter = find(begin(buffers), end(buffers), buffer_obj);
+	if(iter != end(buffers)) buffers.erase(iter);
 }
 
 void opencl::write_buffer(opencl::buffer_object* buffer_obj, const void* src, const size_t offset, const size_t size) {
