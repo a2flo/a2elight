@@ -472,8 +472,8 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	return shaders[identifier];
 }
 
-void shader::log_pretty_print(const char* log, const char* code) const {
 #if defined(__APPLE__)
+void shader::log_pretty_print(const char* log, const char* code) const {
 	static const regex rx_log_line("\\w+: 0:(\\d+):.*");
 	smatch regex_result;
 	
@@ -498,10 +498,12 @@ void shader::log_pretty_print(const char* log, const char* code) const {
 			a2e_log("");
 		}
 	}
-#else
-	a2e_log("Info Log: %s", log);
-#endif
 }
+#else
+void shader::log_pretty_print(const char* log, const char* code a2e_unused) const {
+	a2e_log("Info Log: %s", log);
+}
+#endif
 
 shader_object* shader::get_shader_object(const string& identifier) {
 	return shaders[identifier];
