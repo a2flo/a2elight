@@ -38,7 +38,7 @@ public:
 			const string identifier;
 			unsigned int query_ref;
 			float3 color;
-			unsigned long long int time;
+			GLuint64 time;
 		};
 		vector<query_object> queries;
 		bool done = false;
