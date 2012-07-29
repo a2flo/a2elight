@@ -17,20 +17,9 @@
  */
 
 #include "core.h"
-#include <random>
 
-static random_device rd;
-static mt19937 gen(rd());
-
-/*! there is no function currently
- */
-core::core() {
-}
-
-/*! there is no function currently
- */
-core::~core() {
-}
+random_device core::rd;
+mt19937 core::gen(core::rd());
 
 /*! converts (projects) a 3d vertex to a 2d screen position
  *  @param v the 3d vertex
@@ -61,11 +50,11 @@ float3 core::get_3d_from_2d(const pnt& p, const matrix4f& mview, const matrix4f&
 	return (wnd_vec * ipm);
 }
 
-void core::reset(stringstream* sstr) {
-	sstr->seekp(0);
-	sstr->seekg(0);
-	sstr->clear();
-	sstr->str("");
+void core::reset(stringstream& sstr) {
+	sstr.seekp(0);
+	sstr.seekg(0);
+	sstr.clear();
+	sstr.str("");
 }
 
 /*! returns the nearest power of two value of num (only numerical upwards)

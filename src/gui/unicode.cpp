@@ -150,7 +150,7 @@ string unicode::get_utf8_substr(const unsigned char* cstr, size_t begin, size_t 
 	return string((const char*)cstr).substr(index_table[begin], index_table[end] - index_table[begin]);
 }
 
-void unicode::create_charmap(const unsigned char* cstr, map<size_t, unsigned char*>& charmap, map<size_t, size_t>& index_table) {
+void unicode::create_charmap(const unsigned char* cstr, map<size_t, unsigned char*>& charmap) {
 	size_t len = get_utf8_strlen(cstr);
 	if(len == 0) return;
 	

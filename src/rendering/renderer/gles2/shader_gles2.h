@@ -28,10 +28,9 @@
 #include "rendering/rtt.h"
 #include "rendering/renderer/shader_base.h"
 
-class A2E_API shader_gles2 : public basic_shader {
+class A2E_API shader_gles2 : public shader_base<shader_gles2> {
 public:
 	shader_gles2(const shader_object& shd_obj_);
-	virtual ~shader_gles2() {}
 	
 	virtual void use();
 	virtual void use(const size_t& program);
@@ -93,19 +92,19 @@ public:
 	// -> attribute
 	// 1{f,fv}
 	void attribute(const char* name, const float& arg1) const;
-	void attribute(const char* name, const float* arg1, const size_t& count) const;
+	void attribute(const char* name, const float* arg1) const;
 	
 	// 2{f,fv}
 	void attribute(const char* name, const float& arg1, const float& arg2) const;
-	void attribute(const char* name, const float2* arg1, const size_t& count) const;
+	void attribute(const char* name, const float2* arg1) const;
 	
 	// 3{f,fv}
 	void attribute(const char* name, const float& arg1, const float& arg2, const float& arg3) const;
-	void attribute(const char* name, const float3* arg1, const size_t& count) const;
+	void attribute(const char* name, const float3* arg1) const;
 	
 	// 4{f,fv}
 	void attribute(const char* name, const float& arg1, const float& arg2, const float& arg3, const float& arg4) const;
-	void attribute(const char* name, const float4* arg1, const size_t& count) const;
+	void attribute(const char* name, const float4* arg1) const;
 	
 	// -> attribute array
 	void attribute_array(const char* name, const GLuint& buffer, const GLint& size, const GLenum type = GL_FLOAT, const GLboolean normalized = GL_FALSE, const GLsizei stride = 0);

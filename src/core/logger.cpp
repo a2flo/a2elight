@@ -52,16 +52,16 @@ void logger::prepare_log(stringstream& buffer, const LOG_TYPE& type, const char*
 			case LT_MSG:
 				buffer << "\033[34m";
 				break;
-			default: break;
+			case LT_NONE: break;
 		}
 		buffer << logger::type_to_str(type);
 		switch(type) {
 			case LT_ERROR:
 			case LT_DEBUG:
 			case LT_MSG:
-				buffer << "\E[m";
+				buffer << "\\E[m";
 				break;
-			default: break;
+			case LT_NONE: break;
 		}
 		if(type == logger::LT_ERROR) buffer << " #" << AtomicFetchThenIncrement(&err_counter) << ":";
 		buffer << " ";

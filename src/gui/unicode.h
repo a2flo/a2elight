@@ -33,7 +33,7 @@ public:
 	size_t get_utf8_strlen(const unsigned char* cstr);
 	string get_utf8_substr(const unsigned char* cstr, size_t begin, size_t end, map<size_t, size_t>& index_table);
 	void create_utf8_index_table(const unsigned char* cstr, map<size_t, size_t>& index_table);
-	void create_charmap(const unsigned char* cstr, map<size_t, unsigned char*>& charmap, map<size_t, size_t>& index_table);
+	void create_charmap(const unsigned char* cstr, map<size_t, unsigned char*>& charmap);
 	void utf8_str_insert(string& str, const unsigned char* insert_str, size_t insert_pos, map<size_t, size_t>& index_table);
 	void utf8_str_erase(string& str, size_t begin, size_t end, map<size_t, size_t>& index_table);
 	

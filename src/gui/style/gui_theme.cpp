@@ -114,15 +114,15 @@ bool gui_theme::load_ui_object(const string& filename) {
 	return true;
 }
 
-void gui_theme::process_state(const xml::xml_node* node, const xml::xml_node* parent) {
+void gui_theme::process_state(const xml::xml_node* node, const xml::xml_node* parent a2e_unused) {
 	// process child nodes
 	for(const auto& child : node->children) {
 		process_primitive(child.second, node);
 	}
 }
 
-void gui_theme::process_primitive(const xml::xml_node* node, const xml::xml_node* parent) {
-	cout << "primitive: " << node->name() << endl;
+void gui_theme::process_primitive(const xml::xml_node* node a2e_unused, const xml::xml_node* parent a2e_unused) {
+	/*cout << "primitive: " << node->name() << endl;
 	
 	//
 	const string color_str = (*node)["color"];
@@ -142,7 +142,7 @@ void gui_theme::process_primitive(const xml::xml_node* node, const xml::xml_node
 		});
 		uiobj.draw_calls.back()(pnt(1,1), size2(10,10));
 		//uiobj.draw_calls.emplace_back([&g,this,=](const pnt& offset) { g->draw_point(offset, color); });
-	}
+	}*/
 	/*else if(node->name() == "line") {
 	}
 	else if(node->name() == "rect") {

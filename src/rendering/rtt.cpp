@@ -22,7 +22,6 @@
 
 const char* rtt::TEXTURE_ANTI_ALIASING_STR[] = {
 	"NONE",
-	"MSAA1",
 	"MSAA2",
 	"MSAA4",
 	"MSAA8",
@@ -400,8 +399,6 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			}
 			break;
 #endif
-			default:
-				break;
 		}
 	}
 	
@@ -576,7 +573,6 @@ void rtt::check_fbo(rtt::fbo* buffer) {
 size_t rtt::get_sample_count(const rtt::TEXTURE_ANTI_ALIASING& taa) const {
 	switch(taa) {
 		case TAA_NONE: return 0;
-		case TAA_MSAA_1: return 1;
 		case TAA_MSAA_2: return 2;
 		case TAA_MSAA_4: return 4;
 		case TAA_MSAA_8: return 8;

@@ -355,7 +355,7 @@ void font::reload_shaders() {
 	font_shd = s->get_gl3shader("FONT");
 }
 
-bool font::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+bool font::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj a2e_unused) {
 	if(type == EVENT_TYPE::SHADER_RELOAD) {
 		reload_shaders();
 	}

@@ -26,10 +26,9 @@
 #include "rendering/rtt.h"
 #include "rendering/renderer/shader_base.h"
 
-class A2E_API shader_gl3 : public basic_shader {
+class A2E_API shader_gl3 : public shader_base<shader_gl3> {
 public:
 	shader_gl3(const shader_object& shd_obj_);
-	virtual ~shader_gl3() {}
 	
 	virtual void use();
 	virtual void use(const size_t& program);
@@ -109,39 +108,39 @@ public:
 	void attribute(const char* name, const float& arg1) const;
 	void attribute(const char* name, const double& arg1) const;
 	void attribute(const char* name, const short& arg1) const;
-	void attribute(const char* name, const float* arg1, const size_t& count) const;
-	void attribute(const char* name, const double* arg1, const size_t& count) const;
-	void attribute(const char* name, const short* arg1, const size_t& count) const;
+	void attribute(const char* name, const float* arg1) const;
+	void attribute(const char* name, const double* arg1) const;
+	void attribute(const char* name, const short* arg1) const;
 	
 	// 2{f,d,s,fv,dv,sv}
 	void attribute(const char* name, const float& arg1, const float& arg2) const;
 	void attribute(const char* name, const double& arg1, const double& arg2) const;
 	void attribute(const char* name, const short& arg1, const short& arg2) const;
-	void attribute(const char* name, const float2* arg1, const size_t& count) const;
-	void attribute(const char* name, const double2* arg1, const size_t& count) const;
-	void attribute(const char* name, const short2* arg1, const size_t& count) const;
+	void attribute(const char* name, const float2* arg1) const;
+	void attribute(const char* name, const double2* arg1) const;
+	void attribute(const char* name, const short2* arg1) const;
 	
 	// 3{f,d,s,fv,dv,sv}
 	void attribute(const char* name, const float& arg1, const float& arg2, const float& arg3) const;
 	void attribute(const char* name, const double& arg1, const double& arg2, const double& arg3) const;
 	void attribute(const char* name, const short& arg1, const short& arg2, const short& arg3) const;
-	void attribute(const char* name, const float3* arg1, const size_t& count) const;
-	//void attribute(const char* name, const double3* arg1, const size_t& count) const;
-	void attribute(const char* name, const short3* arg1, const size_t& count) const;
+	void attribute(const char* name, const float3* arg1) const;
+	//void attribute(const char* name, const double3* arg1) const;
+	void attribute(const char* name, const short3* arg1) const;
 	
 	// 4{f,d,s,fv,dv,sv}
 	void attribute(const char* name, const float& arg1, const float& arg2, const float& arg3, const float& arg4) const;
 	void attribute(const char* name, const double& arg1, const double& arg2, const double& arg3, const double& arg4) const;
 	void attribute(const char* name, const short& arg1, const short& arg2, const short& arg3, const short& arg4) const;
-	void attribute(const char* name, const float4* arg1, const size_t& count) const;
-	void attribute(const char* name, const double4* arg1, const size_t& count) const;
-	void attribute(const char* name, const short4* arg1, const size_t& count) const;
+	void attribute(const char* name, const float4* arg1) const;
+	void attribute(const char* name, const double4* arg1) const;
+	void attribute(const char* name, const short4* arg1) const;
 	
-	void attribute(const char* name, const char4* arg1, const size_t& count) const;
-	void attribute(const char* name, const uchar4* arg1, const size_t& count) const;
-	void attribute(const char* name, const ushort4* arg1, const size_t& count) const;
-	void attribute(const char* name, const uint4* arg1, const size_t& count) const;
-	void attribute(const char* name, const int4* arg1, const size_t& count) const;
+	void attribute(const char* name, const char4* arg1) const;
+	void attribute(const char* name, const uchar4* arg1) const;
+	void attribute(const char* name, const ushort4* arg1) const;
+	void attribute(const char* name, const uint4* arg1) const;
+	void attribute(const char* name, const int4* arg1) const;
 	
 	// -> attribute array
 	void attribute_array(const char* name, const GLuint& buffer, const GLint& size, const GLenum type = GL_FLOAT, const GLboolean normalized = GL_FALSE, const GLsizei stride = 0);

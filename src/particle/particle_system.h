@@ -118,7 +118,7 @@ public:
 	
 	void set_lights(const vector<light*>& lights);
 	const vector<light*> get_lights() const;
-	const GLuint get_lights_ubo() const;
+	const GLuint& get_lights_ubo() const;
 	
 	const extbbox& get_bounding_box() const;
 	

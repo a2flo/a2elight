@@ -376,9 +376,20 @@ void event::remove_event_types_from_handler(const handler& handler_, const set<E
 	
 	for(const auto& type : types) {
 		const auto range_0 = handlers.equal_range(type);
-		handlers.erase(range_0.first, range_0.second);
+		for(auto iter = range_0.first; iter != range_0.second; iter++) {
+			if(&iter->second == &handler_) {
+				handlers.erase(iter);
+				break;
+			}
+		}
+		
 		const auto range_1 = internal_handlers.equal_range(type);
-		internal_handlers.erase(range_1.first, range_1.second);
+		for(auto iter = range_1.first; iter != range_1.second; iter++) {
+			if(&iter->second == &handler_) {
+				internal_handlers.erase(iter);
+				break;
+			}
+		}
 	}
 	
 	AtomicSet(&handlers_lock, 0);

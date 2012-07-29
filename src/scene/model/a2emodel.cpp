@@ -108,7 +108,7 @@ void a2emodel::model_setup() {
 	is_sub_object_transparent.assign(object_count, is_transparent);
 }
 
-void a2emodel::pre_draw_setup(const ssize_t sub_object_num) {
+void a2emodel::pre_draw_setup(const ssize_t sub_object_num a2e_unused) {
 	// scale the model
 	mvm = scale_mat;
 	
@@ -143,7 +143,7 @@ void a2emodel::pre_draw_setup(const ssize_t sub_object_num) {
 #endif
 }
 
-void a2emodel::post_draw_setup(const ssize_t sub_object_num) {
+void a2emodel::post_draw_setup(const ssize_t sub_object_num a2e_unused) {
 	// reset to filled mode
 #if !defined(A2E_IOS)
 	if(draw_wireframe) {
@@ -242,7 +242,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				break;
 				// diffuse mapping
 				case a2ematerial::DIFFUSE:
-				default: {
+				case a2ematerial::NONE: {
 					shd = s->get_gl3shader("IR_GP_GBUFFER");
 					shd->use(shd_option, shd_combiners);
 				}
@@ -268,7 +268,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 			break;
 			// phong lighting
 			case a2ematerial::LM_PHONG:
-			default:
+			case a2ematerial::LM_NONE:
 				shd->uniform("Nuv", 16.0f, 16.0f);
 				break;
 		}
@@ -301,7 +301,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				break;
 				// diffuse mapping
 				case a2ematerial::DIFFUSE:
-				default: {
+				case a2ematerial::NONE: {
 					shd = s->get_gl3shader("IR_MP_DIFFUSE");
 					shd->use(shd_option, shd_combiners);
 				}
@@ -412,19 +412,19 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 	}
 }
 
-void a2emodel::pre_draw_geometry(gl3shader& shd, size_t& attr_array_mask, size_t& texture_mask) {
+void a2emodel::pre_draw_geometry(gl3shader& shd a2e_unused, size_t& attr_array_mask a2e_unused, size_t& texture_mask a2e_unused) {
 }
 
-void a2emodel::post_draw_geometry(gl3shader& shd) {
+void a2emodel::post_draw_geometry(gl3shader& shd a2e_unused) {
 }
 
-void a2emodel::pre_draw_material(gl3shader& shd, size_t& attr_array_mask, size_t& texture_mask) {
+void a2emodel::pre_draw_material(gl3shader& shd a2e_unused, size_t& attr_array_mask a2e_unused, size_t& texture_mask a2e_unused) {
 }
 
-void a2emodel::post_draw_material(gl3shader& shd) {
+void a2emodel::post_draw_material(gl3shader& shd a2e_unused) {
 }
 
-const string a2emodel::select_shader(const DRAW_MODE& draw_mode) const {
+const string a2emodel::select_shader(const DRAW_MODE& draw_mode a2e_unused) const {
 	return "";
 }
 
@@ -506,15 +506,6 @@ void a2emodel::set_scale(const float3& scl) {
 }
 
 /*! sets the "vertex scale" of the model (the model itself is scaled)
- *  @param x the x scale
- *  @param y the y scale
- *  @param z the z scale
- */
-void a2emodel::set_hard_scale(const float x, const float y, const float z) {
-	// to be overwritten
-}
-
-/*! sets the hard scale of the model
  *  @param hscl the new hard scale
  */
 void a2emodel::set_hard_scale(const float3& hscl) {
@@ -522,27 +513,10 @@ void a2emodel::set_hard_scale(const float3& hscl) {
 }
 
 /*! sets the "vertex positions" of the model (the model itself is relocated)
- *  @param x the x position
- *  @param y the y position
- *  @param z the z position
- */
-void a2emodel::set_hard_position(const float x, const float y, const float z) {
-	// to be overwritten
-}
-
-/*! sets the hard position of the model
  *  @param hpos the new hard position
  */
 void a2emodel::set_hard_position(const float3& hpos) {
 	set_hard_scale(hpos.x, hpos.y, hpos.z);
-}
-
-/*! scales the texture coordinates by (su, sv) - note that this is a "hard scale" and the vbo is updated automatically
- *  @param su the su scale factor
- *  @param sv the sv scale factor
- */
-void a2emodel::scale_tex_coords(const float su, const float sv) {
-	// to be overwritten
 }
 
 /*! returns the position of the model
@@ -698,7 +672,7 @@ a2ematerial* a2emodel::get_material() const {
 
 /*! returns a pointer to the vertices
  */
-float3**const a2emodel::get_vertices() const {
+float3** a2emodel::get_vertices() const {
 	return model_vertices;
 }
 
@@ -710,7 +684,7 @@ const float3* a2emodel::get_vertices(unsigned int obj_num) const {
 
 /*! returns a pointer to the tex coords
  */
-coord**const a2emodel::get_tex_coords() const {
+coord** a2emodel::get_tex_coords() const {
 	return model_tex_coords;
 }
 
@@ -722,7 +696,7 @@ const coord* a2emodel::get_tex_coords(unsigned int obj_num) const {
 
 /*! returns a pointer to all the indices
  */
-index3**const a2emodel::get_indices() const {
+index3** a2emodel::get_indices() const {
 	return model_indices;
 }
 

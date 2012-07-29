@@ -97,11 +97,15 @@ project "a2elight"
 		end
 		includedirs { "/usr/local/include", "/usr/include/libxml2", "/usr/include/libxml",
 					  "/usr/include/freetype2", "/usr/local/include/freetype2" }
-		buildoptions { "-Wall -x c++ -std=c++11 -Wno-trigraphs -Wreturn-type -Wunused-variable" }
+		buildoptions { "-Wall -x c++ -std=c++11" }
 		
 		if(clang_libcxx) then
 			buildoptions { "-stdlib=libc++ -integrated-as" }
-			buildoptions { "-Wno-delete-non-virtual-dtor -Wno-overloaded-virtual -Wunreachable-code -Wdangling-else" }
+			buildoptions { "-Weverything" }
+			buildoptions { "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-header-hygiene -Wno-gnu -Wno-float-equal }
+			buildoptions { "-Wno-documentation -Wno-system-headers -Wno-global-constructors -Wno-padded -Wno-packed }
+			buildoptions { "-Wno-switch-enum -Wno-sign-conversion -Wno-conversion -Wno-exit-time-destructors" }
+			-- buildoptions { "-Wno-delete-non-virtual-dtor -Wno-overloaded-virtual -Wunreachable-code -Wdangling-else" }
 			linkoptions { "-fvisibility=default" }
 			defines { "A2E_EXPORT=1" }
 			if(not win_unixenv) then
@@ -112,7 +116,7 @@ project "a2elight"
 		end
 		
 		if(gcc_compat) then
-			buildoptions { "-Wno-strict-aliasing" }
+			buildoptions { "-Wno-trigraphs -Wreturn-type -Wunused-variable -Wno-strict-aliasing" }
 		end
 	end
 	

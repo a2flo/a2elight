@@ -65,6 +65,8 @@ public:
 		version(ext::GLSL_ES_100)
 #endif
 		{}
+		a2e_shader_code(a2e_shader_code&& obj) :
+		header(obj.header), program(obj.program), version(obj.version) {}
 		a2e_shader_code& operator=(const a2e_shader_code& shd_code) {
 			this->header = shd_code.header;
 			this->program = shd_code.program;
@@ -80,23 +82,20 @@ public:
 		set<string> combiners;
 		
 		// <option*combiner..., code>
-		map<string, a2e_shader_code*> vertex_shader;
-		map<string, a2e_shader_code*> geometry_shader;
-		map<string, a2e_shader_code*> fragment_shader;
+		map<string, a2e_shader_code> vertex_shader;
+		map<string, a2e_shader_code> geometry_shader;
+		map<string, a2e_shader_code> fragment_shader;
 		
 		void add_option(const string& opt_name) {
 			if(options.count(opt_name) != 0) return;
 			options.insert(opt_name);
-			vertex_shader[opt_name] = new a2e_shader_code();
-			geometry_shader[opt_name] = new a2e_shader_code();
-			fragment_shader[opt_name] = new a2e_shader_code();
+			vertex_shader.insert(make_pair(opt_name, a2e_shader_code()));
+			geometry_shader.insert(make_pair(opt_name, a2e_shader_code()));
+			fragment_shader.insert(make_pair(opt_name, a2e_shader_code()));
 		}
 		void remove_option(const string& opt_name) {
 			if(options.count(opt_name) == 0) return;
 			options.erase(opt_name);
-			delete vertex_shader[opt_name];
-			delete geometry_shader[opt_name];
-			delete fragment_shader[opt_name];
 			vertex_shader.erase(opt_name);
 			geometry_shader.erase(opt_name);
 			fragment_shader.erase(opt_name);
@@ -104,11 +103,6 @@ public:
 		
 		a2e_shader_object_base() {
 			add_option("#");
-		}
-		virtual ~a2e_shader_object_base() {
-			for(const auto& shd : vertex_shader) delete shd.second;
-			for(const auto& shd : geometry_shader) delete shd.second;
-			for(const auto& shd : fragment_shader) delete shd.second;
 		}
 	};
 	
@@ -142,7 +136,7 @@ public:
 	bool process_and_compile_a2e_shader(a2e_shader_object* shd);
 	
 	//
-	void get_shader_content(a2e_shader_code* shd, xmlNode* node, const string& option);
+	void get_shader_content(a2e_shader_code& shd, xmlNode* node, const string& option);
 	bool check_shader_condition(const CONDITION_TYPE type, const string& value) const;
 	CONDITION_TYPE get_condition_type(const string& condition_type) const;
 
@@ -174,7 +168,7 @@ protected:
 	
 	void make_glsl_es_compat(a2e_shader_object* shd, const string& option);
 	void process_node(const xml::xml_node* cur_node, const xml::xml_node* parent,
-					  std::function<void(const xml::xml_node* node)> fnc = [](const xml::xml_node* node){});
+					  std::function<void(const xml::xml_node* node)> fnc = [](const xml::xml_node* node a2e_unused){});
 	
 };
 

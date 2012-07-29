@@ -62,11 +62,11 @@ public:
 	virtual void set_rotation(const float3& rot);
 	virtual void set_scale(const float x, const float y, const float z);
 	virtual void set_scale(const float3& scl);
-	virtual void set_hard_scale(const float x, const float y, const float z);
+	virtual void set_hard_scale(const float x, const float y, const float z) = 0;
 	virtual void set_hard_scale(const float3& hscl);
-	virtual void set_hard_position(const float x, const float y, const float z);
+	virtual void set_hard_position(const float x, const float y, const float z) = 0;
 	virtual void set_hard_position(const float3& hpos);
-	virtual void scale_tex_coords(const float su, const float sv);
+	virtual void scale_tex_coords(const float su, const float sv) = 0;
 	virtual float3& get_position();
 	virtual float3& get_scale();
 	virtual const float3& get_position() const;
@@ -101,11 +101,11 @@ public:
 	virtual a2ematerial* get_material() const;
 	
 	// model data functions
-	virtual float3**const get_vertices() const;
+	virtual float3** get_vertices() const;
 	virtual const float3* get_vertices(unsigned int obj_num) const;
-	virtual coord**const get_tex_coords() const;
+	virtual coord** get_tex_coords() const;
 	virtual const coord* get_tex_coords(unsigned int obj_num) const;
-	virtual index3**const get_indices() const;
+	virtual index3** get_indices() const;
 	virtual const index3* get_indices(unsigned int obj_num) const;
 	virtual unsigned int get_vertex_count() const;
 	virtual unsigned int get_vertex_count(unsigned int obj_num) const;

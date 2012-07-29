@@ -75,12 +75,10 @@ namespace std {
 struct event_object {
 	const unsigned int time;
 	event_object(const unsigned int& time_) : time(time_) {}
-	virtual ~event_object() {}
 };
 template<EVENT_TYPE event_type> struct event_object_base : public event_object {
 	const EVENT_TYPE type;
 	event_object_base(const unsigned int& time_) : event_object(time_), type(event_type) {}
-	virtual ~event_object_base() {}
 };
 
 // mouse events

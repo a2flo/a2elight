@@ -27,6 +27,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 // SDL 2.0+ atomic functions
 #include <SDL2/SDL_atomic.h>
+#include <SDL2/SDL_version.h>
 
 // check if atomics and sdl 2.0 are available
 #if !defined(_SDL_atomic_h_ ) || (SDL_MAJOR_VERSION == 1)

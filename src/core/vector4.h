@@ -36,7 +36,13 @@ typedef vector4<bool> bool4;
 typedef vector4<size_t> size4;
 typedef vector4<ssize_t> ssize4;
 
-template <typename T> class A2E_API __attribute__((packed, aligned(4))) vector4 : public vector3<T> {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wpacked"
+#endif
+
+template <typename T> class A2E_API __attribute__((packed, aligned(sizeof(T)))) vector4 : public vector3<T> {
 public:
 	union {
 		T w, a;
@@ -230,8 +236,7 @@ template<typename T> void vector4<T>::scale(const vector4<T>& v) {
 	this->z *= v.z;
 	this->w *= v.w;
 }
-		
-		
+
 #if defined(A2E_EXPORT)
 // only instantiate this in the vector4.cpp
 extern template class vector4<float>;
@@ -244,6 +249,10 @@ extern template class vector4<unsigned char>;
 extern template class vector4<bool>;
 extern template class vector4<size_t>;
 extern template class vector4<ssize_t>;
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
 
 #endif

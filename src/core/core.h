@@ -27,6 +27,7 @@
 #include "core/vector4.h"
 #include "core/matrix4.h"
 #include "core/file_io.h"
+#include <random>
 
 /*! @class core
  *  @brief core stuff
@@ -34,9 +35,6 @@
 
 class A2E_API core {
 public:
-	core();
-	~core();
-	
 	// 3d math functions
 	static ipnt get_2d_from_3d(const float3& vec, const matrix4f& mview, const matrix4f& mproj, const int4& viewport);
 	static float3 get_3d_from_2d(const pnt& p, const matrix4f& mview, const matrix4f& mproj, const int4& viewport);
@@ -47,7 +45,7 @@ public:
 												const coord& t1, const coord& t2, const coord& t3);
 
 	// stringstream functions
-	static void reset(stringstream* sstr);
+	static void reset(stringstream& sstr);
 
 	// misc math functions
 	static size_t lcm(size_t v1, size_t v2);
@@ -117,6 +115,8 @@ public:
 	};
 	
 protected:
+	static random_device rd;
+	static mt19937 gen;
 
 };
 

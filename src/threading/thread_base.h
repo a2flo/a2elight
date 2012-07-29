@@ -47,20 +47,20 @@ public:
 	void unlock();
 	
 	void set_thread_status(const thread_base::THREAD_STATUS status);
-	const THREAD_STATUS get_thread_status() const;
+	THREAD_STATUS get_thread_status() const;
 	bool is_running() const; // shortcut for get_thread_status() == RUNNING || INIT
 	void set_thread_should_finish();
 	bool thread_should_finish();
 	void set_thread_delay(const unsigned int delay);
-	const size_t get_thread_delay();
+	size_t get_thread_delay() const;
 	
 protected:
 	const string thread_name;
 	thread* thread_obj;
 	recursive_mutex thread_lock;
 	THREAD_STATUS thread_status;
-	size_t thread_delay;
 	atomic_t thread_should_finish_flag;
+	size_t thread_delay;
 	
 	void start();
 	static int _thread_run(thread_base* this_thread_obj);

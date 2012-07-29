@@ -46,7 +46,7 @@ void a2eui::load(const string& filename) {
 	}
 }
 
-void a2eui::process_node(const xml::xml_node* node, const xml::xml_node* parent) {
+void a2eui::process_node(const xml::xml_node* node, const xml::xml_node* parent a2e_unused) {
 	// process child nodes
 	for(const auto& child : node->children) {
 		process_node(child.second, node);

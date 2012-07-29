@@ -234,7 +234,7 @@ const vector<light*> particle_system::get_lights() const {
 	return lights;
 }
 
-const GLuint particle_system::get_lights_ubo() const {
+const GLuint& particle_system::get_lights_ubo() const {
 	return lights_ubo;
 }
 

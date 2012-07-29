@@ -184,9 +184,9 @@ public:
 		cl::NDRange* local = nullptr;
 		unsigned int arg_count = 0;
 		bool has_ogl_buffers = false;
-		string kernel_name = "";
 		vector<bool> args_passed;
 		map<unsigned int, buffer_object*> buffer_args;
+		string kernel_name = "";
 		
 		kernel_object() : args_passed(), buffer_args() {}
 		~kernel_object() {
@@ -255,13 +255,13 @@ protected:
 	string nv_build_options;
 	string kernel_path_str;
 	
-	stringstream* buffer;
+	stringstream buffer;
 	
 	buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr);
 	void load_internal_kernels();
 	void destroy_kernels();
 	void check_compilation(const bool ret, const string& filename);
-	void log_program_binary(const kernel_object* kernel, const string& options);
+	void log_program_binary(const kernel_object* kernel);
 	
 	bool has_vendor_device(OPENCL_VENDOR vendor_type);
 	string platform_vendor_to_str(const OPENCL_PLATFORM_VENDOR pvendor) const;

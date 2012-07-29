@@ -131,8 +131,8 @@ public:
 	material& get_material(const size_t& material_id);
 	size_t get_material_count() const;
 
-	void enable_textures(const size_t& object_id, gl3shader& shd, const size_t texture_mask = SIZE_T_MAX) const;
-	void disable_textures(const size_t& object_id, const size_t texture_mask = SIZE_T_MAX) const;
+	void enable_textures(const size_t& object_id, gl3shader& shd, const size_t texture_mask = ~(size_t)0) const;
+	void disable_textures(const size_t& object_id) const;
 	
 	void copy_object_mapping(const size_t& from_object, const size_t& to_object);
 	void copy_object_mapping(const size_t& from_object, const vector<size_t>& to_objects);

@@ -87,7 +87,7 @@ a2e_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // shader_gles2 functions
-shader_gles2::shader_gles2(const shader_object& shd_obj_) : basic_shader(shd_obj_) {
+shader_gles2::shader_gles2(const shader_object& shd_obj_) : shader_base<shader_gles2>(shd_obj_) {
 	use(0);
 #if A2E_DEBUG
 	if(shd_obj.programs.size() == 0) {
@@ -448,7 +448,7 @@ void shader_gles2::attribute(const char* name, const float& arg1) const {
 	glVertexAttrib1f(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1);
 }
 
-void shader_gles2::attribute(const char* name, const float* arg1, const size_t& count) const {
+void shader_gles2::attribute(const char* name, const float* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT);
 	glVertexAttrib1fv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1);
@@ -461,7 +461,7 @@ void shader_gles2::attribute(const char* name, const float& arg1, const float& a
 	glVertexAttrib2f(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1, arg2);
 }
 
-void shader_gles2::attribute(const char* name, const float2* arg1, const size_t& count) const {
+void shader_gles2::attribute(const char* name, const float2* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC2);
 	glVertexAttrib2fv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLfloat*)arg1);
@@ -474,7 +474,7 @@ void shader_gles2::attribute(const char* name, const float& arg1, const float& a
 	glVertexAttrib3f(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1, arg2, arg3);
 }
 
-void shader_gles2::attribute(const char* name, const float3* arg1, const size_t& count) const {
+void shader_gles2::attribute(const char* name, const float3* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC3);
 	glVertexAttrib3fv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLfloat*)arg1);
@@ -487,7 +487,7 @@ void shader_gles2::attribute(const char* name, const float& arg1, const float& a
 	glVertexAttrib4f(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1, arg2, arg3, arg4);
 }
 
-void shader_gles2::attribute(const char* name, const float4* arg1, const size_t& count) const {
+void shader_gles2::attribute(const char* name, const float4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4fv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLfloat*)arg1);

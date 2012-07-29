@@ -37,7 +37,6 @@ public:
 
 	enum TEXTURE_ANTI_ALIASING {
 		TAA_NONE,
-		TAA_MSAA_1,
 		TAA_MSAA_2,
 		TAA_MSAA_4,
 		TAA_MSAA_8,

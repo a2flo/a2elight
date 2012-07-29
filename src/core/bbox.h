@@ -81,7 +81,7 @@ public:
 		return sstr.str();
 	}
 	
-	virtual void intersect(pair<float, float>& ret, const ray& r) const {
+	void intersect(pair<float, float>& ret, const ray& r) const {
 		float3 v1 = min, v2 = max;
 		const float3 bbox_eps(0.0000001f);
 		
@@ -97,13 +97,13 @@ public:
 		ret.first = std::max(std::max(tmin.x, tmin.y), tmin.z);
 		ret.second = std::min(std::min(tmax.x, tmax.y), tmax.z);
 	}
-	virtual bool is_intersection(const ray& r) const {
+	bool is_intersection(const ray& r) const {
 		pair<float, float> ret;
 		intersect(ret, r);
 		return (ret.first <= ret.second);
 	}
 	
-	virtual bool contains(const float3& p) const {
+	bool contains(const float3& p) const {
 		if(((p.x >= min.x && p.x <= max.x) || (p.x <= min.x && p.x >= max.x)) &&
 		   ((p.y >= min.y && p.y <= max.y) || (p.y <= min.y && p.y >= max.y)) &&
 		   ((p.z >= min.z && p.z <= max.z) || (p.z <= min.z && p.z >= max.z))) {
@@ -132,14 +132,14 @@ public:
 		return *this;
 	}
 	
-	virtual bool contains(const float3& p) const {
+	bool contains(const float3& p) const {
 		float3 tp(p);
 		tp -= pos;
 		tp *= mview;
 		return bbox::contains(tp);
 	}
 	
-	virtual void intersect(pair<float, float>& ret, const ray& r) const {
+	void intersect(pair<float, float>& ret, const ray& r) const {
 		ray tr(r);
 		tr.origin -= pos;
 		tr.origin *= mview;
@@ -150,14 +150,14 @@ public:
 		bbox::intersect(ret, tr);
 	}
 	
-	virtual bool is_intersection(const extbbox& box) const {
+	bool is_intersection(const extbbox& box a2e_unused) const {
 		// TODO: implement this at some point:
 		// http://en.wikipedia.org/wiki/Separating_axis_theorem
 		// http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=5
 		return false;
 	}
 	
-	virtual bool is_intersection(const ray& r) const {
+	bool is_intersection(const ray& r) const {
 		ray tr(r);
 		tr.origin -= pos;
 		tr.origin *= mview;

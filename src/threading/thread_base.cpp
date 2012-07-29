@@ -129,7 +129,7 @@ void thread_base::set_thread_status(const thread_base::THREAD_STATUS status) {
 	this->unlock();
 }
 
-const thread_base::THREAD_STATUS thread_base::get_thread_status() const {
+thread_base::THREAD_STATUS thread_base::get_thread_status() const {
 	return thread_status;
 }
 
@@ -153,6 +153,6 @@ void thread_base::set_thread_delay(const unsigned int delay) {
 	this->unlock();
 }
 
-const size_t thread_base::get_thread_delay() {
+size_t thread_base::get_thread_delay() const {
 	return thread_delay;
 }

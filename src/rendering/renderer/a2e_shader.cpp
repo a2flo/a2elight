@@ -412,10 +412,10 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 				
 				// traverse xml nodes and combine shader code for each option
 				for(const auto& option : a2e_shd->options) {
-					a2e_shader_code* shd = (node_name == "vertex_shader" ? a2e_shd->vertex_shader[option] :
+					a2e_shader_code& shd = (node_name == "vertex_shader" ? a2e_shd->vertex_shader[option] :
 											(node_name == "geometry_shader" ? a2e_shd->geometry_shader[option] :
 											 a2e_shd->fragment_shader[option]));
-					shd->version = glsl_version;
+					shd.version = glsl_version;
 					get_shader_content(shd, cur_elem->children, option);
 				}
 			}
@@ -436,7 +436,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	return true;
 }
 
-void a2e_shader::process_node(const xml::xml_node* cur_node, const xml::xml_node* parent, std::function<void(const xml::xml_node* node)> fnc) {
+void a2e_shader::process_node(const xml::xml_node* cur_node, const xml::xml_node* parent a2e_unused, std::function<void(const xml::xml_node* node)> fnc) {
 	// process node itself
 	fnc(cur_node);
 	
@@ -446,7 +446,7 @@ void a2e_shader::process_node(const xml::xml_node* cur_node, const xml::xml_node
 	}
 }
 
-void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const string& option) {
+void a2e_shader::get_shader_content(a2e_shader_code& shd, xmlNode* node, const string& option) {
 	deque<xmlNode*> node_stack;
 	node_stack.push_back(node);
 	
@@ -463,7 +463,7 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 	}
 	
 	// current code dump string
-	string* text = &shd->program;
+	string* text = &shd.program;
 	
 	for(;;) {
 		if(node_stack.size() == 0) break;
@@ -479,7 +479,7 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 			   node_name == "option") {
 				
 				bool traverse_child_node = true;
-				if(node_name == "header") text = &shd->header;
+				if(node_name == "header") text = &shd.header;
 				else if(node_name == "condition") {
 					if(!x->is_attribute(((xmlElement*)cur_node)->attributes, "type") ||
 					   !x->is_attribute(((xmlElement*)cur_node)->attributes, "value")) {
@@ -552,7 +552,7 @@ void a2e_shader::get_shader_content(a2e_shader_code* shd, xmlNode* node, const s
 				// if we reached the end of a header tag, switch back to program string
 				if(cur_node->parent != nullptr && cur_node->next == nullptr &&
 				   string((const char*)cur_node->parent->name) == "header") {
-					text = &shd->program;
+					text = &shd.program;
 				}
 			}
 			
@@ -643,7 +643,7 @@ bool a2e_shader::check_shader_condition(const CONDITION_TYPE type, const string&
 			return (check_shader_condition(CONDITION_TYPE::GEQUAL, value) ^ true);
 		case CONDITION_TYPE::NLEQUAL:
 			return (check_shader_condition(CONDITION_TYPE::LEQUAL, value) ^ true);
-		default: break;
+		case CONDITION_TYPE::INVALID: break;
 	}
 	return false;
 }
@@ -667,9 +667,9 @@ bool a2e_shader::process_and_compile_a2e_shader(a2e_shader_object* shd) {
 	// do this for each option
 	for(const auto& option : shd->options) {
 		//
-		a2e_shader_code* vertex_shd = shd->vertex_shader[option];
-		a2e_shader_code* geometry_shd = shd->geometry_shader[option];
-		a2e_shader_code* fragment_shd = shd->fragment_shader[option];
+		a2e_shader_code& vertex_shd = shd->vertex_shader[option];
+		a2e_shader_code& geometry_shd = shd->geometry_shader[option];
+		a2e_shader_code& fragment_shd = shd->fragment_shader[option];
 		
 		// split option into <non-combiner><*combiner>...
 		const size_t first_comb_pos(option.find("*"));
@@ -724,19 +724,19 @@ bool a2e_shader::process_and_compile_a2e_shader(a2e_shader_object* shd) {
 				}
 			}
 			
-			const a2e_shader_code* inc_vs = include_obj->vertex_shader.find(include_option)->second;
-			const a2e_shader_code* inc_gs = include_obj->geometry_shader.find(include_option)->second;
-			const a2e_shader_code* inc_fs = include_obj->fragment_shader.find(include_option)->second;
+			const a2e_shader_code& inc_vs = include_obj->vertex_shader.find(include_option)->second;
+			const a2e_shader_code& inc_gs = include_obj->geometry_shader.find(include_option)->second;
+			const a2e_shader_code& inc_fs = include_obj->fragment_shader.find(include_option)->second;
 			
 			// copy include
-			vertex_shd->header.insert(0, inc_vs->header);
-			vertex_shd->program.insert(0, inc_vs->program);
+			vertex_shd.header.insert(0, inc_vs.header);
+			vertex_shd.program.insert(0, inc_vs.program);
 			
-			geometry_shd->header.insert(0, inc_gs->header);
-			geometry_shd->program.insert(0, inc_gs->program);
+			geometry_shd.header.insert(0, inc_gs.header);
+			geometry_shd.program.insert(0, inc_gs.program);
 			
-			fragment_shd->header.insert(0, inc_fs->header);
-			fragment_shd->program.insert(0, inc_fs->program);
+			fragment_shd.header.insert(0, inc_fs.header);
+			fragment_shd.program.insert(0, inc_fs.program);
 		}
 	}
 	
@@ -755,16 +755,16 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		shd->gs_program[option] = "";
 		shd->fs_program[option] = "";
 		
-		a2e_shader_code* vertex_shd = shd->vertex_shader[option];
-		a2e_shader_code* geometry_shd = shd->geometry_shader[option];
-		a2e_shader_code* fragment_shd = shd->fragment_shader[option];
+		a2e_shader_code& vertex_shd = shd->vertex_shader[option];
+		a2e_shader_code& geometry_shd = shd->geometry_shader[option];
+		a2e_shader_code& fragment_shd = shd->fragment_shader[option];
 		
 		// check if the shader object contains a geometry shader
-		if(geometry_shd->program.find_first_not_of(" \n\r\t") == string::npos ||
-		   geometry_shd->program.find("void main(") == string::npos) {
+		if(geometry_shd.program.find_first_not_of(" \n\r\t") == string::npos ||
+		   geometry_shd.program.find("void main(") == string::npos) {
 			shd->geometry_shader_available = false;
-			geometry_shd->header = "";
-			geometry_shd->program = "";
+			geometry_shd.header = "";
+			geometry_shd.program = "";
 		}
 		else shd->geometry_shader_available = true;
 		
@@ -776,10 +776,10 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 #endif
 		// TODO: 10.8 + kepler allows for: #version 410 core
 		
-		shd->vs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(vertex_shd->version))+glsl_version_suffix+"\n";
-		shd->fs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(fragment_shd->version))+glsl_version_suffix+"\n";
+		shd->vs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(vertex_shd.version))+glsl_version_suffix+"\n";
+		shd->fs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(fragment_shd.version))+glsl_version_suffix+"\n";
 		if(shd->geometry_shader_available) {
-			shd->gs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(geometry_shd->version))+glsl_version_suffix+"\n";
+			shd->gs_program[option] += "#version "+string(exts->glsl_version_str_from_glsl_version(geometry_shd.version))+glsl_version_suffix+"\n";
 		}
 		
 		// default precision qualifiers (glsl es only)
@@ -800,14 +800,14 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		}
 		
 		// header
-		shd->vs_program[option] += vertex_shd->header;
-		shd->fs_program[option] += fragment_shd->header;
-		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd->header;
+		shd->vs_program[option] += vertex_shd.header;
+		shd->fs_program[option] += fragment_shd.header;
+		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd.header;
 		
 		// programs
-		shd->vs_program[option] += vertex_shd->program;
-		shd->fs_program[option] += fragment_shd->program;
-		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd->program;
+		shd->vs_program[option] += vertex_shd.program;
+		shd->fs_program[option] += fragment_shd.program;
+		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd.program;
 		
 #if defined(A2E_IOS)
 		make_glsl_es_compat(shd, option);
@@ -829,7 +829,7 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		shdfile.close();
 #endif
 		
-		ext::GLSL_VERSION max_glsl_version = std::max(std::max(vertex_shd->version, fragment_shd->version), geometry_shd->version);
+		ext::GLSL_VERSION max_glsl_version = std::max(std::max(vertex_shd.version, fragment_shd.version), geometry_shd.version);
 		shader_object* obj = shader_obj->add_shader_src(shd->identifier, option, max_glsl_version,
 														shd->vs_program[option].c_str(),
 														shd->gs_program[option].c_str(),

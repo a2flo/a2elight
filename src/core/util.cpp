@@ -57,3 +57,7 @@ template <> ssize_t converter<string, ssize_t>::convert(const string& var) {
 }
 #endif
 #endif
+
+const char* a2e_exception::what() const throw () {
+	return error_str.c_str();
+}

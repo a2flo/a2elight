@@ -40,7 +40,7 @@ public:
 	struct xml_doc {
 	private:
 		template<typename T> class default_value {
-		public: static const T def() { return T(); }
+		public: static T def() { return T(); }
 		};
 		const string& extract_attr(const string& path) const;
 		
@@ -61,7 +61,7 @@ public:
 		xml_node* get_node(const string& path) const;
 		
 		//! "root.subnode.subnode.attr"
-		template<typename T> const T get(const string& path, const T default_val = default_value<T>::def()) const;
+		template<typename T> T get(const string& path, const T default_val = default_value<T>::def()) const;
 	};
 	struct xml_node {
 		xml_node(const xmlNode* node);
@@ -111,61 +111,61 @@ protected:
 
 //
 template<> class xml::xml_doc::default_value<string> {
-public: static const string def() { return ""; }
+public: static string def() { return ""; }
 };
 template<> class xml::xml_doc::default_value<float> {
-public: static const float def() { return 0.0f; }
+public: static float def() { return 0.0f; }
 };
 template<> class xml::xml_doc::default_value<size_t> {
-public: static const size_t def() { return 0; }
+public: static size_t def() { return 0; }
 };
 template<> class xml::xml_doc::default_value<ssize_t> {
-public: static const ssize_t def() { return 0; }
+public: static ssize_t def() { return 0; }
 };
 template<> class xml::xml_doc::default_value<bool> {
-public: static const bool def() { return false; }
+public: static bool def() { return false; }
 };
 template<> class xml::xml_doc::default_value<float2> {
-public: static const float2 def() { return float2(0.0f); }
+public: static float2 def() { return float2(0.0f); }
 };
 template<> class xml::xml_doc::default_value<float3> {
-public: static const float3 def() { return float3(0.0f); }
+public: static float3 def() { return float3(0.0f); }
 };
 template<> class xml::xml_doc::default_value<float4> {
-public: static const float4 def() { return float4(0.0f); }
+public: static float4 def() { return float4(0.0f); }
 };
 template<> class xml::xml_doc::default_value<size2> {
-public: static const size2 def() { return size2(0, 0); }
+public: static size2 def() { return size2(0, 0); }
 };
 template<> class xml::xml_doc::default_value<size3> {
-public: static const size3 def() { return size3(0, 0, 0); }
+public: static size3 def() { return size3(0, 0, 0); }
 };
 template<> class xml::xml_doc::default_value<size4> {
-public: static const size4 def() { return size4(0, 0, 0, 0); }
+public: static size4 def() { return size4(0, 0, 0, 0); }
 };
 template<> class xml::xml_doc::default_value<ssize2> {
-public: static const ssize2 def() { return ssize2(0, 0); }
+public: static ssize2 def() { return ssize2(0, 0); }
 };
 template<> class xml::xml_doc::default_value<ssize3> {
-public: static const ssize3 def() { return ssize3(0, 0, 0); }
+public: static ssize3 def() { return ssize3(0, 0, 0); }
 };
 template<> class xml::xml_doc::default_value<ssize4> {
-public: static const ssize4 def() { return ssize4(0, 0, 0, 0); }
+public: static ssize4 def() { return ssize4(0, 0, 0, 0); }
 };
 
-template<> const string xml::xml_doc::get<string>(const string& path, const string default_value) const;
-template<> const float xml::xml_doc::get<float>(const string& path, const float default_value) const;
-template<> const size_t xml::xml_doc::get<size_t>(const string& path, const size_t default_value) const;
-template<> const ssize_t xml::xml_doc::get<ssize_t>(const string& path, const ssize_t default_value) const;
-template<> const bool xml::xml_doc::get<bool>(const string& path, const bool default_value) const;
-template<> const float2 xml::xml_doc::get<float2>(const string& path, const float2 default_value) const;
-template<> const float3 xml::xml_doc::get<float3>(const string& path, const float3 default_value) const;
-template<> const float4 xml::xml_doc::get<float4>(const string& path, const float4 default_value) const;
-template<> const size2 xml::xml_doc::get<size2>(const string& path, const size2 default_value) const;
-template<> const size3 xml::xml_doc::get<size3>(const string& path, const size3 default_value) const;
-template<> const size4 xml::xml_doc::get<size4>(const string& path, const size4 default_value) const;
-template<> const ssize2 xml::xml_doc::get<ssize2>(const string& path, const ssize2 default_value) const;
-template<> const ssize3 xml::xml_doc::get<ssize3>(const string& path, const ssize3 default_value) const;
-template<> const ssize4 xml::xml_doc::get<ssize4>(const string& path, const ssize4 default_value) const;
+template<> string xml::xml_doc::get<string>(const string& path, const string default_value) const;
+template<> float xml::xml_doc::get<float>(const string& path, const float default_value) const;
+template<> size_t xml::xml_doc::get<size_t>(const string& path, const size_t default_value) const;
+template<> ssize_t xml::xml_doc::get<ssize_t>(const string& path, const ssize_t default_value) const;
+template<> bool xml::xml_doc::get<bool>(const string& path, const bool default_value) const;
+template<> float2 xml::xml_doc::get<float2>(const string& path, const float2 default_value) const;
+template<> float3 xml::xml_doc::get<float3>(const string& path, const float3 default_value) const;
+template<> float4 xml::xml_doc::get<float4>(const string& path, const float4 default_value) const;
+template<> size2 xml::xml_doc::get<size2>(const string& path, const size2 default_value) const;
+template<> size3 xml::xml_doc::get<size3>(const string& path, const size3 default_value) const;
+template<> size4 xml::xml_doc::get<size4>(const string& path, const size4 default_value) const;
+template<> ssize2 xml::xml_doc::get<ssize2>(const string& path, const ssize2 default_value) const;
+template<> ssize3 xml::xml_doc::get<ssize3>(const string& path, const ssize3 default_value) const;
+template<> ssize4 xml::xml_doc::get<ssize4>(const string& path, const ssize4 default_value) const;
 
 #endif

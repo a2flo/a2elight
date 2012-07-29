@@ -26,18 +26,6 @@
 #include "rendering/texture_object.h"
 #include "rendering/renderer/shader_object.h"
 
-//
-class A2E_API shader_exception : public exception {
-protected:
-	string error_str;
-public:
-	shader_exception(const string& error_str_) : error_str(error_str_) {}
-	~shader_exception() throw() {}
-    virtual const char* what() const throw () {
-		return error_str.c_str();
-	}
-};
-
 #if !defined(A2E_IOS)
 
 //
@@ -215,8 +203,6 @@ public:
 	// functions for setting attribute variables
 	template<typename arg1_type>
 	void attribute(const char* name, const arg1_type& arg1) const;
-	template<typename arg1_type>
-	void attribute(const char* name, const arg1_type& arg1, const size_t& count) const;
 	
 	template<typename arg1_type, typename arg2_type>
 	void attribute(const char* name, const arg1_type& arg1, const arg2_type& arg2) const;
@@ -299,15 +285,6 @@ protected:
 	
 };
 
-//
-class A2E_API basic_shader : public shader_base<basic_shader> {
-public:
-	basic_shader(const shader_object& shd_obj_) : shader_base<basic_shader>(shd_obj_) {}
-	virtual ~basic_shader() {}
-};
-
-
-
 // functions for setting uniform variables
 template<class shader_impl> template<typename arg1_type>
 void shader_base<shader_impl>::uniform(const char* name, const arg1_type& arg1) const {
@@ -347,11 +324,6 @@ template<class shader_impl> void shader_base<shader_impl>::texture(const char* n
 template<class shader_impl> template<typename arg1_type>
 void shader_base<shader_impl>::attribute(const char* name, const arg1_type& arg1) const {
 	((shader_impl*)this)->attribute(name, arg1);
-}
-
-template<class shader_impl> template<typename arg1_type>
-void shader_base<shader_impl>::attribute(const char* name, const arg1_type& arg1, const size_t& count) const {
-	((shader_impl*)this)->attribute(name, arg1, count);
 }
 
 template<class shader_impl> template<typename arg1_type, typename arg2_type>

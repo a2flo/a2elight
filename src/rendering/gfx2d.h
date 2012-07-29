@@ -434,7 +434,8 @@ struct gfx2d::draw_style_texture {
 					 const coord bottom_left = coord(0.0f),
 					 const coord top_right = coord(1.0f),
 					 const float draw_depth = 0.0f) {
-		draw(props, texture, false, 0.0f, bottom_left, top_right, draw_depth, "passthrough");
+		draw(props, texture, false, 0.0f, bottom_left, top_right, draw_depth,
+			 (passthrough ? "passthrough" : "#"));
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
@@ -480,7 +481,8 @@ struct gfx2d::draw_style_texture {
 					 const coord bottom_left = coord(0.0f),
 					 const coord top_right = coord(1.0f),
 					 const float draw_depth = 0.0f) {
-		draw(props, texture, true, layer, bottom_left, top_right, draw_depth, "passthrough");
+		draw(props, texture, true, layer, bottom_left, top_right, draw_depth,
+			 (passthrough ? "passthrough" : "#"));
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,

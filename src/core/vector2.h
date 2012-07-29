@@ -35,7 +35,13 @@ typedef vector2<unsigned int> pnt;
 typedef vector2<int> ipnt;
 typedef vector2<float> coord;
 
-template <typename T> class A2E_API __attribute__((packed, aligned(4))) vector2 {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wpacked"
+#endif
+
+template <typename T> class A2E_API __attribute__((packed, aligned(sizeof(T)))) vector2 {
 public:
 	union {
 		T x, u;
@@ -272,6 +278,10 @@ extern template class vector2<short>;
 extern template class vector2<bool>;
 extern template class vector2<size_t>;
 extern template class vector2<ssize_t>;
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
 
 #endif

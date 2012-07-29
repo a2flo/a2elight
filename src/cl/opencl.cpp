@@ -109,12 +109,12 @@ catch(cl::Error err) {																				\
 
 /*! creates a opencl object
  */
-opencl::opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache) {
+opencl::opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache) :
+buffer(stringstream::in | stringstream::out)
+{
 	opencl::f = f_;
 	opencl::sdl_wnd = wnd;
 	opencl::kernel_path_str = kernel_path;
-	
-	buffer = new stringstream(stringstream::in | stringstream::out);
 	
 	context = nullptr;
 	cur_kernel = nullptr;
@@ -171,8 +171,6 @@ opencl::~opencl() {
 	
 	internal_devices.clear();
 	devices.clear();
-	
-	delete buffer;
 	
 	a2e_debug("opencl object deleted");
 }
@@ -532,18 +530,11 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 		return kernels[identifier];
 	}
 	
-	if(!f->open(file_name, file_io::OT_READ)) {
+	core::reset(buffer);
+	if(!f->file_to_buffer(file_name, buffer)) {
 		return nullptr;
 	}
-	
-	core::reset(buffer);
-	f->read_file(buffer);
-	
-	string kernel_data;
-	kernel_data.reserve((size_t)f->get_filesize());
-	kernel_data = buffer->str();
-	
-	f->close();
+	string kernel_data(buffer.str());
 	
 //#ifdef __APPLE__
 	// work around caching bug and modify source on each load, TODO: check if this still exists (still present in 10.6.2)
@@ -616,7 +607,7 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 				case CLV_APPLE:
 					device_options += " -DAPPLE_ARM";
 					break;
-				default:
+				case CLV_UNKNOWN:
 					device_options += " -DUNKNOWN_VENDOR";
 					break;
 			}
@@ -674,7 +665,7 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 	return kernels[identifier];
 }
 
-void opencl::log_program_binary(const kernel_object* kernel, const string& options) {
+void opencl::log_program_binary(const kernel_object* kernel) {
 	if(kernel == nullptr) return;
 	
 	try {
@@ -1093,6 +1084,7 @@ void opencl::set_active_device(opencl::OPENCL_DEVICE dev) {
 		case ALL_DEVICES:
 			// TODO: ...
 			break;
+		case NONE:
 		default:
 			break;
 	}
@@ -1387,9 +1379,8 @@ string opencl::platform_vendor_to_str(const OPENCL_PLATFORM_VENDOR pvendor) cons
 		case CLPV_INTEL: return "INTEL";
 		case CLPV_AMD: return "AMD";
 		case CLPV_APPLE: return "APPLE";
-		default: break;
+		case CLPV_UNKNOWN: return "UNKNOWN";
 	}
-	return "UNKNOWN";
 }
 
 #endif

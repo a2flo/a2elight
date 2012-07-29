@@ -49,7 +49,7 @@ bool gui_color_scheme::load(const string& filename) {
 	return true;
 }
 
-void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_node* parent) {
+void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_node* parent a2e_unused) {
 	// process node itself
 	const string name = (*node)["name"];
 	const string color = (*node)["value"];

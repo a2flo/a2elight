@@ -146,10 +146,8 @@ protected:
 	string error_str;
 public:
 	a2e_exception(const string& error_str_) : error_str(error_str_) {}
-	~a2e_exception() throw() {}
-    virtual const char* what() const throw () {
-		return error_str.c_str();
-	}
+	virtual ~a2e_exception() throw() {}
+    virtual const char* what() const throw ();
 };
 
 #endif

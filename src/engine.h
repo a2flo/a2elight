@@ -87,14 +87,14 @@ public:
 	};
 	
 	struct server_data {
-		unsigned short int port;
 		unsigned int max_clients;
+		unsigned short int port;
 	};
 	
 	struct client_data {
-		string server_name;
 		unsigned short int port;
 		unsigned short int lis_port;
+		string server_name;
 		string client_name;
 	};
 

@@ -25,10 +25,7 @@
 #if defined(__WINDOWS__) || defined(WIN_UNIXENV)
 #define glGetProcAddress(x) wglGetProcAddress(x)
 #define ProcType LPCSTR
-#elif defined(__APPLE__)
-#define glGetProcAddress(x) aglGetProcAddress(x)
-#define ProcType GLubyte*
-#else
+#elif !defined(__APPLE__)
 #define glGetProcAddress(x) glXGetProcAddressARB(x)
 #define ProcType GLubyte*
 #endif
@@ -509,7 +506,7 @@ OGL_API PFNGLDEPTHRANGEINDEXEDPROC _glDepthRangeIndexed_ptr = nullptr; // ARB_vi
 OGL_API PFNGLGETFLOATI_VPROC _glGetFloati_v_ptr = nullptr; // ARB_viewport_array
 OGL_API PFNGLGETDOUBLEI_VPROC _glGetDoublei_v_ptr = nullptr; // ARB_viewport_array
 #elif defined(__APPLE__) // !__APPLE__
-void glRenderbufferStorageMultisampleCoverageNV(GLenum arg1, GLsizei arg2, GLsizei arg3, GLenum arg4, GLsizei arg5, GLsizei arg6) {
+void glRenderbufferStorageMultisampleCoverageNV(GLenum arg1 a2e_unused, GLsizei arg2 a2e_unused, GLsizei arg3 a2e_unused, GLenum arg4 a2e_unused, GLsizei arg5 a2e_unused, GLsizei arg6 a2e_unused) {
 	return;
 }
 #endif

@@ -31,6 +31,11 @@ typedef matrix4<bool> matrix4b;
 
 template <typename T> class vector4;
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpacked"
+#endif
+
 template <typename T> class A2E_API __attribute__((packed, aligned(16))) matrix4 {
 public:
 	array<T, 16> data;
@@ -408,6 +413,10 @@ extern template class matrix4<double>;
 extern template class matrix4<int>;
 extern template class matrix4<unsigned int>;
 extern template class matrix4<bool>;
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
 
 #endif

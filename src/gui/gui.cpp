@@ -140,18 +140,18 @@ void gui::run() {
 	// TODO: event handling?
 }
 
-bool gui::key_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+bool gui::key_handler(EVENT_TYPE type a2e_unused, shared_ptr<event_object> obj a2e_unused) {
 	if(!get_keyboard_input()) return false;
 	return false;
 }
 
-bool gui::mouse_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+bool gui::mouse_handler(EVENT_TYPE type a2e_unused, shared_ptr<event_object> obj a2e_unused) {
 	if(!get_mouse_input()) return false;
 	//cout << "mouse event: " << (unsigned int)type << endl;
 	return false;
 }
 
-bool gui::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+bool gui::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj a2e_unused) {
 	if(type == EVENT_TYPE::SHADER_RELOAD) {
 		reload_shaders();
 	}
@@ -211,7 +211,6 @@ void gui::recreate_buffers(const size2 size) {
 	rtt::TEXTURE_ANTI_ALIASING gui_aa = rtt::TAA_MSAA_8;
 	switch(e->get_ui_anti_aliasing()) {
 		case 0: gui_aa = rtt::TAA_NONE; break;
-		case 1: gui_aa = rtt::TAA_MSAA_1; break;
 		case 2: gui_aa = rtt::TAA_MSAA_2; break;
 		case 4: gui_aa = rtt::TAA_MSAA_4; break;
 		case 8: gui_aa = rtt::TAA_MSAA_8; break;

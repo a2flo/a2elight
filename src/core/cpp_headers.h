@@ -79,6 +79,9 @@ using namespace std;
 #define a2e_constexpr
 #endif
 
+//
+#define a2e_unused __attribute__((unused))
+
 // we don't need these
 #undef min
 #undef max

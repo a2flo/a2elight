@@ -42,8 +42,7 @@ a2ematerial::~a2ematerial() {
 				t->delete_texture(((diffuse_material*)material.mat)->specular_texture);
 				t->delete_texture(((diffuse_material*)material.mat)->reflectance_texture);
 				break;
-			default:
-				break;
+			case NONE: break;
 		}
 
 		switch(material.lm_type) {
@@ -54,7 +53,8 @@ a2ematerial::~a2ematerial() {
 			case LM_ASHIKHMIN_SHIRLEY:
 				t->delete_texture(((ashikhmin_shirley_model*)material.model)->anisotropic_texture);
 				break;
-			default: break;
+			case LM_PHONG:
+			case LM_NONE: break;
 		}
 
 		if(material.mat != nullptr) delete material.mat;
@@ -85,7 +85,7 @@ void a2ematerial::load_material(const string& filename_) {
 		return;
 	}
 	
-	xmlDoc* doc = xmlReadMemory(mat_data.c_str(), (unsigned int)mat_data.size(), nullptr, (const char*)"UTF-8", 0);
+	xmlDoc* doc = xmlReadMemory(mat_data.c_str(), (int)mat_data.size(), nullptr, (const char*)"UTF-8", 0);
 	xmlNode* root = xmlDocGetRootElement(doc);
 	
 	size_t object_count = 0;
@@ -124,7 +124,7 @@ void a2ematerial::load_material(const string& filename_) {
 				// create material
 				materials.push_back(*new material());
 				cur_material = &materials.back();
-				cur_material->id = id;
+				cur_material->id = (ssize_t)id;
 				cur_material->mat_type = (type == "diffuse" ? DIFFUSE :
 										  (type == "parallax" ? PARALLAX :
 										   (type == "none" ? NONE : (MATERIAL_TYPE)~0)));
@@ -162,7 +162,7 @@ void a2ematerial::load_material(const string& filename_) {
 					case LM_ASHIKHMIN_SHIRLEY:
 						cur_material->model = new ashikhmin_shirley_model();
 						break;
-					default: a2e_error("unknown lighting model type %d!", cur_material->lm_type); return;
+					case LM_NONE: a2e_error("unknown lighting model type %d!", cur_material->lm_type); return;
 				}
 				
 				// get material data
@@ -197,7 +197,7 @@ void a2ematerial::load_material(const string& filename_) {
 								}
 								break;
 							case PARALLAX: // everything allowed for parallax-mapping
-							default: break;
+							case NONE: break;
 						}
 						
 						switch(cur_material->lm_type) {
@@ -224,7 +224,7 @@ void a2ematerial::load_material(const string& filename_) {
 									continue;
 								}
 								break;
-							default: break;
+							case LM_NONE: break;
 						}
 						
 						// get filtering and wrapping modes (if they are specified)
@@ -500,12 +500,11 @@ void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const
 			if(texture_mask & TT_REFLECTANCE) shd->texture("reflectance_texture", pmat->reflectance_texture);
 		}
 		break;
-		default:
-			break;
+		case NONE: break;
 	}
 }
 
-void a2ematerial::disable_textures(const size_t& object_id, const size_t texture_mask) const {
+void a2ematerial::disable_textures(const size_t& object_id) const {
 	const object_mapping* obj = get_object_mapping(object_id);
 	if(obj == nullptr) return;
 	
@@ -521,8 +520,7 @@ void a2ematerial::disable_textures(const size_t& object_id, const size_t texture
 			glActiveTexture(GL_TEXTURE2);
 			glActiveTexture(GL_TEXTURE3);
 			break;
-		default:
-			break;
+		case NONE: break;
 	}
 }
 

@@ -79,7 +79,7 @@ void gfx2d::reload_shaders() {
 	simple_shd = eshd->get_gl3shader("SIMPLE");
 }
 
-bool gfx2d::event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+bool gfx2d::event_handler(EVENT_TYPE type, shared_ptr<event_object> obj a2e_unused) {
 	if(type == EVENT_TYPE::SHADER_RELOAD) {
 		gfx2d::reload_shaders();
 	}

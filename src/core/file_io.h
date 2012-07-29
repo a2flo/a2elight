@@ -102,8 +102,8 @@ public:
 	bool is_open() const;
 
 protected:
-	fstream filestream;
 	FIO_OPEN_TYPE open_type = OT_READ;
+	fstream filestream;
 
 	bool check_open();
 

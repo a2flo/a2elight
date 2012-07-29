@@ -85,7 +85,7 @@ a2e_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // shader_gl3 functions
-shader_gl3::shader_gl3(const shader_object& shd_obj_) : basic_shader(shd_obj_) {
+shader_gl3::shader_gl3(const shader_object& shd_obj_) : shader_base<shader_gl3>(shd_obj_) {
 	use(0);
 #if A2E_DEBUG
 	if(shd_obj.programs.size() == 0) {
@@ -535,19 +535,19 @@ void shader_gl3::attribute(const char* name, const short& arg1) const {
 	glVertexAttrib1s(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1);
 }
 
-void shader_gl3::attribute(const char* name, const float* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const float* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT);
 	glVertexAttrib1fv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1);
 }
 
-void shader_gl3::attribute(const char* name, const double* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const double* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT);
 	glVertexAttrib1dv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1);
 }
 
-void shader_gl3::attribute(const char* name, const short* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const short* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT);
 	glVertexAttrib1sv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1);
@@ -572,19 +572,19 @@ void shader_gl3::attribute(const char* name, const short& arg1, const short& arg
 	glVertexAttrib2s(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1, arg2);
 }
 
-void shader_gl3::attribute(const char* name, const float2* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const float2* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC2);
 	glVertexAttrib2fv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLfloat*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const double2* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const double2* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC2);
 	glVertexAttrib2dv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLdouble*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const short2* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const short2* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC2);
 	glVertexAttrib2sv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLshort*)arg1);
@@ -609,19 +609,19 @@ void shader_gl3::attribute(const char* name, const short& arg1, const short& arg
 	glVertexAttrib3s(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1, arg2, arg3);
 }
 
-void shader_gl3::attribute(const char* name, const float3* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const float3* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC3);
 	glVertexAttrib3fv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLfloat*)arg1);
 }
 
-/*void shader_gl3::attribute(const char* name, const double3* arg1, const size_t& count) const {
+/*void shader_gl3::attribute(const char* name, const double3* arg1) const {
  A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
  A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC3);
  glVertexAttrib3dv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLdouble*)arg1);
  }*/
 
-void shader_gl3::attribute(const char* name, const short3* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const short3* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC3);
 	glVertexAttrib3sv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLshort*)arg1);
@@ -646,49 +646,49 @@ void shader_gl3::attribute(const char* name, const short& arg1, const short& arg
 	glVertexAttrib4s(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), arg1, arg2, arg3, arg4);
 }
 
-void shader_gl3::attribute(const char* name, const float4* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const float4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4fv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLfloat*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const double4* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const double4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4dv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLdouble*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const short4* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const short4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4sv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLshort*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const int4* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const int4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4iv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLint*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const char4* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const char4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4bv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLbyte*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const uchar4* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const uchar4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4ubv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLubyte*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const ushort4* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const ushort4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4usv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLushort*)arg1);
 }
 
-void shader_gl3::attribute(const char* name, const uint4* arg1, const size_t& count) const {
+void shader_gl3::attribute(const char* name, const uint4* arg1) const {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	A2E_CHECK_ATTRIBUTE_TYPE(name, GL_FLOAT_VEC4);
 	glVertexAttrib4uiv(A2E_SHADER_GET_ATTRIBUTE_POSITION(name), (GLuint*)arg1);

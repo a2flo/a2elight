@@ -491,7 +491,7 @@ bool texman::get_alpha(GLint format) {
 	return ret;
 }
 
-const GLint texman::convert_internal_format(const GLint& internal_format) {
+GLint texman::convert_internal_format(const GLint& internal_format) {
 #if !defined(A2E_IOS)
 	return internal_format;
 #else
