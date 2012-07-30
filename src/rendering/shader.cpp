@@ -114,7 +114,7 @@ void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned i
 	
 	glBlitFramebuffer(0, 0, src_buffer->width, src_buffer->height,
 					  0, 0, dest_buffer->width, dest_buffer->height,
-					  GL_COLOR_BUFFER_BIT | ((src_buffer->depth_type != rtt::DT_NONE && dest_buffer->depth_type != rtt::DT_NONE) ? GL_DEPTH_BUFFER_BIT : 0),
+					  GL_COLOR_BUFFER_BIT | ((src_buffer->depth_type != rtt::DEPTH_TYPE::NONE && dest_buffer->depth_type != rtt::DEPTH_TYPE::NONE) ? GL_DEPTH_BUFFER_BIT : 0),
 					  GL_NEAREST);
 	
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
@@ -134,7 +134,7 @@ shader_object* shader::add_shader_file(const string& identifier, ext::GLSL_VERSI
 	char* fs_text = nullptr;
 	
 	// load shaders
-	f->open(vname, file_io::OT_READ_BINARY);
+	f->open(vname, file_io::OPEN_TYPE::READ_BINARY);
 	size = (size_t)f->get_filesize();
 	vs_text = new char[size+1];
 	f->get_block(vs_text, size);
@@ -143,7 +143,7 @@ shader_object* shader::add_shader_file(const string& identifier, ext::GLSL_VERSI
 	
 	// optionally load geometry shader ...
 	if(gname != nullptr) {
-		f->open(gname, file_io::OT_READ_BINARY);
+		f->open(gname, file_io::OPEN_TYPE::READ_BINARY);
 		size = (size_t)f->get_filesize();
 		gs_text = new char[size+1];
 		f->get_block(gs_text, size);
@@ -151,7 +151,7 @@ shader_object* shader::add_shader_file(const string& identifier, ext::GLSL_VERSI
 		f->close();
 	}
 	
-	f->open(fname, file_io::OT_READ_BINARY);
+	f->open(fname, file_io::OPEN_TYPE::READ_BINARY);
 	size = (size_t)f->get_filesize();
 	fs_text = new char[size+1];
 	f->get_block(fs_text, size);
@@ -620,7 +620,7 @@ template <> ret_type shader::get_shader(const string& identifier) const { \
 ret_type shader::get_##ret_type(const string& identifier) const { return get_shader<ret_type>(identifier); }
 
 #if !defined(A2E_IOS)
-make_get_shader(gl3shader, shader_gl3, ext::GLSL_150, ext::GLSL_330);
+make_get_shader(gl3shader, shader_gl3, ext::GLSL_VERSION::GLSL_150, ext::GLSL_VERSION::GLSL_330);
 #else
-make_get_shader(gl3shader, shader_gles2, ext::GLSL_ES_100, ext::GLSL_ES_100);
+make_get_shader(gl3shader, shader_gles2, ext::GLSL_VERSION::GLSL_ES_100, ext::GLSL_VERSION::GLSL_ES_100);
 #endif

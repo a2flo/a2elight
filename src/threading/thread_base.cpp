@@ -18,7 +18,7 @@
 
 #include "thread_base.h"
 
-thread_base::thread_base(const string name) : thread_name(name), thread_obj(nullptr), thread_lock(), thread_status(thread_base::INIT), thread_delay(50) {
+thread_base::thread_base(const string name) : thread_name(name), thread_obj(nullptr), thread_lock(), thread_status(THREAD_STATUS::INIT), thread_delay(50) {
 	thread_should_finish_flag.value = 0;
 	this->lock(); // lock thread, so start (or unlock) must be called before the thread starts running
 	thread_obj = new std::thread(&thread_base::_thread_run, this);
@@ -29,20 +29,20 @@ thread_base::~thread_base() {
 }
 
 void thread_base::start() {
-	if(thread_status != thread_base::INIT) {
+	if(thread_status != THREAD_STATUS::INIT) {
 		// something is wrong, return (thread status must be init!)
 		cout << "ERROR: thread error: thread status must be INIT before starting the thread!" << endl;
 		return;
 	}
 	
-	thread_status = thread_base::RUNNING;
+	thread_status = THREAD_STATUS::RUNNING;
 	this->unlock();
 }
 
 void thread_base::restart() {
 	AtomicClear(&thread_should_finish_flag);
 	this->lock();
-	thread_status = thread_base::INIT;
+	thread_status = THREAD_STATUS::INIT;
 	thread_obj = new thread(_thread_run, this);
 	start();
 }
@@ -62,13 +62,13 @@ int thread_base::_thread_run(thread_base* this_thread_obj) {
 			break;
 		}
 	}
-	this_thread_obj->set_thread_status(thread_base::FINISHED);
+	this_thread_obj->set_thread_status(THREAD_STATUS::FINISHED);
 	
 	return 0;
 }
 
 void thread_base::finish() {
-	if(get_thread_status() == thread_base::FINISHED && !thread_obj->joinable()) {
+	if(get_thread_status() == THREAD_STATUS::FINISHED && !thread_obj->joinable()) {
 		return; // nothing to do here
 	}
 	
@@ -83,7 +83,7 @@ void thread_base::finish() {
 	// to join so we don't block forever if the thread gets unexpectedly blocked/terminated/...?
 	if(thread_obj->joinable()) thread_obj->join();
 	
-	set_thread_status(thread_base::FINISHED);
+	set_thread_status(THREAD_STATUS::FINISHED);
 }
 
 void thread_base::lock() {
@@ -136,7 +136,7 @@ thread_base::THREAD_STATUS thread_base::get_thread_status() const {
 bool thread_base::is_running() const {
 	// copy before use
 	const THREAD_STATUS status = thread_status;
-	return (status == thread_base::RUNNING || status == thread_base::INIT);
+	return (status == THREAD_STATUS::RUNNING || status == THREAD_STATUS::INIT);
 }
 
 void thread_base::set_thread_should_finish() {

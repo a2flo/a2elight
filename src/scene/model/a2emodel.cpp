@@ -209,7 +209,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	}
 	if((masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
 	   masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS) &&
-	   lm_type == a2ematerial::LM_ASHIKHMIN_SHIRLEY) {
+	   lm_type == a2ematerial::LIGHTING_MODEL::ASHIKHMIN_SHIRLEY) {
 		const a2ematerial::ashikhmin_shirley_model* aslm = (const a2ematerial::ashikhmin_shirley_model*)material->get_lighting_model(sub_object_num);
 		if(aslm->anisotropic_texture != nullptr) {
 			shd_combiners.insert("*aux_texture");
@@ -228,7 +228,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 			// first, select shader dependent on material type
 			switch(mat_type) {
 				// parallax mapping
-				case a2ematerial::PARALLAX: {
+				case a2ematerial::MATERIAL_TYPE::PARALLAX: {
 					shd_name = material->is_parallax_occlusion(sub_object_num) ? "IR_GP_GBUFFER_PARALLAX" : "IR_GP_GBUFFER_PARALLAX";
 					
 					shd = s->get_gl3shader(shd_name);
@@ -236,13 +236,13 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 					shd->uniform("cam_position", -float3(*e->get_position()));
 					shd->uniform("model_position", position);
 					
-					attr_array_mask |= VA_TEXTURE_COORD | VA_BINORMAL | VA_TANGENT;
-					texture_mask |= a2ematerial::TT_NORMAL | a2ematerial::TT_HEIGHT;
+					attr_array_mask |= (unsigned int)VERTEX_ATTRIBUTE::TEXTURE_COORD | (unsigned int)VERTEX_ATTRIBUTE::BINORMAL | (unsigned int)VERTEX_ATTRIBUTE::TANGENT;
+					texture_mask |= (unsigned int)a2ematerial::TEXTURE_TYPE::NORMAL | (unsigned int)a2ematerial::TEXTURE_TYPE::HEIGHT;
 				}
 				break;
 				// diffuse mapping
-				case a2ematerial::DIFFUSE:
-				case a2ematerial::NONE: {
+				case a2ematerial::MATERIAL_TYPE::DIFFUSE:
+				case a2ematerial::MATERIAL_TYPE::NONE: {
 					shd = s->get_gl3shader("IR_GP_GBUFFER");
 					shd->use(shd_option, shd_combiners);
 				}
@@ -251,14 +251,8 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 		}
 		
 		switch(lm_type) {
-			// ward lighting
-			case a2ematerial::LM_WARD: {
-				const a2ematerial::ward_model* ward_lm = (const a2ematerial::ward_model*)material->get_lighting_model(sub_object_num);
-				shd->uniform("Nuv", ward_lm->isotropic_roughness, ward_lm->isotropic_roughness);
-			}
-			break;
 			// ashikhmin/shirley lighting
-			case a2ematerial::LM_ASHIKHMIN_SHIRLEY: {
+			case a2ematerial::LIGHTING_MODEL::ASHIKHMIN_SHIRLEY: {
 				const a2ematerial::ashikhmin_shirley_model* aslm = (const a2ematerial::ashikhmin_shirley_model*)material->get_lighting_model(sub_object_num);
 				if(aslm->anisotropic_texture != nullptr) {
 					shd->texture("aux_texture", aslm->anisotropic_texture);
@@ -267,27 +261,27 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 			}
 			break;
 			// phong lighting
-			case a2ematerial::LM_PHONG:
-			case a2ematerial::LM_NONE:
+			case a2ematerial::LIGHTING_MODEL::PHONG:
+			case a2ematerial::LIGHTING_MODEL::NONE:
 				shd->uniform("Nuv", 16.0f, 16.0f);
 				break;
 		}
 		
-		attr_array_mask |= VA_NORMAL;
+		attr_array_mask |= (unsigned int)VERTEX_ATTRIBUTE::NORMAL;
 		
 		// custom pre-draw setup
 		pre_draw_geometry(shd, attr_array_mask, texture_mask);
 	}
 	else if(masked_draw_mode == DRAW_MODE::MATERIAL_PASS ||
 			masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
-		attr_array_mask |= VA_TEXTURE_COORD;
-		texture_mask |= a2ematerial::TT_DIFFUSE | a2ematerial::TT_SPECULAR | a2ematerial::TT_REFLECTANCE;
+		attr_array_mask |= (unsigned int)VERTEX_ATTRIBUTE::TEXTURE_COORD;
+		texture_mask |= (unsigned int)a2ematerial::TEXTURE_TYPE::DIFFUSE | (unsigned int)a2ematerial::TEXTURE_TYPE::SPECULAR | (unsigned int)a2ematerial::TEXTURE_TYPE::REFLECTANCE;
 		
 		if(shd_name == "") {
 			// first, select shader dependent on material type
 			switch(mat_type) {
 				// parallax mapping
-				case a2ematerial::PARALLAX: {
+				case a2ematerial::MATERIAL_TYPE::PARALLAX: {
 					shd_name = material->is_parallax_occlusion(sub_object_num) ? "IR_MP_PARALLAX" : "IR_MP_PARALLAX";
 					
 					shd = s->get_gl3shader(shd_name);
@@ -295,13 +289,13 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 					shd->uniform("cam_position", -float3(*e->get_position()));
 					shd->uniform("model_position", position);
 					
-					attr_array_mask |= VA_NORMAL | VA_BINORMAL | VA_TANGENT;
-					texture_mask |= a2ematerial::TT_HEIGHT;
+					attr_array_mask |= (unsigned int)VERTEX_ATTRIBUTE::NORMAL | (unsigned int)VERTEX_ATTRIBUTE::BINORMAL | (unsigned int)VERTEX_ATTRIBUTE::TANGENT;
+					texture_mask |= (unsigned int)a2ematerial::TEXTURE_TYPE::HEIGHT;
 				}
 				break;
 				// diffuse mapping
-				case a2ematerial::DIFFUSE:
-				case a2ematerial::NONE: {
+				case a2ematerial::MATERIAL_TYPE::DIFFUSE:
+				case a2ematerial::MATERIAL_TYPE::NONE: {
 					shd = s->get_gl3shader("IR_MP_DIFFUSE");
 					shd->use(shd_option, shd_combiners);
 				}
@@ -325,8 +319,8 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 		shd->uniform("id", model_id);
 	}
 	
-	if(attr_array_mask & VA_NORMAL) shd->uniform("local_mview", rot_mat);
-	if(attr_array_mask & VA_NORMAL) shd->uniform("local_scale", scale_mat);
+	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::NORMAL) shd->uniform("local_mview", rot_mat);
+	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::NORMAL) shd->uniform("local_scale", scale_mat);
 	
 	//
 	material->enable_textures(sub_object_num, shd, texture_mask);
@@ -337,10 +331,10 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	}
 	
 	shd->attribute_array("in_vertex", draw_vertices_vbo, 3);
-	if(attr_array_mask & VA_NORMAL) shd->attribute_array("normal", draw_normals_vbo, 3);
-	if(attr_array_mask & VA_TEXTURE_COORD) shd->attribute_array("texture_coord", draw_tex_coords_vbo, 2);
-	if(attr_array_mask & VA_BINORMAL) shd->attribute_array("binormal", draw_binormals_vbo, 3);
-	if(attr_array_mask & VA_TANGENT) shd->attribute_array("tangent", draw_tangents_vbo, 3);
+	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::NORMAL) shd->attribute_array("normal", draw_normals_vbo, 3);
+	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::TEXTURE_COORD) shd->attribute_array("texture_coord", draw_tex_coords_vbo, 2);
+	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::BINORMAL) shd->attribute_array("binormal", draw_binormals_vbo, 3);
+	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::TANGENT) shd->attribute_array("tangent", draw_tangents_vbo, 3);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, draw_indices_vbo);
 	glDrawElements(GL_TRIANGLES, (GLsizei)draw_index_count, GL_UNSIGNED_INT, nullptr);

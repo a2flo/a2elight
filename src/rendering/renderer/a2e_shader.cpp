@@ -26,8 +26,8 @@ a2e_shader::a2e_shader(engine* eng) :
 e(eng), f(e->get_file_io()), exts(e->get_ext()), x(e->get_xml()),
 conditions({
 	// add graphic card specific conditions
-	{ ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[exts->get_vendor()], true },
-	{ ext::GRAPHIC_CARD_DEFINE_STR[exts->get_graphic_card()], true },
+	{ ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[(unsigned int)exts->get_vendor()], true },
+	{ ext::GRAPHICS_CARD_DEFINE_STR[(unsigned int)exts->get_graphics_card()], true },
 	{ "SM50_SUPPORT", exts->is_shader_model_5_0_support() },
 	{ "ANISOTROPIC_SUPPORT", exts->is_anisotropic_filtering_support() },
 	{ "FBO_MULTISAMPLE_COVERAGE_SUPPORT", exts->is_fbo_multisample_coverage_support() },
@@ -397,14 +397,14 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 					node_name == "fragment_shader") {
 				// get glsl version
 #if !defined(A2E_IOS)
-				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_150;
+				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_VERSION::GLSL_150;
 #else
-				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_ES_100;
+				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_VERSION::GLSL_ES_100;
 #endif
 				ext::GLSL_VERSION glsl_version = default_glsl_version;
 				if(x->is_attribute(cur_elem->attributes, "version")) {
 					glsl_version = exts->to_glsl_version(x->get_attribute<size_t>(cur_elem->attributes, "version"));
-					if(glsl_version == ext::GLSL_NO_VERSION) {
+					if(glsl_version == ext::GLSL_VERSION::GLSL_NO_VERSION) {
 						// reset to default
 						glsl_version = default_glsl_version;
 					}
@@ -598,41 +598,41 @@ bool a2e_shader::check_shader_condition(const CONDITION_TYPE type, const string&
 		// GEQUAL, LEQUAL, NGEQUAL and NLEQUAL only apply to graphic cards
 		case CONDITION_TYPE::GEQUAL:
 		case CONDITION_TYPE::LEQUAL: {
-			ext::GRAPHIC_CARD graphic_card = exts->get_graphic_card();
-			ext::GRAPHIC_CARD_VENDOR vendor = exts->get_vendor();
+			ext::GRAPHICS_CARD graphics_card = exts->get_graphics_card();
+			ext::GRAPHICS_CARD_VENDOR vendor = exts->get_vendor();
 			
-			ext::GRAPHIC_CARD min_card, max_card;
-			if(graphic_card <= ext::max_generic_card) {
-				min_card = ext::min_generic_card;
-				max_card = ext::max_generic_card;
+			unsigned int min_card = 0, max_card = 0;
+			if(graphics_card <= ext::max_generic_card) {
+				min_card = (unsigned int)ext::min_generic_card;
+				max_card = (unsigned int)ext::max_generic_card;
 			}
-			else if(vendor == ext::GCV_NVIDIA && graphic_card <= ext::max_nvidia_card) {
-				min_card = ext::min_nvidia_card;
-				max_card = ext::max_nvidia_card;
+			else if(vendor == ext::GRAPHICS_CARD_VENDOR::NVIDIA && graphics_card <= ext::max_nvidia_card) {
+				min_card = (unsigned int)ext::min_nvidia_card;
+				max_card = (unsigned int)ext::max_nvidia_card;
 			}
-			else if(vendor == ext::GCV_ATI && graphic_card <= ext::max_ati_card) {
-				min_card = ext::min_ati_card;
-				max_card = ext::max_ati_card;
+			else if(vendor == ext::GRAPHICS_CARD_VENDOR::ATI && graphics_card <= ext::max_ati_card) {
+				min_card = (unsigned int)ext::min_ati_card;
+				max_card = (unsigned int)ext::max_ati_card;
 			}
-			else if(vendor == ext::GCV_POWERVR && graphic_card <= ext::max_powervr_card) {
-				min_card = ext::min_powervr_card;
-				max_card = ext::max_powervr_card;
+			else if(vendor == ext::GRAPHICS_CARD_VENDOR::POWERVR && graphics_card <= ext::max_powervr_card) {
+				min_card = (unsigned int)ext::min_powervr_card;
+				max_card = (unsigned int)ext::max_powervr_card;
 			}
-			else if(vendor == ext::GCV_INTEL && graphic_card <= ext::max_intel_card) {
-				min_card = ext::min_intel_card;
-				max_card = ext::max_intel_card;
+			else if(vendor == ext::GRAPHICS_CARD_VENDOR::INTEL && graphics_card <= ext::max_intel_card) {
+				min_card = (unsigned int)ext::min_intel_card;
+				max_card = (unsigned int)ext::max_intel_card;
 			}
 			else {
-				a2e_error("unknown card %d!", graphic_card);
+				a2e_error("unknown card %d!", (unsigned int)graphics_card);
 				break;
 			}
 			
 			// some better function binding or lambda expressions would really come in handy here ...
 			for(const auto& condition : condition_tokens) {
-				for(ssize_t card = min_card; card <= max_card; card++) {
-					if(condition == ext::GRAPHIC_CARD_DEFINE_STR[card] &&
-					   ((type == CONDITION_TYPE::GEQUAL && graphic_card >= card) ||
-						(type == CONDITION_TYPE::LEQUAL && graphic_card <= card))) {
+				for(unsigned int card = min_card; card <= max_card; card++) {
+					if(condition == ext::GRAPHICS_CARD_DEFINE_STR[card] &&
+					   ((type == CONDITION_TYPE::GEQUAL && graphics_card >= (ext::GRAPHICS_CARD)card) ||
+						(type == CONDITION_TYPE::LEQUAL && graphics_card <= (ext::GRAPHICS_CARD)card))) {
 						return true;
 					}
 				}
@@ -790,13 +790,13 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 #endif
 		
 		// add pre-defines
-		shd->vs_program[option] += string("#define ") + ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[exts->get_vendor()] + string("\n");
-		shd->vs_program[option] += string("#define ") + ext::GRAPHIC_CARD_DEFINE_STR[exts->get_graphic_card()] + string("\n");
-		shd->fs_program[option] += string("#define ") + ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[exts->get_vendor()] + string("\n");
-		shd->fs_program[option] += string("#define ") + ext::GRAPHIC_CARD_DEFINE_STR[exts->get_graphic_card()] + string("\n");
+		shd->vs_program[option] += string("#define ") + ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[(unsigned int)exts->get_vendor()] + string("\n");
+		shd->vs_program[option] += string("#define ") + ext::GRAPHICS_CARD_DEFINE_STR[(unsigned int)exts->get_graphics_card()] + string("\n");
+		shd->fs_program[option] += string("#define ") + ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[(unsigned int)exts->get_vendor()] + string("\n");
+		shd->fs_program[option] += string("#define ") + ext::GRAPHICS_CARD_DEFINE_STR[(unsigned int)exts->get_graphics_card()] + string("\n");
 		if(shd->geometry_shader_available) {
-			shd->gs_program[option] += string("#define ") + ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[exts->get_vendor()] + string("\n");
-			shd->gs_program[option] += string("#define ") + ext::GRAPHIC_CARD_DEFINE_STR[exts->get_graphic_card()] + string("\n");
+			shd->gs_program[option] += string("#define ") + ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[(unsigned int)exts->get_vendor()] + string("\n");
+			shd->gs_program[option] += string("#define ") + ext::GRAPHICS_CARD_DEFINE_STR[(unsigned int)exts->get_graphics_card()] + string("\n");
 		}
 		
 		// header

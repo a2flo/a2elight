@@ -66,7 +66,7 @@
 #include <cmath>
 #include <cassert>
 
-#ifdef CYGWIN
+#if defined(CYGWIN)
 #include <sys/wait.h>
 #endif
 

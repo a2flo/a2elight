@@ -30,7 +30,7 @@ public:
 	thread_base(const string name = "unknown");
 	virtual ~thread_base();
 	
-	enum THREAD_STATUS {
+	enum class THREAD_STATUS : int {
 		INVALID = -1,
 		INIT = 0,
 		RUNNING = 1,

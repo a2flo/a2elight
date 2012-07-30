@@ -78,7 +78,7 @@ template <> bool converter<string, bool>::convert(const string& var) {
 	return (var == "true" || var == "1" ? true : false);
 }
 
-#ifdef PLATFORM_X64
+#if defined(PLATFORM_X64)
 template <> size_t converter<string, size_t>::convert(const string& var) {
 	A2E_CONVERT_VAR_TO_BUFFER;
 	return (size_t)strtoull(buffer.str().c_str(), nullptr, 10);
@@ -95,10 +95,10 @@ template <> float converter<string, float>::convert(const string& var);
 template <> unsigned int converter<string, unsigned int>::convert(const string& var);
 template <> int converter<string, int>::convert(const string& var);
 template <> bool converter<string, bool>::convert(const string& var);
-#ifdef A2E_IOS
+#if defined(A2E_IOS)
 template <> unsigned long int converter<string, unsigned long int>::convert(const string& var);
 #endif
-#ifdef PLATFORM_X64
+#if defined(PLATFORM_X64)
 template <> size_t converter<string, size_t>::convert(const string& var);
 template <> ssize_t converter<string, ssize_t>::convert(const string& var);
 #endif

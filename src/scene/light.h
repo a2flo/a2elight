@@ -33,13 +33,13 @@ public:
 	light(const float3& pos) : light(pos.x, pos.y, pos.z) {}
 	~light();
 	
-	enum LIGHT_TYPE {
+	enum class LIGHT_TYPE : unsigned int {
 		//! point light with specific radius (diff+spec only, no ambient color)
-		LT_POINT,
+		POINT,
 		//! TODO: !
-		LT_SPOT,
+		SPOT,
 		//! global directional light (no attenuation, can use ambient color)
-		LT_DIRECTIONAL
+		DIRECTIONAL
 	};
 
 	void set_type(const LIGHT_TYPE& type);
@@ -69,7 +69,7 @@ public:
 	bool is_enabled() const;
 
 protected:
-	LIGHT_TYPE type = LT_POINT;
+	LIGHT_TYPE type = LIGHT_TYPE::POINT;
 	float3 position;
 	float3 color;
 	float3 ambient;

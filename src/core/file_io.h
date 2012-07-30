@@ -29,41 +29,41 @@
 
 class A2E_API file_io {
 public:
-	enum FIO_OPEN_TYPE {
-		OT_READ,
-		OT_READWRITE,
-		OT_WRITE,
-		OT_READ_BINARY,
-		OT_READWRITE_BINARY,
-		OT_WRITE_BINARY,
-		OT_APPEND,
-		OT_APPEND_BINARY,
-		OT_APPEND_READ,
-		OT_APPEND_READ_BINARY
+	enum class OPEN_TYPE {
+		READ,
+		READWRITE,
+		WRITE,
+		READ_BINARY,
+		READWRITE_BINARY,
+		WRITE_BINARY,
+		APPEND,
+		APPEND_BINARY,
+		APPEND_READ,
+		APPEND_READ_BINARY
 	};
 	
 	file_io();
-	file_io(const string& filename, FIO_OPEN_TYPE open_type = OT_READWRITE_BINARY);
+	file_io(const string& filename, OPEN_TYPE open_type = OPEN_TYPE::READWRITE_BINARY);
 	~file_io();
 	
-	enum FILE_TYPE {
-		FT_NONE,
-		FT_DIR,
-		FT_ALL,
-		FT_IMAGE,
-		FT_A2E_MODEL,
-		FT_A2E_ANIMATION,
-		FT_A2E_MATERIAL,
-		FT_A2E_MAP,
-		FT_A2E_UI,
-		FT_A2E_LIST,
-		FT_A2E_SHADER,
-		FT_XML,
-		FT_TEXT,
-		FT_OPENCL
+	enum class FILE_TYPE : unsigned int {
+		NONE,
+		DIR,
+		ALL,
+		IMAGE,
+		A2E_MODEL,
+		A2E_ANIMATION,
+		A2E_MATERIAL,
+		A2E_MAP,
+		A2E_UI,
+		A2E_LIST,
+		A2E_SHADER,
+		XML,
+		TEXT,
+		OPENCL
 	};
 
-	bool open(const string& filename, FIO_OPEN_TYPE open_type);
+	bool open(const string& filename, OPEN_TYPE open_type);
 	bool file_to_buffer(const string& filename, stringstream& buffer);
 	void close();
 	uint64_t get_filesize();
@@ -94,7 +94,7 @@ public:
 
 
 	//
-	bool is_file(const char* filename);
+	static bool is_file(const string& filename);
 	bool eof() const;
 	bool good() const;
 	bool fail() const;
@@ -102,7 +102,7 @@ public:
 	bool is_open() const;
 
 protected:
-	FIO_OPEN_TYPE open_type = OT_READ;
+	OPEN_TYPE open_type = OPEN_TYPE::READ;
 	fstream filestream;
 
 	bool check_open();

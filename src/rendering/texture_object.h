@@ -21,15 +21,15 @@
 
 #include "global.h"
 
+enum class TEXTURE_FILTERING {
+	POINT,
+	LINEAR,
+	BILINEAR,
+	TRILINEAR,
+	AUTOMATIC,
+};
+
 struct texture_object {
-	enum TEXTURE_FILTERING {
-		TF_POINT,
-		TF_LINEAR,
-		TF_BILINEAR,
-		TF_TRILINEAR,
-		TF_AUTOMATIC,
-	};
-	
 	string filename = "";
 	GLenum texture_type = GL_TEXTURE_2D;
 	GLuint tex_num = 0;
@@ -38,7 +38,7 @@ struct texture_object {
 	GLint internal_format = GL_RGB8;
 	GLenum format = GL_RGB;
 	bool alpha = false;
-	TEXTURE_FILTERING filtering = TF_AUTOMATIC;
+	TEXTURE_FILTERING filtering = TEXTURE_FILTERING::AUTOMATIC;
 	size_t anisotropic = 0;
 	GLint wrap_s = GL_REPEAT;
 	GLint wrap_t = GL_REPEAT;

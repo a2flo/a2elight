@@ -58,9 +58,9 @@ struct shader_object {
 	
 	shader_object(const string& shd_name) : name(shd_name), programs(), options(),
 #if !defined(A2E_IOS)
-	glsl_version(ext::GLSL_150),
+	glsl_version(ext::GLSL_VERSION::GLSL_150),
 #else
-	glsl_version(ext::GLSL_ES_100),
+	glsl_version(ext::GLSL_VERSION::GLSL_ES_100),
 #endif
 	a2e_shader(false) {}
 	~shader_object() {

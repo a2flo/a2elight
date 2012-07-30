@@ -39,6 +39,8 @@
 #include "gui/gui.h"
 #include "gui/event.h"
 #include "gui/image.h"
+#include "gui/font_manager.h"
+#include "gui/font.h"
 
 #include "particle/particle.h"
 
@@ -58,6 +60,7 @@
 #include "rendering/renderer/a2e_shader.h"
 #if !defined(A2E_IOS)
 #include "rendering/renderer/gl3/shader_gl3.h"
+#include "rendering/gl_timer.h"
 #else
 #include "rendering/renderer/gles2/shader_gles2.h"
 #endif

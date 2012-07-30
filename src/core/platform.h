@@ -36,20 +36,20 @@
 #define __WINDOWS__ 1
 #endif
 
-#ifndef strtof
+#if !defined(strtof)
 #define strtof(arg1, arg2) ((float)strtod(arg1, arg2))
 #endif
 
-#ifndef __func__
+#if !defined(__func__)
 #define __func__ __FUNCTION__
 #endif
 
-#ifndef __FLT_MAX__
+#if !defined(__FLT_MAX__)
 #define __FLT_MAX__ FLT_MAX
 #endif
 
-#ifndef SIZE_T_MAX
-#ifdef MAXSIZE_T
+#if !defined(SIZE_T_MAX)
+#if defined(MAXSIZE_T)
 #define SIZE_T_MAX MAXSIZE_T
 #else
 #define SIZE_T_MAX (~((size_t)0))
@@ -73,7 +73,7 @@
 #define A2E_API
 #include <dirent.h>
 
-#ifndef SIZE_T_MAX
+#if !defined(SIZE_T_MAX)
 #define SIZE_T_MAX (~((size_t)0))
 #endif
 
@@ -127,7 +127,7 @@
 #include <SDL_platform.h>
 #include <SDL_syswm.h>
 #include <GL/gl3.h>
-#ifndef WIN_UNIXENV
+#if !defined(WIN_UNIXENV)
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #endif
@@ -148,13 +148,13 @@
 // a2e logger
 #include "core/logger.h"
 
-#ifndef __has_feature
+#if !defined(__has_feature)
 #define __has_feature(x) 0
 #endif
 
 // TODO: better location for this?
-#ifndef __DRAW_MODE_DEF__
-#define __DRAW_MODE_DEF__
+#if !defined(__A2E_DRAW_MODE_DEF__)
+#define __A2E_DRAW_MODE_DEF__
 enum class DRAW_MODE : unsigned int {
 	NONE					= 0,
 	

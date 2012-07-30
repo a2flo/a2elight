@@ -17,6 +17,7 @@
  */
 
 #include "extensions.h"
+#include "engine.h"
 
 // i won't add quadro or firegl cards here, since their naming scheme is inscrutable.
 // users will have to use the "force profile" option in the config.xml (set to the
@@ -26,7 +27,7 @@
 // checking. i also won't add cards of other vendors, since i don't own any or could
 // otherwise check what they are capable of. they are most certainly unimportant
 // anyways and can simply use the generic profile.
-const char* ext::GRAPHIC_CARD_STR[] = {
+const char* ext::GRAPHICS_CARD_STR[] = {
 	"Unknown",
 	"Generic SM 4.0",
 	"Generic SM 5.0",
@@ -46,37 +47,37 @@ const char* ext::GRAPHIC_CARD_STR[] = {
 	"Ivy Bridge",
 };
 
-const char* ext::GRAPHIC_CARD_VENDOR_DEFINE_STR[] = {
-	"GCV_UNKNOWN",
-	"GCV_NVIDIA",
-	"GCV_ATI",
-	"GCV_POWERVR",
-	"GCV_INTEL",
+const char* ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[] = {
+	"UNKNOWN",
+	"NVIDIA",
+	"ATI",
+	"POWERVR",
+	"INTEL",
 };
 
-const char* ext::GRAPHIC_CARD_DEFINE_STR[] = {
-	"GC_UNKNOWN",
-	"GC_GENERIC_SM_4_0",
-	"GC_GENERIC_SM_5_0",
-	"GC_GEFORCE_8",
-	"GC_GEFORCE_9",
-	"GC_GEFORCE_GT200",
-	"GC_GEFORCE_GF100",
-	"GC_GEFORCE_GK100",
-	"GC_RADEON_HD2",
-	"GC_RADEON_HD3",
-	"GC_RADEON_HD4",
-	"GC_RADEON_HD5",
-	"GC_RADEON_HD6",
-	"GC_RADEON_HD7",
-	"GC_SGX_535",
-	"GC_SGX_543",
-	"GC_IVY_BRIDGE",
+const char* ext::GRAPHICS_CARD_DEFINE_STR[] = {
+	"UNKNOWN",
+	"GENERIC_SM_4_0",
+	"GENERIC_SM_5_0",
+	"GEFORCE_8",
+	"GEFORCE_9",
+	"GEFORCE_GT200",
+	"GEFORCE_GF100",
+	"GEFORCE_GK100",
+	"RADEON_HD2",
+	"RADEON_HD3",
+	"RADEON_HD4",
+	"RADEON_HD5",
+	"RADEON_HD6",
+	"RADEON_HD7",
+	"SGX_535",
+	"SGX_543",
+	"IVY_BRIDGE",
 };
 
 /*! create and initialize the extension class
  */
-ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_, string* force_vendor_) {
+ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, string* force_vendor_) {
 	ext::mode = imode;
 	ext::disabled_extensions = disabled_extensions_;
 	ext::force_device = force_device_;
@@ -104,46 +105,46 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	const string str_gl_version = (const char*)glGetString(GL_VERSION);
 	const string str_glsl_version = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	
-	opengl_version = OPENGL_UNKNOWN;
+	opengl_version = OPENGL_VERSION::OPENGL_UNKNOWN;
 #if !defined(A2E_IOS)
 	switch(str_gl_version[0]) {
 		case '0':
 		case '1':
 		case '2':
-			opengl_version = OPENGL_UNKNOWN;
+			opengl_version = OPENGL_VERSION::OPENGL_UNKNOWN;
 			break;
 		case '3':
-			opengl_version = OPENGL_3_0;
+			opengl_version = OPENGL_VERSION::OPENGL_3_0;
 			switch(str_gl_version[2]) {
 				case '0': break;
 				case '1':
-					opengl_version = OPENGL_3_1;
+					opengl_version = OPENGL_VERSION::OPENGL_3_1;
 					break;
 				case '2':
-					opengl_version = OPENGL_3_2;
+					opengl_version = OPENGL_VERSION::OPENGL_3_2;
 					break;
 				case '3':
 				default:
-					opengl_version = OPENGL_3_3;
+					opengl_version = OPENGL_VERSION::OPENGL_3_3;
 					break;
 			}
 			break;
 		case '4':
-			opengl_version = OPENGL_4_0;
+			opengl_version = OPENGL_VERSION::OPENGL_4_0;
 			switch(str_gl_version[2]) {
 				case '0': break;
 				case '1':
-					opengl_version = OPENGL_4_1;
+					opengl_version = OPENGL_VERSION::OPENGL_4_1;
 					break;
 				case '2':
 				default:
-					opengl_version = OPENGL_4_2;
+					opengl_version = OPENGL_VERSION::OPENGL_4_2;
 					break;
 			}
 			break;
 		default:
 			// default to highest version
-			opengl_version = OPENGL_4_2;
+			opengl_version = OPENGL_VERSION::OPENGL_4_2;
 			break;
 	}
 #else
@@ -164,12 +165,12 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	}
 #endif
 	
-	glsl_version = GLSL_NO_VERSION;
+	glsl_version = GLSL_VERSION::GLSL_NO_VERSION;
 #if !defined(A2E_IOS)
 	switch(str_glsl_version[0]) {
 		case '1':
 			switch(str_glsl_version[2]) {
-				case '5': glsl_version = GLSL_150; break;
+				case '5': glsl_version = GLSL_VERSION::GLSL_150; break;
 				default: break;
 			}
 			break;
@@ -177,23 +178,23 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			switch(str_glsl_version[2]) {
 				case '3':
 				default:
-					glsl_version = GLSL_330;
+					glsl_version = GLSL_VERSION::GLSL_330;
 					break;
 			}
 			break;
 		case '4':
 			switch(str_glsl_version[2]) {
-				case '0': glsl_version = GLSL_400; break;
-				case '1': glsl_version = GLSL_410; break;
+				case '0': glsl_version = GLSL_VERSION::GLSL_400; break;
+				case '1': glsl_version = GLSL_VERSION::GLSL_410; break;
 				case '2':
 				default:
-					glsl_version = GLSL_420;
+					glsl_version = GLSL_VERSION::GLSL_420;
 					break;
 			}
 			break;
 		default:
 			// default to highest version
-			glsl_version = GLSL_420;
+			glsl_version = GLSL_VERSION::GLSL_420;
 			break;
 	}
 #else
@@ -211,7 +212,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 #endif
 
 	// set all flags to false beforehand
-	shader_support = (glsl_version >= GLSL_ES_100);
+	shader_support = (glsl_version >= GLSL_VERSION::GLSL_ES_100);
 	shader_model_5_0_support = false;
 	anisotropic_filtering_support = false;
 	fbo_multisample_coverage_support = false;
@@ -224,7 +225,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	multisample_coverage_modes = nullptr;
 	max_draw_buffers = 0;
 	
-	if(imode == 0) {
+	if(imode == INIT_MODE::GRAPHICAL) {
 		string vendor_str = "";
 		if(*force_vendor != "") {
 			vendor_str = *force_vendor;
@@ -236,19 +237,19 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			}
 		}
 		core::str_to_lower_inplace(vendor_str);
-		if(vendor_str.find("nvidia") != string::npos) vendor = ext::GCV_NVIDIA;
+		if(vendor_str.find("nvidia") != string::npos) vendor = ext::GRAPHICS_CARD_VENDOR::NVIDIA;
 		// imagin(ati)on needs to be checked first ...
-		else if(vendor_str.find("imagination") != string::npos) vendor = ext::GCV_POWERVR;
-		else if(vendor_str.find("ati") != string::npos) vendor = ext::GCV_ATI;
-		else if(vendor_str.find("intel") != string::npos) vendor = ext::GCV_INTEL;
-		else vendor = ext::GCV_UNKNOWN;
+		else if(vendor_str.find("imagination") != string::npos) vendor = ext::GRAPHICS_CARD_VENDOR::POWERVR;
+		else if(vendor_str.find("ati") != string::npos) vendor = ext::GRAPHICS_CARD_VENDOR::ATI;
+		else if(vendor_str.find("intel") != string::npos) vendor = ext::GRAPHICS_CARD_VENDOR::INTEL;
+		else vendor = ext::GRAPHICS_CARD_VENDOR::UNKNOWN;
 	}
 	else {
-		vendor = ext::GCV_UNKNOWN;
-		graphic_card = ext::GC_UNKNOWN;
+		vendor = ext::GRAPHICS_CARD_VENDOR::UNKNOWN;
+		graphics_card = ext::GRAPHICS_CARD::UNKNOWN;
 	}
 	
-	if(imode == 0) {
+	if(imode == INIT_MODE::GRAPHICAL) {
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&max_texture_size);
 	}
 
@@ -269,7 +270,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 			if(ext_str == nullptr) break;
 			if(!is_ext_supported(ext_str)) {
 				*check.flag = false;
-				if(imode == 0) {
+				if(imode == INIT_MODE::GRAPHICAL) {
 					a2e_msg("your graphic device doesn't support '%s'!", ext_str);
 				}
 				// don't break here, but rather print all extensions that aren't supported
@@ -278,7 +279,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	}
 
 	//////
-	if(!shader_model_5_0_support && glsl_version >= GLSL_400) {
+	if(!shader_model_5_0_support && glsl_version >= GLSL_VERSION::GLSL_400) {
 		shader_model_5_0_support = true;
 	}
 
@@ -290,16 +291,16 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 		glGetIntegerv(GL_MULTISAMPLE_COVERAGE_MODES_NV, (GLint*)multisample_coverage_modes);
 	}
 #endif
-	if(imode == 0) glGetIntegerv(GL_MAX_SAMPLES, (GLint*)&max_samples);
+	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_SAMPLES, (GLint*)&max_samples);
 	
 	// get max vertex textures
 	GLint vtf = 0;
-	if(imode == 0) glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vtf);
+	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vtf);
 	if(vtf > 0) {
 		a2e_debug("supported vertex textures: %i", vtf);
 	}
 	else {
-		if(imode == 0) a2e_error("your graphic device doesn't support 'Vertex Texture Fetching'!");
+		if(imode == INIT_MODE::GRAPHICAL) a2e_error("your graphic device doesn't support 'Vertex Texture Fetching'!");
 	}
 	
 	// get max anisotropic filtering
@@ -309,20 +310,20 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 	}
 	
 	// get max textures
-	if(imode == 0) glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&(ext::max_texture_image_units));
+	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&(ext::max_texture_image_units));
 	
 	// get max draw buffers
 #if !defined(A2E_IOS)
-	if(imode == 0) glGetIntegerv(GL_MAX_DRAW_BUFFERS, (GLint*)&(ext::max_draw_buffers));
+	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_DRAW_BUFFERS, (GLint*)&(ext::max_draw_buffers));
 #else
 	// TODO: no support on iOS (yet), workaround?
 	max_draw_buffers = 0;
 #endif
 
 	// graphic card handling
-	if(imode == 0) {
-		graphic_card = (shader_support ? (shader_model_5_0_support ?
-			ext::GC_GENERIC_SM5 : ext::GC_GENERIC_SM4) : GC_UNKNOWN);
+	if(imode == INIT_MODE::GRAPHICAL) {
+		graphics_card = (shader_support ? (shader_model_5_0_support ?
+										   GRAPHICS_CARD::GENERIC_SM5 : GRAPHICS_CARD::GENERIC_SM4) : GRAPHICS_CARD::UNKNOWN);
 
 		// get renderer string and make it lower case
 		const char* gl_renderer_str = (const char*)glGetString(GL_RENDERER);
@@ -331,9 +332,9 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 		}
 		string renderer_str = (*force_device == "") ? (gl_renderer_str == nullptr ? "" : gl_renderer_str) : force_device->c_str();
 		core::str_to_lower_inplace(renderer_str);
-		if(vendor == ext::GCV_NVIDIA) {
+		if(vendor == ext::GRAPHICS_CARD_VENDOR::NVIDIA) {
 			if(renderer_str.find("geforce 8") != string::npos) {
-				graphic_card = ext::GC_GEFORCE_8;
+				graphics_card = ext::GRAPHICS_CARD::GEFORCE_8;
 			}
 			// yes, these are all actually geforce 9 cards ... and thank you nvidia for this totally fucked up naming scheme ...
 			else if(renderer_str.find("geforce 9") != string::npos ||		// 9xxx(M)
@@ -344,7 +345,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 					renderer_str.find("geforce gts 1") != string::npos ||	// GTS 1xx(M)
 					(renderer_str.find("geforce gts 2") != string::npos && renderer_str.find("m") == string::npos) || // GTS 2xx (!M)
 					(renderer_str.find("geforce gtx 2") != string::npos && renderer_str.find("m") != string::npos)) { // GTX 2xxM
-				graphic_card = ext::GC_GEFORCE_9;
+				graphics_card = ext::GRAPHICS_CARD::GEFORCE_9;
 			}
 			else if(renderer_str.find("geforce 2") != string::npos ||		// 2xx(M)
 					renderer_str.find("geforce 3") != string::npos ||		// 3xx(M)
@@ -355,7 +356,7 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 					renderer_str.find("geforce gtx 2") != string::npos ||	// GTX 2xx
 					renderer_str.find("geforce gt 3") != string::npos ||	// GT 3xx(M)
 					renderer_str.find("geforce gts 3") != string::npos) {	// GTS 3xx(M)
-				graphic_card = ext::GC_GEFORCE_GT200;
+				graphics_card = ext::GRAPHICS_CARD::GEFORCE_GT200;
 			}
 			else if(renderer_str.find("geforce gtx 4") != string::npos ||	// GTX 4xx
 					renderer_str.find("geforce gts 4") != string::npos ||	// GTS 4xx
@@ -374,61 +375,61 @@ ext::ext(unsigned int imode, string* disabled_extensions_, string* force_device_
 					 renderer_str.find("640m") == string::npos) ||			// GT 6xxM (!640M/650M)
 					(renderer_str.find("geforce gts 6") != string::npos &&
 					 renderer_str.find("m") != string::npos)) {				// GTS 6xxM
-				graphic_card = ext::GC_GEFORCE_GF100;
+				graphics_card = ext::GRAPHICS_CARD::GEFORCE_GF100;
 			}
 			else if(renderer_str.find("geforce gtx 6") != string::npos ||	// GTX 6xx
 					renderer_str.find("geforce gts 6") != string::npos ||	// GTS 6xx
 					renderer_str.find("geforce gt 6") != string::npos) {	// GT 6xx
-				graphic_card = ext::GC_GEFORCE_GK100;
+				graphics_card = ext::GRAPHICS_CARD::GEFORCE_GK100;
 			}
 		}
-		else if(vendor == ext::GCV_ATI) {
+		else if(vendor == ext::GRAPHICS_CARD_VENDOR::ATI) {
 			if(renderer_str.find("radeon hd 2") != string::npos) {
-				graphic_card = ext::GC_RADEON_HD2;
+				graphics_card = ext::GRAPHICS_CARD::RADEON_HD2;
 			}
 			else if(renderer_str.find("radeon hd 3") != string::npos) {
-				graphic_card = ext::GC_RADEON_HD3;
+				graphics_card = ext::GRAPHICS_CARD::RADEON_HD3;
 			}
 			else if(renderer_str.find("radeon hd 4") != string::npos) {
-				graphic_card = ext::GC_RADEON_HD4;
+				graphics_card = ext::GRAPHICS_CARD::RADEON_HD4;
 			}
 			else if(renderer_str.find("radeon hd 5") != string::npos) {
-				graphic_card = ext::GC_RADEON_HD5;
+				graphics_card = ext::GRAPHICS_CARD::RADEON_HD5;
 			}
 			else if(renderer_str.find("radeon hd 6") != string::npos) {
-				graphic_card = ext::GC_RADEON_HD6;
+				graphics_card = ext::GRAPHICS_CARD::RADEON_HD6;
 			}
 			else if(renderer_str.find("radeon hd 7") != string::npos) {
-				graphic_card = ext::GC_RADEON_HD7;
+				graphics_card = ext::GRAPHICS_CARD::RADEON_HD7;
 			}
 		}
-		else if(vendor == ext::GCV_POWERVR) {
+		else if(vendor == ext::GRAPHICS_CARD_VENDOR::POWERVR) {
 			if(renderer_str.find("sgx 535") != string::npos) {
-				graphic_card = ext::GC_SGX_535;
+				graphics_card = ext::GRAPHICS_CARD::SGX_535;
 			}
 			else if(renderer_str.find("sgx 543") != string::npos) {
-				graphic_card = ext::GC_SGX_543;
+				graphics_card = ext::GRAPHICS_CARD::SGX_543;
 			}
 		}
-		else if(vendor == ext::GCV_INTEL) {
+		else if(vendor == ext::GRAPHICS_CARD_VENDOR::INTEL) {
 			if(renderer_str.find("hd graphics 2500") != string::npos ||
 			   renderer_str.find("hd graphics 4000") != string::npos) {
-				graphic_card = ext::GC_IVY_BRIDGE;
+				graphics_card = ext::GRAPHICS_CARD::IVY_BRIDGE;
 			}
 		}
 		else {
 			if(renderer_str.find("generic sm 4.0") != string::npos) {
-				graphic_card = ext::GC_GENERIC_SM4;
+				graphics_card = ext::GRAPHICS_CARD::GENERIC_SM4;
 			}
 			else if(renderer_str.find("generic sm 5.0") != string::npos) {
-				graphic_card = ext::GC_GENERIC_SM5;
+				graphics_card = ext::GRAPHICS_CARD::GENERIC_SM5;
 			}
 		}
 
-		a2e_debug("your graphic card has been recognized as \"%s\"!", GRAPHIC_CARD_STR[graphic_card]);
+		a2e_debug("your graphics card has been recognized as \"%s\"!", GRAPHICS_CARD_STR[(unsigned int)graphics_card]);
 	}
 	
-	if(imode == 0) {
+	if(imode == INIT_MODE::GRAPHICAL) {
 		a2e_debug("opengl version: %s", cstr_from_gl_version(opengl_version));
 		a2e_debug("glsl version: GLSL %s", cstr_from_glsl_version(glsl_version));
 		a2e_debug("shader model: %s", shader_support ? (shader_model_5_0_support ? "5.0" : "4.0") : "none");
@@ -465,14 +466,14 @@ bool ext::is_gl_version(unsigned int major, unsigned int minor) {
 
 /*! returns the graphic card vendor
  */
-ext::GRAPHIC_CARD_VENDOR ext::get_vendor() {
+ext::GRAPHICS_CARD_VENDOR ext::get_vendor() {
 	return ext::vendor;
 }
 
 /*! returns the graphic card
  */
-ext::GRAPHIC_CARD ext::get_graphic_card() {
-	return ext::graphic_card;
+ext::GRAPHICS_CARD ext::get_graphics_card() {
+	return ext::graphics_card;
 }
 
 /*! returns true if glsl shaders are supported
@@ -540,26 +541,26 @@ bool ext::is_fbo_multisample_coverage_mode_support(unsigned int coverage_samples
 
 const char* ext::cstr_from_glsl_version(const ext::GLSL_VERSION& version) const {
 	switch(version) {
-		case GLSL_ES_100: return "1.00";
-		case GLSL_150: return "1.50";
-		case GLSL_330: return "3.30";
-		case GLSL_400: return "4.00";
-		case GLSL_410: return "4.10";
-		case GLSL_420: return "4.20";
-		case GLSL_NO_VERSION: break;
+		case GLSL_VERSION::GLSL_ES_100: return "1.00";
+		case GLSL_VERSION::GLSL_150: return "1.50";
+		case GLSL_VERSION::GLSL_330: return "3.30";
+		case GLSL_VERSION::GLSL_400: return "4.00";
+		case GLSL_VERSION::GLSL_410: return "4.10";
+		case GLSL_VERSION::GLSL_420: return "4.20";
+		case GLSL_VERSION::GLSL_NO_VERSION: break;
 	}
 	return "<unknown>";
 }
 
 const char* ext::glsl_version_str_from_glsl_version(const ext::GLSL_VERSION& version) const {
 	switch(version) {
-		case GLSL_ES_100: return "100";
-		case GLSL_150: return "150";
-		case GLSL_330: return "330";
-		case GLSL_400: return "400";
-		case GLSL_410: return "410";
-		case GLSL_420: return "420";
-		case GLSL_NO_VERSION: break;
+		case GLSL_VERSION::GLSL_ES_100: return "100";
+		case GLSL_VERSION::GLSL_150: return "150";
+		case GLSL_VERSION::GLSL_330: return "330";
+		case GLSL_VERSION::GLSL_400: return "400";
+		case GLSL_VERSION::GLSL_410: return "410";
+		case GLSL_VERSION::GLSL_420: return "420";
+		case GLSL_VERSION::GLSL_NO_VERSION: break;
 	}
 	return "<unknown>";
 }
@@ -568,22 +569,22 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& major_version, const size_t
 	switch(major_version) {
 		case 1:
 			switch(minor_version) {
-				case 0: return GLSL_ES_100;
-				case 50: return GLSL_150;
+				case 0: return GLSL_VERSION::GLSL_ES_100;
+				case 50: return GLSL_VERSION::GLSL_150;
 				default: break;
 			}
 			break;
 		case 3:
 			switch(minor_version) {
-				case 30: return GLSL_330;
+				case 30: return GLSL_VERSION::GLSL_330;
 				default: break;
 			}
 			break;
 		case 4:
 			switch(minor_version) {
-				case 0: return GLSL_400;
-				case 10: return GLSL_410;
-				case 20: return GLSL_420;
+				case 0: return GLSL_VERSION::GLSL_400;
+				case 10: return GLSL_VERSION::GLSL_410;
+				case 20: return GLSL_VERSION::GLSL_420;
 				default: break;
 			}
 			break;
@@ -592,34 +593,34 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& major_version, const size_t
 	}
 	
 	a2e_error("invalid glsl version %d.%d!", major_version, minor_version);
-	return GLSL_NO_VERSION;
+	return GLSL_VERSION::GLSL_NO_VERSION;
 }
 
 ext::GLSL_VERSION ext::to_glsl_version(const size_t& version) const {
 	switch(version) {
-		case 100: return GLSL_ES_100;
-		case 150: return GLSL_150;
-		case 330: return GLSL_330;
-		case 400: return GLSL_400;
-		case 410: return GLSL_410;
-		case 420: return GLSL_420;
+		case 100: return GLSL_VERSION::GLSL_ES_100;
+		case 150: return GLSL_VERSION::GLSL_150;
+		case 330: return GLSL_VERSION::GLSL_330;
+		case 400: return GLSL_VERSION::GLSL_400;
+		case 410: return GLSL_VERSION::GLSL_410;
+		case 420: return GLSL_VERSION::GLSL_420;
 	}
 	
 	a2e_error("invalid glsl version %d!", version);
-	return GLSL_NO_VERSION;
+	return GLSL_VERSION::GLSL_NO_VERSION;
 }
 
 const char* ext::cstr_from_gl_version(const ext::OPENGL_VERSION& version) const {
 	switch(version) {
-		case OPENGL_ES_2_0: return "OpenGL ES 2.0";
-		case OPENGL_3_0: return "OpenGL 3.0";
-		case OPENGL_3_1: return "OpenGL 3.1";
-		case OPENGL_3_2: return "OpenGL 3.2";
-		case OPENGL_3_3: return "OpenGL 3.3";
-		case OPENGL_4_0: return "OpenGL 4.0";
-		case OPENGL_4_1: return "OpenGL 4.1";
-		case OPENGL_4_2: return "OpenGL 4.2";
-		case OPENGL_UNKNOWN : break;
+		case OPENGL_VERSION::OPENGL_ES_2_0: return "OpenGL ES 2.0";
+		case OPENGL_VERSION::OPENGL_3_0: return "OpenGL 3.0";
+		case OPENGL_VERSION::OPENGL_3_1: return "OpenGL 3.1";
+		case OPENGL_VERSION::OPENGL_3_2: return "OpenGL 3.2";
+		case OPENGL_VERSION::OPENGL_3_3: return "OpenGL 3.3";
+		case OPENGL_VERSION::OPENGL_4_0: return "OpenGL 4.0";
+		case OPENGL_VERSION::OPENGL_4_1: return "OpenGL 4.1";
+		case OPENGL_VERSION::OPENGL_4_2: return "OpenGL 4.2";
+		case OPENGL_VERSION::OPENGL_UNKNOWN : break;
 	}
 	return "<unknown>";
 }

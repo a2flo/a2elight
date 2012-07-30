@@ -74,7 +74,7 @@ public:
 	bool is_cpu_support();
 	bool is_gpu_support();
 	
-	enum OPENCL_DEVICE {
+	enum class DEVICE_TYPE : unsigned int {
 		NONE,
 		FASTEST_GPU,
 		FASTEST_CPU,
@@ -99,24 +99,24 @@ public:
 		CPU7,
 		CPU255 = CPU0+254
 	};
-	device_object* get_device(OPENCL_DEVICE device);
+	device_object* get_device(DEVICE_TYPE device);
 	device_object* get_active_device();
 	
-	enum OPENCL_PLATFORM_VENDOR {
-		CLPV_NVIDIA,
-		CLPV_INTEL,
-		CLPV_AMD,
-		CLPV_APPLE,
-		CLPV_UNKNOWN
+	enum class PLATFORM_VENDOR {
+		NVIDIA,
+		INTEL,
+		AMD,
+		APPLE,
+		UNKNOWN
 	};
 	
-	enum OPENCL_VENDOR {
-		CLV_NVIDIA,
-		CLV_INTEL,
-		CLV_ATI,
-		CLV_AMD,
-		CLV_APPLE,
-		CLV_UNKNOWN
+	enum class VENDOR {
+		NVIDIA,
+		INTEL,
+		ATI,
+		AMD,
+		APPLE,
+		UNKNOWN
 	};
 	
 	//! buffer types/flags (associated kernel => buffer has been set as a kernel argument, at least once and the latest one for an index)
@@ -164,7 +164,7 @@ public:
 	void unmap_buffer(buffer_object* buffer_obj, void* map_ptr);
 	void set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool state);
 	
-	void set_active_device(OPENCL_DEVICE dev);
+	void set_active_device(DEVICE_TYPE dev);
 	bool set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg);
 	bool set_kernel_argument(const unsigned int& index, const opencl::buffer_object* arg);
 	template<typename T> bool set_kernel_argument(const unsigned int& index, T&& arg);
@@ -220,8 +220,8 @@ public:
 	
 	struct device_object {
 		const cl::Device* device = nullptr;
-		OPENCL_DEVICE type = (OPENCL_DEVICE)0;
-		OPENCL_VENDOR vendor_type = CLV_UNKNOWN;
+		opencl::DEVICE_TYPE type = DEVICE_TYPE::NONE;
+		opencl::VENDOR vendor_type = VENDOR::UNKNOWN;
 		unsigned int units = 0;
 		unsigned int clock = 0;
 		cl_ulong mem_size = 0;
@@ -263,14 +263,14 @@ protected:
 	void check_compilation(const bool ret, const string& filename);
 	void log_program_binary(const kernel_object* kernel);
 	
-	bool has_vendor_device(OPENCL_VENDOR vendor_type);
-	string platform_vendor_to_str(const OPENCL_PLATFORM_VENDOR pvendor) const;
+	bool has_vendor_device(opencl::VENDOR vendor_type);
+	string platform_vendor_to_str(const opencl::PLATFORM_VENDOR pvendor) const;
 	
 	const char* error_code_to_string(cl_int error_code);
 	
 	cl::Context* context;
 	cl::Platform* platform;
-	OPENCL_PLATFORM_VENDOR platform_vendor = CLPV_UNKNOWN;
+	opencl::PLATFORM_VENDOR platform_vendor = PLATFORM_VENDOR::UNKNOWN;
 	vector<cl::Platform> platforms;
 	vector<cl::Device> internal_devices;
 	vector<device_object*> devices;

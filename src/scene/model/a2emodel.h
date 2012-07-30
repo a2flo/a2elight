@@ -186,11 +186,11 @@ protected:
 	//! return an empty string if no custom shader should be used
 	virtual const string select_shader(const DRAW_MODE& draw_mode) const;
 	
-	enum VERTEX_ATTRIBUTE {
-		VA_NORMAL			= 1 << 0,
-		VA_BINORMAL			= 1 << 1,
-		VA_TANGENT			= 1 << 2,
-		VA_TEXTURE_COORD	= 1 << 3
+	enum class VERTEX_ATTRIBUTE : unsigned int {
+		NORMAL			= (1 << 0),
+		BINORMAL		= (1 << 1),
+		TANGENT			= (1 << 2),
+		TEXTURE_COORD	= (1 << 3)
 	};
 	
 	

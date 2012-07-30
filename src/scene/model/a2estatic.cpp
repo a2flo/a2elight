@@ -82,7 +82,7 @@ void a2estatic::draw(const DRAW_MODE draw_mode) {
 		draw_phys_obj();
 	}
 	
-	if(!is_draw_phys_obj && e->get_init_mode() == engine::GRAPHICAL) {
+	if(!is_draw_phys_obj && e->get_init_mode() == INIT_MODE::GRAPHICAL) {
 		pre_draw_setup();
 		
 		// vbo setup, part one (the same for all sub-objects)
@@ -120,7 +120,7 @@ void a2estatic::post_draw_setup(const ssize_t sub_object_num) {
  *  @param vbo flag that specifies if vertex buffer objects should be used
  */
 void a2estatic::load_model(const string& filename_) {
-	file_io file(filename_, file_io::OT_READ_BINARY);
+	file_io file(filename_, file_io::OPEN_TYPE::READ_BINARY);
 	if(!file.is_open()) {
 		return;
 	}

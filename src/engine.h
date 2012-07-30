@@ -38,6 +38,13 @@
  *  @brief main engine
  */
 
+// the initialization mode is used to determine if we should load
+// or compute graphical stuff like textures or shaders
+enum class INIT_MODE : unsigned int {
+	GRAPHICAL,
+	CONSOLE
+};
+
 class shader;
 class opencl;
 class gui;
@@ -78,13 +85,6 @@ public:
 	shader* get_shader();
 	gui* get_gui();
 	scene* get_scene();
-	
-	// the initialization mode is used to determine if we should load
-	// or compute graphical stuff like textures or shaders
-	enum INIT_MODE {
-	    GRAPHICAL,
-	    CONSOLE
-	};
 	
 	struct server_data {
 		unsigned int max_clients;
@@ -144,7 +144,7 @@ public:
 	float get_frame_time();
 	bool is_new_fps_count();
 	
-	unsigned int get_init_mode();
+	const INIT_MODE& get_init_mode();
 
 	// config functions
 	const xml::xml_doc& get_config_doc() const;
@@ -183,7 +183,7 @@ public:
 	client_data* get_client_data();
 	
 	// graphic
-	texture_object::TEXTURE_FILTERING get_filtering();
+	TEXTURE_FILTERING get_filtering();
 	size_t get_anisotropic();
 	rtt::TEXTURE_ANTI_ALIASING get_anti_aliasing();
 	
@@ -243,8 +243,8 @@ protected:
 		client_data client;
 		
 		// graphic
-		texture_object::TEXTURE_FILTERING filtering = texture_object::TF_POINT;
-		rtt::TEXTURE_ANTI_ALIASING anti_aliasing = rtt::TAA_NONE;
+		TEXTURE_FILTERING filtering = TEXTURE_FILTERING::POINT;
+		rtt::TEXTURE_ANTI_ALIASING anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::NONE;
 		size_t anisotropic = 0;
 		
 		// graphic device
@@ -285,7 +285,7 @@ protected:
 	string kernelpath;
 
 	// screen info variables
-	unsigned int mode;
+	INIT_MODE mode;
 	vector<rtt::TEXTURE_ANTI_ALIASING> supported_aa_modes;
 
 	// transformation/positioning/rotation

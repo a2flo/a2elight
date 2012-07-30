@@ -35,39 +35,39 @@ public:
 	rtt(engine* e, ext* exts, unsigned int screen_width, unsigned int screen_height);
 	~rtt();
 
-	enum TEXTURE_ANTI_ALIASING {
-		TAA_NONE,
-		TAA_MSAA_2,
-		TAA_MSAA_4,
-		TAA_MSAA_8,
-		TAA_MSAA_16,
-		TAA_MSAA_32,
-		TAA_MSAA_64,
-		TAA_CSAA_8,		// 4 col/8 cov
-		TAA_CSAA_8Q,	// 8 col/8 cov
-		TAA_CSAA_16,	// 4 col/16 cov
-		TAA_CSAA_16Q,	// 8 col/16 cov
-		TAA_CSAA_32,	// TODO: ratio?
-		TAA_CSAA_32Q,	// TODO: ratio?
-		TAA_SSAA_2,
-		TAA_SSAA_4,
-		TAA_FXAA,
-		TAA_SSAA_4_3_FXAA,
-		TAA_SSAA_2_FXAA,
+	enum class TEXTURE_ANTI_ALIASING {
+		NONE,
+		MSAA_2,
+		MSAA_4,
+		MSAA_8,
+		MSAA_16,
+		MSAA_32,
+		MSAA_64,
+		CSAA_8,		// 4 col/8 cov
+		CSAA_8Q,	// 8 col/8 cov
+		CSAA_16,	// 4 col/16 cov
+		CSAA_16Q,	// 8 col/16 cov
+		CSAA_32,	// TODO: ratio?
+		CSAA_32Q,	// TODO: ratio?
+		SSAA_2,
+		SSAA_4,
+		FXAA,
+		SSAA_4_3_FXAA,
+		SSAA_2_FXAA,
 	};
 	static const char* TEXTURE_ANTI_ALIASING_STR[];
 	size_t get_sample_count(const TEXTURE_ANTI_ALIASING& taa) const;
 	float get_anti_aliasing_scale(const TEXTURE_ANTI_ALIASING& taa) const;
 	float2 get_resolution_for_scale(const float& scale, const size2& res) const;
 	
-	enum DEPTH_TYPE {
-		DT_NONE,
-		DT_RENDERBUFFER,
-		DT_TEXTURE_2D
+	enum class DEPTH_TYPE {
+		NONE,
+		RENDERBUFFER,
+		TEXTURE_2D
 	};
-	enum STENCIL_TYPE {
-		ST_NONE,
-		ST_STENCIL_8
+	enum class STENCIL_TYPE {
+		NONE,
+		STENCIL_8
 	};
 
 	struct fbo {
@@ -80,8 +80,8 @@ public:
 		unsigned int color_buffer = 0;
 		unsigned int depth_buffer = 0;
 		bool color = false;
-		DEPTH_TYPE depth_type = DT_NONE;
-		STENCIL_TYPE stencil_type = ST_NONE;
+		DEPTH_TYPE depth_type = DEPTH_TYPE::NONE;
+		STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE;
 		GLenum depth_attachment_type = GL_DEPTH_ATTACHMENT;
 		size_t samples = 0;
 		
@@ -102,12 +102,12 @@ public:
 			resolve_buffer.assign(count, 0);
 			auto_mipmap.assign(count, false);
 			target.assign(count, GL_TEXTURE_2D);
-			anti_aliasing.assign(count, TAA_NONE);
+			anti_aliasing.assign(count, TEXTURE_ANTI_ALIASING::NONE);
 		}
 	};
 
-	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum target = GL_TEXTURE_2D, texture_object::TEXTURE_FILTERING filtering = texture_object::TF_POINT, TEXTURE_ANTI_ALIASING taa = TAA_NONE, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT, GLint internal_format = GL_RGBA8, GLenum format = GL_RGBA, GLenum type = GL_UNSIGNED_BYTE, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = rtt::DT_NONE, rtt::STENCIL_TYPE stencil_type = rtt::ST_NONE);
-	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum* target, texture_object::TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = rtt::DT_NONE, rtt::STENCIL_TYPE stencil_type = rtt::ST_NONE);
+	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum target = GL_TEXTURE_2D, TEXTURE_FILTERING filtering = TEXTURE_FILTERING::POINT, TEXTURE_ANTI_ALIASING taa = TEXTURE_ANTI_ALIASING::NONE, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT, GLint internal_format = GL_RGBA8, GLenum format = GL_RGBA, GLenum type = GL_UNSIGNED_BYTE, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = DEPTH_TYPE::NONE, rtt::STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE);
+	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum* target, TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = DEPTH_TYPE::NONE, rtt::STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE);
 	void delete_buffer(rtt::fbo* buffer);
 	void start_draw(rtt::fbo* buffer);
 	void stop_draw();
@@ -125,8 +125,6 @@ protected:
 
 	vector<fbo*> buffers;
 	fbo* current_buffer;
-
-	unsigned int filter[4];
 
 	unsigned int screen_width;
 	unsigned int screen_height;

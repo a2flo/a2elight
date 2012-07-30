@@ -201,7 +201,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		}
 		
 #if defined(__APPLE__)
-		platform_vendor = CLPV_APPLE;
+		platform_vendor = PLATFORM_VENDOR::APPLE;
 		
 		cl_context_properties cl_properties[] = {
 			CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[platform_index](),
@@ -250,13 +250,13 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		const string platform_str = platforms[platform_index].getInfo<CL_PLATFORM_NAME>();
 		const string platform_vendor_str = core::str_to_lower(platform_str);
 		if(platform_vendor_str.find("nvidia") != string::npos) {
-			platform_vendor = CLPV_NVIDIA;
+			platform_vendor = PLATFORM_VENDOR::NVIDIA;
 		}
 		else if(platform_vendor_str.find("amd") != string::npos) {
-			platform_vendor = CLPV_AMD;
+			platform_vendor = PLATFORM_VENDOR::AMD;
 		}
 		else if(platform_vendor_str.find("intel") != string::npos) {
-			platform_vendor = CLPV_INTEL;
+			platform_vendor = PLATFORM_VENDOR::INTEL;
 		}
 #endif
 
@@ -269,8 +269,8 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		a2e_debug("opencl context successfully created!");
 		
 		string dev_type_str;
-		unsigned int gpu_counter = opencl::GPU0;
-		unsigned int cpu_counter = opencl::CPU0;
+		unsigned int gpu_counter = (unsigned int)DEVICE_TYPE::GPU0;
+		unsigned int cpu_counter = (unsigned int)DEVICE_TYPE::CPU0;
 		unsigned int fastest_cpu_score = 0;
 		unsigned int fastest_gpu_score = 0;
 		unsigned int cpu_score = 0;
@@ -299,26 +299,26 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 								   internal_device.getInfo<CL_DEVICE_IMAGE3D_MAX_HEIGHT>(),
 								   internal_device.getInfo<CL_DEVICE_IMAGE3D_MAX_DEPTH>());
 
-			device->vendor_type = CLV_UNKNOWN;
+			device->vendor_type = VENDOR::UNKNOWN;
 			string vendor_str = core::str_to_lower(device->vendor);
 			if(strstr(vendor_str.c_str(), "nvidia") != nullptr) {
-				device->vendor_type = CLV_NVIDIA;
+				device->vendor_type = VENDOR::NVIDIA;
 			}
 			else if(strstr(vendor_str.c_str(), "amd") != nullptr) {
-				device->vendor_type = CLV_AMD;
+				device->vendor_type = VENDOR::AMD;
 			}
 			else if(strstr(vendor_str.c_str(), "ati") != nullptr) {
-				device->vendor_type = CLV_ATI;
+				device->vendor_type = VENDOR::ATI;
 			}
 			else if(strstr(vendor_str.c_str(), "intel") != nullptr) {
-				device->vendor_type = CLV_INTEL;
+				device->vendor_type = VENDOR::INTEL;
 			}
 			else if(strstr(vendor_str.c_str(), "apple") != nullptr) {
-				device->vendor_type = CLV_APPLE;
+				device->vendor_type = VENDOR::APPLE;
 			}
 			
 			if(device->internal_type & CL_DEVICE_TYPE_CPU) {
-				device->type = (opencl::OPENCL_DEVICE)cpu_counter;
+				device->type = (opencl::DEVICE_TYPE)cpu_counter;
 				cpu_counter++;
 				dev_type_str += "CPU ";
 				
@@ -334,7 +334,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 				}
 			}
 			if(device->internal_type & CL_DEVICE_TYPE_GPU) {
-				device->type = (opencl::OPENCL_DEVICE)gpu_counter;
+				device->type = (opencl::DEVICE_TYPE)gpu_counter;
 				gpu_counter++;
 				dev_type_str += "GPU ";
 				
@@ -589,23 +589,23 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 			
 			string device_options = "";
 			switch(device->vendor_type) {
-				case CLV_NVIDIA:
+				case VENDOR::NVIDIA:
 					device_options += nv_build_options;
 					device_options += " -DNVIDIA";
 					break;
-				case CLV_ATI:
+				case VENDOR::ATI:
 					device_options += " -DATI";
 					break;
-				case CLV_INTEL:
+				case VENDOR::INTEL:
 					device_options += " -DINTEL";
 					break;
-				case CLV_AMD:
+				case VENDOR::AMD:
 					device_options += " -DAMD";
 					break;
-				case CLV_APPLE:
+				case VENDOR::APPLE:
 					device_options += " -DAPPLE_ARM";
 					break;
-				case CLV_UNKNOWN:
+				case VENDOR::UNKNOWN:
 					device_options += " -DUNKNOWN_VENDOR";
 					break;
 			}
@@ -681,12 +681,12 @@ void opencl::log_program_binary(const kernel_object* kernel) {
 		string kernel_name = kernel->kernel->getInfo<CL_KERNEL_FUNCTION_NAME>();
 		for(const auto& device : devices) {
 			if(program_sizes[device_num] > 0) {
-				if(device->vendor_type != opencl::CLV_UNKNOWN) {
+				if(device->vendor_type != VENDOR::UNKNOWN) {
 					string file_name = kernel_name + string("_") + size_t2string(device_num);
-					if(device->vendor_type == opencl::CLV_NVIDIA) {
+					if(device->vendor_type == VENDOR::NVIDIA) {
 						file_name += ".ptx";
 					}
-					else if(device->vendor_type == opencl::CLV_INTEL || device->vendor_type == opencl::CLV_AMD) {
+					else if(device->vendor_type == VENDOR::INTEL || device->vendor_type == VENDOR::AMD) {
 						file_name += ".asm";
 					}
 					else {
@@ -759,8 +759,8 @@ void opencl::reload_kernels() {
 void opencl::load_internal_kernels() {
 	reload_kernels();
 	
-	if(is_gpu_support()) set_active_device(opencl::FASTEST_GPU);
-	else if(is_cpu_support()) set_active_device(opencl::FASTEST_CPU);
+	if(is_gpu_support()) set_active_device(DEVICE_TYPE::FASTEST_GPU);
+	else if(is_cpu_support()) set_active_device(DEVICE_TYPE::FASTEST_CPU);
 }
 
 void opencl::use_kernel(const string& identifier) {
@@ -1059,35 +1059,36 @@ void opencl::read_buffer(void* dst, opencl::buffer_object* buffer_obj) {
 	__HANDLE_CL_EXCEPTION("read_buffer")
 }
 
-void opencl::set_active_device(opencl::OPENCL_DEVICE dev) {
+void opencl::set_active_device(opencl::DEVICE_TYPE dev) {
 	switch(dev) {
-		case FASTEST_GPU:
+		case DEVICE_TYPE::FASTEST_GPU:
 			if(fastest_gpu != nullptr) {
 				active_device = fastest_gpu;
 				return;
 			}
 			break;
-		case FASTEST_CPU:
+		case DEVICE_TYPE::FASTEST_CPU:
 			if(fastest_cpu != nullptr) {
 				active_device = fastest_cpu;
 				return;
 			}
 			break;
-		case ALL_GPU:
+		case DEVICE_TYPE::ALL_GPU:
 			// TODO: ...
 			break;
-		case ALL_CPU:
+		case DEVICE_TYPE::ALL_CPU:
 			// TODO: ...
 			break;
-		case ALL_DEVICES:
+		case DEVICE_TYPE::ALL_DEVICES:
 			// TODO: ...
 			break;
-		case NONE:
+		case DEVICE_TYPE::NONE:
 		default:
 			break;
 	}
 	
-	if((dev >= GPU0 && dev <= GPU255) || (dev >= CPU0 && dev <= CPU255)) {
+	if((dev >= DEVICE_TYPE::GPU0 && dev <= DEVICE_TYPE::GPU255) ||
+	   (dev >= DEVICE_TYPE::CPU0 && dev <= DEVICE_TYPE::CPU255)) {
 		for(const auto& device : devices) {
 			if(device->type == dev) {
 				active_device = device;
@@ -1097,11 +1098,13 @@ void opencl::set_active_device(opencl::OPENCL_DEVICE dev) {
 	}
 	
 	if(active_device != nullptr) {
-		a2e_error("can't use device %u - keeping current one (%u)!", dev, active_device->type);
+		a2e_error("can't use device %u - keeping current one (%u)!",
+				  (unsigned int)dev, (unsigned int)active_device->type);
 	}
 	else {
 		// TODO: use _any_ device if there is at least one available ...
-		a2e_error("can't use device %u and no other device is currently active!", dev);
+		a2e_error("can't use device %u and no other device is currently active!",
+				  (unsigned int)dev);
 	}
 }
 
@@ -1201,11 +1204,12 @@ bool opencl::set_kernel_argument(const unsigned int& index, size_t size, void* a
 	return false;
 }
 
-opencl::device_object* opencl::get_device(opencl::OPENCL_DEVICE device) {
-	if(device == FASTEST_GPU) return fastest_gpu;
-	else if(device == FASTEST_CPU) return fastest_cpu;
+opencl::device_object* opencl::get_device(opencl::DEVICE_TYPE device) {
+	if(device == DEVICE_TYPE::FASTEST_GPU) return fastest_gpu;
+	else if(device == DEVICE_TYPE::FASTEST_CPU) return fastest_cpu;
 	else {
-		if((device >= GPU0 && device <= GPU255) || (device >= CPU0 && device <= CPU255)) {
+		if((device >= DEVICE_TYPE::GPU0 && device <= DEVICE_TYPE::GPU255) ||
+		   (device >= DEVICE_TYPE::CPU0 && device <= DEVICE_TYPE::CPU255)) {
 			for(const auto& dev : devices) {
 				if(dev->type == device) {
 					return dev;
@@ -1265,7 +1269,7 @@ void opencl::unmap_buffer(opencl::buffer_object* buffer_obj, void* map_ptr) {
 	__HANDLE_CL_EXCEPTION("unmap_buffer")
 }
 
-bool opencl::has_vendor_device(OPENCL_VENDOR vendor_type) {
+bool opencl::has_vendor_device(opencl::VENDOR vendor_type) {
 	for(const auto& device : devices) {
 		if(device->vendor_type == vendor_type) return true;
 	}
@@ -1371,13 +1375,13 @@ void opencl::release_gl_object(buffer_object* gl_buffer_obj) {
 	queues[active_device->device]->enqueueReleaseGLObjects(&gl_objects);
 }
 
-string opencl::platform_vendor_to_str(const OPENCL_PLATFORM_VENDOR pvendor) const {
+string opencl::platform_vendor_to_str(const opencl::PLATFORM_VENDOR pvendor) const {
 	switch(pvendor) {
-		case CLPV_NVIDIA: return "NVIDIA";
-		case CLPV_INTEL: return "INTEL";
-		case CLPV_AMD: return "AMD";
-		case CLPV_APPLE: return "APPLE";
-		case CLPV_UNKNOWN: break;
+		case PLATFORM_VENDOR::NVIDIA: return "NVIDIA";
+		case PLATFORM_VENDOR::INTEL: return "INTEL";
+		case PLATFORM_VENDOR::AMD: return "AMD";
+		case PLATFORM_VENDOR::APPLE: return "APPLE";
+		case PLATFORM_VENDOR::UNKNOWN: break;
 	}
 	return "UNKNOWN";
 }

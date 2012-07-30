@@ -41,29 +41,29 @@ void logger::destroy() {
 }
 
 void logger::prepare_log(stringstream& buffer, const LOG_TYPE& type, const char* file, const char* func) {
-	if(type != logger::LT_NONE) {
+	if(type != logger::LOG_TYPE::NONE) {
 		switch(type) {
-			case LT_ERROR:
+			case LOG_TYPE::ERROR_MSG:
 				buffer << "\033[31m";
 				break;
-			case LT_DEBUG:
+			case LOG_TYPE::DEBUG_MSG:
 				buffer << "\033[32m";
 				break;
-			case LT_MSG:
+			case LOG_TYPE::SIMPLE_MSG:
 				buffer << "\033[34m";
 				break;
-			case LT_NONE: break;
+			case LOG_TYPE::NONE: break;
 		}
 		buffer << logger::type_to_str(type);
 		switch(type) {
-			case LT_ERROR:
-			case LT_DEBUG:
-			case LT_MSG:
+			case LOG_TYPE::ERROR_MSG:
+			case LOG_TYPE::DEBUG_MSG:
+			case LOG_TYPE::SIMPLE_MSG:
 				buffer << "\033[m";
 				break;
-			case LT_NONE: break;
+			case LOG_TYPE::NONE: break;
 		}
-		if(type == logger::LT_ERROR) buffer << " #" << AtomicFetchThenIncrement(&err_counter) << ":";
+		if(type == LOG_TYPE::ERROR_MSG) buffer << " #" << AtomicFetchThenIncrement(&err_counter) << ":";
 		buffer << " ";
 		// prettify file string (aka strip path)
 		string file_str = file;

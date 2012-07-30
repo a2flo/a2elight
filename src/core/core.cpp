@@ -256,8 +256,8 @@ map<string, file_io::FILE_TYPE> core::get_file_list(const string& directory, con
 
 		// TODO: use sys/stat.h instead (glibc has some issues where DT_DIR is not defined or recursively-self-defined ...)
 		// note: 4 == DT_DIR
-		if(namelist[j]->d_type == 4) file_list[name] = file_io::FT_DIR;
-		else file_list[name] = file_io::FT_NONE;
+		if(namelist[j]->d_type == 4) file_list[name] = file_io::FILE_TYPE::DIR;
+		else file_list[name] = file_io::FILE_TYPE::NONE;
 	}
 	
 	delete [] namelist;

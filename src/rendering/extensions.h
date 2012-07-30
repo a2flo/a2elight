@@ -38,9 +38,10 @@
  *  @brief opengl extensions
  */
 
+enum class INIT_MODE : unsigned int;
 class A2E_API ext {
 public:
-	ext(unsigned int imode, string* disabled_extensions, string* force_device, string* force_vendor);
+	ext(INIT_MODE imode, string* disabled_extensions, string* force_device, string* force_vendor);
 	~ext();
 
 	bool is_ext_supported(const string& ext_name);
@@ -57,62 +58,53 @@ public:
 	unsigned int get_max_samples();
 	unsigned int get_max_draw_buffers();
 
-
-	// - taken from engine.h -
-    // the initialization mode is used to determine if we should load
-    // or compute graphical stuff like textures or shaders
-	enum INIT_MODE {
-	    GRAPHICAL,
-	    CONSOLE
-	};
-
-	enum GRAPHIC_CARD_VENDOR {
-		GCV_UNKNOWN,
-		GCV_NVIDIA,
-		GCV_ATI,
-		GCV_POWERVR,
-		GCV_INTEL,
+	enum class GRAPHICS_CARD_VENDOR : unsigned int {
+		UNKNOWN,
+		NVIDIA,
+		ATI,
+		POWERVR,
+		INTEL,
 	};
 
 	// these are only the most important and widely used models
-	enum GRAPHIC_CARD {
-		GC_UNKNOWN,
-		GC_GENERIC_SM4,
-		GC_GENERIC_SM5,
-		GC_GEFORCE_8,
-		GC_GEFORCE_9,
-		GC_GEFORCE_GT200,
-		GC_GEFORCE_GF100,
-		GC_GEFORCE_GK100,
-		GC_RADEON_HD2,
-		GC_RADEON_HD3,
-		GC_RADEON_HD4,
-		GC_RADEON_HD5,
-		GC_RADEON_HD6,
-		GC_RADEON_HD7,
-		GC_SGX_535,
-		GC_SGX_543,
-		GC_IVY_BRIDGE,
+	enum class GRAPHICS_CARD : unsigned int {
+		UNKNOWN,
+		GENERIC_SM4,
+		GENERIC_SM5,
+		GEFORCE_8,
+		GEFORCE_9,
+		GEFORCE_GT200,
+		GEFORCE_GF100,
+		GEFORCE_GK100,
+		RADEON_HD2,
+		RADEON_HD3,
+		RADEON_HD4,
+		RADEON_HD5,
+		RADEON_HD6,
+		RADEON_HD7,
+		SGX_535,
+		SGX_543,
+		IVY_BRIDGE,
 	};
-	static const GRAPHIC_CARD min_generic_card = GC_GENERIC_SM4;
-	static const GRAPHIC_CARD max_generic_card = GC_GENERIC_SM5;
-	static const GRAPHIC_CARD min_nvidia_card = GC_GEFORCE_8;
-	static const GRAPHIC_CARD max_nvidia_card = GC_GEFORCE_GK100;
-	static const GRAPHIC_CARD min_ati_card = GC_RADEON_HD2;
-	static const GRAPHIC_CARD max_ati_card = GC_RADEON_HD7;
-	static const GRAPHIC_CARD min_powervr_card = GC_SGX_535;
-	static const GRAPHIC_CARD max_powervr_card = GC_SGX_543;
-	static const GRAPHIC_CARD min_intel_card = GC_IVY_BRIDGE;
-	static const GRAPHIC_CARD max_intel_card = GC_IVY_BRIDGE;
+	static const GRAPHICS_CARD min_generic_card = GRAPHICS_CARD::GENERIC_SM4;
+	static const GRAPHICS_CARD max_generic_card = GRAPHICS_CARD::GENERIC_SM5;
+	static const GRAPHICS_CARD min_nvidia_card = GRAPHICS_CARD::GEFORCE_8;
+	static const GRAPHICS_CARD max_nvidia_card = GRAPHICS_CARD::GEFORCE_GK100;
+	static const GRAPHICS_CARD min_ati_card = GRAPHICS_CARD::RADEON_HD2;
+	static const GRAPHICS_CARD max_ati_card = GRAPHICS_CARD::RADEON_HD7;
+	static const GRAPHICS_CARD min_powervr_card = GRAPHICS_CARD::SGX_535;
+	static const GRAPHICS_CARD max_powervr_card = GRAPHICS_CARD::SGX_543;
+	static const GRAPHICS_CARD min_intel_card = GRAPHICS_CARD::IVY_BRIDGE;
+	static const GRAPHICS_CARD max_intel_card = GRAPHICS_CARD::IVY_BRIDGE;
 
-	GRAPHIC_CARD_VENDOR get_vendor();
-	GRAPHIC_CARD get_graphic_card();
+	GRAPHICS_CARD_VENDOR get_vendor();
+	GRAPHICS_CARD get_graphics_card();
 
-	static const char* GRAPHIC_CARD_STR[];
-	static const char* GRAPHIC_CARD_VENDOR_DEFINE_STR[];
-	static const char* GRAPHIC_CARD_DEFINE_STR[];
+	static const char* GRAPHICS_CARD_STR[];
+	static const char* GRAPHICS_CARD_VENDOR_DEFINE_STR[];
+	static const char* GRAPHICS_CARD_DEFINE_STR[];
 	
-	enum OPENGL_VERSION {
+	enum class OPENGL_VERSION {
 		OPENGL_UNKNOWN,
 		OPENGL_ES_2_0,
 		OPENGL_3_0,
@@ -124,7 +116,7 @@ public:
 		OPENGL_4_2,
 	};
 	
-	enum GLSL_VERSION {
+	enum class GLSL_VERSION {
 		GLSL_NO_VERSION,	// used when none is applicable
 		GLSL_ES_100,		// opengl es 2.0
 		GLSL_150,			// opengl 3.2
@@ -142,7 +134,7 @@ public:
 	const char* cstr_from_gl_version(const OPENGL_VERSION& version) const;
 
 protected:
-	unsigned int mode;
+	INIT_MODE mode;
 	
 	OPENGL_VERSION opengl_version;
 	GLSL_VERSION glsl_version;
@@ -172,8 +164,8 @@ protected:
 	string* force_device;
 	string* force_vendor;
 
-	GRAPHIC_CARD_VENDOR vendor;
-	GRAPHIC_CARD graphic_card;
+	GRAPHICS_CARD_VENDOR vendor;
+	GRAPHICS_CARD graphics_card;
 	
 	set<string> supported_extensions;
 

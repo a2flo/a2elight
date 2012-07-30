@@ -40,34 +40,32 @@ public:
 	~a2ematerial();
 	
 	//// generic lighting/material definitions
-	enum LIGHTING_MODEL {
-		LM_NONE,
-		LM_PHONG,
-		LM_WARD,
-		LM_ASHIKHMIN_SHIRLEY
+	enum class LIGHTING_MODEL : unsigned int {
+		NONE,
+		PHONG,
+		ASHIKHMIN_SHIRLEY
 	};
-	enum MATERIAL_TYPE {
+	enum class MATERIAL_TYPE : unsigned int {
 		NONE,
 		DIFFUSE,
 		PARALLAX
 	};
-	enum TEXTURE_TYPE {
-		TT_DIFFUSE		= 1 << 0,
-		TT_SPECULAR		= 1 << 1,
-		TT_REFLECTANCE	= 1 << 2,
-		TT_HEIGHT		= 1 << 3,
-		TT_NORMAL		= 1 << 4,
-		TT_ISOTROPIC	= 1 << 5,
-		TT_ANISOTROPIC	= 1 << 6
+	enum class TEXTURE_TYPE : unsigned int {
+		DIFFUSE			= (1 << 0),
+		SPECULAR		= (1 << 1),
+		REFLECTANCE		= (1 << 2),
+		HEIGHT			= (1 << 3),
+		NORMAL			= (1 << 4),
+		ANISOTROPIC		= (1 << 5),
 	};
 
 	struct lighting_model;
 	struct material_object;
 	struct material {
 		ssize_t id = -1;
-		MATERIAL_TYPE mat_type = NONE;
+		MATERIAL_TYPE mat_type = MATERIAL_TYPE::NONE;
 		material_object* mat = nullptr;
-		LIGHTING_MODEL lm_type = LM_PHONG;
+		LIGHTING_MODEL lm_type = LIGHTING_MODEL::PHONG;
 		lighting_model* model = nullptr;
 		
 		material() {}
@@ -80,19 +78,6 @@ public:
 	
 	struct phong_model : public lighting_model {
 		phong_model() {}
-	};
-	
-	enum WARD_TYPE {
-		WT_ISOTROPIC,
-		WT_ANISOTROPIC
-	};
-	struct ward_model : public lighting_model {
-		WARD_TYPE type = WT_ISOTROPIC;
-		a2e_texture isotropic_texture = nullptr;
-		a2e_texture anisotropic_texture = nullptr;
-		float isotropic_roughness = 1.0f;
-		float2 anisotropic_roughness = float2(1.0f, 1.0f);
-		ward_model() : lighting_model() {}
 	};
 	
 	struct ashikhmin_shirley_model : public lighting_model {

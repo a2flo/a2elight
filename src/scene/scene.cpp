@@ -101,7 +101,7 @@ void scene::delete_buffers(frame_buffers& buffers) {
 }
 
 void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer_size, const bool create_alpha_buffer) {
-	if(e->get_init_mode() != engine::GRAPHICAL) return;
+	if(e->get_init_mode() != INIT_MODE::GRAPHICAL) return;
 	
 	const size2 buffer_size = size2(float2(unscaled_buffer_size) / e->get_upscaling());
 	
@@ -126,7 +126,7 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	GLint internal_formats[] = { rgba16_float_internal_format, rgba16_float_internal_format };
 	GLenum formats[] = { GL_RGBA, GL_RGBA };
 	GLenum targets[] = { target, target };
-	texture_object::TEXTURE_FILTERING filters[] = { texture_object::TF_POINT, texture_object::TF_POINT };
+	TEXTURE_FILTERING filters[] = { TEXTURE_FILTERING::POINT, TEXTURE_FILTERING::POINT };
 	const rtt::TEXTURE_ANTI_ALIASING taa = e->get_anti_aliasing();
 	rtt::TEXTURE_ANTI_ALIASING taas[] = { taa, taa };
 	GLint wraps[] = { GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
@@ -149,23 +149,23 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	// also: opaque gbuffer doesn't need an additional id buffer
 	buffers.g_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
 										filters, taas, wraps, wraps, internal_formats, formats,
-										types, 1, rtt::DT_TEXTURE_2D, rtt::ST_STENCIL_8);
+										types, 1, rtt::DEPTH_TYPE::TEXTURE_2D, rtt::STENCIL_TYPE::STENCIL_8);
 	if(create_alpha_buffer) {
 #if !defined(A2E_IOS) // TODO: think of a workaround for this
 		buffers.g_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
 											filters, taas, wraps, wraps, internal_formats, formats,
-											types, 2, rtt::DT_TEXTURE_2D, rtt::ST_STENCIL_8);
+											types, 2, rtt::DEPTH_TYPE::TEXTURE_2D, rtt::STENCIL_TYPE::STENCIL_8);
 #endif
 	}
 	else buffers.g_buffer[1] = nullptr;
 	
 	// create light buffer
 #if defined(A2E_COPY_DEPTH_BUFFER)
-	buffers.l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_TEXTURE_2D, rtt::ST_STENCIL_8);
+	buffers.l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DEPTH_TYPE::TEXTURE_2D, rtt::STENCIL_TYPE::STENCIL_8);
 #else
-	buffers.l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
-	buffers.l_buffer[0]->depth_type = rtt::DT_TEXTURE_2D;
-	buffers.l_buffer[0]->stencil_type = rtt::ST_STENCIL_8;
+	buffers.l_buffer[0] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DEPTH_TYPE::NONE);
+	buffers.l_buffer[0]->depth_type = rtt::DEPTH_TYPE::TEXTURE_2D;
+	buffers.l_buffer[0]->stencil_type = rtt::STENCIL_TYPE::STENCIL_8;
 	buffers.l_buffer[0]->depth_attachment_type = GL_DEPTH_STENCIL_ATTACHMENT;
 	buffers.l_buffer[0]->depth_buffer = buffers.g_buffer[0]->depth_buffer;
 #endif
@@ -173,12 +173,12 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	if(create_alpha_buffer) {
 #if !defined(A2E_IOS)
 #if defined(A2E_COPY_DEPTH_BUFFER)
-		buffers.l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_TEXTURE_2D, rtt::ST_STENCIL_8);
+		buffers.l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DEPTH_TYPE::TEXTURE_2D, rtt::STENCIL_TYPE::STENCIL_8);
 #else
-		buffers.l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DT_NONE);
+		buffers.l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DEPTH_TYPE::NONE);
 		// TODO: this isn't correct, since a combination of both depth buffers is actually required
-		buffers.l_buffer[1]->depth_type = rtt::DT_TEXTURE_2D;
-		buffers.l_buffer[1]->stencil_type = rtt::ST_STENCIL_8;
+		buffers.l_buffer[1]->depth_type = rtt::DEPTH_TYPE::TEXTURE_2D;
+		buffers.l_buffer[1]->stencil_type = rtt::STENCIL_TYPE::STENCIL_8;
 		buffers.l_buffer[1]->depth_attachment_type = GL_DEPTH_STENCIL_ATTACHMENT;
 		buffers.l_buffer[1]->depth_buffer = buffers.g_buffer[1]->depth_buffer;
 #endif
@@ -189,18 +189,18 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	// scene/final buffer (material pass)
 	if(final_buffer_size.x == render_buffer_size.x && final_buffer_size.y == render_buffer_size.y) {
 		// reuse the g-buffer depth buffer (performance and memory!)
-		buffers.scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
-		buffers.scene_buffer->depth_type = rtt::DT_TEXTURE_2D;
-		buffers.scene_buffer->stencil_type = rtt::ST_STENCIL_8;
+		buffers.scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? TEXTURE_FILTERING::LINEAR : TEXTURE_FILTERING::POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::NONE);
+		buffers.scene_buffer->depth_type = rtt::DEPTH_TYPE::TEXTURE_2D;
+		buffers.scene_buffer->stencil_type = rtt::STENCIL_TYPE::STENCIL_8;
 		buffers.scene_buffer->depth_attachment_type = GL_DEPTH_STENCIL_ATTACHMENT;
 		buffers.scene_buffer->depth_buffer = buffers.g_buffer[0]->depth_buffer;
 	}
 	else {
 		// sadly, the depth buffer optimization can't be used here, because the buffers are of a different size
-		buffers.scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? texture_object::TF_LINEAR : texture_object::TF_POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DT_RENDERBUFFER);
+		buffers.scene_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, (aa_scale > 1.0f ? TEXTURE_FILTERING::LINEAR : TEXTURE_FILTERING::POINT), taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
 	}
 	
-	buffers.fxaa_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, texture_object::TF_LINEAR, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DT_NONE);
+	buffers.fxaa_buffer = r->add_buffer(final_buffer_size.x, final_buffer_size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::LINEAR, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::NONE);
 	
 #if defined(A2E_INFERRED_RENDERING_CL)
 	glGenFramebuffers(1, &buffers.cl.depth_copy_fbo); // doesn't need to be bound
@@ -599,7 +599,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, light_sphere->get_vbo_indices(0));
 				for(const auto& li : lights) {
 					if(!li->is_enabled()) continue;
-					if(li->get_type() != light::LT_POINT) continue;
+					if(li->get_type() != light::LIGHT_TYPE::POINT) continue;
 					
 					//
 					const float light_dist = (cam_position - li->get_position()).length() - e->get_near_far_plane().x;
@@ -676,7 +676,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 				for(const auto& li : lights) {
 					if(!li->is_enabled()) continue;
-					if(li->get_type() != light::LT_POINT) continue;
+					if(li->get_type() != light::LIGHT_TYPE::POINT) continue;
 					
 					//
 					const float light_dist = (cam_position - li->get_position()).length() - e->get_near_far_plane().x;
@@ -706,7 +706,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 				glCullFace(GL_BACK);
 				for(const auto& li : lights) {
 					if(!li->is_enabled()) continue;
-					if(li->get_type() != light::LT_DIRECTIONAL) continue;
+					if(li->get_type() != light::LIGHT_TYPE::DIRECTIONAL) continue;
 					
 					ir_lighting->uniform("light_position", float4(li->get_position(), 0.0f));
 					ir_lighting->uniform("light_color", float4(li->get_color(), 0.0f));
@@ -825,7 +825,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	r->start_draw(scene_buffer);
 	static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, draw_buffers);
-	if(scene_buffer->depth_type == rtt::DT_TEXTURE_2D) {
+	if(scene_buffer->depth_type == rtt::DEPTH_TYPE::TEXTURE_2D) {
 		r->clear(GL_COLOR_BUFFER_BIT); // only clear color, keep depth
 		glDepthFunc(GL_EQUAL);
 		glDepthMask(GL_FALSE);
@@ -885,9 +885,9 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	
 	// FXAA
 	const auto cur_aa = e->get_anti_aliasing();
-	const bool is_fxaa = (cur_aa == rtt::TAA_FXAA ||
-						  cur_aa == rtt::TAA_SSAA_4_3_FXAA ||
-						  cur_aa == rtt::TAA_SSAA_2_FXAA);
+	const bool is_fxaa = (cur_aa == rtt::TEXTURE_ANTI_ALIASING::FXAA ||
+						  cur_aa == rtt::TEXTURE_ANTI_ALIASING::SSAA_4_3_FXAA ||
+						  cur_aa == rtt::TEXTURE_ANTI_ALIASING::SSAA_2_FXAA);
 	const bool is_post_processing = !pp_handlers.empty();
 	
 	if(is_fxaa) {

@@ -38,20 +38,20 @@ public:
 	~texman();
 	
 	
-	a2e_texture add_texture(const string& filename, texture_object::TEXTURE_FILTERING filtering = texture_object::TF_AUTOMATIC, size_t anisotropic = 0, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT);
+	a2e_texture add_texture(const string& filename, TEXTURE_FILTERING filtering = TEXTURE_FILTERING::AUTOMATIC, size_t anisotropic = 0, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT);
 	
-	a2e_texture add_texture(const string& filename, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type);
-	a2e_texture add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type, a2e_texture& tex);
-	a2e_texture add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type);
+	a2e_texture add_texture(const string& filename, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type);
+	a2e_texture add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type, a2e_texture& tex);
+	a2e_texture add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type);
 	
-	a2e_texture add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type, a2e_texture& tex);
-	a2e_texture add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type);
+	a2e_texture add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type, a2e_texture& tex);
+	a2e_texture add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type);
 	
 	void delete_texture(a2e_texture& tex);
 
 	a2e_texture get_texture(GLuint tex_num);
 	
-	void set_filtering(unsigned int filtering);
+	void set_filtering(TEXTURE_FILTERING filtering);
 
 	unsigned int get_components(GLint format);
 	bool get_alpha(GLint format);
@@ -59,6 +59,7 @@ public:
 	const a2e_texture get_dummy_texture() const;
 	
 	static GLint convert_internal_format(const GLint& internal_format);
+	static GLenum select_filter(const TEXTURE_FILTERING& filter);
 
 protected:
 	file_io* f;
@@ -67,11 +68,9 @@ protected:
 
 	a2e_texture dummy_texture;
 	deque<a2e_texture> textures;
-	a2e_texture check_texture(const string& filename, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type);
-	
-	unsigned int filter[4];
+	a2e_texture check_texture(const string& filename, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type);
 
-	texture_object::TEXTURE_FILTERING standard_filtering;
+	TEXTURE_FILTERING standard_filtering;
 	size_t standard_anisotropic;
 
 };

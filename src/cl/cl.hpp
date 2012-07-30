@@ -143,7 +143,7 @@
 #ifndef CL_HPP_
 #define CL_HPP_
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #include <windows.h>
 #include <malloc.h>
 #if defined(USE_DX_INTEROP)

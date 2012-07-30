@@ -18,10 +18,10 @@
 
 #include "texman.h"
 
-#ifndef GL_BGRA8
+#if !defined(GL_BGRA8)
 #define GL_BGRA8 GL_BGRA
 #endif
-#ifndef GL_BGR8
+#if !defined(GL_BGR8)
 #define GL_BGR8 GL_BGR
 #endif
 
@@ -81,18 +81,13 @@ if(src_surface->format->Rshift == rshift && \
 /*! creates the texman object
  */
 texman::texman(file_io* f_, unicode* u_, ext* exts_, const string& datapath, const size_t& standard_anisotropic_) {
-	filter[0] = GL_NEAREST;
-	filter[1] = GL_LINEAR;
-	filter[2] = GL_LINEAR_MIPMAP_NEAREST;
-	filter[3] = GL_LINEAR_MIPMAP_LINEAR;
-
 	texman::f = f_;
 	texman::u = u_;
 	texman::exts = exts_;
 	
-	dummy_texture = add_texture(string(datapath+"none.png").c_str(), texture_object::TF_POINT, standard_anisotropic, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	dummy_texture = add_texture(string(datapath+"none.png").c_str(), TEXTURE_FILTERING::POINT, standard_anisotropic, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-	standard_filtering = texture_object::TF_POINT;
+	standard_filtering = TEXTURE_FILTERING::POINT;
 	texman::standard_anisotropic = standard_anisotropic_;
 }
 
@@ -102,7 +97,7 @@ texman::~texman() {
 	textures.clear();
 }
 
-a2e_texture texman::check_texture(const string& filename, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type) {
+a2e_texture texman::check_texture(const string& filename, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type) {
 	if(filename == "") return dummy_texture;
 	
 	// check if we already loaded this texture
@@ -125,7 +120,7 @@ a2e_texture texman::check_texture(const string& filename, GLsizei width, GLsizei
 	return dummy_texture;
 }
 
-a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t) {
+a2e_texture texman::add_texture(const string& filename, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t) {
 	// create a sdl surface and load the texture
 	SDL_Surface* tex_surface = IMG_Load(filename.c_str());
 	if(tex_surface == nullptr) {
@@ -193,7 +188,7 @@ a2e_texture texman::add_texture(const string& filename, texture_object::TEXTURE_
 	return textures.back();
 }
 
-a2e_texture texman::add_texture(const string& filename, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type) {
+a2e_texture texman::add_texture(const string& filename, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type) {
 	// create a sdl surface and load the texture
 	SDL_Surface* tex_surface = IMG_Load(filename.c_str());
 	if(tex_surface == nullptr) {
@@ -217,13 +212,13 @@ a2e_texture texman::add_texture(const string& filename, GLint internal_format, G
 }
 
 	
-a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type) {
+a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type) {
 	a2e_texture ret_tex = make_a2e_texture();
 	add_texture(pixel_data, width, height, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, type, ret_tex);
 	return ret_tex;
 }
 
-a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type, a2e_texture& tex) {
+a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLenum type, a2e_texture& tex) {
 	tex->texture_type = GL_TEXTURE_2D;
 	tex->width = width;
 	tex->height = height;
@@ -236,15 +231,15 @@ a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height,
 	tex->type = type;
 	
 	// if "automatic filtering" is specified, use standard filtering (as set in config.xml)
-	if(filtering == texture_object::TF_AUTOMATIC) filtering = standard_filtering;
+	if(filtering == TEXTURE_FILTERING::AUTOMATIC) filtering = standard_filtering;
 	
 	// now create/generate an opengl texture and bind it
 	glGenTextures(1, &tex->tex_num);
 	glBindTexture(GL_TEXTURE_2D, tex->tex_num);
 	
 	// texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (filtering == 0 ? GL_NEAREST : GL_LINEAR));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter[filtering]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (filtering == TEXTURE_FILTERING::POINT ? GL_NEAREST : GL_LINEAR));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, select_filter(filtering));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
 	
@@ -255,14 +250,14 @@ a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height,
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, max_level);*/
 	
-	if(anisotropic > 0 && filtering >= texture_object::TF_BILINEAR) {
+	if(anisotropic > 0 && filtering >= TEXTURE_FILTERING::BILINEAR) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (GLint)anisotropic);
 	}
 	
 	// create texture
 	glTexImage2D(GL_TEXTURE_2D, 0, convert_internal_format(tex->internal_format), tex->width, tex->height, 0, tex->format, tex->type, pixel_data);
 	
-	if(filtering > 1) {
+	if(filtering > TEXTURE_FILTERING::LINEAR) {
 		// build mipmaps
 		glGenerateMipmap(GL_TEXTURE_2D);
 		// TODO: since glGenerateMipmap doesn't seem to work reliably, generate mipmaps ourselves
@@ -276,13 +271,13 @@ a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height,
 	return textures.back();
 }
 
-a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type) {
+a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type) {
 	a2e_texture ret_tex = make_a2e_texture();
 	add_cubemap_texture(pixel_data, width, height, internal_format, format, filtering, anisotropic, wrap_s, wrap_t, wrap_r, type, ret_tex);
 	return ret_tex;
 }
 
-a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, texture_object::TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type, a2e_texture& tex) {
+a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type, a2e_texture& tex) {
 	// check if width and height are equal
 	if(width != height) {
 		a2e_error("cubemap width and height must be equal!");
@@ -302,22 +297,23 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 	tex->type = type;
 	
 	// if "automatic filtering" is specified, use standard filtering (as set in config.xml)
-	if(filtering == texture_object::TF_AUTOMATIC) filtering = standard_filtering;
+	if(filtering == TEXTURE_FILTERING::AUTOMATIC) filtering = standard_filtering;
 	
 	// now create/generate an opengl texture and bind it
 	glGenTextures(1, &tex->tex_num);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, tex->tex_num);
 	
 	// texture parameters
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, (filtering == 0 ? GL_NEAREST : GL_LINEAR));
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, filter[filtering]);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER,
+					(filtering == TEXTURE_FILTERING::POINT ? GL_NEAREST : GL_LINEAR));
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, select_filter(filtering));
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, wrap_s);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, wrap_t);
 #if !defined(A2E_IOS)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, wrap_r); // TODO: why isn't this supported on iOS?
 #endif
 	
-	if(anisotropic > 0 && filtering >= texture_object::TF_BILINEAR) {
+	if(anisotropic > 0 && filtering >= TEXTURE_FILTERING::BILINEAR) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (GLint)anisotropic);
 	}
 	
@@ -328,7 +324,7 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 		glTexImage2D(cmap[i], 0, convert_internal_format(tex->internal_format), tex->width, tex->height, 0, tex->format, tex->type, pixel_data[i]);
 		
 	}
-	if(filtering > 1) {
+	if(filtering > TEXTURE_FILTERING::LINEAR) {
 		// build mipmaps
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	}
@@ -368,13 +364,13 @@ a2e_texture texman::get_texture(GLuint tex_num) {
 	return dummy_texture;
 }
 
-void texman::set_filtering(unsigned int filtering) {
-	if(filtering > texture_object::TF_TRILINEAR) {
-		a2e_error("unknown texture filtering mode (%u)!", filtering);
-		texman::standard_filtering = texture_object::TF_POINT;
+void texman::set_filtering(TEXTURE_FILTERING filtering) {
+	if(filtering > TEXTURE_FILTERING::TRILINEAR) {
+		a2e_error("unknown texture filtering mode (%u)!", (unsigned int)filtering);
+		texman::standard_filtering = TEXTURE_FILTERING::POINT;
 		return;
 	}
-	texman::standard_filtering = (texture_object::TEXTURE_FILTERING)filtering;
+	texman::standard_filtering = filtering;
 }
 
 unsigned int texman::get_components(GLint format) {
@@ -516,4 +512,15 @@ GLint texman::convert_internal_format(const GLint& internal_format) {
 	}
 	return internal_format;
 #endif
+}
+
+GLenum texman::select_filter(const TEXTURE_FILTERING& filter) {
+	switch(filter) {
+		case TEXTURE_FILTERING::POINT: return GL_NEAREST;
+		case TEXTURE_FILTERING::LINEAR: return GL_LINEAR;
+		case TEXTURE_FILTERING::BILINEAR: return GL_LINEAR_MIPMAP_NEAREST;
+		case TEXTURE_FILTERING::TRILINEAR: return GL_LINEAR_MIPMAP_LINEAR;
+		default: break;
+	}
+	return GL_NEAREST;
 }

@@ -23,7 +23,7 @@
 file_io::file_io() {
 }
 
-file_io::file_io(const string& filename, FIO_OPEN_TYPE open_type_) {
+file_io::file_io(const string& filename, OPEN_TYPE open_type_) {
 	open(filename, open_type_);
 }
 
@@ -36,7 +36,7 @@ file_io::~file_io() {
  *  @param filename the name of the file
  *  @param open_type enum that specifies how we want to open the file (like "r", "wb", etc. ...)
  */
-bool file_io::open(const string& filename, FIO_OPEN_TYPE open_type_) {
+bool file_io::open(const string& filename, OPEN_TYPE open_type_) {
 	if(check_open()) {
 		a2e_error("a file is already opened! can't open another file!");
 		return false;
@@ -44,34 +44,34 @@ bool file_io::open(const string& filename, FIO_OPEN_TYPE open_type_) {
 
 	open_type = open_type_;
 	switch(open_type) {
-		case file_io::OT_READ:
+		case file_io::OPEN_TYPE::READ:
 			filestream.open(filename, fstream::in);
 			break;
-		case file_io::OT_READWRITE:
+		case file_io::OPEN_TYPE::READWRITE:
 			filestream.open(filename, fstream::in | fstream::out);
 			break;
-		case file_io::OT_WRITE:
+		case file_io::OPEN_TYPE::WRITE:
 			filestream.open(filename, fstream::out);
 			break;
-		case file_io::OT_READ_BINARY:
+		case file_io::OPEN_TYPE::READ_BINARY:
 			filestream.open(filename, fstream::in | fstream::binary);
 			break;
-		case file_io::OT_READWRITE_BINARY:
+		case file_io::OPEN_TYPE::READWRITE_BINARY:
 			filestream.open(filename, fstream::in | fstream::out | fstream::binary);
 			break;
-		case file_io::OT_WRITE_BINARY:
+		case file_io::OPEN_TYPE::WRITE_BINARY:
 			filestream.open(filename, fstream::out | fstream::binary);
 			break;
-		case file_io::OT_APPEND:
+		case file_io::OPEN_TYPE::APPEND:
 			filestream.open(filename, fstream::app);
 			break;
-		case file_io::OT_APPEND_BINARY:
+		case file_io::OPEN_TYPE::APPEND_BINARY:
 			filestream.open(filename, fstream::app | fstream::binary);
 			break;
-		case file_io::OT_APPEND_READ:
+		case file_io::OPEN_TYPE::APPEND_READ:
 			filestream.open(filename, fstream::in | fstream::app);
 			break;
-		case file_io::OT_APPEND_READ_BINARY:
+		case file_io::OPEN_TYPE::APPEND_READ_BINARY:
 			filestream.open(filename, fstream::in | fstream::app | fstream::binary);
 			break;
 	}
@@ -92,7 +92,7 @@ void file_io::close() {
 }
 
 bool file_io::file_to_buffer(const string& filename, stringstream& buffer) {
-	if(!open(filename, file_io::OT_READ)) {
+	if(!open(filename, file_io::OPEN_TYPE::READ)) {
 		return false;
 	}
 	
@@ -178,8 +178,8 @@ uint64_t file_io::get_filesize() {
  *  @param offset the offset we you want to seek the file
  */
 void file_io::seek(size_t offset) {
-	if(open_type != OT_WRITE && open_type != OT_WRITE_BINARY &&
-	   open_type != OT_APPEND && open_type != OT_APPEND_BINARY) {
+	if(open_type != OPEN_TYPE::WRITE && open_type != OPEN_TYPE::WRITE_BINARY &&
+	   open_type != OPEN_TYPE::APPEND && open_type != OPEN_TYPE::APPEND_BINARY) {
 		seek_read(offset);
 	}
 	else seek_write(offset);
@@ -196,8 +196,8 @@ void file_io::seek_write(size_t offset) {
 /*! returns the current file offset
  */
 streampos file_io::get_current_offset() {
-	if(open_type != OT_WRITE && open_type != OT_WRITE_BINARY &&
-	   open_type != OT_APPEND && open_type != OT_APPEND_BINARY) {
+	if(open_type != OPEN_TYPE::WRITE && open_type != OPEN_TYPE::WRITE_BINARY &&
+	   open_type != OPEN_TYPE::APPEND && open_type != OPEN_TYPE::APPEND_BINARY) {
 		return get_current_read_offset();
 	}
 	return get_current_write_offset();
@@ -251,23 +251,14 @@ void file_io::write_float(const float& f) {
 /*! returns true if the file specified by filename exists
  *  @param filename the name of the file
  */
-bool file_io::is_file(const char* filename) {
-	if(strcmp(filename, "") == 0 || filename[strlen(filename)-1] == (const char)'/') return false;
+bool file_io::is_file(const string& filename) {
+	if(filename.empty() || filename[filename.length()-1] == '/') return false;
 	
-	if(check_open()) {
-		a2e_error("a file is already opened! can't open another file!");
+	fstream file(filename, fstream::in | fstream::binary);
+	if(!file.is_open()) {
 		return false;
 	}
-	
-	filestream.open(filename, fstream::in | fstream::binary);
-
-	if(!filestream.is_open()) {
-		filestream.clear();
-		return false;
-	}
-	
-	filestream.close();
-	filestream.clear();
+	file.close();
 	return true;
 }
 

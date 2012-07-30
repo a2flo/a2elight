@@ -68,8 +68,8 @@ engine::engine(const char* callpath_, const char* datapath_) {
 #endif
 	
 	engine::datapath = datapath.substr(0, datapath.rfind(dir_slash)+1) + rel_datapath;
-
-#ifdef CYGWIN
+	
+#if defined(CYGWIN)
 	engine::callpath = "./";
 	engine::datapath = callpath_;
 	engine::datapath = datapath.substr(0, datapath.rfind("/")+1) + rel_datapath;
@@ -201,7 +201,9 @@ void engine::create() {
 	a2e_debug("%s", (A2E_VERSION_STRING).c_str());
 	
 	// load config
-	config_doc = x->process_file(data_path("config.xml"));
+	const string config_filename(string("config.xml") +
+								 (file_io::is_file(data_path("config.xml.local")) ? ".local" : ""));
+	config_doc = x->process_file(data_path(config_filename));
 	if(config_doc.valid) {
 		config.width = config_doc.get<size_t>("config.screen.width", 640);
 		config.height = config_doc.get<size_t>("config.screen.height", 480);
@@ -232,22 +234,22 @@ void engine::create() {
 		config.client.lis_port = (unsigned short int)config_doc.get<size_t>("config.client.lis_port", 0);
 		
 		string filtering_str = config_doc.get<string>("config.graphic.filtering", "");
-		if(filtering_str == "POINT") config.filtering = texture_object::TF_POINT;
-		else if(filtering_str == "LINEAR") config.filtering = texture_object::TF_LINEAR;
-		else if(filtering_str == "BILINEAR") config.filtering = texture_object::TF_BILINEAR;
-		else if(filtering_str == "TRILINEAR") config.filtering = texture_object::TF_TRILINEAR;
-		else config.filtering = texture_object::TF_POINT;
+		if(filtering_str == "POINT") config.filtering = TEXTURE_FILTERING::POINT;
+		else if(filtering_str == "LINEAR") config.filtering = TEXTURE_FILTERING::LINEAR;
+		else if(filtering_str == "BILINEAR") config.filtering = TEXTURE_FILTERING::BILINEAR;
+		else if(filtering_str == "TRILINEAR") config.filtering = TEXTURE_FILTERING::TRILINEAR;
+		else config.filtering = TEXTURE_FILTERING::POINT;
 		
 		config.anisotropic = config_doc.get<size_t>("config.graphic.anisotropic", 0);
 		
 		string anti_aliasing_str = config_doc.get<string>("config.graphic.anti_aliasing", "");
-		if(anti_aliasing_str == "NONE") config.anti_aliasing = rtt::TAA_NONE;
-		else if(anti_aliasing_str == "FXAA") config.anti_aliasing = rtt::TAA_FXAA;
-		else if(anti_aliasing_str == "2xSSAA") config.anti_aliasing = rtt::TAA_SSAA_2;
-		//else if(anti_aliasing_str == "4xSSAA") config.anti_aliasing = rtt::TAA_SSAA_4;
-		else if(anti_aliasing_str == "4/3xSSAA+FXAA") config.anti_aliasing = rtt::TAA_SSAA_4_3_FXAA;
-		else if(anti_aliasing_str == "2xSSAA+FXAA") config.anti_aliasing = rtt::TAA_SSAA_2_FXAA;
-		else config.anti_aliasing = rtt::TAA_NONE;
+		if(anti_aliasing_str == "NONE") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::NONE;
+		else if(anti_aliasing_str == "FXAA") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::FXAA;
+		else if(anti_aliasing_str == "2xSSAA") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::SSAA_2;
+		//else if(anti_aliasing_str == "4xSSAA") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::SSAA_4;
+		else if(anti_aliasing_str == "4/3xSSAA+FXAA") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::SSAA_4_3_FXAA;
+		else if(anti_aliasing_str == "2xSSAA+FXAA") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::SSAA_2_FXAA;
+		else config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::NONE;
 		
 		config.disabled_extensions = config_doc.get<string>("config.graphic_device.disabled_extensions", "");
 		config.force_device = config_doc.get<string>("config.graphic_device.force_device", "");
@@ -268,9 +270,9 @@ void engine::create() {
 void engine::init(bool console, unsigned int width, unsigned int height,
 				  bool fullscreen, bool vsync, const char* ico) {
 	if(console == true) {
-		engine::mode = engine::CONSOLE;
+		mode = INIT_MODE::CONSOLE;
 		// create extension class object
-		exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
+		exts = new ext(mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
 		a2e_debug("initializing albion 2 engine in console only mode");
 	}
 	else {
@@ -286,7 +288,7 @@ void engine::init(bool console, unsigned int width, unsigned int height,
 /*! initializes the engine in console + graphical mode
  */
 void engine::init(const char* ico) {
-	engine::mode = engine::GRAPHICAL;
+	mode = INIT_MODE::GRAPHICAL;
 	a2e_debug("initializing albion 2 engine in console + graphical mode");
 
 	// in order to use multi-threaded opengl with x11/xlib, we have to tell it to actually be thread safe
@@ -476,12 +478,12 @@ void engine::init(const char* ico) {
 	resize_window();
 
 	// check which anti-aliasing modes are supported (ranging from worst to best)
-	supported_aa_modes.push_back(rtt::TAA_NONE);
-	supported_aa_modes.push_back(rtt::TAA_FXAA);
-	supported_aa_modes.push_back(rtt::TAA_SSAA_2);
-	supported_aa_modes.push_back(rtt::TAA_SSAA_4);
-	supported_aa_modes.push_back(rtt::TAA_SSAA_4_3_FXAA);
-	supported_aa_modes.push_back(rtt::TAA_SSAA_2_FXAA);
+	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::NONE);
+	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::FXAA);
+	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_2);
+	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_4);
+	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_4_3_FXAA);
+	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_2_FXAA);
 	
 	bool chosen_aa_mode_supported = false;
 	for(const auto& aa_mode : supported_aa_modes) {
@@ -491,9 +493,9 @@ void engine::init(const char* ico) {
 	// if the chosen anti-aliasing mode isn't supported, use the next best one
 	if(!chosen_aa_mode_supported) {
 		config.anti_aliasing = supported_aa_modes.back();
-		a2e_error("your chosen anti-aliasing mode isn't supported by your graphic card - using \"%s\" instead!", rtt::TEXTURE_ANTI_ALIASING_STR[config.anti_aliasing]);
+		a2e_error("your chosen anti-aliasing mode isn't supported by your graphic card - using \"%s\" instead!", rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
 	}
-	else a2e_debug("using \"%s\" anti-aliasing", rtt::TEXTURE_ANTI_ALIASING_STR[config.anti_aliasing]);
+	else a2e_debug("using \"%s\" anti-aliasing", rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
 
 	// check anisotropic
 	if(config.anisotropic > exts->get_max_anisotropic_filtering()) {
@@ -524,7 +526,7 @@ void engine::init(const char* ico) {
 	// draw the loading screen/image
 	start_draw();
 	start_2d_draw();
-	a2e_texture load_tex = t->add_texture(data_path("loading.png"), texture_object::TF_LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	a2e_texture load_tex = t->add_texture(data_path("loading.png"), TEXTURE_FILTERING::LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	const uint2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
 	const uint2 img_offset((unsigned int)config.width/2 - load_tex_draw_size.x/2,
 						   (unsigned int)config.height/2 - load_tex_draw_size.y/2);
@@ -890,7 +892,7 @@ unsigned int engine::get_fps_limit() {
 
 /*! returns the type of the initialization (0 = GRAPHICAL, 1 = CONSOLE)
  */
-unsigned int engine::get_init_mode() {
+const INIT_MODE& engine::get_init_mode() {
 	return engine::mode;
 }
 
@@ -1041,7 +1043,7 @@ void engine::load_ico(const char* ico) {
 	SDL_SetWindowIcon(config.wnd, IMG_Load(data_path(ico).c_str()));
 }
 
-texture_object::TEXTURE_FILTERING engine::get_filtering() {
+TEXTURE_FILTERING engine::get_filtering() {
 	return config.filtering;
 }
 

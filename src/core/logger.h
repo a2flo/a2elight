@@ -27,18 +27,18 @@ using namespace std;
 //! note that you don't actually have to use a specific character for %_ to print the
 //! correct type (the ostream operator<< is used and the %_ character is ignored - except
 //! for %x and %X which will print out an integer in hex format)
-#define a2e_error(...) logger::log(logger::LT_ERROR, __FILE__, __func__, __VA_ARGS__)
-#define a2e_debug(...) logger::log(logger::LT_DEBUG, __FILE__, __func__, __VA_ARGS__)
-#define a2e_msg(...) logger::log(logger::LT_MSG, __FILE__, __func__, __VA_ARGS__)
-#define a2e_log(...) logger::log(logger::LT_NONE, __FILE__, __func__, __VA_ARGS__)
+#define a2e_error(...) logger::log(logger::LOG_TYPE::ERROR_MSG, __FILE__, __func__, __VA_ARGS__)
+#define a2e_debug(...) logger::log(logger::LOG_TYPE::DEBUG_MSG, __FILE__, __func__, __VA_ARGS__)
+#define a2e_msg(...) logger::log(logger::LOG_TYPE::SIMPLE_MSG, __FILE__, __func__, __VA_ARGS__)
+#define a2e_log(...) logger::log(logger::LOG_TYPE::NONE, __FILE__, __func__, __VA_ARGS__)
 
 class A2E_API logger {
 public:
-	enum LOG_TYPE {
-		LT_NONE,	//!< enum message with no prefix
-		LT_MSG,		//!< enum simple message
-		LT_ERROR,	//!< enum error message
-		LT_DEBUG	//!< enum debug message
+	enum class LOG_TYPE {
+		NONE,		//!< enum message with no prefix
+		SIMPLE_MSG,	//!< enum simple message
+		ERROR_MSG,	//!< enum error message
+		DEBUG_MSG	//!< enum debug message
 	};
 	
 	static void init();
@@ -47,10 +47,10 @@ public:
 	//
 	static const char* type_to_str(const LOG_TYPE& type) {
 		switch(type) {
-			case LT_NONE: return "";
-			case LT_MSG: return "[ MSG ]";
-			case LT_ERROR: return "[ERROR]";
-			case LT_DEBUG: return "[DEBUG]";
+			case LOG_TYPE::NONE: return "";
+			case LOG_TYPE::SIMPLE_MSG: return "[ MSG ]";
+			case LOG_TYPE::ERROR_MSG: return "[ERROR]";
+			case LOG_TYPE::DEBUG_MSG: return "[DEBUG]";
 		}
 		assert(false && "invalid log type");
 		return "UNKNOWN";

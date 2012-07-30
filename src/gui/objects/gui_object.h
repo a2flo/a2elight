@@ -35,7 +35,7 @@ public:
 	virtual ~gui_object();
 	
 /*	//! gui object types - same as in the gui class
-	enum GUI_OBJECT_TYPE {
+	GUI_OBJECT_TYPE {
 		GUI_NONE,		//!< enum none/dummy type
 		GUI_BUTTON,		//!< enum button type
 		GUI_INPUT,		//!< enum input box type

@@ -60,9 +60,9 @@ public:
 		
 		a2e_shader_code() :
 #if !defined(A2E_IOS)
-		version(ext::GLSL_150)
+		version(ext::GLSL_VERSION::GLSL_150)
 #else
-		version(ext::GLSL_ES_100)
+		version(ext::GLSL_VERSION::GLSL_ES_100)
 #endif
 		{}
 		a2e_shader_code(a2e_shader_code&& obj) :

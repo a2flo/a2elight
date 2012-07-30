@@ -91,7 +91,7 @@ void image::draw() {
  *  @param filename the image files name
  */
 void image::open_image(const char* filename) {
-	tex = t->add_texture(filename, texture_object::TF_POINT);
+	tex = t->add_texture(filename, TEXTURE_FILTERING::POINT);
 }
 
 /*! sets the position (2 * unsigned int) of the image
