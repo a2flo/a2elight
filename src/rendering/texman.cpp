@@ -366,7 +366,7 @@ a2e_texture texman::get_texture(GLuint tex_num) {
 
 void texman::set_filtering(TEXTURE_FILTERING filtering) {
 	if(filtering > TEXTURE_FILTERING::TRILINEAR) {
-		a2e_error("unknown texture filtering mode (%u)!", (unsigned int)filtering);
+		a2e_error("unknown texture filtering mode (%u)!", filtering);
 		texman::standard_filtering = TEXTURE_FILTERING::POINT;
 		return;
 	}

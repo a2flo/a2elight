@@ -157,7 +157,7 @@ void a2emodel::post_draw_setup(const ssize_t sub_object_num a2e_unused) {
 void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_object_num, const size_t& mask_id) {
 	if(draw_mode == DRAW_MODE::NONE ||
 	   draw_mode > DRAW_MODE::ENV_GM_PASSES_MASK) {
-		a2e_error("invalid draw_mode: %u!", (unsigned int)draw_mode);
+		a2e_error("invalid draw_mode: %u!", draw_mode);
 		return;
 	}
 	const DRAW_MODE masked_draw_mode((DRAW_MODE)((unsigned int)draw_mode & (unsigned int)DRAW_MODE::GM_PASSES_MASK));

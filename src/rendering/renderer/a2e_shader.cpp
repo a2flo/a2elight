@@ -623,7 +623,7 @@ bool a2e_shader::check_shader_condition(const CONDITION_TYPE type, const string&
 				max_card = (unsigned int)ext::max_intel_card;
 			}
 			else {
-				a2e_error("unknown card %d!", (unsigned int)graphics_card);
+				a2e_error("unknown card %d!", graphics_card);
 				break;
 			}
 			

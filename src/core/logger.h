@@ -78,16 +78,23 @@ protected:
 	
 	//! handles the log format
 	//! only %x and %X are supported at the moment, in all other cases the standard ostream operator<< is used!
+	template <bool is_enum_flag, typename U> struct enum_helper_type {
+		typedef U type;
+	};
+	template <typename U> struct enum_helper_type<true, U> {
+		typedef typename underlying_type<U>::type type;
+	};
 	template <typename T> static void handle_format(stringstream& buffer, const char& format, T value) {
+		typedef typename conditional<is_enum<T>::value, typename enum_helper_type<is_enum<T>::value, T>::type, T>::type print_type;
 		switch(format) {
 			case 'x':
-				buffer << "0x" << hex << value << dec;
+				buffer << "0x" << hex << static_cast<print_type>(value) << dec;
 				break;
 			case 'X':
-				buffer << "0x" << hex << uppercase << value << nouppercase << dec;
+				buffer << "0x" << hex << uppercase << static_cast<print_type>(value) << nouppercase << dec;
 				break;
 			default:
-				buffer << value;
+				buffer << static_cast<print_type>(value);
 				break;
 		}
 	}

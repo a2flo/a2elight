@@ -155,7 +155,7 @@ void a2ematerial::load_material(const string& filename_) {
 						break;
 					case LIGHTING_MODEL::NONE:
 						a2e_error("unknown lighting model type \"%s\" (%d)!",
-								  model, (unsigned int)cur_material->lm_type);
+								  model, cur_material->lm_type);
 						return;
 				}
 				

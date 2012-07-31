@@ -1098,13 +1098,11 @@ void opencl::set_active_device(opencl::DEVICE_TYPE dev) {
 	}
 	
 	if(active_device != nullptr) {
-		a2e_error("can't use device %u - keeping current one (%u)!",
-				  (unsigned int)dev, (unsigned int)active_device->type);
+		a2e_error("can't use device %u - keeping current one (%u)!", dev, active_device->type);
 	}
 	else {
 		// TODO: use _any_ device if there is at least one available ...
-		a2e_error("can't use device %u and no other device is currently active!",
-				  (unsigned int)dev);
+		a2e_error("can't use device %u and no other device is currently active!", dev);
 	}
 }
 
