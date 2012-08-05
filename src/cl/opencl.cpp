@@ -134,7 +134,7 @@ buffer(stringstream::in | stringstream::out)
 	build_options += " -cl-denorms-are-zero";
 	build_options += " -w";
 	
-#if defined(__APPLE__)
+#if !defined(__APPLE__)
 	//nv_build_options = " -cl-nv-verbose";
 	//nv_build_options = " -check-kernel-functions";
 	//nv_build_options += " -nvptx-mad-enable -inline-all";
