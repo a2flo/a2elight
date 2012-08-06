@@ -137,14 +137,17 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 					opengl_version = OPENGL_VERSION::OPENGL_4_1;
 					break;
 				case '2':
-				default:
 					opengl_version = OPENGL_VERSION::OPENGL_4_2;
+					break;
+				case '3':
+				default:
+					opengl_version = OPENGL_VERSION::OPENGL_4_3;
 					break;
 			}
 			break;
 		default:
 			// default to highest version
-			opengl_version = OPENGL_VERSION::OPENGL_4_2;
+			opengl_version = OPENGL_VERSION::OPENGL_4_3;
 			break;
 	}
 #else
@@ -186,15 +189,16 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 			switch(str_glsl_version[2]) {
 				case '0': glsl_version = GLSL_VERSION::GLSL_400; break;
 				case '1': glsl_version = GLSL_VERSION::GLSL_410; break;
-				case '2':
+				case '2': glsl_version = GLSL_VERSION::GLSL_420; break;
+				case '3':
 				default:
-					glsl_version = GLSL_VERSION::GLSL_420;
+					glsl_version = GLSL_VERSION::GLSL_430;
 					break;
 			}
 			break;
 		default:
 			// default to highest version
-			glsl_version = GLSL_VERSION::GLSL_420;
+			glsl_version = GLSL_VERSION::GLSL_430;
 			break;
 	}
 #else
@@ -547,6 +551,7 @@ const char* ext::cstr_from_glsl_version(const ext::GLSL_VERSION& version) const 
 		case GLSL_VERSION::GLSL_400: return "4.00";
 		case GLSL_VERSION::GLSL_410: return "4.10";
 		case GLSL_VERSION::GLSL_420: return "4.20";
+		case GLSL_VERSION::GLSL_430: return "4.30";
 		case GLSL_VERSION::GLSL_NO_VERSION: break;
 	}
 	return "<unknown>";
@@ -560,6 +565,7 @@ const char* ext::glsl_version_str_from_glsl_version(const ext::GLSL_VERSION& ver
 		case GLSL_VERSION::GLSL_400: return "400";
 		case GLSL_VERSION::GLSL_410: return "410";
 		case GLSL_VERSION::GLSL_420: return "420";
+		case GLSL_VERSION::GLSL_430: return "430";
 		case GLSL_VERSION::GLSL_NO_VERSION: break;
 	}
 	return "<unknown>";
@@ -585,6 +591,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& major_version, const size_t
 				case 0: return GLSL_VERSION::GLSL_400;
 				case 10: return GLSL_VERSION::GLSL_410;
 				case 20: return GLSL_VERSION::GLSL_420;
+				case 30: return GLSL_VERSION::GLSL_430;
 				default: break;
 			}
 			break;
@@ -604,6 +611,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& version) const {
 		case 400: return GLSL_VERSION::GLSL_400;
 		case 410: return GLSL_VERSION::GLSL_410;
 		case 420: return GLSL_VERSION::GLSL_420;
+		case 430: return GLSL_VERSION::GLSL_430;
 	}
 	
 	a2e_error("invalid glsl version %d!", version);
@@ -620,6 +628,7 @@ const char* ext::cstr_from_gl_version(const ext::OPENGL_VERSION& version) const 
 		case OPENGL_VERSION::OPENGL_4_0: return "OpenGL 4.0";
 		case OPENGL_VERSION::OPENGL_4_1: return "OpenGL 4.1";
 		case OPENGL_VERSION::OPENGL_4_2: return "OpenGL 4.2";
+		case OPENGL_VERSION::OPENGL_4_3: return "OpenGL 4.3";
 		case OPENGL_VERSION::OPENGL_UNKNOWN : break;
 	}
 	return "<unknown>";

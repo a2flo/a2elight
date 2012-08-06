@@ -114,6 +114,7 @@ public:
 		OPENGL_4_0,
 		OPENGL_4_1,
 		OPENGL_4_2,
+		OPENGL_4_3,
 	};
 	
 	enum class GLSL_VERSION {
@@ -124,6 +125,7 @@ public:
 		GLSL_400,			// opengl 4.0
 		GLSL_410,			// opengl 4.1
 		GLSL_420,			// opengl 4.2
+		GLSL_430,			// opengl 4.3
 	};
 	
 	const char* glsl_version_str_from_glsl_version(const GLSL_VERSION& version) const;
