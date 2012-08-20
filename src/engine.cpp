@@ -97,7 +97,6 @@ engine::~engine() {
 	
 	gfx2d::destroy();
 
-	if(c != nullptr) delete c;
 	if(f != nullptr) delete f;
 	if(t != nullptr) delete t;
 	if(exts != nullptr) delete exts;
@@ -187,7 +186,6 @@ void engine::create() {
 	
 	u = new unicode();
 	f = new file_io();
-	c = new core();
 	x = new xml(this);
 	e = new event(this);
 	
@@ -585,7 +583,18 @@ void engine::init(const char* ico) {
 				  config.ui_anti_aliasing);
 	}
 	else a2e_debug("using \"%ux\" gui anti-aliasing", config.ui_anti_aliasing);
-	ui = new gui(this);
+	
+	switch(config.ui_anti_aliasing) {
+		case 0: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::NONE; break;
+		case 2: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_2; break;
+		case 4: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_4; break;
+		case 8: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_8; break;
+		case 16: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_16; break;
+		case 32: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_32; break;
+		case 64: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_64; break;
+		default: break;
+	}
+	ui = new gui(this, "standard"); // TODO: add config setting for theme name
 	
 	release_gl_context();
 }
@@ -850,7 +859,6 @@ void engine::start_2d_draw(const unsigned int width, const unsigned int height) 
 	
 	// shaders are using pre-multiplied alpha
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_BLEND);
 }
 
 /*! stops drawing the 2d elements
@@ -894,12 +902,6 @@ unsigned int engine::get_fps_limit() {
  */
 const INIT_MODE& engine::get_init_mode() {
 	return engine::mode;
-}
-
-/*! returns a pointer to the core class
- */
-core* engine::get_core() {
-	return engine::c;
 }
 
 /*! returns a pointer to the file_io class
@@ -1266,8 +1268,8 @@ const size_t& engine::get_dpi() const {
 	return config.dpi;
 }
 
-const size_t& engine::get_ui_anti_aliasing() const {
-	return config.ui_anti_aliasing;
+const rtt::TEXTURE_ANTI_ALIASING& engine::get_ui_anti_aliasing() const {
+	return config.ui_anti_aliasing_enum;
 }
 
 const xml::xml_doc& engine::get_config_doc() const {

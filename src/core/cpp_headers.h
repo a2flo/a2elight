@@ -61,6 +61,7 @@
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
+#include <atomic>
 #include <ctime>
 #include <cstring>
 #include <cmath>
@@ -85,5 +86,26 @@ using namespace std;
 // we don't need these
 #undef min
 #undef max
+
+// cbegin/cend
+#if !defined(A2E_HAS_CBEGIN_CEND)
+
+template <class C> auto cbegin(C& c) -> decltype(c.cbegin()) { return c.cbegin(); }
+template <class C> auto cbegin(const C& c) -> decltype(c.cbegin()) { return c.cbegin(); }
+template <class C> auto cend(C& c) -> decltype(c.cend()) { return c.cend(); }
+template <class C> auto cend(const C& c) -> decltype(c.cend()) { return c.cend(); }
+template <class T, size_t N> const T* cbegin(const T (&array)[N]) { return array; }
+template <class T, size_t N> const T* cend(const T (&array)[N]) { return array + N; }
+
+#endif
+
+// make_unique
+#if !defined(A2E_HAS_MAKE_UNIQUE)
+
+template<typename T, typename... Args> unique_ptr<T> make_unique(Args&&... args) {
+	return unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+#endif
 
 #endif

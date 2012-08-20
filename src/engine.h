@@ -73,7 +73,6 @@ public:
 	const string get_version() const;
 	
 	// class return functions
-	core* get_core();
 	file_io* get_file_io();
 	event* get_event();
 	texman* get_texman();
@@ -163,7 +162,7 @@ public:
 	
 	// gui
 	const size_t& get_dpi() const;
-	const size_t& get_ui_anti_aliasing() const;
+	const rtt::TEXTURE_ANTI_ALIASING& get_ui_anti_aliasing() const;
 	
 	// input
 	unsigned int get_key_repeat();
@@ -197,7 +196,6 @@ public:
 	float get_geometry_light_scaling() const;
 
 protected:
-	core* c = nullptr;
 	file_io* f = nullptr;
 	event* e = nullptr;
 	texman* t = nullptr;
@@ -226,6 +224,7 @@ protected:
 		// gui
 		size_t dpi = 0;
 		size_t ui_anti_aliasing = 8;
+		rtt::TEXTURE_ANTI_ALIASING ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_8;
 		
 		// input
 		size_t key_repeat = 200;

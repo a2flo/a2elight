@@ -160,15 +160,15 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 		a2e_error("invalid draw_mode: %u!", draw_mode);
 		return;
 	}
-	const DRAW_MODE masked_draw_mode((DRAW_MODE)((unsigned int)draw_mode & (unsigned int)DRAW_MODE::GM_PASSES_MASK));
-	const bool env_pass(((unsigned int)draw_mode & (unsigned int)DRAW_MODE::ENVIRONMENT_PASS) != 0);
+	const DRAW_MODE masked_draw_mode(draw_mode & DRAW_MODE::GM_PASSES_MASK);
+	const bool env_pass((draw_mode & DRAW_MODE::ENVIRONMENT_PASS) != DRAW_MODE::NONE);
 	
 	a2ematerial::MATERIAL_TYPE mat_type = material->get_material_type(sub_object_num);
 	a2ematerial::LIGHTING_MODEL lm_type = material->get_lighting_model_type(sub_object_num);
 	
 	// inferred rendering
-	size_t attr_array_mask = 0;
-	size_t texture_mask = 0;
+	VERTEX_ATTRIBUTE attr_array_mask { (VERTEX_ATTRIBUTE)0 };
+	a2ematerial::TEXTURE_TYPE texture_mask { (a2ematerial::TEXTURE_TYPE)0 };
 	
 	// check mask id
 	if(mask_id > A2E_MAX_MASK_ID) return;
@@ -236,8 +236,8 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 					shd->uniform("cam_position", -float3(*e->get_position()));
 					shd->uniform("model_position", position);
 					
-					attr_array_mask |= (unsigned int)VERTEX_ATTRIBUTE::TEXTURE_COORD | (unsigned int)VERTEX_ATTRIBUTE::BINORMAL | (unsigned int)VERTEX_ATTRIBUTE::TANGENT;
-					texture_mask |= (unsigned int)a2ematerial::TEXTURE_TYPE::NORMAL | (unsigned int)a2ematerial::TEXTURE_TYPE::HEIGHT;
+					attr_array_mask |= VERTEX_ATTRIBUTE::TEXTURE_COORD | VERTEX_ATTRIBUTE::BINORMAL | VERTEX_ATTRIBUTE::TANGENT;
+					texture_mask |= a2ematerial::TEXTURE_TYPE::NORMAL | a2ematerial::TEXTURE_TYPE::HEIGHT;
 				}
 				break;
 				// diffuse mapping
@@ -267,15 +267,15 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				break;
 		}
 		
-		attr_array_mask |= (unsigned int)VERTEX_ATTRIBUTE::NORMAL;
+		attr_array_mask |= VERTEX_ATTRIBUTE::NORMAL;
 		
 		// custom pre-draw setup
 		pre_draw_geometry(shd, attr_array_mask, texture_mask);
 	}
 	else if(masked_draw_mode == DRAW_MODE::MATERIAL_PASS ||
 			masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
-		attr_array_mask |= (unsigned int)VERTEX_ATTRIBUTE::TEXTURE_COORD;
-		texture_mask |= (unsigned int)a2ematerial::TEXTURE_TYPE::DIFFUSE | (unsigned int)a2ematerial::TEXTURE_TYPE::SPECULAR | (unsigned int)a2ematerial::TEXTURE_TYPE::REFLECTANCE;
+		attr_array_mask |= VERTEX_ATTRIBUTE::TEXTURE_COORD;
+		texture_mask |= a2ematerial::TEXTURE_TYPE::DIFFUSE | a2ematerial::TEXTURE_TYPE::SPECULAR | a2ematerial::TEXTURE_TYPE::REFLECTANCE;
 		
 		if(shd_name == "") {
 			// first, select shader dependent on material type
@@ -289,8 +289,8 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 					shd->uniform("cam_position", -float3(*e->get_position()));
 					shd->uniform("model_position", position);
 					
-					attr_array_mask |= (unsigned int)VERTEX_ATTRIBUTE::NORMAL | (unsigned int)VERTEX_ATTRIBUTE::BINORMAL | (unsigned int)VERTEX_ATTRIBUTE::TANGENT;
-					texture_mask |= (unsigned int)a2ematerial::TEXTURE_TYPE::HEIGHT;
+					attr_array_mask |= VERTEX_ATTRIBUTE::NORMAL | VERTEX_ATTRIBUTE::BINORMAL | VERTEX_ATTRIBUTE::TANGENT;
+					texture_mask |= a2ematerial::TEXTURE_TYPE::HEIGHT;
 				}
 				break;
 				// diffuse mapping
@@ -319,8 +319,8 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 		shd->uniform("id", model_id);
 	}
 	
-	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::NORMAL) shd->uniform("local_mview", rot_mat);
-	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::NORMAL) shd->uniform("local_scale", scale_mat);
+	if((unsigned int)(attr_array_mask & VERTEX_ATTRIBUTE::NORMAL) != 0) shd->uniform("local_mview", rot_mat);
+	if((unsigned int)(attr_array_mask & VERTEX_ATTRIBUTE::NORMAL) != 0) shd->uniform("local_scale", scale_mat);
 	
 	//
 	material->enable_textures(sub_object_num, shd, texture_mask);
@@ -331,10 +331,10 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	}
 	
 	shd->attribute_array("in_vertex", draw_vertices_vbo, 3);
-	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::NORMAL) shd->attribute_array("normal", draw_normals_vbo, 3);
-	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::TEXTURE_COORD) shd->attribute_array("texture_coord", draw_tex_coords_vbo, 2);
-	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::BINORMAL) shd->attribute_array("binormal", draw_binormals_vbo, 3);
-	if(attr_array_mask & (unsigned int)VERTEX_ATTRIBUTE::TANGENT) shd->attribute_array("tangent", draw_tangents_vbo, 3);
+	if((unsigned int)(attr_array_mask & VERTEX_ATTRIBUTE::NORMAL) != 0) shd->attribute_array("normal", draw_normals_vbo, 3);
+	if((unsigned int)(attr_array_mask & VERTEX_ATTRIBUTE::TEXTURE_COORD) != 0) shd->attribute_array("texture_coord", draw_tex_coords_vbo, 2);
+	if((unsigned int)(attr_array_mask & VERTEX_ATTRIBUTE::BINORMAL) != 0) shd->attribute_array("binormal", draw_binormals_vbo, 3);
+	if((unsigned int)(attr_array_mask & VERTEX_ATTRIBUTE::TANGENT) != 0) shd->attribute_array("tangent", draw_tangents_vbo, 3);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, draw_indices_vbo);
 	glDrawElements(GL_TRIANGLES, (GLsizei)draw_index_count, GL_UNSIGNED_INT, nullptr);
@@ -406,13 +406,13 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 	}
 }
 
-void a2emodel::pre_draw_geometry(gl3shader& shd a2e_unused, size_t& attr_array_mask a2e_unused, size_t& texture_mask a2e_unused) {
+void a2emodel::pre_draw_geometry(gl3shader& shd a2e_unused, VERTEX_ATTRIBUTE& attr_array_mask a2e_unused, a2ematerial::TEXTURE_TYPE& texture_mask a2e_unused) {
 }
 
 void a2emodel::post_draw_geometry(gl3shader& shd a2e_unused) {
 }
 
-void a2emodel::pre_draw_material(gl3shader& shd a2e_unused, size_t& attr_array_mask a2e_unused, size_t& texture_mask a2e_unused) {
+void a2emodel::pre_draw_material(gl3shader& shd a2e_unused, VERTEX_ATTRIBUTE& attr_array_mask a2e_unused, a2ematerial::TEXTURE_TYPE& texture_mask a2e_unused) {
 }
 
 void a2emodel::post_draw_material(gl3shader& shd a2e_unused) {

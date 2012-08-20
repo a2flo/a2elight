@@ -21,8 +21,9 @@
 
 #include "global.h"
 #include "threading/thread_base.h"
-#include "gui/event.h"
 #include "rendering/rtt.h"
+#include "gui/event.h"
+#include "gui/objects/gui_object.h"
 
 /*! @class gui
  *  @brief graphical user interface functions
@@ -31,54 +32,31 @@
 class engine;
 class core;
 class scene;
+class font_manager;
 class shader;
 class shader_gl3;
 typedef shared_ptr<shader_gl3> gl3shader;
+class gui_surface;
+class gui_simple_callback;
+class gui_theme;
+class gui_window;
+
+enum class DRAW_MODE_UI : unsigned int {
+	PRE_UI,
+	POST_UI
+};
+typedef functor<void, const DRAW_MODE_UI, rtt::fbo*> ui_draw_callback;
 
 class A2E_API gui : public thread_base {
 public:
-	gui(engine* e);
+	gui(engine* e, const string& theme_name);
 	~gui();
 
 	void draw();
 	
-	// gui event types
-	enum class GUI_EVENT_TYPE : unsigned int {
-		// TODO: form: present! (also: string or enum?)
-		
-		BUTTON_PRESS,
-		BUTTON_RIGHT_PRESS,
-		//TOGGLE_BUTTON_PRESS,
-		
-		LIST_ITEM_PRESS,
-		LIST_ITEM_DOUBLE_CLICK,
-		
-		CHECKBOX_TOGGLE,
-		
-		RADIO_PRESS,
-		
-		COMBO_ITEM_PRESS,
-		
-		INPUT_SELECT,
-		INPUT_UNSELECT,
-		
-		BAR_SCROLL,
-		
-		FILE_OPEN,
-		FILE_SAVE,
-		
-		SLIDER_MOVE,
-		
-		// TODO: tree list
-		// TODO: color picker
-		// TODO: progress bar
-		// TODO: date picker
-		
-		WINDOW_CLOSE,
-		WINDOW_OPEN,
-		
-		TAB_SELECT,
-	};
+	//
+	font_manager* get_font_manager() const;
+	gui_theme* get_theme() const;
 	
 	// misc flags
 	void set_keyboard_input(const bool& state);
@@ -87,13 +65,17 @@ public:
 	bool get_mouse_input() const;
 	
 	// draw callbacks
-	enum class DRAW_MODE_UI : unsigned int {
-		PRE_UI,
-		POST_UI
-	};
-	typedef functor<void, const gui::DRAW_MODE_UI> draw_callback;
-	void add_draw_callback(draw_callback& cb);
-	void delete_draw_callback(draw_callback& cb);
+	gui_simple_callback* add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_callback& cb,
+										   const float2& size, const float2& offset);
+	void delete_draw_callback(ui_draw_callback& cb);
+	
+	// adding/creating gui objects:
+	template <class gui_class, typename... Args> gui_class* add(Args&&... args);
+	
+	// any gui object creation or deletion (or operation on the window container) should be locked
+	void lock();
+	bool try_lock();
+	void unlock();
 
 protected:
 	engine* e;
@@ -101,17 +83,27 @@ protected:
 	rtt* r;
 	shader* s;
 	scene* sce;
+	font_manager* fm;
+	gui_theme* theme;
 	
 	// note: this must be ordered
-	vector<draw_callback*> draw_callbacks;
+	array<vector<ui_draw_callback*>, 2> draw_callbacks; // pre and post
+	unordered_map<ui_draw_callback*, gui_simple_callback*> cb_surfaces;
 	
-	rtt::fbo* main_fbo;
+	rtt::fbo* main_fbo = nullptr;
 	void recreate_buffers(const size2 size);
 	void delete_buffers();
 	
 	void reload_shaders();
 	gl3shader blend_shd;
+	gl3shader texture_shd;
 	
+	//
+	vector<gui_window*> windows;
+	void add_window(gui_window* wnd);
+	recursive_mutex object_lock;
+	
+	// thread run:
 	virtual void run();
 	
 	// event handling
@@ -124,9 +116,34 @@ protected:
 	bool shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	bool window_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	
-	atomic_t keyboard_input;
-	atomic_t mouse_input;
+	//
+	vector<pair<EVENT_TYPE, shared_ptr<event_object>>> event_queue, event_processing_queue;
+	mutex event_lock;
+	atomic<bool> events_in_queue { false };
+	
+	atomic<bool> keyboard_input { true };
+	atomic<bool> mouse_input { true };
 
 };
+
+//
+template <class gui_class, typename... Args> gui_class* gui::add(Args&&... args) {
+	// make sure, gui_class is inheriting from gui_object
+	static_assert(is_base_of<gui_object, gui_class>::value,
+				  "can't add an object that doesn't inherit from gui_object!");
+	
+	lock();
+	gui_class* obj = new gui_class(e, args...);
+	
+	// "specialize" for gui_window, since we'll need to keep track of them:
+	// (also: i wish there'd be a static if ...)
+	if(is_same<gui_window, gui_class>::value ||
+	   is_base_of<gui_window, gui_class>::value) {
+		add_window((gui_window*)obj);
+	}
+	
+	unlock();
+	return obj;
+}
 
 #endif

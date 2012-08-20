@@ -253,7 +253,8 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 										int4(slot->bitmap_left,
 											 int(display_font_size) - slot->bitmap_top,
 											 (int)slot->advance.x,
-											 (int)slot->advance.y)
+											 (int)slot->advance.y),
+										int2(int(slot->metrics.width >> 6), int(slot->metrics.height >> 6))
 									}));
 			const unsigned int layer = texture_index / glyphs_per_layer;
 			const int3 offset((texture_index - (layer*glyphs_per_layer)) % glyphs_per_line,
@@ -288,7 +289,7 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-uint2 font::cache_text(const string& text, const GLuint existing_ubo) {
+pair<uint2, float2> font::cache_text(const string& text, const GLuint existing_ubo) {
 	//
 	GLuint ubo = existing_ubo;
 	if(ubo == 0 || !glIsBuffer(ubo)) {
@@ -301,14 +302,14 @@ uint2 font::cache_text(const string& text, const GLuint existing_ubo) {
 	}
 	
 	// update ubo with text data
-	const vector<uint2> ubo_data(create_text_ubo_data(text, [&](unsigned int code) {
+	const auto text_data(create_text_ubo_data(text, [&](unsigned int code) {
 		this->cache(code, code);
 	}));
 	
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, ubo_data.size() * sizeof(uint2), &ubo_data[0]);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, text_data.first.size() * sizeof(uint2), &text_data.first[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	
-	return uint2(ubo, (unsigned int)ubo_data.size());
+	return { uint2(ubo, (unsigned int)text_data.first.size()), text_data.second };
 }
 
 void font::recreate_texture_array(const size_t& layers) {
@@ -364,22 +365,22 @@ bool font::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj a
 
 void font::draw(const string& text, const float2& position, const float4 color) {
 	const auto ubo = cache_text(text, text_ubo);
-	draw_cached(text_ubo, ubo.y, position, color);
+	draw_cached(text_ubo, ubo.first.y, position, color);
 }
 
 void font::draw_cached(const string& text, const float2& position, const float4 color) const {
 	// update ubo with text data
-	const vector<uint2> ubo_data(create_text_ubo_data(text));
+	const auto text_data(create_text_ubo_data(text));
 	
 	glBindBuffer(GL_UNIFORM_BUFFER, text_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, ubo_data.size() * sizeof(uint2), &ubo_data[0]);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, text_data.first.size() * sizeof(uint2), &text_data.first[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	
-	draw_cached(text_ubo, ubo_data.size(), position, color);
+	draw_cached(text_ubo, text_data.first.size(), position, color);
 }
 
-vector<uint2> font::create_text_ubo_data(const string& text,
-										 std::function<void (unsigned int)> cache_fnc) const {
+pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
+													   std::function<void (unsigned int)> cache_fnc) const {
 	// replace control strings by control characters (easier to handle later on)
 	static const struct {
 		const string search;
@@ -415,32 +416,32 @@ vector<uint2> font::create_text_ubo_data(const string& text,
 			"Regular", {
 				{ 0x0A, float(display_font_size) * leading_multiplier },
 				{ 0x0D, float(display_font_size) * leading_multiplier },
-				{ 0x09, (regular_map.find(0x20)->second.size.z >> 6) * tab_multiplier },
-				{ 0x20, (regular_map.find(0x20)->second.size.z >> 6) },
+				{ 0x09, (regular_map.find(0x20)->second.layout.z >> 6) * tab_multiplier },
+				{ 0x20, (regular_map.find(0x20)->second.layout.z >> 6) },
 			}
 		},
 		{
 			"Italic", {
 				{ 0x0A, float(display_font_size) * leading_multiplier },
 				{ 0x0D, float(display_font_size) * leading_multiplier },
-				{ 0x09, (italic_map.find(0x20)->second.size.z >> 6) * tab_multiplier },
-				{ 0x20, (italic_map.find(0x20)->second.size.z >> 6) },
+				{ 0x09, (italic_map.find(0x20)->second.layout.z >> 6) * tab_multiplier },
+				{ 0x20, (italic_map.find(0x20)->second.layout.z >> 6) },
 			}
 		},
 		{
 			"Bold", {
 				{ 0x0A, float(display_font_size) * leading_multiplier },
 				{ 0x0D, float(display_font_size) * leading_multiplier },
-				{ 0x09, (bold_map.find(0x20)->second.size.z >> 6) * tab_multiplier },
-				{ 0x20, (bold_map.find(0x20)->second.size.z >> 6) },
+				{ 0x09, (bold_map.find(0x20)->second.layout.z >> 6) * tab_multiplier },
+				{ 0x20, (bold_map.find(0x20)->second.layout.z >> 6) },
 			}
 		},
 		{
 			"Bold Italic", {
 				{ 0x0A, float(display_font_size) * leading_multiplier },
 				{ 0x0D, float(display_font_size) * leading_multiplier },
-				{ 0x09, (bold_italic_map.find(0x20)->second.size.z >> 6) * tab_multiplier },
-				{ 0x20, (bold_italic_map.find(0x20)->second.size.z >> 6) },
+				{ 0x09, (bold_italic_map.find(0x20)->second.layout.z >> 6) * tab_multiplier },
+				{ 0x20, (bold_italic_map.find(0x20)->second.layout.z >> 6) },
 			}
 		},
 	};
@@ -448,6 +449,7 @@ vector<uint2> font::create_text_ubo_data(const string& text,
 		return whitespace_sizes.find(cur_style)->second.find(code)->second;
 	};
 	
+	float2 extent;
 	bool style_italic = false, style_bold = false;
 	for(const auto& code : codes) {
 		// handle control characters / whitespace
@@ -503,14 +505,19 @@ vector<uint2> font::create_text_ubo_data(const string& text,
 			}
 		}
 		
-		const int2 pos(origin.x + float(iter->second.size.x), origin.y + float(iter->second.size.y));
-		origin.x += iter->second.size.z >> 6;
-		origin.y += iter->second.size.w >> 6;
+		const float2 fpos(origin.x + float(iter->second.layout.x), origin.y + float(iter->second.layout.y));
+		if(code != 0x20) { // ignore spaces (other whitespace has already been ignored)
+			extent = float2::max(fpos, extent); // max extent
+		}
+		const int2 pos(fpos); // round to integer
+		origin.x += iter->second.layout.z >> 6;
+		origin.y += iter->second.layout.w >> 6;
 		ubo_data.emplace_back(iter->second.tex_index,
 							  (unsigned int)(((short int)pos.x) & 0xFFFFu) +
 							  (((unsigned int)(((short int)pos.y) & 0xFFFFu)) << 16u));
 	}
-	return ubo_data;
+	extent = float2::max(extent, origin); // in case of whitespace, do a last max
+	return { ubo_data, extent };
 }
 
 void font::draw_cached(const GLuint& ubo, const size_t& character_count, const float2& position, const float4 color) const {

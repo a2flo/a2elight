@@ -16,9 +16,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_GLOBAL_H__
-#define __A2E_GLOBAL_H__
+#include "task.h"
 
-#include "core/platform.h"
+task::task(std::function<void()> op_) :
+op(op_),
+thread_obj(&task::run, this, [this]() {
+	while(!initialized) { this_thread::yield(); }
+	op();
+}) {
+	thread_obj.detach();
+	initialized = true;
+}
 
-#endif
+task::~task() {}
+
+void task::run(task* this_task, std::function<void()> task_op) {
+	task_op();
+	delete this_task;
+}

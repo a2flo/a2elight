@@ -131,19 +131,19 @@ xml::xml_doc xml::process_data(const string& data, const bool validate) const {
 }
 
 void xml::create_node_structure(xml::xml_doc& doc, xmlDocPtr xmldoc) const {
-	deque<pair<xmlNode*, unordered_multimap<string, xml_node*>*>> node_stack;
+	deque<pair<xmlNode*, vector<pair<string, xml_node*>>*>> node_stack;
 	node_stack.push_back(make_pair(xmldoc->children, &doc.nodes));
 	for(;;) {
 		if(node_stack.empty()) break;
 		
 		xmlNode* cur_node = node_stack.front().first;
-		unordered_multimap<string, xml_node*>* nodes = node_stack.front().second;
+		vector<pair<string, xml_node*>>* nodes = node_stack.front().second;
 		node_stack.pop_front();
 		
 		for(; cur_node; cur_node = cur_node->next) {
 			if(cur_node->type == XML_ELEMENT_NODE) {
 				xml_node* node = new xml_node(cur_node);
-				nodes->insert(make_pair(string((const char*)cur_node->name), node));
+				nodes->emplace_back(make_pair(string((const char*)cur_node->name), node));
 				
 				if(cur_node->children != nullptr) {
 					node_stack.push_back(make_pair(cur_node->children, &node->children));
@@ -156,11 +156,14 @@ void xml::create_node_structure(xml::xml_doc& doc, xmlDocPtr xmldoc) const {
 xml::xml_node* xml::xml_doc::get_node(const string& path) const {
 	// find the node
 	vector<string> levels = core::tokenize(path, '.');
-	const unordered_multimap<string, xml_node*>* cur_level = &nodes;
+	const vector<pair<string, xml_node*>>* cur_level = &nodes;
 	xml_node* cur_node = nullptr;
 	for(const string& level : levels) {
-		const auto& next_node = cur_level->find(level);
-		if(next_node == cur_level->end()) return nullptr;
+		const auto next_node = find_if(begin(*cur_level), end(*cur_level),
+									   [&level](const pair<string, xml_node*>& elem) {
+			return (elem.first == level);
+		});
+		if(next_node == end(*cur_level)) return nullptr;
 		cur_node = next_node->second;
 		cur_level = &cur_node->children;
 	}

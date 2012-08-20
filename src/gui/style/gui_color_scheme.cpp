@@ -28,6 +28,10 @@ gui_color_scheme::~gui_color_scheme() {
 }
 
 bool gui_color_scheme::load(const string& filename) {
+	// reset old data (this gives the ability to reload the scheme)
+	colors.clear();
+	
+	//
 	xml::xml_doc ui_doc = x->process_file(e->data_path(filename), false); // TODO: DTD!
 	if(!ui_doc.valid) {
 		a2e_error("couldn't process color scheme file %s!", filename);
@@ -42,7 +46,8 @@ bool gui_color_scheme::load(const string& filename) {
 	}
 	
 	// process nodes
-	for(const auto& node : ui_doc.nodes) {
+	const auto scheme_node = ui_doc.get_node("a2e_color_scheme");
+	for(const auto& node : scheme_node->children) {
 		process_node(node.second, nullptr);
 	}
 	
@@ -91,8 +96,11 @@ void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_no
 }
 
 const float4 gui_color_scheme::get(const string& name) const {
-	static const float4 invalid_color(0.0f, 0.0f, 0.0f, 0.0f);
+	static const float4 invalid_color(0.0f, 1.0f, 0.0f, 1.0f);
 	const auto color = colors.find(name);
-	if(color == colors.end()) return invalid_color;
+	if(color == colors.cend()) {
+		a2e_error("invalid color name: %s!", name);
+		return invalid_color;
+	}
 	return color->second;
 }

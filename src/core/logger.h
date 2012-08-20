@@ -85,16 +85,25 @@ protected:
 		typedef typename underlying_type<U>::type type;
 	};
 	template <typename T> static void handle_format(stringstream& buffer, const char& format, T value) {
-		typedef typename conditional<is_enum<T>::value, typename enum_helper_type<is_enum<T>::value, T>::type, T>::type print_type;
+		typedef typename conditional<is_enum<T>::value,
+									 typename enum_helper_type<is_enum<T>::value, T>::type,
+									 typename conditional<is_pointer<T>::value &&
+														  !is_same<T, char*>::value &&
+														  !is_same<T, const char*>::value &&
+														  !is_same<T, unsigned char*>::value &&
+														  !is_same<T, const unsigned char*>::value,
+														  size_t,
+														  T>::type>::type print_type;
+		
 		switch(format) {
 			case 'x':
-				buffer << "0x" << hex << static_cast<print_type>(value) << dec;
+				buffer << hex << "0x" << (print_type)value << dec;
 				break;
 			case 'X':
-				buffer << "0x" << hex << uppercase << static_cast<print_type>(value) << nouppercase << dec;
+				buffer << hex << uppercase << "0x" << (print_type)value << nouppercase << dec;
 				break;
 			default:
-				buffer << static_cast<print_type>(value);
+				buffer << (print_type)value;
 				break;
 		}
 	}

@@ -87,13 +87,10 @@ public:
 		y = vec2.y;
 	}
 	
+	vector2& floor();
+	vector2& ceil();
 	vector2& round();
-	vector2& normalize() {
-		if(!is_null()) {
-			*this = *this / length();
-		}
-		return *this;
-	}
+	vector2& normalize();
 
 	// TODO: fully integrate ...
 	
@@ -231,10 +228,30 @@ template<typename T> vector2<T>& vector2<T>::operator%=(const vector2<T>& v) {
 	return *this;
 }
 
+template<> vector2<float>& vector2<float>::floor();
+template<typename T> vector2<T>& vector2<T>::floor() {
+	x = ::floor(x);
+	y = ::floor(y);
+	return *this;
+}
+
+template<> vector2<float>& vector2<float>::ceil();
+template<typename T> vector2<T>& vector2<T>::ceil() {
+	x = ::ceil(x);
+	y = ::ceil(y);
+	return *this;
+}
+
 template<> vector2<float>& vector2<float>::round();
 template<typename T> vector2<T>& vector2<T>::round() {
 	x = ::round(x);
 	y = ::round(y);
+	return *this;
+}
+template<typename T> vector2<T>& vector2<T>::normalize() {
+	if(!is_null()) {
+		*this = *this / length();
+	}
 	return *this;
 }
 

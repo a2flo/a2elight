@@ -21,9 +21,7 @@
 
 constexpr int event::handlers_locked;
 
-event::event(engine* e_) : thread_base("event"), e(e_),
-user_queue_lock()
-{
+event::event(engine* e_) : thread_base("event"), e(e_) {
 	AtomicSet(&handlers_lock, 0);
 	
 	mouse_down_state[0] = mouse_down_state[1] = mouse_down_state[2] =
@@ -198,21 +196,25 @@ void event::handle_events() {
 								 make_shared<mouse_move_event>(cur_ticks, abs_pos, rel_move));
 				}
 				break;
-				case SDL_MOUSEWHEEL:
+				case SDL_MOUSEWHEEL: {
+					// this sdl event contains no mouse button coordinate, so we need to get it ourselves
+					int2 mouse_coord;
+					SDL_GetMouseState(&mouse_coord.x, &mouse_coord.y);
 					if(event_handle.wheel.y > 0) {
 						handle_event(EVENT_TYPE::MOUSE_WHEEL_UP,
-									 make_shared<mouse_wheel_up_event>(
-										cur_ticks,
-										event_handle.wheel.y));
+									 make_shared<mouse_wheel_up_event>(cur_ticks,
+																	   mouse_coord,
+																	   event_handle.wheel.y));
 					}
 					else if(event_handle.wheel.y < 0) {
 						const unsigned int abs_wheel_move = (unsigned int)abs(event_handle.wheel.y);
 						handle_event(EVENT_TYPE::MOUSE_WHEEL_DOWN,
-									 make_shared<mouse_wheel_down_event>(
-										cur_ticks,
-										abs_wheel_move));
+									 make_shared<mouse_wheel_down_event>(cur_ticks,
+																		 mouse_coord,
+																		 abs_wheel_move));
 					}
-					break;
+				}
+				break;
 			}
 		}
 		else {

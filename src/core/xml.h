@@ -55,7 +55,7 @@ public:
 			valid = doc.valid;
 			return *this;
 		}
-		unordered_multimap<string, xml_node*> nodes;
+		vector<pair<string, xml_node*>> nodes;
 		bool valid;
 		
 		xml_node* get_node(const string& path) const;
@@ -68,7 +68,7 @@ public:
 		~xml_node();
 		const string node_name;
 		const string node_content;
-		unordered_multimap<string, xml_node*> children;
+		vector<pair<string, xml_node*>> children;
 		unordered_map<string, const string> attributes;
 		
 		const string& name() const { return node_name; }

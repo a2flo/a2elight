@@ -483,13 +483,11 @@ void rtt::stop_draw() {
 	   current_buffer->anti_aliasing[0] != TEXTURE_ANTI_ALIASING::SSAA_2_FXAA) {
 		if(current_buffer->depth_type == DEPTH_TYPE::RENDERBUFFER ||
 		   current_buffer->depth_type == DEPTH_TYPE::TEXTURE_2D) {
-			glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-		
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, current_buffer->fbo_id);
 			for(size_t i = 0; i < current_buffer->attachment_count; i++) {
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_buffer->resolve_buffer[i]);
 #if !defined(A2E_IOS)
-				glBlitFramebuffer(0, 0, current_buffer->width, current_buffer->height, 0, 0, current_buffer->width, current_buffer->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+				glBlitFramebuffer(0, 0, current_buffer->draw_width, current_buffer->draw_height, 0, 0, current_buffer->draw_width, current_buffer->draw_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #else
 				// TODO: implement framebuffer blitting on iOS
 #endif
@@ -506,7 +504,6 @@ void rtt::stop_draw() {
 			//glGenerateMipmap(current_buffer->target[i]);
 		}
 	}
-	glBindTexture(current_buffer->target[0], 0);
 	
 	glViewport(0, 0, rtt::screen_width, rtt::screen_height);
 }

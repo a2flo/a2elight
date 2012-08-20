@@ -75,8 +75,8 @@ public:
 	void cache(const string& characters);
 	//! should be within 0x0 - 0x10FFFF
 	void cache(const unsigned int& start_code, const unsigned int& end_code);
-	//! <ubo, character_count>, note: ubo must be destroyed/managed manually!
-	uint2 cache_text(const string& text, const GLuint existing_ubo = 0);
+	//! <<ubo, character_count>, extent>, note: ubo must be destroyed/managed manually!
+	pair<uint2, float2> cache_text(const string& text, const GLuint existing_ubo = 0);
 	
 	// TODO: clear cache
 	//void clear_cache();
@@ -98,7 +98,8 @@ protected:
 	// unicode -> texture index
 	struct glyph_data {
 		const unsigned int tex_index;
-		const int4 size;
+		const int4 layout;
+		const int2 size;
 	};
 	// style -> (unicode -> glyph data)
 	unordered_map<string, unordered_map<unsigned int, glyph_data>> glyph_map;
@@ -112,7 +113,7 @@ protected:
 	size_t tex_array_layers = 0;
 	GLuint glyph_vbo = 0;
 	
-	vector<uint2> create_text_ubo_data(const string& text, std::function<void(unsigned int)> cache_fnc = [](unsigned int){}) const;
+	pair<vector<uint2>, float2> create_text_ubo_data(const string& text, std::function<void(unsigned int)> cache_fnc = [](unsigned int){}) const;
 	GLuint text_ubo = 0;
 		
 	gl3shader font_shd;

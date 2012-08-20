@@ -148,6 +148,9 @@
 // a2e logger
 #include "core/logger.h"
 
+// utility functions/classes/...
+#include "core/util.h"
+
 #if !defined(__has_feature)
 #define __has_feature(x) 0
 #endif
@@ -171,4 +174,8 @@ enum class DRAW_MODE : unsigned int {
 	ENV_MATERIAL_ALPHA_PASS	= ENVIRONMENT_PASS | MATERIAL_ALPHA_PASS,
 	ENV_GM_PASSES_MASK		= ENVIRONMENT_PASS | GM_PASSES_MASK
 };
+A2E_API DRAW_MODE operator|(const DRAW_MODE& e0, const DRAW_MODE& e1);
+A2E_API DRAW_MODE& operator|=(DRAW_MODE& e0, const DRAW_MODE& e1);
+A2E_API DRAW_MODE operator&(const DRAW_MODE& e0, const DRAW_MODE& e1);
+A2E_API DRAW_MODE& operator&=(DRAW_MODE& e0, const DRAW_MODE& e1);
 #endif

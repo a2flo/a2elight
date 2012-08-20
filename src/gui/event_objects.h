@@ -23,9 +23,16 @@
 #define A2E_USER_EVENT_TYPES
 #endif
 
+#include "core/vector2.h"
+
 // general/global event types
 enum class EVENT_TYPE : unsigned int {
-	MOUSE_LEFT_DOWN,
+	__MOUSE_EVENT	= 0x80000000,
+	__KEY_EVENT		= 0x40000000,
+	__OTHER_EVENT	= 0x20000000,
+	__USER_EVENT	= 0x10000000,
+	
+	MOUSE_LEFT_DOWN = __MOUSE_EVENT + 1,
 	MOUSE_LEFT_UP,
 	MOUSE_LEFT_CLICK,
 	MOUSE_LEFT_DOUBLE_CLICK,
@@ -48,20 +55,22 @@ enum class EVENT_TYPE : unsigned int {
 	MOUSE_WHEEL_UP,
 	MOUSE_WHEEL_DOWN,
 	
-	KEY_DOWN,
+	KEY_DOWN = __KEY_EVENT + 1,
 	KEY_UP,
 	KEY_HOLD,
 	UNICODE_INPUT,
 	
-	QUIT,
+	QUIT = __OTHER_EVENT + 1,
 	WINDOW_RESIZE,
 	SHADER_RELOAD,
 	
+	__USER_EVENT_START = __USER_EVENT + 1,
 	A2E_USER_EVENT_TYPES
 	
 	// TODO: add code for these:
 	// TOUCH, GESTURE, ...
 };
+A2E_API EVENT_TYPE operator&(const EVENT_TYPE& e0, const EVENT_TYPE& e1);
 namespace std {
 	template <> struct hash<EVENT_TYPE> : public hash<unsigned int> {
 		size_t operator()(EVENT_TYPE type) const throw() {
@@ -106,10 +115,12 @@ template<EVENT_TYPE event_type> struct mouse_move_event_base : public mouse_even
 	: mouse_event_base<event_type>(time_, position_), move(move_) {}
 };
 
-template<EVENT_TYPE event_type> struct mouse_wheel_event_base : public event_object_base<event_type> {
+template<EVENT_TYPE event_type> struct mouse_wheel_event_base : public mouse_event_base<event_type> {
 	const unsigned int amount;
-	mouse_wheel_event_base(const unsigned int& time_, const unsigned int& amount_)
-	: event_object_base<event_type>(time_), amount(amount_) {}
+	mouse_wheel_event_base(const unsigned int& time_,
+						   const ipnt& position_,
+						   const unsigned int& amount_)
+	: mouse_event_base<event_type>(time_, position_), amount(amount_) {}
 };
 
 // mouse event typedefs

@@ -84,6 +84,7 @@ public:
 		TOP_LEFT		= (1 << 3),
 		ALL				= (TOP_RIGHT | BOTTOM_RIGHT | BOTTOM_LEFT | TOP_LEFT)
 	};
+	enum_class_bitwise_or(CORNER)
 	
 	// draw functions
 	template <class point_compute_draw_spec, typename... Args>
@@ -110,24 +111,33 @@ public:
 	struct primitive_properties {
 		vector<float2> points;
 		float4 extent;
-		const GLenum primitive_type;
+		GLenum primitive_type;
 		union {
-			// specifies if the primitive has a mid point (e.g. circle, rounded rect)
-			unsigned int has_mid_point : 1;
-			unsigned int has_equal_start_end_point : 1;
-			
-			//
-			unsigned int _unused : 30;
-			
-			unsigned int flags;
+			struct {
+				// specifies if the primitive has a mid point (e.g. circle, rounded rect)
+				unsigned int has_mid_point : 1;
+				unsigned int has_equal_start_end_point : 1;
+				
+				//
+				unsigned int _unused : 30;
+			};
+			unsigned int flags = 0;
 		};
 		primitive_properties(const GLenum& primitive_type_) :
-		points(), extent(), primitive_type(primitive_type_), flags(0) {}
+		points(), extent(), primitive_type(primitive_type_) {}
+		primitive_properties() :
+		points(), extent(), primitive_type(GL_TRIANGLES) {}
+		primitive_properties& operator=(primitive_properties&& props) {
+			points.swap(props.points);
+			extent = props.extent;
+			primitive_type = props.primitive_type;
+			flags = props.flags;
+			return *this;
+		}
 	};
 	
 	// additional draw functions
 	static void draw_fullscreen_triangle();
-	static void draw_textured_fullscreen_triangle();
 	static void draw_fullscreen_quad();
 	
 	// scissor test
@@ -174,12 +184,6 @@ protected:
  *	struct point_compute_interface {
  *		template<typename... Args> static void compute_and_draw(...args...);
  *	};
- *
- *	// draw style interface:
- *	struct draw_style_interface {
- *		static void draw(const primitive_properties& props, ...args...);
- *	};
- *
  */
 
 template <class draw_style>
@@ -377,7 +381,15 @@ struct gfx2d::point_compute_circle_sector {
 	}
 };
 
-////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+/*
+ *	// draw style interface:
+ *	struct draw_style_interface {
+ *		static void draw(const primitive_properties& props, ...args...);
+ *	};
+ */
+
 struct gfx2d::draw_style_fill {
 	static void draw(const primitive_properties& props,
 					 const float4& color) {
@@ -393,8 +405,8 @@ struct gfx2d::draw_style_fill {
 struct gfx2d::draw_style_gradient {
 	static void draw(const primitive_properties& props,
 					 const gfx2d::GRADIENT_TYPE type,
-					 const float4& gradient_positions,
-					 const vector<float4>& gradient_colors) {
+					 const float4& stops,
+					 const vector<float4>& colors) {
 		// draw
 		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
 							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
@@ -403,9 +415,9 @@ struct gfx2d::draw_style_gradient {
 		gradient_shd->use(option);
 		gradient_shd->uniform("mvpm", *e->get_mvp_matrix());
 		
-		const size_t color_count = std::min(gradient_colors.size(), size_t(4));
-		gradient_shd->uniform("gradients", &gradient_colors[0], color_count);
-		gradient_shd->uniform("gradient_positions", gradient_positions);
+		const size_t color_count = std::min(colors.size(), size_t(4));
+		gradient_shd->uniform("gradients", &colors[0], color_count);
+		gradient_shd->uniform("stops", stops);
 		gradient_shd->uniform("extent", props.extent);
 		
 		// draw
@@ -451,7 +463,7 @@ struct gfx2d::draw_style_texture {
 					 const float4 mul_color,
 					 const float4 add_color,
 					 const gfx2d::GRADIENT_TYPE type,
-					 const float4& gradient_positions,
+					 const float4& gradient_stops,
 					 const vector<float4>& gradient_colors,
 					 const float4 gradient_mul_interpolator = float4(0.5f),
 					 const float4 gradient_add_interpolator = float4(0.0f),
@@ -461,7 +473,7 @@ struct gfx2d::draw_style_texture {
 		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
 							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
 								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
-		draw(props, texture, false, 0.0f, mul_color, add_color, gradient_positions, gradient_colors, gradient_mul_interpolator,
+		draw(props, texture, false, 0.0f, mul_color, add_color, gradient_stops, gradient_colors, gradient_mul_interpolator,
 			 gradient_add_interpolator, bottom_left, top_right, draw_depth, option);
 	}
 	
@@ -500,7 +512,7 @@ struct gfx2d::draw_style_texture {
 					 const float4 mul_color,
 					 const float4 add_color,
 					 const gfx2d::GRADIENT_TYPE type,
-					 const float4& gradient_positions,
+					 const float4& gradient_stops,
 					 const vector<float4>& gradient_colors,
 					 const float4 gradient_mul_interpolator = float4(0.5f),
 					 const float4 gradient_add_interpolator = float4(0.0f),
@@ -510,7 +522,7 @@ struct gfx2d::draw_style_texture {
 		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
 							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
 								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
-		draw(props, texture, true, layer, mul_color, add_color, gradient_positions, gradient_colors, gradient_mul_interpolator,
+		draw(props, texture, true, layer, mul_color, add_color, gradient_stops, gradient_colors, gradient_mul_interpolator,
 			 gradient_add_interpolator, bottom_left, top_right, draw_depth, option);
 	}
 	
@@ -564,7 +576,7 @@ protected:
 					 const float layer,
 					 const float4 mul_color,
 					 const float4 add_color,
-					 const float4& gradient_positions,
+					 const float4& gradient_stops,
 					 const vector<float4>& gradient_colors,
 					 const float4 gradient_mul_interpolator,
 					 const float4 gradient_add_interpolator,
@@ -588,7 +600,7 @@ protected:
 		
 		const size_t color_count = std::min(gradient_colors.size(), size_t(4));
 		texture_shd->uniform("gradients", &gradient_colors[0], color_count);
-		texture_shd->uniform("gradient_positions", gradient_positions);
+		texture_shd->uniform("stops", gradient_stops);
 		
 		// draw
 		upload_points_and_draw(texture_shd, props);

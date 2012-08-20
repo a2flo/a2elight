@@ -16,9 +16,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_GLOBAL_H__
-#define __A2E_GLOBAL_H__
+#ifndef __A2E_TASK_H__
+#define __A2E_TASK_H__
 
-#include "core/platform.h"
+#include "global.h"
+#include <thread>
+
+class task {
+public:
+	task(std::function<void()> op);
+	
+	static void spawn(std::function<void()> op) {
+		new task(op);
+	}
+	
+protected:
+	const std::function<void()> op;
+	thread thread_obj;
+	atomic<bool> initialized { false };
+	
+	static void run(task* this_task, std::function<void()> task_op);
+	
+	// prevent destruction from the outside, since we'll self-destruct
+	~task();
+	task(const task& tsk) = delete;
+	task& operator=(const task& tsk) = delete;
+	
+};
 
 #endif

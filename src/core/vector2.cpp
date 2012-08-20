@@ -30,6 +30,18 @@ template class vector2<size_t>;
 template class vector2<ssize_t>;
 #endif
 
+template<> A2E_API float2& vector2<float>::floor() {
+	x = floorf(x);
+	y = floorf(y);
+	return *this;
+}
+
+template<> A2E_API float2& vector2<float>::ceil() {
+	x = ceilf(x);
+	y = ceilf(y);
+	return *this;
+}
+
 template<> A2E_API float2& vector2<float>::round() {
 	x = roundf(x);
 	y = roundf(y);

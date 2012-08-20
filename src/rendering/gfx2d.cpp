@@ -95,21 +95,6 @@ void gfx2d::draw_fullscreen_triangle() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void gfx2d::draw_textured_fullscreen_triangle() {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_fullscreen_triangle);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_fullscreen_triangle);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-	glEnableVertexAttribArray(1);
-	
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 void gfx2d::draw_fullscreen_quad() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_fullscreen_quad);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);

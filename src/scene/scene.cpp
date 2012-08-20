@@ -469,8 +469,8 @@ void scene::setup_scene() {
 /*! starts drawing the scene
  */
 void scene::geometry_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_mask) {
-	const DRAW_MODE geom_pass_masked = (DRAW_MODE)((unsigned int)DRAW_MODE::GEOMETRY_PASS | (unsigned int)draw_mode_or_mask);
-	const DRAW_MODE geom_alpha_pass_masked = (DRAW_MODE)((unsigned int)DRAW_MODE::GEOMETRY_ALPHA_PASS | (unsigned int)draw_mode_or_mask);
+	const DRAW_MODE geom_pass_masked = DRAW_MODE::GEOMETRY_PASS | draw_mode_or_mask;
+	const DRAW_MODE geom_alpha_pass_masked = DRAW_MODE::GEOMETRY_ALPHA_PASS | draw_mode_or_mask;
 	
 	// normal rendering using a fbo
 	r->start_draw(buffers.g_buffer[0]);
@@ -816,8 +816,8 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	
 	/////////////////////////////////////////////////////
 	// model material pass
-	const DRAW_MODE mat_pass_masked = (DRAW_MODE)((unsigned int)DRAW_MODE::MATERIAL_PASS | (unsigned int)draw_mode_or_mask);
-	const DRAW_MODE mat_alpha_pass_masked = (DRAW_MODE)((unsigned int)DRAW_MODE::MATERIAL_ALPHA_PASS | (unsigned int)draw_mode_or_mask);
+	const DRAW_MODE mat_pass_masked = DRAW_MODE::MATERIAL_PASS | draw_mode_or_mask;
+	const DRAW_MODE mat_alpha_pass_masked = DRAW_MODE::MATERIAL_ALPHA_PASS | draw_mode_or_mask;
 	
 	// note: this reuses the g-buffer depth buffer
 	// -> anything that has not equal depth will be culled/discarded early

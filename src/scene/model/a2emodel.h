@@ -174,25 +174,27 @@ protected:
 	GLuint draw_indices_vbo;
 	size_t draw_index_count;
 	
-	// internal draw functions (override these in derived classes if you have to do custom rendering)
-	virtual void draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_object_num, const size_t& mask_id);
-	virtual void ir_mp_setup(gl3shader& shd, const string& option, const set<string>& combiners);
-	virtual void pre_draw_setup(const ssize_t sub_object_num = -1); // -1, no sub-object
-	virtual void post_draw_setup(const ssize_t sub_object_num = -1);
-	virtual void pre_draw_geometry(gl3shader& shd, size_t& attr_array_mask, size_t& texture_mask);
-	virtual void post_draw_geometry(gl3shader& shd);
-	virtual void pre_draw_material(gl3shader& shd, size_t& attr_array_mask, size_t& texture_mask);
-	virtual void post_draw_material(gl3shader& shd);
-	//! return an empty string if no custom shader should be used
-	virtual const string select_shader(const DRAW_MODE& draw_mode) const;
-	
+	//
 	enum class VERTEX_ATTRIBUTE : unsigned int {
 		NORMAL			= (1 << 0),
 		BINORMAL		= (1 << 1),
 		TANGENT			= (1 << 2),
 		TEXTURE_COORD	= (1 << 3)
 	};
+	enum_class_bitwise_or(VERTEX_ATTRIBUTE)
+	enum_class_bitwise_and(VERTEX_ATTRIBUTE)
 	
+	// internal draw functions (override these in derived classes if you have to do custom rendering)
+	virtual void draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_object_num, const size_t& mask_id);
+	virtual void ir_mp_setup(gl3shader& shd, const string& option, const set<string>& combiners);
+	virtual void pre_draw_setup(const ssize_t sub_object_num = -1); // -1, no sub-object
+	virtual void post_draw_setup(const ssize_t sub_object_num = -1);
+	virtual void pre_draw_geometry(gl3shader& shd, VERTEX_ATTRIBUTE& attr_array_mask, a2ematerial::TEXTURE_TYPE& texture_mask);
+	virtual void post_draw_geometry(gl3shader& shd);
+		virtual void pre_draw_material(gl3shader& shd, VERTEX_ATTRIBUTE& attr_array_mask, a2ematerial::TEXTURE_TYPE& texture_mask);
+	virtual void post_draw_material(gl3shader& shd);
+	//! return an empty string if no custom shader should be used
+	virtual const string select_shader(const DRAW_MODE& draw_mode) const;
 	
 	// orientation
 	float3 position;

@@ -54,7 +54,11 @@ int thread_base::_thread_run(thread_base* this_thread_obj) {
 			this_thread_obj->unlock();
 			
 			// reduce system load and make other locks possible
-			this_thread::sleep_for(chrono::milliseconds(this_thread_obj->get_thread_delay()));
+			const size_t thread_delay = this_thread_obj->get_thread_delay();
+			if(thread_delay > 0) {
+				this_thread::sleep_for(chrono::milliseconds(thread_delay));
+			}
+			else this_thread::yield(); // just yield when delay == 0
 		}
 		else this_thread::yield();
 		

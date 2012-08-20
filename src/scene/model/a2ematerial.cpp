@@ -429,7 +429,7 @@ bool a2ematerial::is_parallax_occlusion(const size_t& object_id) const {
 	return ((parallax_material*)obj->mat->mat)->parallax_occlusion;
 }
 
-void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const size_t texture_mask) const {
+void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const TEXTURE_TYPE texture_mask) const {
 	const object_mapping* obj = get_object_mapping(object_id);
 	if(obj == nullptr) return;
 	
@@ -437,18 +437,18 @@ void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const
 	switch(mat->mat_type) {
 		case MATERIAL_TYPE::DIFFUSE: {
 			diffuse_material* dmat = (diffuse_material*)mat->mat;
-			if(texture_mask & (unsigned int)TEXTURE_TYPE::DIFFUSE) shd->texture("diffuse_texture", dmat->diffuse_texture);
-			if(texture_mask & (unsigned int)TEXTURE_TYPE::SPECULAR) shd->texture("specular_texture", dmat->specular_texture);
-			if(texture_mask & (unsigned int)TEXTURE_TYPE::REFLECTANCE) shd->texture("reflectance_texture", dmat->reflectance_texture);
+			if((unsigned int)(texture_mask & TEXTURE_TYPE::DIFFUSE) != 0) shd->texture("diffuse_texture", dmat->diffuse_texture);
+			if((unsigned int)(texture_mask & TEXTURE_TYPE::SPECULAR) != 0) shd->texture("specular_texture", dmat->specular_texture);
+			if((unsigned int)(texture_mask & TEXTURE_TYPE::REFLECTANCE) != 0) shd->texture("reflectance_texture", dmat->reflectance_texture);
 		}
 		break;
 		case MATERIAL_TYPE::PARALLAX: {
 			parallax_material* pmat = (parallax_material*)mat->mat;
-			if(texture_mask & (unsigned int)TEXTURE_TYPE::DIFFUSE) shd->texture("diffuse_texture", pmat->diffuse_texture);
-			if(texture_mask & (unsigned int)TEXTURE_TYPE::NORMAL) shd->texture("normal_texture", pmat->normal_texture);
-			if(texture_mask & (unsigned int)TEXTURE_TYPE::HEIGHT) shd->texture("height_texture", pmat->height_texture);
-			if(texture_mask & (unsigned int)TEXTURE_TYPE::SPECULAR) shd->texture("specular_texture", pmat->specular_texture);
-			if(texture_mask & (unsigned int)TEXTURE_TYPE::REFLECTANCE) shd->texture("reflectance_texture", pmat->reflectance_texture);
+			if((unsigned int)(texture_mask & TEXTURE_TYPE::DIFFUSE) != 0) shd->texture("diffuse_texture", pmat->diffuse_texture);
+			if((unsigned int)(texture_mask & TEXTURE_TYPE::NORMAL) != 0) shd->texture("normal_texture", pmat->normal_texture);
+			if((unsigned int)(texture_mask & TEXTURE_TYPE::HEIGHT) != 0) shd->texture("height_texture", pmat->height_texture);
+			if((unsigned int)(texture_mask & TEXTURE_TYPE::SPECULAR) != 0) shd->texture("specular_texture", pmat->specular_texture);
+			if((unsigned int)(texture_mask & TEXTURE_TYPE::REFLECTANCE) != 0) shd->texture("reflectance_texture", pmat->reflectance_texture);
 		}
 		break;
 		case MATERIAL_TYPE::NONE: break;

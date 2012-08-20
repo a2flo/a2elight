@@ -22,47 +22,54 @@
 #include "rendering/gfx2d.h"
 #include "scene/scene.h"
 #include "rendering/gl_timer.h"
+#include "gui/font_manager.h"
+#include "gui/style/gui_surface.h"
+#include "gui/style/gui_theme.h"
+#include "gui/objects/gui_window.h"
 
-gui::gui(engine* e_) :
+gui::gui(engine* e_, const string& theme_name) :
 thread_base("gui"),
 e(e_), evt(e_->get_event()), r(e_->get_rtt()), s(e_->get_shader()), sce(e_->get_scene()),
-main_fbo(nullptr),
+fm(new font_manager(e)),
+theme(new gui_theme(e, fm)),
 key_handler_fnctr(this, &gui::key_handler),
 mouse_handler_fnctr(this, &gui::mouse_handler),
 shader_reload_fnctr(this, &gui::shader_reload_handler),
 window_handler_fnctr(this, &gui::window_handler) {
-	AtomicSet(&keyboard_input, 1);
-	AtomicSet(&mouse_input, 1);
-
 	// create keyboard/mouse event handlers
-	evt->add_event_handler(key_handler_fnctr,
-						   EVENT_TYPE::KEY_DOWN,
-						   EVENT_TYPE::KEY_UP);
-	evt->add_event_handler(mouse_handler_fnctr,
-						   EVENT_TYPE::MOUSE_LEFT_DOWN,
-						   EVENT_TYPE::MOUSE_LEFT_UP,
-						   EVENT_TYPE::MOUSE_LEFT_CLICK,
-						   EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK,
-						   EVENT_TYPE::MOUSE_LEFT_HOLD,
-						   
-						   EVENT_TYPE::MOUSE_RIGHT_DOWN,
-						   EVENT_TYPE::MOUSE_RIGHT_UP,
-						   EVENT_TYPE::MOUSE_RIGHT_CLICK,
-						   EVENT_TYPE::MOUSE_RIGHT_DOUBLE_CLICK,
-						   EVENT_TYPE::MOUSE_RIGHT_HOLD,
-						   
-						   EVENT_TYPE::MOUSE_MIDDLE_DOWN,
-						   EVENT_TYPE::MOUSE_MIDDLE_UP,
-						   EVENT_TYPE::MOUSE_MIDDLE_CLICK,
-						   EVENT_TYPE::MOUSE_MIDDLE_DOUBLE_CLICK,
-						   EVENT_TYPE::MOUSE_MIDDLE_HOLD,
-						   
-						   EVENT_TYPE::MOUSE_MOVE,
-						   
-						   EVENT_TYPE::MOUSE_WHEEL_UP,
-						   EVENT_TYPE::MOUSE_WHEEL_DOWN);
+	// note: the events will be deferred from the handlers
+	// -> make the handlers internal, so events don't get deferred twice
+	evt->add_internal_event_handler(key_handler_fnctr,
+									EVENT_TYPE::KEY_DOWN,
+									EVENT_TYPE::KEY_UP);
+	evt->add_internal_event_handler(mouse_handler_fnctr,
+									EVENT_TYPE::MOUSE_LEFT_DOWN,
+									EVENT_TYPE::MOUSE_LEFT_UP,
+									EVENT_TYPE::MOUSE_LEFT_CLICK,
+									EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK,
+									EVENT_TYPE::MOUSE_LEFT_HOLD,
+									
+									EVENT_TYPE::MOUSE_RIGHT_DOWN,
+									EVENT_TYPE::MOUSE_RIGHT_UP,
+									EVENT_TYPE::MOUSE_RIGHT_CLICK,
+									EVENT_TYPE::MOUSE_RIGHT_DOUBLE_CLICK,
+									EVENT_TYPE::MOUSE_RIGHT_HOLD,
+									
+									EVENT_TYPE::MOUSE_MIDDLE_DOWN,
+									EVENT_TYPE::MOUSE_MIDDLE_UP,
+									EVENT_TYPE::MOUSE_MIDDLE_CLICK,
+									EVENT_TYPE::MOUSE_MIDDLE_DOUBLE_CLICK,
+									EVENT_TYPE::MOUSE_MIDDLE_HOLD,
+									
+									EVENT_TYPE::MOUSE_MOVE,
+									
+									EVENT_TYPE::MOUSE_WHEEL_UP,
+									EVENT_TYPE::MOUSE_WHEEL_DOWN);
 	
 	recreate_buffers(size2(e->get_width(), e->get_height()));
+	
+	// load theme
+	theme->load("gui/"+theme_name+"/"+theme_name+".a2etheme");
 	
 	//
 	evt->add_internal_event_handler(window_handler_fnctr, EVENT_TYPE::WINDOW_RESIZE);
@@ -70,12 +77,14 @@ window_handler_fnctr(this, &gui::window_handler) {
 	reload_shaders();
 	
 	// start actual gui thread after everything has been initialized
-	this->set_thread_delay(50);
+	this->set_thread_delay(0);
 	this->start();
 }
 
 gui::~gui() {
 	a2e_debug("deleting gui object");
+	
+	set_thread_should_finish();
 	
 	evt->remove_event_handler(key_handler_fnctr);
 	evt->remove_event_handler(mouse_handler_fnctr);
@@ -83,43 +92,93 @@ gui::~gui() {
 	evt->remove_event_handler(window_handler_fnctr);
 	
 	delete_buffers();
+	
+	finish();
+	
+	for(const auto& surface : cb_surfaces) {
+		delete surface.second;
+	}
+	
+	for(const auto& wnd : windows) {
+		delete wnd;
+	}
+	
+	delete theme;
+	delete fm;
 
 	a2e_debug("gui object deleted");
 }
 
 void gui::reload_shaders() {
 	blend_shd = s->get_gl3shader("BLEND");
+	texture_shd = s->get_gl3shader("GFX2D_TEXTURE");
 }
 
 void gui::draw() {
 	gl_timer::mark("GUI_START");
-	// draw to gui buffer
-	r->start_draw(main_fbo);
-	r->clear();
-	r->start_2d_draw();
+	
+	//
 	glEnable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 	
-	// draw everything else (pre ui)
-	for(auto& cb : draw_callbacks) {
-		(*cb)(DRAW_MODE_UI::PRE_UI);
+	//////////////////////////////////////////////////////////////////
+	// draw individual surfaces
+	
+	// draw surfaces that need a redraw
+	for(const auto& cb_surface : cb_surfaces) {
+		if(cb_surface.second->needs_redraw()) cb_surface.second->draw();
 	}
 	
-	// TODO: draw windows
-	
-	// draw everything else (post ui)
-	for(auto& cb : draw_callbacks) {
-		(*cb)(DRAW_MODE_UI::POST_UI);
+	// draw windows
+	lock();
+	for(const auto& wnd : windows) {
+		wnd->draw();
 	}
+	unlock();
+	
+	//////////////////////////////////////////////////////////////////
+	// blit all surfaces onto gui buffer
+	r->start_draw(main_fbo);
+	r->clear();
+	r->start_2d_draw();
+	
+	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::ADD);
+	texture_shd->use("passthrough");
+	texture_shd->uniform("mvpm", *e->get_mvp_matrix());
+	texture_shd->uniform("orientation", float4(0.0f, 0.0f, 1.0f, 1.0f));
+	
+	// pre ui callbacks
+	for(auto& cb : draw_callbacks[0]) {
+		cb_surfaces[cb]->blit(texture_shd);
+	}
+	
+	// blit windows
+	lock();
+	for(const auto& wnd : windows) {
+		wnd->blit(texture_shd);
+	}
+	unlock();
+	
+	// post ui callbacks
+	for(auto& cb : draw_callbacks[1]) {
+		cb_surfaces[cb]->blit(texture_shd);
+	}
+	
+	glDisableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	texture_shd->disable();
 	
 	// stop
-	glDepthFunc(GL_LESS);
-	glDisable(GL_BLEND);
 	r->stop_2d_draw();
 	r->stop_draw();
 	
-	// "blit" to main framebuffer
+	//
+	glDepthFunc(GL_LESS);
+	glDisable(GL_BLEND);
+	
+	//////////////////////////////////////////////////////////////////
+	// blend with scene buffer and draw result to the main framebuffer
 	e->start_2d_draw();
 	
 	blend_shd->use();
@@ -137,18 +196,113 @@ void gui::draw() {
 }
 
 void gui::run() {
-	// TODO: event handling?
+	if(!events_in_queue) return;
+	
+	// copy/swap events from the event queue to the processing queue
+	event_lock.lock();
+	event_processing_queue.swap(event_queue);
+	events_in_queue = false;
+	event_lock.unlock();
+	
+	// lock gui
+	lock();
+	
+	//
+	if(windows.empty()) {
+		unlock();
+		event_processing_queue.clear();
+		return;
+	}
+	
+	// lock all windows
+	for(const auto& wnd : windows) {
+		wnd->lock();
+	}
+	
+	// handle events
+	for(const auto& evt : event_processing_queue) {
+		// mouse events:
+		if((evt.first & EVENT_TYPE::__MOUSE_EVENT) == EVENT_TYPE::__MOUSE_EVENT) {
+			// note: mouse down/up events only affect the draw state, mouse clicks do the actual
+			// logic checking (e.g. a button was pressed), since they contain both positions
+			ipnt check_point(-1, -1);
+			switch(evt.first) {
+				case EVENT_TYPE::MOUSE_LEFT_DOWN:
+				case EVENT_TYPE::MOUSE_LEFT_UP:
+				case EVENT_TYPE::MOUSE_LEFT_HOLD:
+				case EVENT_TYPE::MOUSE_RIGHT_DOWN:
+				case EVENT_TYPE::MOUSE_RIGHT_UP:
+				case EVENT_TYPE::MOUSE_RIGHT_HOLD:
+				case EVENT_TYPE::MOUSE_MIDDLE_DOWN:
+				case EVENT_TYPE::MOUSE_MIDDLE_UP:
+				case EVENT_TYPE::MOUSE_MIDDLE_HOLD:
+				case EVENT_TYPE::MOUSE_MOVE:
+					check_point = ((const mouse_event_base<EVENT_TYPE::__MOUSE_EVENT>&)*evt.second).position;
+					break;
+					
+				case EVENT_TYPE::MOUSE_LEFT_CLICK:
+				case EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK:
+				case EVENT_TYPE::MOUSE_RIGHT_CLICK:
+				case EVENT_TYPE::MOUSE_RIGHT_DOUBLE_CLICK:
+				case EVENT_TYPE::MOUSE_MIDDLE_CLICK:
+				case EVENT_TYPE::MOUSE_MIDDLE_DOUBLE_CLICK:
+					// check down, because up and down must both match (be within) in the target object
+					// and the object will have already received a mouse down event
+					// note: memory layout is the same for all click events (-> mouse_left_click_event)
+					check_point = ((const mouse_left_click_event&)*evt.second).down->position;
+					break;
+					
+				case EVENT_TYPE::MOUSE_WHEEL_UP:
+				case EVENT_TYPE::MOUSE_WHEEL_DOWN:
+					// mouse wheel events actually also have a position and should only be sent to the
+					// windows underneath that position (-> scrolling in inactive windows)
+					check_point = ((const mouse_wheel_event_base<EVENT_TYPE::__MOUSE_EVENT>&)*evt.second).position;
+					break;
+				default: break;
+			}
+			
+			// check all windows
+			for(const auto& wnd : windows) {
+				if(gfx2d::is_pnt_in_rectangle(wnd->get_rectangle_abs(), check_point) &&
+				   wnd->handle_mouse_event(evt.first, evt.second, check_point)) {
+					break;
+				}
+			}
+		}
+		// key events:
+		else if((evt.first & EVENT_TYPE::__KEY_EVENT) == EVENT_TYPE::__KEY_EVENT) {
+			// key events should only be sent to the active window
+			if(!windows.empty()) {
+				windows[0]->handle_key_event(evt.first, evt.second);
+			}
+		}
+	}
+	
+	// unlock again
+	for(const auto& wnd : windows) {
+		wnd->unlock();
+	}
+	unlock();
+	
+	event_processing_queue.clear(); // *done*
 }
 
-bool gui::key_handler(EVENT_TYPE type a2e_unused, shared_ptr<event_object> obj a2e_unused) {
-	if(!get_keyboard_input()) return false;
-	return false;
+bool gui::key_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+	if(!keyboard_input) return false;
+	event_lock.lock();
+	event_queue.emplace_back(type, obj);
+	events_in_queue = true;
+	event_lock.unlock();
+	return true;
 }
 
-bool gui::mouse_handler(EVENT_TYPE type a2e_unused, shared_ptr<event_object> obj a2e_unused) {
-	if(!get_mouse_input()) return false;
-	//cout << "mouse event: " << (unsigned int)type << endl;
-	return false;
+bool gui::mouse_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+	if(!mouse_input) return false;
+	event_lock.lock();
+	event_queue.emplace_back(type, obj);
+	events_in_queue = true;
+	event_lock.unlock();
+	return true;
 }
 
 bool gui::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj a2e_unused) {
@@ -167,65 +321,104 @@ bool gui::window_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 }
 
 void gui::set_keyboard_input(const bool& state) {
-	AtomicSet(&keyboard_input, state ? 1 : 0);
+	keyboard_input = state;
 }
 
 void gui::set_mouse_input(const bool& state) {
-	AtomicSet(&mouse_input, state ? 1 : 0);
+	mouse_input = state;
 }
 
 bool gui::get_keyboard_input() const {
-	const int state = AtomicGet((atomic_t*)&keyboard_input);
-	return (state == 0 ? false : true);
+	return keyboard_input;
 }
 
 bool gui::get_mouse_input() const {
-	const int state = AtomicGet((atomic_t*)&mouse_input);
-	return (state == 0 ? false : true);
+	return mouse_input;
 }
 
-void gui::add_draw_callback(draw_callback& cb) {
-	for(const auto& elem : draw_callbacks) {
-		if(elem == &cb) {
-			a2e_error("this ui draw callback already exists!");
-			return;
-		}
+gui_simple_callback* gui::add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_callback& cb,
+											const float2& size, const float2& offset) {
+	auto& callbacks = draw_callbacks[mode == DRAW_MODE_UI::PRE_UI ? 0 : 1];
+	const auto iter = find(begin(callbacks), end(callbacks), &cb);
+	if(iter != end(callbacks)) {
+		a2e_error("this ui draw callback already exists!");
+		return nullptr;
 	}
-	draw_callbacks.emplace_back(&cb);
+	callbacks.emplace_back(&cb);
+	
+	const auto surface_iter = cb_surfaces.find(&cb);
+	if(surface_iter != cb_surfaces.end()) return surface_iter->second;
+	
+	gui_simple_callback* surface = new gui_simple_callback(cb, mode, e, size, offset);
+	cb_surfaces.insert(make_pair(&cb, surface));
+	return surface;
 }
 
-void gui::delete_draw_callback(draw_callback& cb) {
-	for(auto iter = draw_callbacks.begin(); iter != draw_callbacks.end(); iter++) {
-		if(*iter == &cb) {
-			draw_callbacks.erase(iter);
-			return;
-		}
+void gui::delete_draw_callback(ui_draw_callback& cb) {
+	const auto iter_0 = find(begin(draw_callbacks[0]), end(draw_callbacks[0]), &cb);
+	const auto iter_1 = find(begin(draw_callbacks[1]), end(draw_callbacks[1]), &cb);
+	
+	if(iter_0 == end(draw_callbacks[0]) && iter_1 == end(draw_callbacks[1])) {
+		a2e_error("no such ui draw callback does exist!");
+		return;
 	}
-	a2e_error("no such ui draw callback does exist!");
+	
+	if(iter_0 != end(draw_callbacks[0])) draw_callbacks[0].erase(iter_0);
+	if(iter_1 != end(draw_callbacks[1])) draw_callbacks[1].erase(iter_1);
+	
+	const auto surface_iter = cb_surfaces.find(&cb);
+	if(surface_iter != cb_surfaces.end()) {
+		delete surface_iter->second;
+		cb_surfaces.erase(surface_iter);
+	}
 }
 
 void gui::recreate_buffers(const size2 size) {
 	delete_buffers();
 	
 	// create main gui buffer
-	rtt::TEXTURE_ANTI_ALIASING gui_aa = rtt::TEXTURE_ANTI_ALIASING::MSAA_8;
-	switch(e->get_ui_anti_aliasing()) {
-		case 0: gui_aa = rtt::TEXTURE_ANTI_ALIASING::NONE; break;
-		case 2: gui_aa = rtt::TEXTURE_ANTI_ALIASING::MSAA_2; break;
-		case 4: gui_aa = rtt::TEXTURE_ANTI_ALIASING::MSAA_4; break;
-		case 8: gui_aa = rtt::TEXTURE_ANTI_ALIASING::MSAA_8; break;
-		case 16: gui_aa = rtt::TEXTURE_ANTI_ALIASING::MSAA_16; break;
-		case 32: gui_aa = rtt::TEXTURE_ANTI_ALIASING::MSAA_32; break;
-		case 64: gui_aa = rtt::TEXTURE_ANTI_ALIASING::MSAA_64; break;
-		default: break;
+	main_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, rtt::TEXTURE_ANTI_ALIASING::NONE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::NONE);
+	
+	// resize/recreate surfaces
+	for(const auto& surface : cb_surfaces) {
+		surface.second->resize(surface.second->get_buffer_size());
 	}
-	const auto gui_filter = TEXTURE_FILTERING::LINEAR;
-	main_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, gui_filter, gui_aa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
+	
+	// resize/recreate window surfaces
+	for(const auto& wnd : windows) {
+		wnd->resize(wnd->get_buffer_size());
+	}
 }
 
 void gui::delete_buffers() {
-	if(r != nullptr && main_fbo != nullptr) {
-		r->delete_buffer(main_fbo);
-		main_fbo = nullptr;
+	if(r != nullptr) {
+		if(main_fbo != nullptr) {
+			r->delete_buffer(main_fbo);
+			main_fbo = nullptr;
+		}
 	}
+}
+
+font_manager* gui::get_font_manager() const {
+	return fm;
+}
+
+gui_theme* gui::get_theme() const {
+	return theme;
+}
+
+void gui::add_window(gui_window* wnd) {
+	windows.emplace_back(wnd);
+}
+
+void gui::lock() {
+	object_lock.lock();
+}
+
+bool gui::try_lock() {
+	return object_lock.try_lock();
+}
+
+void gui::unlock() {
+	object_lock.unlock();
 }

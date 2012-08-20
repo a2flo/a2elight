@@ -58,6 +58,8 @@ public:
 		NORMAL			= (1 << 4),
 		ANISOTROPIC		= (1 << 5),
 	};
+	enum_class_bitwise_or(TEXTURE_TYPE)
+	enum_class_bitwise_and(TEXTURE_TYPE)
 
 	struct lighting_model;
 	struct material_object;
@@ -116,7 +118,7 @@ public:
 	material& get_material(const size_t& material_id);
 	size_t get_material_count() const;
 
-	void enable_textures(const size_t& object_id, gl3shader& shd, const size_t texture_mask = ~(size_t)0) const;
+	void enable_textures(const size_t& object_id, gl3shader& shd, const TEXTURE_TYPE texture_mask = (TEXTURE_TYPE)~(unsigned int)0) const;
 	void disable_textures(const size_t& object_id) const;
 	
 	void copy_object_mapping(const size_t& from_object, const size_t& to_object);

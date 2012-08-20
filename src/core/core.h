@@ -35,6 +35,9 @@
 
 class A2E_API core {
 public:
+	core() = delete;
+	~core() = delete;
+	
 	// 3d math functions
 	static ipnt get_2d_from_3d(const float3& vec, const matrix4f& mview, const matrix4f& mproj, const int4& viewport);
 	static float3 get_3d_from_2d(const pnt& p, const matrix4f& mview, const matrix4f& mproj, const int4& viewport);

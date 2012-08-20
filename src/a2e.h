@@ -37,10 +37,19 @@
 #include "core/functor.h"
 
 #include "gui/gui.h"
+#include "gui/gui_event.h"
 #include "gui/event.h"
 #include "gui/image.h"
 #include "gui/font_manager.h"
 #include "gui/font.h"
+
+#include "gui/objects/gui_object.h"
+#include "gui/objects/gui_window.h"
+#include "gui/objects/gui_button.h"
+#include "gui/objects/gui_text.h"
+
+#include "gui/style/gui_theme.h"
+#include "gui/style/gui_surface.h"
 
 #include "particle/particle.h"
 
@@ -71,4 +80,7 @@
 #include "scene/model/a2ematerial.h"
 #include "scene/model/a2estatic.h"
 #include "scene/model/a2emodel.h"
+
+#include "threading/thread_base.h"
+#include "threading/task.h"
 

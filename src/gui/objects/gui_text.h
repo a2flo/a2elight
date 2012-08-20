@@ -16,9 +16,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_GLOBAL_H__
-#define __A2E_GLOBAL_H__
+#ifndef __A2E_GUI_TEXT_H__
+#define __A2E_GUI_TEXT_H__
 
-#include "core/platform.h"
+#include "gui/objects/gui_object.h"
+
+class A2E_API gui_text : public gui_object {
+public:
+	gui_text(engine* e, const float2& size, const float2& position);
+	virtual ~gui_text();
+	
+	virtual void draw();
+	
+	void set_label(const string& label);
+	const string& get_label() const;
+	
+protected:
+	string label = "";
+
+};
 
 #endif

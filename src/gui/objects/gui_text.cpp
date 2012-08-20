@@ -16,9 +16,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_GLOBAL_H__
-#define __A2E_GLOBAL_H__
+#include "gui_text.h"
+#include "engine.h"
+#include "core/core.h"
 
-#include "core/platform.h"
+gui_text::gui_text(engine* e_, const float2& size_, const float2& position_) :
+gui_object(e_, size_, position_) {
+	//
+}
 
-#endif
+gui_text::~gui_text() {
+}
+
+void gui_text::draw() {
+	if(!gui_object::handle_draw()) return;
+	
+	// TODO: handle disabled state
+	// TODO: handle centering
+	theme->draw("text", "normal",
+				position_abs, size_abs,
+				[this](const string& str a2e_unused) { return label; });
+}
+
+void gui_text::set_label(const string& label_) {
+	label = label_;
+}
+
+const string& gui_text::get_label() const {
+	return label;
+}

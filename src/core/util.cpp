@@ -17,6 +17,8 @@
  */
 
 #include "util.h"
+#include "platform.h"
+#include "gui/event_objects.h"
 
 #if !defined(__WINDOWS__) || defined(WIN_UNIXENV)
 template <> float converter<string, float>::convert(const string& var) {
@@ -60,4 +62,29 @@ template <> ssize_t converter<string, ssize_t>::convert(const string& var) {
 
 const char* a2e_exception::what() const throw () {
 	return error_str.c_str();
+}
+
+// from platform.h:
+DRAW_MODE operator|(const DRAW_MODE& e0, const DRAW_MODE& e1) {
+	return (DRAW_MODE)((typename underlying_type<DRAW_MODE>::type)e0 |
+					   (typename underlying_type<DRAW_MODE>::type)e1);
+}
+DRAW_MODE& operator|=(DRAW_MODE& e0, const DRAW_MODE& e1) {
+	e0 = e0 | e1;
+	return e0;
+}
+
+DRAW_MODE operator&(const DRAW_MODE& e0, const DRAW_MODE& e1) {
+	return (DRAW_MODE)((typename underlying_type<DRAW_MODE>::type)e0 &
+					   (typename underlying_type<DRAW_MODE>::type)e1);
+}
+DRAW_MODE& operator&=(DRAW_MODE& e0, const DRAW_MODE& e1) {
+	e0 = e0 & e1;
+	return e0;
+}
+
+// from event_objects.h:
+EVENT_TYPE operator&(const EVENT_TYPE& e0, const EVENT_TYPE& e1) {
+	return (EVENT_TYPE)((typename underlying_type<EVENT_TYPE>::type)e0 &
+						(typename underlying_type<EVENT_TYPE>::type)e1);
 }

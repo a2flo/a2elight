@@ -19,7 +19,7 @@
 #ifndef __A2E_UTIL_H__
 #define __A2E_UTIL_H__
 
-#include "core/platform.h"
+#include "core/cpp_headers.h"
 #include "core/functor.h"
 #include "core/type_list.h"
 
@@ -118,28 +118,6 @@ template <> ssize_t converter<string, ssize_t>::convert(const string& var);
 #define size_t2string(value) converter<size_t, string>::convert(value)
 #define ssize_t2string(value) converter<ssize_t, string>::convert(value)
 
-// compile time error check funcs
-template<bool> struct compile_time_check {
-	compile_time_check();
-};
-template<> struct compile_time_check<false> {};
-#define A2E_STATIC_CHECK(expr, msg) {								\
-	class ERROR_##msg {};											\
-	(void)sizeof((compile_time_check<(expr) != 0>(ERROR_##msg())));	\
-}
-
-// cbegin/cend
-#if !defined(A2E_HAS_CBEGIN_CEND)
-
-template <class C> auto cbegin(C& c) -> decltype(c.cbegin()) { return c.cbegin(); }
-template <class C> auto cbegin(const C& c) -> decltype(c.cbegin()) { return c.cbegin(); }
-template <class C> auto cend(C& c) -> decltype(c.cend()) { return c.cend(); }
-template <class C> auto cend(const C& c) -> decltype(c.cend()) { return c.cend(); }
-template <class T, size_t N> const T* cbegin(const T (&array)[N]) { return array; }
-template <class T, size_t N> const T* cend(const T (&array)[N]) { return array + N; }
-
-#endif
-
 // misc
 class A2E_API a2e_exception : public exception {
 protected:
@@ -149,5 +127,25 @@ public:
 	virtual ~a2e_exception() throw() {}
     virtual const char* what() const throw ();
 };
+
+#define enum_class_bitwise_or(enum_class) \
+friend enum_class operator|(const enum_class& e0, const enum_class& e1) { \
+	return (enum_class)((typename underlying_type<enum_class>::type)e0 | \
+						(typename underlying_type<enum_class>::type)e1); \
+} \
+friend enum_class& operator|=(enum_class& e0, const enum_class& e1) { \
+	e0 = e0 | e1; \
+	return e0; \
+}
+
+#define enum_class_bitwise_and(enum_class) \
+friend enum_class operator&(const enum_class& e0, const enum_class& e1) { \
+	return (enum_class)((typename underlying_type<enum_class>::type)e0 & \
+						(typename underlying_type<enum_class>::type)e1); \
+} \
+friend enum_class& operator&=(enum_class& e0, const enum_class& e1) { \
+	e0 = e0 & e1; \
+	return e0; \
+}
 
 #endif
