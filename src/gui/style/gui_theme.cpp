@@ -165,14 +165,14 @@ bool gui_theme::load_ui_object(const string& type, const string& obj_filename) {
 	for(const auto& node : obj_node->children) {
 		if(node.first == "state" && (*node.second)["type"] != "INVALID") {
 			gui_ui_object::state* st = new gui_ui_object::state();
-			obj->states.insert(make_pair((*node.second)["type"], st));
 			process_state(st, node.second);
+			obj->states.insert(make_pair((*node.second)["type"], unique_ptr<gui_ui_object::state>(st)));
 		}
 		else {
 			a2e_error("unknown node \"%s\" in ui object \"%s\"!", node.first, obj_filename);
 		}
 	}
-	ui_objects.insert(make_pair(type, obj));
+	ui_objects.insert(make_pair(type, unique_ptr<gui_ui_object>(obj)));
 	return true;
 }
 
