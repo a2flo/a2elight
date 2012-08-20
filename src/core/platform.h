@@ -155,6 +155,12 @@
 #define __has_feature(x) 0
 #endif
 
+#if defined(clang) || defined(__GNUC__)
+#define a2e_unreachable __builtin_unreachable
+#else
+#define a2e_unreachable
+#endif
+
 // TODO: better location for this?
 #if !defined(__A2E_DRAW_MODE_DEF__)
 #define __A2E_DRAW_MODE_DEF__

@@ -898,6 +898,7 @@
 				);
 				GCC_STRICT_ALIASING = YES;
 				GCC_UNROLL_LOOPS = YES;
+				GCC_WARN_SHADOW = YES;
 				HEADER_SEARCH_PATHS = .;
 				INSTALL_PATH = "@executable_path/../Resources";
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
@@ -953,6 +954,7 @@
 				);
 				GCC_STRICT_ALIASING = YES;
 				GCC_UNROLL_LOOPS = YES;
+				GCC_WARN_SHADOW = YES;
 				HEADER_SEARCH_PATHS = .;
 				INSTALL_PATH = "@executable_path/../Resources";
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";

@@ -139,10 +139,10 @@ bool gui_theme::load(const string& filename_) {
 	return true;
 }
 
-bool gui_theme::load_ui_object(const string& type, const string& filename) {
-	xml::xml_doc ui_object_doc = x->process_file(e->data_path(filename), false); // TODO: DTD!
+bool gui_theme::load_ui_object(const string& type, const string& obj_filename) {
+	xml::xml_doc ui_object_doc = x->process_file(e->data_path(obj_filename), false); // TODO: DTD!
 	if(!ui_object_doc.valid) {
-		a2e_error("couldn't process ui object file %s!", filename);
+		a2e_error("couldn't process ui object file %s!", obj_filename);
 		return false;
 	}
 	
@@ -156,7 +156,7 @@ bool gui_theme::load_ui_object(const string& type, const string& filename) {
 	//
 	const xml::xml_node* obj_node = ui_object_doc.get_node("a2e_ui_object");
 	if(obj_node == nullptr || obj_node->children.empty()) {
-		a2e_error("ui object \"%s\" is empty!", filename);
+		a2e_error("ui object \"%s\" is empty!", obj_filename);
 		return false;
 	}
 	
@@ -169,7 +169,7 @@ bool gui_theme::load_ui_object(const string& type, const string& filename) {
 			process_state(st, node.second);
 		}
 		else {
-			a2e_error("unknown node \"%s\" in ui object \"%s\"!", node.first, filename);
+			a2e_error("unknown node \"%s\" in ui object \"%s\"!", node.first, obj_filename);
 		}
 	}
 	ui_objects.insert(make_pair(type, obj));
@@ -302,6 +302,7 @@ unique_ptr<gui_theme::point_compute_data> gui_theme::process_point_compute_data(
 			return make_unique<pc_text>(str_to_ui_float2((*node)["position"]),
 										string((*node)["id"]));
 	}
+	a2e_unreachable();
 }
 
 unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const gui_theme::DRAW_STYLE style, const xml::xml_node* node) {
@@ -457,6 +458,7 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 		case DRAW_STYLE::TEXT:
 			return make_unique<ds_text>(str_to_ui_color((*node)["color"]));
 	}
+	a2e_unreachable();
 }
 
 //

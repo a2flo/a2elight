@@ -284,7 +284,7 @@ protected:
 	unordered_map<string, unique_ptr<gui_ui_object>> ui_objects;
 	
 	//
-	bool load_ui_object(const string& type, const string& filename);
+	bool load_ui_object(const string& type, const string& obj_filename);
 	
 	void process_state(gui_ui_object::state* st, const xml::xml_node* node);
 	void process_primitive(gui_ui_object::state* st, const xml::xml_node* node);
