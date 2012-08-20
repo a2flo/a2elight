@@ -109,8 +109,8 @@ public:
 		}
 		
 		a2e_constexpr ui_float2(const float& ui_value_x, const VALUE_TYPE& type_x,
-				  const float& ui_value_y, const VALUE_TYPE& type_y) noexcept :
-		ui_value{ { { ui_value_x, type_x }, { ui_value_y, type_y } } }, value(0.0f, 0.0f) {}
+								const float& ui_value_y, const VALUE_TYPE& type_y) noexcept :
+		ui_value { { ui_float(ui_value_x, type_x), ui_float(ui_value_y, type_y) } }, value(0.0f, 0.0f) {}
 		a2e_constexpr ui_float2(ui_float2&& f) noexcept :
 		ui_value { { f.ui_value[0], f.ui_value[1] } }, value(f.value) {}
 		a2e_constexpr ui_float2(const ui_float2& f) noexcept :
@@ -125,9 +125,9 @@ public:
 		COLOR_TYPE type;
 		string ref;
 		
-		void compute(const gui_color_scheme& scheme) {
+		void compute(const gui_color_scheme& color_scheme) {
 			if(type == COLOR_TYPE::SCHEME) {
-				value = scheme.get(ref);
+				value = color_scheme.get(ref);
 			}
 		}
 		

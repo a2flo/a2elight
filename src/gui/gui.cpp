@@ -220,13 +220,13 @@ void gui::run() {
 	}
 	
 	// handle events
-	for(const auto& evt : event_processing_queue) {
+	for(const auto& gevt : event_processing_queue) {
 		// mouse events:
-		if((evt.first & EVENT_TYPE::__MOUSE_EVENT) == EVENT_TYPE::__MOUSE_EVENT) {
+		if((gevt.first & EVENT_TYPE::__MOUSE_EVENT) == EVENT_TYPE::__MOUSE_EVENT) {
 			// note: mouse down/up events only affect the draw state, mouse clicks do the actual
 			// logic checking (e.g. a button was pressed), since they contain both positions
 			ipnt check_point(-1, -1);
-			switch(evt.first) {
+			switch(gevt.first) {
 				case EVENT_TYPE::MOUSE_LEFT_DOWN:
 				case EVENT_TYPE::MOUSE_LEFT_UP:
 				case EVENT_TYPE::MOUSE_LEFT_HOLD:
@@ -237,7 +237,7 @@ void gui::run() {
 				case EVENT_TYPE::MOUSE_MIDDLE_UP:
 				case EVENT_TYPE::MOUSE_MIDDLE_HOLD:
 				case EVENT_TYPE::MOUSE_MOVE:
-					check_point = ((const mouse_event_base<EVENT_TYPE::__MOUSE_EVENT>&)*evt.second).position;
+					check_point = ((const mouse_event_base<EVENT_TYPE::__MOUSE_EVENT>&)*gevt.second).position;
 					break;
 					
 				case EVENT_TYPE::MOUSE_LEFT_CLICK:
@@ -249,14 +249,14 @@ void gui::run() {
 					// check down, because up and down must both match (be within) in the target object
 					// and the object will have already received a mouse down event
 					// note: memory layout is the same for all click events (-> mouse_left_click_event)
-					check_point = ((const mouse_left_click_event&)*evt.second).down->position;
+					check_point = ((const mouse_left_click_event&)*gevt.second).down->position;
 					break;
 					
 				case EVENT_TYPE::MOUSE_WHEEL_UP:
 				case EVENT_TYPE::MOUSE_WHEEL_DOWN:
 					// mouse wheel events actually also have a position and should only be sent to the
 					// windows underneath that position (-> scrolling in inactive windows)
-					check_point = ((const mouse_wheel_event_base<EVENT_TYPE::__MOUSE_EVENT>&)*evt.second).position;
+					check_point = ((const mouse_wheel_event_base<EVENT_TYPE::__MOUSE_EVENT>&)*gevt.second).position;
 					break;
 				default: break;
 			}
@@ -264,16 +264,16 @@ void gui::run() {
 			// check all windows
 			for(const auto& wnd : windows) {
 				if(gfx2d::is_pnt_in_rectangle(wnd->get_rectangle_abs(), check_point) &&
-				   wnd->handle_mouse_event(evt.first, evt.second, check_point)) {
+				   wnd->handle_mouse_event(gevt.first, gevt.second, check_point)) {
 					break;
 				}
 			}
 		}
 		// key events:
-		else if((evt.first & EVENT_TYPE::__KEY_EVENT) == EVENT_TYPE::__KEY_EVENT) {
+		else if((gevt.first & EVENT_TYPE::__KEY_EVENT) == EVENT_TYPE::__KEY_EVENT) {
 			// key events should only be sent to the active window
 			if(!windows.empty()) {
-				windows[0]->handle_key_event(evt.first, evt.second);
+				windows[0]->handle_key_event(gevt.first, gevt.second);
 			}
 		}
 	}
