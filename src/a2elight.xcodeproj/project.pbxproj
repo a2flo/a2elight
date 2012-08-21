@@ -209,6 +209,7 @@
 		5C3EC3F2123182960055330C /* engine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = engine.cpp; sourceTree = SOURCE_ROOT; };
 		5C3EC3F3123182960055330C /* engine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = engine.h; sourceTree = SOURCE_ROOT; };
 		5C3EC3F4123182960055330C /* global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = global.h; sourceTree = SOURCE_ROOT; };
+		5C47242915E3CCE5000CA003 /* install.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = install.sh; path = ../install.sh; sourceTree = "<group>"; };
 		5C61BDA81231D32000FD3451 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		5C61BDA91231D32000FD3451 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		5C61BDAA1231D32000FD3451 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = /System/Library/Frameworks/OpenCL.framework; sourceTree = "<absolute>"; };
@@ -329,6 +330,7 @@
 				5C7A8FF614B398B2004AA18B /* premake.sh */,
 				5C7A8FF714B398B2004AA18B /* premake4.lua */,
 				5C05F792123171DA00D122BF /* a2e_Prefix.pch */,
+				5C47242915E3CCE5000CA003 /* install.sh */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";

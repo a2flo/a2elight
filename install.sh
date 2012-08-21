@@ -20,7 +20,7 @@ case $A2_PLATFORM_TEST_STRING in
 		exit;;
 esac
 
-declare -a paths=( cl core gui particle rendering scene threading scene/model rendering/renderer rendering/renderer/gl3 )
+declare -a paths=( cl core gui gui/objects gui/style particle rendering scene threading scene/model rendering/renderer rendering/renderer/gl3 )
 case $( uname | tr [:upper:] [:lower:] ) in
 	"linux"|[a-z0-9]*"BSD")
 		A2_INCLUDE_PATH="/usr/local/include"
