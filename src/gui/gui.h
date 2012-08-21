@@ -24,6 +24,7 @@
 #include "rendering/rtt.h"
 #include "gui/event.h"
 #include "gui/objects/gui_object.h"
+#include "gui/style/gui_surface.h"
 
 /*! @class gui
  *  @brief graphical user interface functions
@@ -36,8 +37,6 @@ class font_manager;
 class shader;
 class shader_gl3;
 typedef shared_ptr<shader_gl3> gl3shader;
-class gui_surface;
-class gui_simple_callback;
 class gui_theme;
 class gui_window;
 
@@ -66,7 +65,8 @@ public:
 	
 	// draw callbacks
 	gui_simple_callback* add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_callback& cb,
-										   const float2& size, const float2& offset);
+										   const float2& size, const float2& offset,
+										   const gui_surface::SURFACE_FLAGS flags = gui_surface::SURFACE_FLAGS::NONE);
 	void delete_draw_callback(ui_draw_callback& cb);
 	
 	// adding/creating gui objects:

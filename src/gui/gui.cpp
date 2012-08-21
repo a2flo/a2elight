@@ -23,7 +23,6 @@
 #include "scene/scene.h"
 #include "rendering/gl_timer.h"
 #include "gui/font_manager.h"
-#include "gui/style/gui_surface.h"
 #include "gui/style/gui_theme.h"
 #include "gui/objects/gui_window.h"
 
@@ -337,7 +336,8 @@ bool gui::get_mouse_input() const {
 }
 
 gui_simple_callback* gui::add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_callback& cb,
-											const float2& size, const float2& offset) {
+											const float2& size, const float2& offset,
+											const gui_surface::SURFACE_FLAGS flags) {
 	auto& callbacks = draw_callbacks[mode == DRAW_MODE_UI::PRE_UI ? 0 : 1];
 	const auto iter = find(begin(callbacks), end(callbacks), &cb);
 	if(iter != end(callbacks)) {
@@ -349,7 +349,7 @@ gui_simple_callback* gui::add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_ca
 	const auto surface_iter = cb_surfaces.find(&cb);
 	if(surface_iter != cb_surfaces.end()) return surface_iter->second;
 	
-	gui_simple_callback* surface = new gui_simple_callback(cb, mode, e, size, offset);
+	gui_simple_callback* surface = new gui_simple_callback(cb, mode, e, size, offset, flags);
 	cb_surfaces.insert(make_pair(&cb, surface));
 	return surface;
 }

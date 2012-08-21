@@ -28,7 +28,15 @@ class shader_gl3;
 typedef shared_ptr<shader_gl3> gl3shader;
 class gui_surface {
 public:
-	gui_surface(engine* e, const float2& buffer_size, const float2& offset);
+	enum class SURFACE_FLAGS : unsigned int {
+		NONE				= 0,
+		NO_ANTI_ALIASING	= (1 << 0),
+		NO_DEPTH			= (1 << 1),
+	};
+	enum_class_bitwise_and(SURFACE_FLAGS)
+	enum_class_bitwise_or(SURFACE_FLAGS)
+	
+	gui_surface(engine* e, const float2& buffer_size, const float2& offset, const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
 	virtual ~gui_surface();
 	
 	virtual void draw() = 0;
@@ -46,10 +54,12 @@ public:
 	
 	void blit(gl3shader& shd);
 	
+	
 protected:
 	engine* e;
 	rtt* r;
 	
+	const SURFACE_FLAGS flags;
 	float2 buffer_size;
 	uint2 buffer_size_abs;
 	rtt::fbo* buffer = nullptr;
@@ -70,7 +80,8 @@ public:
 	// note: typedef functor<void, const DRAW_MODE_UI, rtt::fbo*> ui_draw_callback;
 	gui_simple_callback(functor<void, const DRAW_MODE_UI, rtt::fbo*>& callback,
 						const DRAW_MODE_UI& mode, engine* e,
-						const float2& buffer_size, const float2& offset);
+						const float2& buffer_size, const float2& offset,
+						const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
 
 	virtual void draw();
 	

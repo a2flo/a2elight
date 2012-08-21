@@ -22,7 +22,8 @@
 #include "rendering/gfx2d.h"
 #include "rendering/shader.h"
 
-gui_surface::gui_surface(engine* e_, const float2& buffer_size_, const float2& offset_) : e(e_), r(e->get_rtt()), buffer_size(buffer_size_), offset(offset_) {
+gui_surface::gui_surface(engine* e_, const float2& buffer_size_, const float2& offset_, const SURFACE_FLAGS flags_) :
+e(e_), r(e->get_rtt()), flags(flags_), buffer_size(buffer_size_), offset(offset_) {
 	glGenBuffers(1, &vbo_rectangle);
 	resize(buffer_size);
 }
@@ -50,7 +51,12 @@ void gui_surface::resize(const float2& buffer_size_) {
 	
 	// TODO: share a "global" msaa fullscreen buffer among all surfaces and only add an additional resolve/blit buffer for each surface?
 	
-	buffer = r->add_buffer(buffer_size_abs.x, buffer_size_abs.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, e->get_ui_anti_aliasing(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
+	buffer = r->add_buffer(buffer_size_abs.x, buffer_size_abs.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT,
+						   (flags & SURFACE_FLAGS::NO_ANTI_ALIASING) == SURFACE_FLAGS::NO_ANTI_ALIASING ?
+						   rtt::TEXTURE_ANTI_ALIASING::NONE : e->get_ui_anti_aliasing(),
+						   GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1,
+						   (flags & SURFACE_FLAGS::NO_DEPTH) == SURFACE_FLAGS::NO_DEPTH ?
+						   rtt::DEPTH_TYPE::NONE : rtt::DEPTH_TYPE::RENDERBUFFER);
 	
 	// set blit vbo rectangle data
 	set_offset(offset);
@@ -115,8 +121,9 @@ const float2& gui_surface::get_offset() const {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 gui_simple_callback::gui_simple_callback(ui_draw_callback& callback_, const DRAW_MODE_UI& mode_,
-										 engine* e, const float2& buffer_size_, const float2& offset_) :
-gui_surface(e, buffer_size_, offset_), mode(mode_), callback(&callback_) {
+										 engine* e, const float2& buffer_size_, const float2& offset_,
+										 const SURFACE_FLAGS flags_) :
+gui_surface(e, buffer_size_, offset_, flags_), mode(mode_), callback(&callback_) {
 }
 
 void gui_simple_callback::draw() {
