@@ -162,9 +162,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		buffer->draw_height = height;
 	}
 	
-	// color buffer
-	buffer->color = true;
-	
+	//
 	glGenFramebuffers(1, &buffer->fbo_id);
 	glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 	
@@ -405,7 +403,10 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 }
 
 void rtt::delete_buffer(rtt::fbo* buffer) {
-	glDeleteTextures(buffer->attachment_count, &buffer->tex[0]);
+	for(size_t i = 0; i < buffer->attachment_count; i++) {
+		if(buffer->tex[i] == 0) continue;
+		glDeleteTextures(1, &buffer->tex[i]);
+	}
 	for(size_t i = 0; i < buffer->attachment_count; i++) {
 		if(buffer->resolve_buffer[i] == 0) break;
 		glDeleteFramebuffers(1, &buffer->resolve_buffer[i]);
@@ -431,8 +432,11 @@ void rtt::delete_buffer(rtt::fbo* buffer) {
 	
 	//
 	glDeleteFramebuffers(1, &buffer->fbo_id);
-	buffers.erase(remove(buffers.begin(), buffers.end(), buffer), end(buffers));
-	delete buffer;
+	const auto iter = find(begin(buffers), end(buffers), buffer);
+	if(iter != end(buffers)) {
+		buffers.erase(iter);
+		delete buffer;
+	}
 }
 
 void rtt::start_draw(rtt::fbo* buffer) {

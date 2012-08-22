@@ -47,16 +47,45 @@ void gui_surface::resize(const float2& buffer_size_) {
 	buffer_size = buffer_size_;
 	buffer_size_abs = buffer_size_abs_;
 	
-	if(buffer != nullptr) r->delete_buffer(buffer);
+	if(buffer != nullptr) {
+		if(shared_buffer) {
+			// don't delete gui fs fbo buffers
+			buffer->depth_buffer = 0;
+			buffer->color_buffer = 0;
+		}
+		r->delete_buffer(buffer);
+	}
 	
-	// TODO: share a "global" msaa fullscreen buffer among all surfaces and only add an additional resolve/blit buffer for each surface?
-	
-	buffer = r->add_buffer(buffer_size_abs.x, buffer_size_abs.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT,
-						   (flags & SURFACE_FLAGS::NO_ANTI_ALIASING) == SURFACE_FLAGS::NO_ANTI_ALIASING ?
-						   rtt::TEXTURE_ANTI_ALIASING::NONE : e->get_ui_anti_aliasing(),
-						   GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1,
-						   (flags & SURFACE_FLAGS::NO_DEPTH) == SURFACE_FLAGS::NO_DEPTH ?
-						   rtt::DEPTH_TYPE::NONE : rtt::DEPTH_TYPE::RENDERBUFFER);
+	// share a "global" msaa fullscreen buffer among all surfaces and only add an additional
+	// resolve/blit buffer for each surface
+	if(flags == SURFACE_FLAGS::NONE &&
+	   buffer_size.x == 1.0f && buffer_size.y == 1.0f) {
+		const auto* fs_fbo = e->get_gui()->get_fullscreen_fbo();
+		buffer = r->add_buffer(buffer_size_abs.x, buffer_size_abs.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT,
+							   rtt::TEXTURE_ANTI_ALIASING::NONE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+							   GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
+		buffer->depth_buffer = fs_fbo->depth_buffer;
+		buffer->color_buffer = fs_fbo->color_buffer;
+		buffer->samples = fs_fbo->samples;
+		buffer->anti_aliasing[0] = fs_fbo->anti_aliasing[0];
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
+		glGenFramebuffers(1, &buffer->resolve_buffer[0]);
+		glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[0]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->tex[0], 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		
+		shared_buffer = true;
+	}
+	else {
+		buffer = r->add_buffer(buffer_size_abs.x, buffer_size_abs.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT,
+							   (flags & SURFACE_FLAGS::NO_ANTI_ALIASING) == SURFACE_FLAGS::NO_ANTI_ALIASING ?
+							   rtt::TEXTURE_ANTI_ALIASING::NONE : e->get_ui_anti_aliasing(),
+							   GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1,
+							   (flags & SURFACE_FLAGS::NO_DEPTH) == SURFACE_FLAGS::NO_DEPTH ?
+							   rtt::DEPTH_TYPE::NONE : rtt::DEPTH_TYPE::RENDERBUFFER);
+		shared_buffer = false;
+	}
 	
 	// set blit vbo rectangle data
 	set_offset(offset);

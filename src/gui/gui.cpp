@@ -31,6 +31,7 @@ thread_base("gui"),
 e(e_), evt(e_->get_event()), r(e_->get_rtt()), s(e_->get_shader()), sce(e_->get_scene()),
 fm(new font_manager(e)),
 theme(new gui_theme(e, fm)),
+main_fbo(1),
 key_handler_fnctr(this, &gui::key_handler),
 mouse_handler_fnctr(this, &gui::mouse_handler),
 shader_reload_fnctr(this, &gui::shader_reload_handler),
@@ -138,7 +139,7 @@ void gui::draw() {
 	
 	//////////////////////////////////////////////////////////////////
 	// blit all surfaces onto gui buffer
-	r->start_draw(main_fbo);
+	r->start_draw(&main_fbo);
 	r->clear();
 	r->start_2d_draw();
 	
@@ -153,11 +154,9 @@ void gui::draw() {
 	}
 	
 	// blit windows
-	lock();
 	for(const auto& wnd : windows) {
 		wnd->blit(texture_shd);
 	}
-	unlock();
 	
 	// post ui callbacks
 	for(auto& cb : draw_callbacks[1]) {
@@ -181,7 +180,7 @@ void gui::draw() {
 	e->start_2d_draw();
 	
 	blend_shd->use();
-	blend_shd->texture("src_buffer", main_fbo->tex[0]);
+	blend_shd->texture("src_buffer", main_fbo.tex[0]);
 	blend_shd->texture("dst_buffer", sce->get_scene_buffer()->tex[0]);
 	
 	glFrontFace(GL_CW);
@@ -376,8 +375,20 @@ void gui::delete_draw_callback(ui_draw_callback& cb) {
 void gui::recreate_buffers(const size2 size) {
 	delete_buffers();
 	
-	// create main gui buffer
-	main_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, rtt::TEXTURE_ANTI_ALIASING::NONE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::NONE);
+	// create fullscreen aa and main gui buffer
+	aa_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, e->get_anti_aliasing(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
+	
+	glGenFramebuffers(1, &main_fbo.fbo_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, main_fbo.fbo_id);
+	
+	main_fbo.width = aa_fbo->width;
+	main_fbo.height = aa_fbo->height;
+	main_fbo.draw_width = aa_fbo->draw_width;
+	main_fbo.draw_height = aa_fbo->draw_height;
+	main_fbo.tex[0] = aa_fbo->tex[0];
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, main_fbo.tex[0], 0);
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	
 	// resize/recreate surfaces
 	for(const auto& surface : cb_surfaces) {
@@ -392,9 +403,14 @@ void gui::recreate_buffers(const size2 size) {
 
 void gui::delete_buffers() {
 	if(r != nullptr) {
-		if(main_fbo != nullptr) {
-			r->delete_buffer(main_fbo);
-			main_fbo = nullptr;
+		// note: main_fbo and aa_fbo share buffer data, so only delete the fbo of main_fbo
+		if(main_fbo.fbo_id != 0) {
+			main_fbo.tex[0] = 0;
+			r->delete_buffer(&main_fbo);
+		}
+		if(aa_fbo != nullptr) {
+			r->delete_buffer(aa_fbo);
+			aa_fbo = nullptr;
 		}
 	}
 }
@@ -421,4 +437,8 @@ bool gui::try_lock() {
 
 void gui::unlock() {
 	object_lock.unlock();
+}
+
+const rtt::fbo* gui::get_fullscreen_fbo() const {
+	return aa_fbo;
 }

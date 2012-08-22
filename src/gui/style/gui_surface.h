@@ -63,6 +63,7 @@ protected:
 	float2 buffer_size;
 	uint2 buffer_size_abs;
 	rtt::fbo* buffer = nullptr;
+	bool shared_buffer = false;
 	
 	float2 offset;
 	float4 extent;

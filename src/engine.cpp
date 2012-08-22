@@ -214,7 +214,8 @@ void engine::create() {
 		config.near_far_plane.y = config_doc.get<float>("config.projection.far", 1000.0f);
 		
 		config.dpi = config_doc.get<size_t>("config.gui.dpi", 0);
-		config.ui_anti_aliasing = config_doc.get<size_t>("config.gui.anti_aliasing", 8);
+		// ui anti-aliasing should at least be 2x msaa
+		config.ui_anti_aliasing = std::max(config_doc.get<size_t>("config.gui.anti_aliasing", 8), (size_t)2);
 		
 		config.key_repeat = config_doc.get<size_t>("config.input.key_repeat", 200);
 		config.ldouble_click_time = config_doc.get<size_t>("config.input.ldouble_click_time", 200);

@@ -79,7 +79,6 @@ public:
 		unsigned int draw_height = 0;
 		unsigned int color_buffer = 0;
 		unsigned int depth_buffer = 0;
-		bool color = false;
 		DEPTH_TYPE depth_type = DEPTH_TYPE::NONE;
 		STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE;
 		GLenum depth_attachment_type = GL_DEPTH_ATTACHMENT;

@@ -76,6 +76,9 @@ public:
 	void lock();
 	bool try_lock();
 	void unlock();
+	
+	//
+	const rtt::fbo* get_fullscreen_fbo() const;
 
 protected:
 	engine* e;
@@ -90,7 +93,8 @@ protected:
 	array<vector<ui_draw_callback*>, 2> draw_callbacks; // pre and post
 	unordered_map<ui_draw_callback*, gui_simple_callback*> cb_surfaces;
 	
-	rtt::fbo* main_fbo = nullptr;
+	rtt::fbo main_fbo;
+	rtt::fbo* aa_fbo = nullptr;
 	void recreate_buffers(const size2 size);
 	void delete_buffers();
 	
