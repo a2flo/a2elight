@@ -32,7 +32,7 @@
 class engine;
 class A2E_API rtt {
 public:
-	rtt(engine* e, ext* exts, unsigned int screen_width, unsigned int screen_height);
+	rtt(engine* e, ext* exts);
 	~rtt();
 
 	enum class TEXTURE_ANTI_ALIASING {
@@ -124,9 +124,6 @@ protected:
 
 	vector<fbo*> buffers;
 	fbo* current_buffer;
-
-	unsigned int screen_width;
-	unsigned int screen_height;
 
 };
 

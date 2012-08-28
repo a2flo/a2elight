@@ -48,6 +48,18 @@ template<> A2E_API float2& vector2<float>::round() {
 	return *this;
 }
 
+template<> A2E_API float2 vector2<float>::floored() const {
+	return float2(::floorf(x), ::floorf(y));
+}
+
+template<> A2E_API float2 vector2<float>::ceiled() const {
+	return float2(::ceilf(x), ::ceilf(y));
+}
+
+template<> A2E_API float2 vector2<float>::rounded() const {
+	return float2(::roundf(x), ::roundf(y));
+}
+
 template<> A2E_API float2 vector2<float>::operator%(const float2& v) const {
 	return float2(fmodf(x, v.x), fmodf(y, v.y));
 }

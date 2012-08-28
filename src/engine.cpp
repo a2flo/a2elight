@@ -505,7 +505,7 @@ void engine::init(const char* ico) {
 	
 	// create texture manager and render to texture object
 	t = new texman(f, u, exts, datapath, config.anisotropic);
-	r = new rtt(this, exts, (unsigned int)config.width, (unsigned int)config.height);
+	r = new rtt(this, exts);
 	
 	// set standard texture filtering + anisotropic filtering
 	t->set_filtering(config.filtering);

@@ -91,6 +91,10 @@ public:
 	vector2& ceil();
 	vector2& round();
 	vector2& normalize();
+	vector2 floored() const;
+	vector2 ceiled() const;
+	vector2 rounded() const;
+	vector2 normalized() const;
 
 	// TODO: fully integrate ...
 	
@@ -253,6 +257,28 @@ template<typename T> vector2<T>& vector2<T>::normalize() {
 		*this = *this / length();
 	}
 	return *this;
+}
+
+template<> vector2<float> vector2<float>::floored() const;
+template<typename T> vector2<T> vector2<T>::floored() const {
+	return vector2<T>(::floor(x), ::floor(y));
+}
+
+template<> vector2<float> vector2<float>::ceiled() const;
+template<typename T> vector2<T> vector2<T>::ceiled() const {
+	return vector2<T>(::ceil(x), ::ceil(y));
+}
+
+template<> vector2<float> vector2<float>::rounded() const;
+template<typename T> vector2<T> vector2<T>::rounded() const {
+	return vector2<T>(::round(x), ::round(y));
+}
+template<typename T> vector2<T> vector2<T>::normalized() const {
+	vector2 ret;
+	if(!is_null()) {
+		ret = *this / length();
+	}
+	return ret;
 }
 
 template<typename T> bool vector2<T>::is_null() const {

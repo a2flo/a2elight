@@ -43,15 +43,12 @@ const char* rtt::TEXTURE_ANTI_ALIASING_STR[] = {
 
 /*! there is no function currently
  */
-rtt::rtt(engine* e_, ext* exts_, unsigned int screen_width_, unsigned int screen_height_) {
+rtt::rtt(engine* e_, ext* exts_) {
 	// get classes
 	rtt::e = e_;
 	rtt::exts = exts_;
 
 	current_buffer = nullptr;
-
-	rtt::screen_width = screen_width_;
-	rtt::screen_height = screen_height_;
 }
 
 /*! there is no function currently
@@ -497,7 +494,6 @@ void rtt::stop_draw() {
 	}
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-	glViewport(0, 0, rtt::screen_width, rtt::screen_height);
 }
 
 void rtt::start_2d_draw() {

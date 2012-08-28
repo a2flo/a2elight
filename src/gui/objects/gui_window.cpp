@@ -40,9 +40,36 @@ void gui_window::draw() {
 	const bool redraw_all = state.redraw;
 	state.redraw = false;
 	
+	// check if any child must be redrawn
+	bool redraw_any = false;
+	if(!redraw_all) {
+		for(const auto& child : children) {
+			if(child->needs_redraw()) {
+				redraw_any = true;
+				break;
+			}
+		}
+		
+		// nothing to draw, return
+		if(!redraw_any) return;
+	}
+	
 	//
+	vector<int4> blit_rects;
 	start_draw();
 	if(redraw_all) r->clear();
+	else if(shared_buffer) {
+		// when using a shared buffer: create a blit rectangle list of all childs that are redrawn
+		for(const auto& child : children) {
+			if(child->needs_redraw()) {
+				const float2 child_offset(child->get_position_abs().floored());
+				const float2 child_size(child->get_size_abs().ceiled());
+				blit_rects.emplace_back(child_offset.x, child_offset.y,
+										child_offset.x + child_size.x, child_offset.y + child_size.y);
+				break;
+			}
+		}
+	}
 	r->start_2d_draw();
 	
 	for(const auto& child : children) {
@@ -52,7 +79,18 @@ void gui_window::draw() {
 	}
 	
 	r->stop_2d_draw();
-	stop_draw();
+	if(!redraw_all && shared_buffer) {
+		// manual "stop" draw -> only blit necessary rects
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer->fbo_id);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer->resolve_buffer[0]);
+		for(const auto& blit_rect : blit_rects) {
+			glBlitFramebuffer(blit_rect.x, blit_rect.y, blit_rect.z, blit_rect.w,
+							  blit_rect.x, blit_rect.y, blit_rect.z, blit_rect.w,
+							  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+	}
+	else stop_draw();
 }
 
 void gui_window::redraw() {
