@@ -47,6 +47,7 @@
 #include "gui/objects/gui_window.h"
 #include "gui/objects/gui_button.h"
 #include "gui/objects/gui_text.h"
+#include "gui/objects/gui_input_box.h"
 
 #include "gui/style/gui_theme.h"
 #include "gui/style/gui_surface.h"

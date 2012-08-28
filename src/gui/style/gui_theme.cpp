@@ -63,7 +63,7 @@ static gui_theme::ui_float2 str_to_ui_float2(const string& str) {
 };
 
 //
-gui_theme::gui_theme(engine* e_, font_manager* fm_) : e(e_), fm(fm_), x(e->get_xml()), scheme(e_) {
+gui_theme::gui_theme(engine* e_, font_manager* fm_) : e(e_), fm(fm_), x(e->get_xml()), r(e->get_rtt()), scheme(e_) {
 	fnt = fm->get_font("SYSTEM_SANS_SERIF");
 }
 
@@ -247,7 +247,8 @@ unique_ptr<gui_theme::point_compute_data> gui_theme::process_point_compute_data(
 			return make_unique<pc_point>(str_to_ui_float2((*node)["position"]));
 		case PRIMITIVE_TYPE::LINE:
 			return make_unique<pc_line>(str_to_ui_float2((*node)["start"]),
-										str_to_ui_float2((*node)["end"]));
+										str_to_ui_float2((*node)["end"]),
+										str_to_ui_float(str_to_ui_float_pair((*node)["thickness"])));
 		case PRIMITIVE_TYPE::TRIANGLE:
 			return make_unique<pc_triangle>(str_to_ui_float2((*node)["p0"]),
 											str_to_ui_float2((*node)["p1"]),
@@ -463,7 +464,7 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 
 //
 void gui_theme::draw(const string& type, const string& state, const float2& offset, const float2& size,
-					 std::function<string(const string&)> text_lookup) {
+					 std::function<string(const string&)> text_lookup, const bool clear) {
 	const auto iter = ui_objects.find(type);
 	if(iter == ui_objects.cend()) {
 		a2e_error("invalid type: %s!", type);
@@ -478,7 +479,10 @@ void gui_theme::draw(const string& type, const string& state, const float2& offs
 		return;
 	}
 	
-	// TODO: set viewport or scissor test
+	// set scissor test rect
+	glScissor(floorf(offset.x), floorf(offset.y),
+			  ceilf(size.x), ceilf(size.y));
+	if(clear) r->clear();
 	
 	//
 	gui_ui_object::state* st = state_iter->second.get();
@@ -504,8 +508,10 @@ void gui_theme::draw(const string& type, const string& state, const float2& offs
 				auto pd = (pc_line*)&*prim.pdata;
 				pd->start_point.compute(size);
 				pd->end_point.compute(size);
+				pd->thickness.compute(size_avg);
 				gfx2d::point_compute_line<compute_only_draw_style>::compute_and_draw(pd->start_point.value + offset,
-																					 pd->end_point.value + offset);
+																					 pd->end_point.value + offset,
+																					 pd->thickness.value);
 			}
 			break;
 			case PRIMITIVE_TYPE::TRIANGLE: {
@@ -533,11 +539,11 @@ void gui_theme::draw(const string& type, const string& state, const float2& offs
 				pd->start_point.compute(size);
 				pd->end_point.compute(size);
 				pd->radius.compute(size_avg);
-				const rect r(pd->start_point.value.x + offset.x,
-							 pd->start_point.value.y + offset.y,
-							 pd->end_point.value.x + offset.x,
-							 pd->end_point.value.y + offset.y);
-				gfx2d::point_compute_rounded_rectangle<compute_only_draw_style>::compute_and_draw(r, pd->radius.value, pd->corners);
+				const rect rec(pd->start_point.value.x + offset.x,
+							   pd->start_point.value.y + offset.y,
+							   pd->end_point.value.x + offset.x,
+							   pd->end_point.value.y + offset.y);
+				gfx2d::point_compute_rounded_rectangle<compute_only_draw_style>::compute_and_draw(rec, pd->radius.value, pd->corners);
 			}
 			break;
 			case PRIMITIVE_TYPE::CIRCLE: {
@@ -737,4 +743,7 @@ void gui_theme::draw(const string& type, const string& state, const float2& offs
 			case DRAW_STYLE::TEXT: break;
 		}
 	}
+	
+	// reset scissor rect
+	glScissor(0, 0, e->get_width(), e->get_height());
 }

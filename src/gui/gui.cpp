@@ -36,12 +36,17 @@ key_handler_fnctr(this, &gui::key_handler),
 mouse_handler_fnctr(this, &gui::mouse_handler),
 shader_reload_fnctr(this, &gui::shader_reload_handler),
 window_handler_fnctr(this, &gui::window_handler) {
+	// init clipboard (before adding event handlers)
+	if(SDL_HasClipboardText()) clipboard_text = SDL_GetClipboardText();
+	
 	// create keyboard/mouse event handlers
 	// note: the events will be deferred from the handlers
 	// -> make the handlers internal, so events don't get deferred twice
 	evt->add_internal_event_handler(key_handler_fnctr,
 									EVENT_TYPE::KEY_DOWN,
-									EVENT_TYPE::KEY_UP);
+									EVENT_TYPE::KEY_UP,
+									EVENT_TYPE::UNICODE_INPUT,
+									EVENT_TYPE::CLIPBOARD_UPDATE);
 	evt->add_internal_event_handler(mouse_handler_fnctr,
 									EVENT_TYPE::MOUSE_LEFT_DOWN,
 									EVENT_TYPE::MOUSE_LEFT_UP,
@@ -119,6 +124,7 @@ void gui::draw() {
 	
 	//
 	glEnable(GL_BLEND);
+	glEnable(GL_SCISSOR_TEST);
 	glDepthFunc(GL_LEQUAL);
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 	
@@ -131,11 +137,15 @@ void gui::draw() {
 	}
 	
 	// draw windows
-	lock();
-	for(const auto& wnd : windows) {
-		wnd->draw();
+	// try_lock should prevent any dead-locking due to other threads having the gui lock
+	// and also trying to get the engine lock; in addition, this should also lead to
+	// smoother gui drawing (-> no halts due to event handling)
+	if(try_lock()) {
+		for(const auto& wnd : windows) {
+			wnd->draw();
+		}
+		unlock();
 	}
-	unlock();
 	
 	//////////////////////////////////////////////////////////////////
 	// blit all surfaces onto gui buffer
@@ -154,6 +164,7 @@ void gui::draw() {
 	}
 	
 	// blit windows
+	// TODO: lock?
 	for(const auto& wnd : windows) {
 		wnd->blit(texture_shd);
 	}
@@ -173,6 +184,7 @@ void gui::draw() {
 	
 	//
 	glDepthFunc(GL_LESS);
+	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_BLEND);
 	
 	//////////////////////////////////////////////////////////////////
@@ -260,10 +272,25 @@ void gui::run() {
 			}
 			
 			// check all windows
+			bool handled = false;
 			for(const auto& wnd : windows) {
 				if(gfx2d::is_pnt_in_rectangle(wnd->get_rectangle_abs(), check_point) &&
 				   wnd->handle_mouse_event(gevt.first, gevt.second, check_point)) {
+					handled = true;
 					break;
+				}
+			}
+			
+			// if no gui object handled the event, do some additional handling:
+			if(!handled) {
+				//
+				switch(gevt.first) {
+					case EVENT_TYPE::MOUSE_LEFT_DOWN:
+						// if no object handled the mouse down/click event,
+						// no object can be active -> deactivate active object
+						set_active_object(nullptr);
+						break;
+					default: break;
 				}
 			}
 		}
@@ -286,6 +313,11 @@ void gui::run() {
 }
 
 bool gui::key_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+	if(type == EVENT_TYPE::CLIPBOARD_UPDATE) {
+		clipboard_text = ((const clipboard_update_event&)*obj).text;
+		return true;
+	}
+	
 	if(!keyboard_input) return false;
 	event_lock.lock();
 	event_queue.emplace_back(type, obj);
@@ -376,7 +408,7 @@ void gui::recreate_buffers(const size2 size) {
 	delete_buffers();
 	
 	// create fullscreen aa and main gui buffer
-	aa_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, e->get_anti_aliasing(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
+	aa_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, e->get_ui_anti_aliasing(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
 	
 	glGenFramebuffers(1, &main_fbo.fbo_id);
 	glBindFramebuffer(GL_FRAMEBUFFER, main_fbo.fbo_id);
@@ -441,4 +473,36 @@ void gui::unlock() {
 
 const rtt::fbo* gui::get_fullscreen_fbo() const {
 	return aa_fbo;
+}
+
+bool gui::set_clipboard_text(const string& text) {
+	if(SDL_SetClipboardText(text.c_str()) != 0) {
+		a2e_error("couldn't set clipboard text: %s!", SDL_GetError());
+		return false;
+	}
+	clipboard_text = text;
+	return true;
+}
+
+const string& gui::get_clipboard_text() const {
+	return clipboard_text;
+}
+
+void gui::set_active_object(gui_object* obj) {
+	gui_object* old_active_object = active_object;
+	active_object = obj;
+	
+	// deactivate old object
+	if(old_active_object != nullptr) {
+		old_active_object->set_active(false);
+	}
+	
+	// activate new object
+	if(active_object != nullptr) {
+		active_object->set_active(true);
+	}
+}
+
+gui_object* gui::get_active_object() const {
+	return active_object;
 }

@@ -117,9 +117,11 @@ public:
 				// specifies if the primitive has a mid point (e.g. circle, rounded rect)
 				unsigned int has_mid_point : 1;
 				unsigned int has_equal_start_end_point : 1;
+				unsigned int border_connect_start_end_point : 1;
+				unsigned int border_swap_strip_points : 1;
 				
 				//
-				unsigned int _unused : 30;
+				unsigned int _unused : 28;
 			};
 			unsigned int flags = 0;
 		};
@@ -274,10 +276,12 @@ struct gfx2d::point_compute_rectangle {
 			float2(r.x1, r.y2),
 			float2(r.x1, r.y1),
 			float2(r.x2, r.y2),
-			float2(r.x2, r.y1)
+			float2(r.x2, r.y1),
 		};
 		props.extent.set(std::min(r.x1, r.x2), std::min(r.y1, r.y2),
 						 std::max(r.x1, r.x2), std::max(r.y1, r.y2));
+		props.border_connect_start_end_point = 1;
+		props.border_swap_strip_points = 1;
 		draw_style::draw(props, args...);
 	}
 };
@@ -619,16 +623,25 @@ struct gfx2d::draw_style_border {
 		border_props.has_mid_point = 0;
 		const float2 center((props.extent.x + props.extent.z) * 0.5f,
 							(props.extent.y + props.extent.w) * 0.5f);
-		const size_t orig_point_count = props.points.size();
-		border_props.points.reserve(orig_point_count * 2); // we'll need twice as much
+		const vector<float2>* points = &props.points;
+		const size_t orig_point_count = points->size();
+		border_props.points.reserve(orig_point_count * 2 + (props.border_connect_start_end_point ? 2 : 0)); // we'll need twice as much
+		
+		vector<float2> swapped_points;
+		if(props.border_swap_strip_points) {
+			swapped_points.assign(cbegin(*points), cend(*points));
+			std::swap(swapped_points[2], swapped_points[3]);
+			points = &swapped_points;
+		}
+		
 		for(size_t i = props.has_mid_point; // ignore mid point(s) if it has one
 			i < orig_point_count; i++) {
 			// to do this correctly, we need the previous and next point ...
-			const float2& cur_point = props.points[i];
+			const float2& cur_point = (*points)[i];
 			
 			// (mp/#0) -> (sp/#1) -> #2 -> #3 -> ... -> #n-2 -> (ep/#n-1)
-			const float2& prev_point = props.points[i > props.has_mid_point ? i-1 : orig_point_count - (1 + props.has_equal_start_end_point)];
-			const float2& next_point = props.points[i < orig_point_count-1 ? i+1 : props.has_mid_point + props.has_equal_start_end_point];
+			const float2& prev_point = (*points)[i > props.has_mid_point ? i-1 : orig_point_count - (1 + props.has_equal_start_end_point)];
+			const float2& next_point = (*points)[i < orig_point_count-1 ? i+1 : props.has_mid_point + props.has_equal_start_end_point];
 			
 			// ... and compute the normal of those three points (from the two vectors outgoing from the current point)
 			const float2 v0((prev_point - cur_point).normalize());
@@ -638,6 +651,11 @@ struct gfx2d::draw_style_border {
 			//
 			border_props.points.emplace_back(cur_point);
 			border_props.points.emplace_back(cur_point + normal * thickness);
+		}
+		
+		if(props.border_connect_start_end_point) {
+			border_props.points.emplace_back(border_props.points[0]);
+			border_props.points.emplace_back(border_props.points[1]);
 		}
 		
 		// no point in rendering no points

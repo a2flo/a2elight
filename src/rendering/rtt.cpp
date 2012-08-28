@@ -196,19 +196,11 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			case GL_TEXTURE_2D:
 				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
 				break;
-				/*case GL_TEXTURE_3D:
-				 // TODO: tex3d
-				 glTexImage3D(buffer->target[i], 0, internal_format[i], width, height, 1, 0, format[i], type[i], nullptr);
-				 break;*/
 #if !defined(A2E_IOS)
 			case GL_TEXTURE_2D_MULTISAMPLE:
 				glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), texman::convert_internal_format(internal_format[i]), width, height, false);
 				break;
 #endif
-				/*case GL_TEXTURE_3D_MULTISAMPLE:
-				 // TODO: tex3d
-				 glTexImage3DMultisample(buffer->target[i], samp, internal_format[i], width, height, 1, false);
-				 break;*/
 			default:
 				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
 				break;
@@ -295,7 +287,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			case TEXTURE_ANTI_ALIASING::MSAA_16:
 			case TEXTURE_ANTI_ALIASING::MSAA_32:
 			case TEXTURE_ANTI_ALIASING::MSAA_64: {
-				GLsizei samples = (GLsizei)get_sample_count(buffer->anti_aliasing[0]);
+				buffer->samples = (GLsizei)get_sample_count(buffer->anti_aliasing[0]);
 				
 				glGenFramebuffers(attachment_count, &buffer->resolve_buffer[0]);
 				for(size_t i = 0; i < attachment_count; i++) {
@@ -308,20 +300,18 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 				
 				glGenRenderbuffers(1, &buffer->color_buffer);
 				glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
-				glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format[0], buffer->width, buffer->height);
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, buffer->samples, format[0], buffer->width, buffer->height);
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
 				check_fbo(current_buffer);
 				
 				if(depth_type == DEPTH_TYPE::RENDERBUFFER) {
 					glGenRenderbuffers(1, &buffer->depth_buffer);
 					glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
-					glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, depth_internel_format, buffer->width, buffer->height);
+					glRenderbufferStorageMultisample(GL_RENDERBUFFER, buffer->samples, depth_internel_format, buffer->width, buffer->height);
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, depth_attachment_type, GL_RENDERBUFFER, buffer->depth_buffer);
 				}
 #if !defined(A2E_IOS)
 				else if(depth_type == DEPTH_TYPE::TEXTURE_2D) {
-					buffer->samples = samples;
-					
 					glGenTextures(1, &buffer->depth_buffer);
 					glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer);
 					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -329,7 +319,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 					
-					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texman::convert_internal_format(depth_internel_format), width, height, false);
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, buffer->samples, texman::convert_internal_format(depth_internel_format), width, height, false);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, depth_attachment_type, GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer, 0);
 				}
 #endif
@@ -478,7 +468,6 @@ void rtt::start_draw(rtt::fbo* buffer) {
 void rtt::stop_draw() {
 	check_fbo(current_buffer);
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	if(current_buffer->anti_aliasing[0] != TEXTURE_ANTI_ALIASING::NONE &&
 	   current_buffer->anti_aliasing[0] != TEXTURE_ANTI_ALIASING::SSAA_2 &&
 	   current_buffer->anti_aliasing[0] != TEXTURE_ANTI_ALIASING::SSAA_4 &&
@@ -496,8 +485,6 @@ void rtt::stop_draw() {
 				// TODO: implement framebuffer blitting on iOS
 #endif
 			}
-		
-			glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 		}
 	}
 	
@@ -509,6 +496,7 @@ void rtt::stop_draw() {
 		}
 	}
 	
+	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	glViewport(0, 0, rtt::screen_width, rtt::screen_height);
 }
 

@@ -112,6 +112,11 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 		faces.insert(make_pair("Bold", faces.find("Regular")->second));
 	}
 	
+	// create glyph maps
+	for(const auto& face : faces) {
+		glyph_map.insert(make_pair(face.first, decltype(glyph_map)::mapped_type()));
+	}
+	
 	// cache most used glyphs
 	cache(BMP_BLOCK::BASIC_LATIN);
 	cache(BMP_BLOCK::LATIN_1_SUPPLEMENT);
@@ -194,6 +199,17 @@ bool font::add_face(const string& style, FT_Face face) {
 	return false;
 }
 
+bool font::is_cached(const unsigned int& code) const {
+	for(const auto& face : faces) {
+		const auto& glyphs = glyph_map.at(face.first);
+		if(glyphs.find(code) == glyphs.end()) {
+			// glyph has not been cached
+			return false;
+		}
+	}
+	return true;
+}
+
 void font::cache(const BMP_BLOCK block) {
 	cache(((unsigned int)block >> 16) & 0xFFFF, (unsigned int)block & 0xFFFF);
 }
@@ -214,6 +230,16 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 		a2e_error("invalid start_code(%u) or end_code(%u) - >0x10FFFF!", start_code, end_code);
 		return;
 	}
+	
+	// check if glyphs were already cached
+	bool all_cached = true;
+	for(unsigned int code = start_code; code < end_code+1; code++) {
+		if(!is_cached(code)) {
+			all_cached = false;
+			break;
+		}
+	}
+	if(all_cached) return;
 	
 	// check if we need to expand the texture to fit all glyphs in
 	const size_t new_glyph_count = (end_code - start_code + 1) * faces.size();
@@ -380,7 +406,23 @@ void font::draw_cached(const string& text, const float2& position, const float4 
 }
 
 pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
-													   std::function<void (unsigned int)> cache_fnc) const {
+													   std::function<void(unsigned int)> cache_fnc) const {
+	vector<uint2> ubo_data;
+	const float2 extent = text_stepper(text,
+									   [&ubo_data](unsigned int code a2e_unused, const glyph_data& glyph,
+												   const float2& origin a2e_unused, const float2& fpos) {
+										   const int2 pos(fpos); // round to integer
+										   ubo_data.emplace_back(glyph.tex_index,
+																 (unsigned int)(((short int)pos.x) & 0xFFFFu) +
+																 (((unsigned int)(((short int)pos.y) & 0xFFFFu)) << 16u));
+									   },
+									   cache_fnc);
+	return { ubo_data, extent };
+}
+
+float2 font::text_stepper(const string& str,
+						  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
+						  std::function<void(unsigned int)> cache_fnc) const {
 	// replace control strings by control characters (easier to handle later on)
 	static const struct {
 		const string search;
@@ -391,15 +433,47 @@ pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
 		{ u8"<b>", u8"\u0003" },
 		{ u8"</b>", u8"\u0004" },
 	};
-	string repl_text(text);
+	string repl_str(str);
 	for(const auto& cc : control_chars) {
-		repl_text = core::find_and_replace(repl_text, cc.search, cc.repl);
+		repl_str = core::find_and_replace(repl_str, cc.search, cc.repl);
 	}
 	
-	// convert to utf-32
-	const vector<unsigned int> codes(unicode::utf8_to_unicode(repl_text));
-	
-	vector<uint2> ubo_data;
+	//
+	return text_stepper(unicode::utf8_to_unicode(repl_str), fnc, cache_fnc);
+}
+
+float font::compute_advance(const string& str) const {
+	return compute_advance(unicode::utf8_to_unicode(str));
+}
+
+float font::compute_advance(const vector<unsigned int>& unicode_str) const {
+	const float2 extent = text_stepper(unicode_str);
+	return extent.x;
+}
+
+vector<float2> font::compute_advance_map(const string& str) const {
+	return compute_advance_map(unicode::utf8_to_unicode(str));
+}
+
+vector<float2> font::compute_advance_map(const vector<unsigned int>& unicode_str) const {
+	vector<float2> advance_map;
+	advance_map.reserve(unicode_str.size());
+	float total_advance = 0.0f;
+	text_stepper(unicode_str,
+				 [&advance_map, &total_advance](unsigned int code a2e_unused, const glyph_data& glyph,
+												const float2& origin a2e_unused, const float2& fpos a2e_unused) {
+		const float glyph_advance { (float)(glyph.layout.z >> 6) };
+		advance_map.emplace_back(float2(total_advance, glyph_advance));
+		total_advance += glyph_advance;
+	});
+	// advance after the last character:
+	advance_map.emplace_back(float2(total_advance, 0.0f));
+	return advance_map;
+}
+
+float2 font::text_stepper(const vector<unsigned int>& unicode_str,
+						  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
+						  std::function<void(unsigned int)> cache_fnc) const {
 	float2 origin(0.0f);
 	string cur_style = "Regular";
 	
@@ -451,7 +525,7 @@ pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
 	
 	float2 extent;
 	bool style_italic = false, style_bold = false;
-	for(const auto& code : codes) {
+	for(const auto& code : unicode_str) {
 		// handle control characters / whitespace
 		switch(code) {
 			case 0x01:
@@ -509,15 +583,14 @@ pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
 		if(code != 0x20) { // ignore spaces (other whitespace has already been ignored)
 			extent = float2::max(fpos, extent); // max extent
 		}
-		const int2 pos(fpos); // round to integer
+		
+		fnc(code, iter->second, origin, fpos);
+		
 		origin.x += iter->second.layout.z >> 6;
 		origin.y += iter->second.layout.w >> 6;
-		ubo_data.emplace_back(iter->second.tex_index,
-							  (unsigned int)(((short int)pos.x) & 0xFFFFu) +
-							  (((unsigned int)(((short int)pos.y) & 0xFFFFu)) << 16u));
 	}
 	extent = float2::max(extent, origin); // in case of whitespace, do a last max
-	return { ubo_data, extent };
+	return extent;
 }
 
 void font::draw_cached(const GLuint& ubo, const size_t& character_count, const float2& position, const float4 color) const {

@@ -18,6 +18,7 @@
 
 #include "gui_button.h"
 #include "engine.h"
+#include "gui.h"
 
 gui_button::gui_button(engine* e_, const float2& size_, const float2& position_) :
 gui_text(e_, size_, position_) {
@@ -41,14 +42,18 @@ bool gui_button::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<eve
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
 		case EVENT_TYPE::MOUSE_LEFT_DOWN:
-			state.active = true;
+			ui->set_active_object(this);
 			return true;
 		case EVENT_TYPE::MOUSE_LEFT_UP:
-			state.active = false;
+			if(state.active) {
+				ui->set_active_object(nullptr);
+			}
 			return true;
 		case EVENT_TYPE::MOUSE_LEFT_CLICK:
 		case EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK: {
-			state.active = false;
+			if(state.active) {
+				ui->set_active_object(nullptr);
+			}
 			
 			// down position has already been checked (we wouldn't be in here otherwise)
 			// -> check if the up position is also within the button, if so, we have a button click

@@ -52,6 +52,11 @@ public:
 	const unsigned int& get_size() const;
 	const unsigned int& get_display_size() const;
 	
+	float compute_advance(const string& str) const;
+	float compute_advance(const vector<unsigned int>& unicode_str) const;
+	vector<float2> compute_advance_map(const string& str) const;
+	vector<float2> compute_advance_map(const vector<unsigned int>& unicode_str) const;
+	
 	//! http://en.wikipedia.org/wiki/Basic_Multilingual_Plane#Basic_Multilingual_Plane
 	enum class BMP_BLOCK : unsigned int {
 		BASIC_LATIN				= 0x0000007F, // NOTE: will be cached automatically (0000 - 007F)
@@ -77,6 +82,8 @@ public:
 	void cache(const unsigned int& start_code, const unsigned int& end_code);
 	//! <<ubo, character_count>, extent>, note: ubo must be destroyed/managed manually!
 	pair<uint2, float2> cache_text(const string& text, const GLuint existing_ubo = 0);
+	
+	bool is_cached(const unsigned int& code) const;
 	
 	// TODO: clear cache
 	//void clear_cache();
@@ -123,6 +130,14 @@ protected:
 	
 	// size functions (TODO: will be made public when dynamic size changes are supported)
 	void set_size(const unsigned int& size);
+	
+	//
+	float2 text_stepper(const string& str,
+						std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc = [](unsigned int, const glyph_data&, const float2&, const float2&){},
+						std::function<void(unsigned int)> cache_fnc = [](unsigned int){}) const;
+	float2 text_stepper(const vector<unsigned int>& unicode_str,
+						std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc = [](unsigned int, const glyph_data&, const float2&, const float2&){},
+						std::function<void(unsigned int)> cache_fnc = [](unsigned int){}) const;
 	
 };
 

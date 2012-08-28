@@ -31,6 +31,7 @@
  */
 
 class engine;
+class gui;
 class A2E_API gui_object {
 public:
 	gui_object(engine* e, const float2& size, const float2& position);
@@ -38,8 +39,14 @@ public:
 	
 	virtual void draw() = 0;
 	
+	// state functions
 	virtual void redraw();
 	virtual bool needs_redraw() const;
+	virtual void set_active(const bool& state);
+	
+	virtual bool is_visible() const;
+	virtual bool is_enabled() const;
+	virtual bool is_active() const;
 	
 	//
 	virtual const float2& get_position() const;
@@ -81,7 +88,11 @@ public:
 
 protected:
 	engine* e;
+	gui* ui;
 	gui_theme* theme;
+	event* evt;
+	font_manager* fm;
+	font* fnt;
 	
 	// returns true if object should be drawn, false if it shouldn't; also resets the redraw flag
 	virtual bool handle_draw();
@@ -117,7 +128,7 @@ protected:
 		unwind_add_handler(std::forward<handler>(handler_), std::forward<event_types>(types)...);
 	}
 	unordered_multimap<GUI_EVENT, handler> handlers;
-	virtual void handle(const GUI_EVENT evt);
+	virtual void handle(const GUI_EVENT gui_evt);
 
 };
 

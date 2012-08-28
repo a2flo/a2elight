@@ -39,7 +39,7 @@ public:
 	// ui object type, state of that object, screen x/y offset, draw size/extent,
 	// text lookup: takes an identifier and returns the associated string
 	void draw(const string& type, const string& state, const float2& offset, const float2& size,
-			  std::function<string(const string&)> text_lookup = [](const string& str a2e_unused){return "";});
+			  std::function<string(const string&)> text_lookup = [](const string& str a2e_unused){return "";}, const bool clear = true);
 	
 	//
 	enum class PRIMITIVE_TYPE : unsigned int {
@@ -151,7 +151,8 @@ public:
 	};
 	struct pc_line : public point_compute_data {
 		ui_float2 start_point, end_point;
-		pc_line(ui_float2&& sp, ui_float2&& ep) : start_point(sp), end_point(ep) {}
+		ui_float thickness;
+		pc_line(ui_float2&& sp, ui_float2&& ep, ui_float&& thck) : start_point(sp), end_point(ep), thickness(thck) {}
 	};
 	struct pc_triangle : public point_compute_data {
 		ui_float2 point_0, point_1, point_2;
@@ -165,18 +166,18 @@ public:
 		ui_float2 start_point, end_point;
 		ui_float radius;
 		gfx2d::CORNER corners;
-		pc_rounded_rectangle(ui_float2&& sp, ui_float2&& ep, ui_float&& r, gfx2d::CORNER&& crnrs) : start_point(sp), end_point(ep), radius(r), corners(crnrs) {}
+		pc_rounded_rectangle(ui_float2&& sp, ui_float2&& ep, ui_float&& rd, gfx2d::CORNER&& crnrs) : start_point(sp), end_point(ep), radius(rd), corners(crnrs) {}
 	};
 	struct pc_circle : public point_compute_data {
 		ui_float2 point;
 		ui_float radius;
-		pc_circle(ui_float2&& p, ui_float&& r) : point(p), radius(r) {}
+		pc_circle(ui_float2&& p, ui_float&& rd) : point(p), radius(rd) {}
 	};
 	struct pc_circle_sector : public point_compute_data {
 		ui_float2 point;
 		ui_float radius;
 		ui_float start_angle, end_angle;
-		pc_circle_sector(ui_float2&& p, ui_float&& r, ui_float&& sangle, ui_float&& eangle) : point(p), radius(r), start_angle(sangle), end_angle(eangle) {}
+		pc_circle_sector(ui_float2&& p, ui_float&& rd, ui_float&& sangle, ui_float&& eangle) : point(p), radius(rd), start_angle(sangle), end_angle(eangle) {}
 	};
 	struct pc_ellipsoid : public point_compute_data {
 		ui_float2 point;
@@ -267,6 +268,7 @@ protected:
 	engine* e;
 	font_manager* fm;
 	xml* x;
+	rtt* r;
 	font* fnt;
 	gui_color_scheme scheme;
 	string filename = "";

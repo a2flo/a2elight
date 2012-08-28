@@ -57,11 +57,18 @@ public:
 	font_manager* get_font_manager() const;
 	gui_theme* get_theme() const;
 	
+	bool set_clipboard_text(const string& text);
+	const string& get_clipboard_text() const;
+	
 	// misc flags
 	void set_keyboard_input(const bool& state);
 	bool get_keyboard_input() const;
 	void set_mouse_input(const bool& state);
 	bool get_mouse_input() const;
+	
+	//
+	void set_active_object(gui_object* obj);
+	gui_object* get_active_object() const;
 	
 	// draw callbacks
 	gui_simple_callback* add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_callback& cb,
@@ -103,6 +110,7 @@ protected:
 	gl3shader texture_shd;
 	
 	//
+	gui_object* active_object = nullptr;
 	vector<gui_window*> windows;
 	void add_window(gui_window* wnd);
 	recursive_mutex object_lock;
@@ -124,6 +132,7 @@ protected:
 	vector<pair<EVENT_TYPE, shared_ptr<event_object>>> event_queue, event_processing_queue;
 	mutex event_lock;
 	atomic<bool> events_in_queue { false };
+	string clipboard_text = "";
 	
 	atomic<bool> keyboard_input { true };
 	atomic<bool> mouse_input { true };

@@ -25,6 +25,12 @@ gui_object(e_, buffer_size_, position_), gui_surface(e_, buffer_size_, position_
 }
 
 gui_window::~gui_window() {
+	// also delete all children (we need to copy the container, since deleting
+	// a child will modify the children container)
+	const set<gui_object*> children_copy(children);
+	for(const auto& child : children_copy) {
+		delete child;
+	}
 }
 
 void gui_window::draw() {
@@ -35,7 +41,7 @@ void gui_window::draw() {
 	state.redraw = false;
 	
 	//
-	r->start_draw(buffer);
+	start_draw();
 	if(redraw_all) r->clear();
 	r->start_2d_draw();
 	
@@ -46,7 +52,7 @@ void gui_window::draw() {
 	}
 	
 	r->stop_2d_draw();
-	r->stop_draw();
+	stop_draw();
 }
 
 void gui_window::redraw() {

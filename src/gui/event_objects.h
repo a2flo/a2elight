@@ -27,10 +27,11 @@
 
 // general/global event types
 enum class EVENT_TYPE : unsigned int {
-	__MOUSE_EVENT	= 0x80000000,
-	__KEY_EVENT		= 0x40000000,
-	__OTHER_EVENT	= 0x20000000,
-	__USER_EVENT	= 0x10000000,
+	__MOUSE_EVENT	= (1u << 31u),
+	__KEY_EVENT		= (1u << 30u),
+	__GUI_EVENT		= (1u << 29u),
+	__OTHER_EVENT	= (1u << 28u),
+	__USER_EVENT	= (1u << 27u),
 	
 	MOUSE_LEFT_DOWN = __MOUSE_EVENT + 1,
 	MOUSE_LEFT_UP,
@@ -63,6 +64,7 @@ enum class EVENT_TYPE : unsigned int {
 	QUIT = __OTHER_EVENT + 1,
 	WINDOW_RESIZE,
 	SHADER_RELOAD,
+	CLIPBOARD_UPDATE,
 	
 	__USER_EVENT_START = __USER_EVENT + 1,
 	A2E_USER_EVENT_TYPES
@@ -162,6 +164,11 @@ typedef key_event<EVENT_TYPE::UNICODE_INPUT> unicode_input_event;
 // misc
 typedef event_object_base<EVENT_TYPE::QUIT> quit_event;
 typedef event_object_base<EVENT_TYPE::SHADER_RELOAD> shader_reload_event;
+
+struct clipboard_update_event : public event_object_base<EVENT_TYPE::CLIPBOARD_UPDATE> {
+	const string text;
+	clipboard_update_event(const unsigned int& time_, const string& text_) : event_object_base(time_), text(text_) {}
+};
 
 template<EVENT_TYPE event_type> struct window_resize_event_base : public event_object_base<event_type> {
 	const size2 size;

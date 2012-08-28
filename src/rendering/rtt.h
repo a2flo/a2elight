@@ -82,7 +82,7 @@ public:
 		DEPTH_TYPE depth_type = DEPTH_TYPE::NONE;
 		STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE;
 		GLenum depth_attachment_type = GL_DEPTH_ATTACHMENT;
-		size_t samples = 0;
+		unsigned int samples = 0;
 		
 		vector<unsigned int> tex;
 		vector<unsigned int> resolve_buffer;

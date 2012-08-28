@@ -20,13 +20,22 @@
 #include "engine.h"
 #include "gui/gui.h"
 #include "threading/task.h"
+#include "font_manager.h"
 
 gui_object::gui_object(engine* e_, const float2& size_, const float2& position_) :
-e(e_), theme(e->get_gui()->get_theme()), size(size_), position(position_) {
+e(e_), ui(e->get_gui()), theme(ui->get_theme()), evt(e->get_event()), fm(ui->get_font_manager()), fnt(fm->get_font("SYSTEM_SANS_SERIF")), size(size_), position(position_) {
 	compute_abs_values();
 }
 
 gui_object::~gui_object() {
+	// if this is the active gui object, set the active object to nullptr
+	if(state.active || ui->get_active_object() == this) {
+		ui->set_active_object(nullptr);
+	}
+	// remove from parent
+	if(parent != nullptr) {
+		parent->remove_child(this);
+	}
 }
 
 bool gui_object::handle_draw() {
@@ -41,6 +50,29 @@ void gui_object::redraw() {
 
 bool gui_object::needs_redraw() const {
 	return state.redraw;
+}
+
+void gui_object::set_active(const bool& active_state) {
+	state.active = active_state;
+	
+	// in case the active state is set externally (not by an event),
+	// we have to make sure the gui knows about this
+	if((state.active && ui->get_active_object() != this) ||
+	   (!state.active && ui->get_active_object() == this)) {
+		ui->set_active_object(state.active ? this : nullptr);
+	}
+}
+
+bool gui_object::is_visible() const {
+	return state.visible;
+}
+
+bool gui_object::is_enabled() const {
+	return state.enabled;
+}
+
+bool gui_object::is_active() const {
+	return state.active;
 }
 
 void gui_object::compute_abs_values() {
@@ -87,6 +119,9 @@ void gui_object::set_size(const float2& size_) {
 
 void gui_object::set_parent(gui_object* parent_) {
 	lock();
+	if(parent != nullptr) {
+		parent->remove_child(this);
+	}
 	parent = parent_;
 	unlock();
 }
@@ -104,7 +139,11 @@ void gui_object::add_child(gui_object* child) {
 
 void gui_object::remove_child(gui_object* child) {
 	lock();
-	children.erase(child);
+	const auto iter = children.find(child);
+	if(iter != children.end()) {
+		children.erase(iter);
+		child->set_parent(nullptr);
+	}
 	unlock();
 }
 
@@ -140,14 +179,17 @@ void gui_object::add_handler(handler&& handler_, GUI_EVENT type) {
 	unlock();
 }
 
-void gui_object::handle(const GUI_EVENT evt) {
+void gui_object::handle(const GUI_EVENT gui_evt) {
 	lock();
 	for(const auto& hndlr : handlers) {
-		task::spawn([&hndlr, &evt, this]() {
-			hndlr.second(evt, *this);
+		task::spawn([&hndlr, &gui_evt, this]() {
+			hndlr.second(gui_evt, *this);
 		});
 	}
 	unlock();
+	
+	// also add this event to the global event handler
+	evt->add_event((EVENT_TYPE)gui_evt, make_shared<gui_event>(SDL_GetTicks(), *this));
 }
 
 void gui_object::remove_handlers(const GUI_EVENT& type) {

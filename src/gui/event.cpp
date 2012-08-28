@@ -251,6 +251,10 @@ void event::handle_events() {
 				case SDL_QUIT:
 					handle_event(EVENT_TYPE::QUIT, make_shared<quit_event>(cur_ticks));
 					break;
+				case SDL_CLIPBOARDUPDATE:
+					handle_event(EVENT_TYPE::CLIPBOARD_UPDATE,
+								 make_shared<clipboard_update_event>(cur_ticks, SDL_HasClipboardText() ? SDL_GetClipboardText() : ""));
+					break;
 				default: break;
 			}
 		}
@@ -297,7 +301,7 @@ void event::add_internal_event_handler(handler& handler_, EVENT_TYPE type) {
 
 void event::add_event(const EVENT_TYPE type, shared_ptr<event_object> obj) {
 	// for now, just pass it through
-	handle_event(type, obj);
+	handle_event(type, obj); // TODO: add to queue and handle in handle_events (-> required for correct mt)
 }
 
 void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {

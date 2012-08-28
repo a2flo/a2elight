@@ -19,30 +19,36 @@
 #ifndef __A2E_GUI_EVENT_H__
 #define __A2E_GUI_EVENT_H__
 
-// gui event types
+#include "gui/event_objects.h"
+
+// gui event types (addition to EVENT_TYPE)
 enum class GUI_EVENT : unsigned int {
-	BUTTON_PRESS,
-	BUTTON_RIGHT_PRESS,
+	BUTTON_PRESS = ((unsigned int)EVENT_TYPE::__GUI_EVENT) + 1u,
+	//BUTTON_RIGHT_PRESS,
 	//TOGGLE_BUTTON_PRESS,
 	
-	LIST_ITEM_PRESS,
-	LIST_ITEM_DOUBLE_CLICK,
+	INPUT_BOX_ACTIVATION,
+	INPUT_BOX_DEACTIVATION,
+	INPUT_BOX_INPUT,
 	
-	CHECKBOX_TOGGLE,
+	//LIST_ITEM_PRESS,
+	//LIST_ITEM_DOUBLE_CLICK,
 	
-	RADIO_PRESS,
+	//CHECKBOX_TOGGLE,
 	
-	COMBO_ITEM_PRESS,
+	//RADIO_PRESS,
 	
-	INPUT_SELECT,
-	INPUT_UNSELECT,
+	//COMBO_ITEM_PRESS,
 	
-	BAR_SCROLL,
+	//INPUT_SELECT,
+	//INPUT_UNSELECT,
 	
-	FILE_OPEN,
-	FILE_SAVE,
+	//BAR_SCROLL,
 	
-	SLIDER_MOVE,
+	//FILE_OPEN,
+	//FILE_SAVE,
+	
+	//SLIDER_MOVE,
 	
 	// TODO: tree list
 	// TODO: color picker
@@ -52,7 +58,7 @@ enum class GUI_EVENT : unsigned int {
 	WINDOW_OPEN,
 	WINDOW_CLOSE,
 	
-	TAB_SELECT,
+	//TAB_SELECT,
 };
 namespace std {
 	template <> struct hash<GUI_EVENT> : public hash<unsigned int> {
@@ -61,5 +67,12 @@ namespace std {
 		}
 	};
 }
+
+class gui_object;
+template<EVENT_TYPE event_type> struct gui_event_base : public event_object_base<event_type> {
+	const gui_object& object;
+	gui_event_base(const unsigned int& time_, const gui_object& object_) : event_object_base<event_type>(time_), object(object_) {}
+};
+typedef gui_event_base<EVENT_TYPE::__GUI_EVENT> gui_event;
 
 #endif

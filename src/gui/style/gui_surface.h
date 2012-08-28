@@ -71,6 +71,9 @@ protected:
 	
 	atomic<bool> do_redraw { false };
 	
+	void start_draw();
+	void stop_draw();
+	
 };
 
 // this is a simple gui_surface implementation that is used for user gui callbacks

@@ -68,8 +68,8 @@ void gui_surface::resize(const float2& buffer_size_) {
 		buffer->color_buffer = fs_fbo->color_buffer;
 		buffer->samples = fs_fbo->samples;
 		buffer->anti_aliasing[0] = fs_fbo->anti_aliasing[0];
+		buffer->depth_type = fs_fbo->depth_type;
 		
-		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 		glGenFramebuffers(1, &buffer->resolve_buffer[0]);
 		glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[0]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->tex[0], 0);
@@ -147,6 +147,19 @@ const float2& gui_surface::get_offset() const {
 	return offset;
 }
 
+void gui_surface::start_draw() {
+	r->start_draw(buffer);
+	if(shared_buffer) {
+		// these must always be reset, since other buffers use them too
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer->depth_buffer);
+	}
+}
+
+void gui_surface::stop_draw() {
+	r->stop_draw();
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 gui_simple_callback::gui_simple_callback(ui_draw_callback& callback_, const DRAW_MODE_UI& mode_,
@@ -158,14 +171,14 @@ gui_surface(e, buffer_size_, offset_, flags_), mode(mode_), callback(&callback_)
 void gui_simple_callback::draw() {
 	if(!do_redraw) return;
 	
-	r->start_draw(buffer);
+	start_draw();
 	r->clear();
 	r->start_2d_draw();
 	
 	(*callback)(mode, buffer);
 	
 	r->stop_2d_draw();
-	r->stop_draw();
+	stop_draw();
 	
 	do_redraw = false;
 }
