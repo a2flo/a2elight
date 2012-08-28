@@ -140,7 +140,7 @@ bool gui_input_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<
 					position++;
 				}
 				// handle the end/last position correctly
-				if(input_cursor == unicode_input.size()) {
+				if(input_cursor >= 0 && (size_t)input_cursor == unicode_input.size()) {
 					input_cursor = -1;
 				}
 				update_text_display();

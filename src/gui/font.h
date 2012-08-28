@@ -91,6 +91,13 @@ public:
 	// texture cache info
 	static constexpr unsigned int font_texture_size = 1024;
 	
+	// unicode -> texture index
+	struct glyph_data {
+		const unsigned int tex_index;
+		const int4 layout;
+		const int2 size;
+	};
+	
 protected:
 	engine* e = nullptr;
 	shader* s = nullptr;
@@ -102,12 +109,6 @@ protected:
 	unordered_map<string, FT_Face> faces;
 	bool add_face(const string& style, FT_Face face);
 	
-	// unicode -> texture index
-	struct glyph_data {
-		const unsigned int tex_index;
-		const int4 layout;
-		const int2 size;
-	};
 	// style -> (unicode -> glyph data)
 	unordered_map<string, unordered_map<unsigned int, glyph_data>> glyph_map;
 	unsigned int font_size = 10;
