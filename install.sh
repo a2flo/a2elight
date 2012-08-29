@@ -51,14 +51,23 @@ case $( uname | tr [:upper:] [:lower:] ) in
 		cp ./../lib/liba2elightd.a ${A2_LIB_PATH}/ 2>/dev/null
 		;;
 	"mingw"*)
-		A2_INCLUDE_PATH="/c/MinGW/msys/1.0/local/include"
-		A2_BIN_PATH="/c/MinGW/msys/1.0/local/bin"
-		A2_LIB_PATH="/c/MinGW/msys/1.0/local/lib"
-		if [[ $A2_PLATFORM == "x64" ]]; then
-			A2_INCLUDE_PATH="/c/mingw64/msys/include"
-			A2_BIN_PATH="/c/mingw64/bin"
-			A2_LIB_PATH="/c/mingw64/msys/lib"
+		A2_MINGW_ROOT="/c/MinGW/"
+		if [[ $MINGW_ROOT ]]; then
+			A2_MINGW_ROOT=$MINGW_ROOT
 		fi
+		if [[ $A2_PLATFORM == "x64" ]]; then
+			if [[ $MINGW64_ROOT ]]; then
+				A2_MINGW_ROOT=$MINGW64_ROOT
+			fi
+		else
+			if [[ $MINGW32_ROOT ]]; then
+				A2_MINGW_ROOT=$MINGW32_ROOT
+			fi
+		fi
+		echo "# installing to "$A2_MINGW_ROOT" ..."
+		A2_INCLUDE_PATH=$A2_MINGW_ROOT"/msys/include"
+		A2_BIN_PATH=$A2_MINGW_ROOT"/export"
+		A2_LIB_PATH=$A2_MINGW_ROOT"/msys/lib"
 	
 		# remove old files and folders
 		rm -Rf ${A2_INCLUDE_PATH}/a2elight
