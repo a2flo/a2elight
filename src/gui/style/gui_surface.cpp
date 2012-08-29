@@ -29,12 +29,19 @@ e(e_), r(e->get_rtt()), flags(flags_), buffer_size(buffer_size_), offset(offset_
 }
 
 gui_surface::~gui_surface() {
-	if(buffer != nullptr) {
-		r->delete_buffer(buffer);
-		buffer = nullptr;
-	}
-	
+	delete_buffer();
 	if(glIsBuffer(vbo_rectangle)) glDeleteBuffers(1, &vbo_rectangle);
+}
+
+void gui_surface::delete_buffer() {
+	if(buffer == nullptr) return;
+	if(shared_buffer) {
+		// don't delete gui fs fbo buffers
+		buffer->depth_buffer = 0;
+		buffer->color_buffer = 0;
+		shared_buffer = false;
+	}
+	r->delete_buffer(buffer);
 }
 
 void gui_surface::resize(const float2& buffer_size_) {
@@ -47,14 +54,7 @@ void gui_surface::resize(const float2& buffer_size_) {
 	buffer_size = buffer_size_;
 	buffer_size_abs = buffer_size_abs_;
 	
-	if(buffer != nullptr) {
-		if(shared_buffer) {
-			// don't delete gui fs fbo buffers
-			buffer->depth_buffer = 0;
-			buffer->color_buffer = 0;
-		}
-		r->delete_buffer(buffer);
-	}
+	delete_buffer();
 	
 	// share a "global" msaa fullscreen buffer among all surfaces and only add an additional
 	// resolve/blit buffer for each surface

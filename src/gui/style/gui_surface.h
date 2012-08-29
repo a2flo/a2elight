@@ -73,6 +73,7 @@ protected:
 	
 	void start_draw();
 	void stop_draw();
+	void delete_buffer();
 	
 };
 
