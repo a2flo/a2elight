@@ -32,6 +32,7 @@ public:
 		NONE				= 0,
 		NO_ANTI_ALIASING	= (1 << 0),
 		NO_DEPTH			= (1 << 1),
+		ABSOLUTE_SIZE		= (1 << 2),
 	};
 	enum_class_bitwise_and(SURFACE_FLAGS)
 	enum_class_bitwise_or(SURFACE_FLAGS)

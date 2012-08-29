@@ -78,6 +78,7 @@ public:
 	
 	// adding/creating gui objects:
 	template <class gui_class, typename... Args> gui_class* add(Args&&... args);
+	template <class gui_class> void remove(gui_class* obj);
 	
 	// any gui object creation or deletion (or operation on the window container) should be locked
 	void lock();
@@ -113,6 +114,7 @@ protected:
 	gui_object* active_object = nullptr;
 	vector<gui_window*> windows;
 	void add_window(gui_window* wnd);
+	void remove_window(gui_window* wnd);
 	recursive_mutex object_lock;
 	
 	// thread run:
@@ -157,6 +159,15 @@ template <class gui_class, typename... Args> gui_class* gui::add(Args&&... args)
 	
 	unlock();
 	return obj;
+}
+
+template <class gui_class> void gui::remove(gui_class* obj) {
+	if(is_same<gui_window, gui_class>::value ||
+	   is_base_of<gui_window, gui_class>::value) {
+		lock();
+		remove_window((gui_window*)obj);
+		unlock();
+	}
 }
 
 #endif

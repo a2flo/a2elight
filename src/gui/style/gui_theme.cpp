@@ -403,8 +403,14 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 												   str_to_gradient_colors((*node)["colors"]));
 		case DRAW_STYLE::BORDER_TEXTURE:
 		case DRAW_STYLE::TEXTURE: {
-			// TODO: stores textures; add/allow internal engine image names?
-			auto tex = e->get_texman()->add_texture(e->data_path((*node)["name"]));
+			string tex_name = (*node)["name"];
+			unsigned int tex_num = 0;
+			if(tex_name.find(".png") != string::npos) {
+				// TODO: stores textures; add/allow internal engine image names?
+				auto tex = e->get_texman()->add_texture(e->data_path(tex_name));
+				tex_num = tex->tex();
+				tex_name = "";
+			}
 			auto coords = str_to_coords((*node)["coords"]);
 			float depth = ((*node)["depth"] == "INVALID" ? 0.0f : string2float((*node)["depth"]));
 			bool passthrough = ((*node)["passthrough"] == "INVALID" ? false : string2bool((*node)["passthrough"]));
@@ -415,7 +421,8 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 			const bool is_grad_add_interp = ((*node)["add_interpolator"] != "INVALID");
 			
 			if(style == DRAW_STYLE::TEXTURE) {
-				return make_unique<ds_texture>(std::move(tex->tex()),
+				return make_unique<ds_texture>(std::move(tex_num),
+											   std::move(tex_name),
 											   std::move(coords.first),
 											   std::move(coords.second),
 											   std::move(depth),
@@ -436,7 +443,8 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 											   ds_gradient());
 			}
 			return make_unique<ds_border_texture>(str_to_ui_float(str_to_ui_float_pair((*node)["thickness"])),
-												  std::move(tex->tex()),
+												  std::move(tex_num),
+												  std::move(tex_name),
 												  std::move(coords.first),
 												  std::move(coords.second),
 												  std::move(depth),
@@ -463,8 +471,11 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 }
 
 //
-void gui_theme::draw(const string& type, const string& state, const float2& offset, const float2& size,
-					 std::function<string(const string&)> text_lookup, const bool clear) {
+void gui_theme::draw(const string& type, const string& state,
+					 const float2& offset, const float2& size,
+					 const bool clear,
+					 std::function<string(const string&)> text_lookup,
+					 std::function<unsigned int(const string&)> texture_lookup) {
 	const auto iter = ui_objects.find(type);
 	if(iter == ui_objects.cend()) {
 		a2e_error("invalid type: %s!", type);
@@ -690,6 +701,15 @@ void gui_theme::draw(const string& type, const string& state, const float2& offs
 				auto ds = (ds_texture*)&*prim.ddata;
 				ds->mul_color.compute(scheme);
 				ds->add_color.compute(scheme);
+				
+				// external/dynamic texture: lookup texture num
+				if(!ds->texture_name.empty()) {
+					ds->texture = texture_lookup(ds->texture_name);
+					if(ds->texture == 0) {
+						a2e_error("texture \"%s\" not found!", ds->texture_name);
+						ds->texture = e->get_texman()->get_dummy_texture()->tex();
+					}
+				}
 				
 				if(!ds->is_gradient) {
 					if(ds->passthrough) {

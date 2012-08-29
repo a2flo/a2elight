@@ -45,7 +45,9 @@ void gui_surface::delete_buffer() {
 }
 
 void gui_surface::resize(const float2& buffer_size_) {
-	uint2 buffer_size_abs_ = buffer_size * float2(e->get_width(), e->get_height());
+	uint2 buffer_size_abs_ = ((flags & SURFACE_FLAGS::ABSOLUTE_SIZE) == SURFACE_FLAGS::ABSOLUTE_SIZE ?
+							  buffer_size_.rounded() :
+							  buffer_size_ * float2(e->get_width(), e->get_height()));
 	if(buffer != nullptr &&
 	   buffer_size_abs.x == buffer_size_abs_.x && buffer_size_abs.y == buffer_size_abs_.y) {
 		// same size, nothing to do here

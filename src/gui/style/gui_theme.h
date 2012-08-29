@@ -38,8 +38,11 @@ public:
 	
 	// ui object type, state of that object, screen x/y offset, draw size/extent,
 	// text lookup: takes an identifier and returns the associated string
-	void draw(const string& type, const string& state, const float2& offset, const float2& size,
-			  std::function<string(const string&)> text_lookup = [](const string& str a2e_unused){return "";}, const bool clear = true);
+	void draw(const string& type, const string& state,
+			  const float2& offset, const float2& size,
+			  const bool clear = true,
+			  std::function<string(const string&)> text_lookup = [](const string& str a2e_unused){return "";},
+			  std::function<unsigned int(const string&)> texture_lookup = [](const string& tex_name a2e_unused){return 0;});
 	
 	//
 	enum class PRIMITIVE_TYPE : unsigned int {
@@ -219,7 +222,8 @@ public:
 		type(type_), stops(stops_), colors(colors_) {}
 	};
 	struct ds_texture : public draw_style_data {
-		unsigned int texture;
+		unsigned int texture; // 0: external/dynamic texture
+		const string texture_name;
 		float2 bottom_left;
 		float2 top_right;
 		float depth;
@@ -232,8 +236,8 @@ public:
 		float4 gradient_add_interpolator;
 		ds_gradient gradient;
 		
-		ds_texture(unsigned int&& texture_, float2&& bottom_left_, float2&& top_right_, float&& depth_, bool&& passthrough_, ui_color&& mul_color_, ui_color&& add_color_, bool&& is_gradient_, float4&& gradient_mul_interpolator_, float4&& gradient_add_interpolator_, ds_gradient&& gradient_) :
-		texture(texture_), bottom_left(bottom_left_), top_right(top_right_), depth(depth_), passthrough(passthrough_), mul_color(mul_color_), add_color(add_color_), is_gradient(is_gradient_), gradient_mul_interpolator(gradient_mul_interpolator_), gradient_add_interpolator(gradient_add_interpolator_), gradient(gradient_)
+		ds_texture(unsigned int&& texture_, string&& texture_name_, float2&& bottom_left_, float2&& top_right_, float&& depth_, bool&& passthrough_, ui_color&& mul_color_, ui_color&& add_color_, bool&& is_gradient_, float4&& gradient_mul_interpolator_, float4&& gradient_add_interpolator_, ds_gradient&& gradient_) :
+		texture(texture_), texture_name(texture_name_), bottom_left(bottom_left_), top_right(top_right_), depth(depth_), passthrough(passthrough_), mul_color(mul_color_), add_color(add_color_), is_gradient(is_gradient_), gradient_mul_interpolator(gradient_mul_interpolator_), gradient_add_interpolator(gradient_add_interpolator_), gradient(gradient_)
 		{}
 	};
 	struct ds_border_fill : public ds_fill {
@@ -248,8 +252,8 @@ public:
 	};
 	struct ds_border_texture : public ds_texture {
 		ui_float thickness;
-		ds_border_texture(ui_float&& thickness_, unsigned int&& texture_, float2&& bottom_left_, float2&& top_right_, float&& depth_, bool&& passthrough_, ui_color&& mul_color_, ui_color&& add_color_, bool&& is_gradient_, float4&& gradient_mul_interpolator_, float4&& gradient_add_interpolator_, ds_gradient&& gradient_) :
-		ds_texture { std::move(texture_), std::move(bottom_left_), std::move(top_right_), std::move(depth_), std::move(passthrough_), std::move(mul_color_), std::move(add_color_), std::move(is_gradient_), std::move(gradient_mul_interpolator_), std::move(gradient_add_interpolator_), std::move(gradient_) },
+		ds_border_texture(ui_float&& thickness_, unsigned int&& texture_, string&& texture_name_, float2&& bottom_left_, float2&& top_right_, float&& depth_, bool&& passthrough_, ui_color&& mul_color_, ui_color&& add_color_, bool&& is_gradient_, float4&& gradient_mul_interpolator_, float4&& gradient_add_interpolator_, ds_gradient&& gradient_) :
+		ds_texture { std::move(texture_), std::move(texture_name_), std::move(bottom_left_), std::move(top_right_), std::move(depth_), std::move(passthrough_), std::move(mul_color_), std::move(add_color_), std::move(is_gradient_), std::move(gradient_mul_interpolator_), std::move(gradient_add_interpolator_), std::move(gradient_) },
 		thickness(thickness_) {}
 	};
 	struct ds_text : public draw_style_data {

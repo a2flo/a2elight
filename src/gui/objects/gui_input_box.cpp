@@ -59,14 +59,12 @@ void gui_input_box::draw() {
 		limited_size.x -= blink_offset;
 		theme->draw("input_box", "blink",
 					blink_position, limited_size,
-					[this](const string& str a2e_unused) { return ""; },
 					false); // don't clear underlying input box
 	}
 	
 	// above the text
 	theme->draw("input_box", state.active ? "active_top" : "normal_top",
 				position_abs, size_abs,
-				[this](const string& str a2e_unused) { return ""; },
 				false); // don't clear underlying input box
 }
 

@@ -459,6 +459,13 @@ void gui::add_window(gui_window* wnd) {
 	windows.emplace_back(wnd);
 }
 
+void gui::remove_window(gui_window* wnd) {
+	const auto iter = find(begin(windows), end(windows), wnd);
+	if(iter != end(windows)) {
+		windows.erase(iter);
+	}
+}
+
 void gui::lock() {
 	object_lock.lock();
 }
