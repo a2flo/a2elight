@@ -16,28 +16,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_GUI_TEXT_H__
-#define __A2E_GUI_TEXT_H__
+#ifndef __A2E_GUI_TOGGLE_BUTTON_H__
+#define __A2E_GUI_TOGGLE_BUTTON_H__
 
-#include "gui/objects/gui_object.h"
+#include "gui/objects/gui_text.h"
 
-class A2E_API gui_text : public gui_object {
+class A2E_API gui_toggle_button : public gui_object {
 public:
-	gui_text(engine* e, const float2& size, const float2& position);
-	virtual ~gui_text();
+	gui_toggle_button(engine* e, const float2& size, const float2& position);
+	virtual ~gui_toggle_button();
 	
 	virtual void draw();
 	
-	void set_label(const string& label);
-	const string& get_label() const;
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
 	
-	virtual void set_shade(const bool& state);
-	virtual const bool& get_shade() const;
+	void set_label(const string& toggled_label, const string& untoggled_label);
+	pair<const string&, const string&> get_label() const;
+	
+	virtual void set_toggled(const bool& state);
+	virtual bool is_toggled() const;
 	
 protected:
-	string label = "";
-	bool shade = false;
-
+	string toggled_label = "", untoggled_label = "";
+	
+	atomic<bool> toggled { false };
+	
 };
 
 #endif

@@ -1,0 +1,71 @@
+/*
+ *  Albion 2 Engine "light"
+ *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; version 2 of the License only.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#include "gui_pop_up_button.h"
+#include "engine.h"
+#include "gui.h"
+
+gui_pop_up_button::gui_pop_up_button(engine* e_, const float2& size_, const float2& position_) :
+gui_object(e_, size_, position_) {
+	//
+}
+
+gui_pop_up_button::~gui_pop_up_button() {
+}
+
+void gui_pop_up_button::draw() {
+	if(!gui_object::handle_draw()) return;
+	
+	// TODO: handle disabled state
+	/*theme->draw("button", state.active ? "active" : "normal",
+				position_abs, size_abs, true,
+				[this](const string& str a2e_unused) { return label; });*/
+}
+
+
+bool gui_pop_up_button::handle_mouse_event(const EVENT_TYPE& type a2e_unused, const shared_ptr<event_object>& obj a2e_unused, const ipnt& point a2e_unused) {
+	/*if(!state.visible || !state.enabled) return false;
+	switch(type) {
+		case EVENT_TYPE::MOUSE_LEFT_DOWN:
+			ui->set_active_object(this);
+			return true;
+		case EVENT_TYPE::MOUSE_LEFT_UP:
+			if(state.active) {
+				ui->set_active_object(nullptr);
+			}
+			return true;
+		case EVENT_TYPE::MOUSE_LEFT_CLICK:
+		case EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK: {
+			if(state.active) {
+				ui->set_active_object(nullptr);
+			}
+			
+			// down position has already been checked (we wouldn't be in here otherwise)
+			// -> check if the up position is also within the button, if so, we have a button click
+			const auto& click_event = (const mouse_left_click_event&)*obj;
+			const ipnt up_position(abs_to_rel_position(click_event.up->position));
+			if(gfx2d::is_pnt_in_rectangle(rectangle_abs, up_position)) {
+				// handle click
+				handle(GUI_EVENT::BUTTON_PRESS);
+			}
+			return true;
+		}
+		default: break;
+	}*/
+	return false;
+}

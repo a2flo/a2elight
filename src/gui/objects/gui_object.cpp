@@ -52,6 +52,14 @@ bool gui_object::needs_redraw() const {
 	return state.redraw;
 }
 
+void gui_object::set_visible(const bool& visible_state) {
+	state.visible = visible_state;
+}
+
+void gui_object::set_enabled(const bool& enabled_state) {
+	state.enabled = enabled_state;
+}
+
 void gui_object::set_active(const bool& active_state) {
 	state.active = active_state;
 	
@@ -123,6 +131,7 @@ void gui_object::set_parent(gui_object* parent_) {
 		parent->remove_child(this);
 	}
 	parent = parent_;
+	compute_abs_values();
 	unlock();
 }
 
@@ -181,7 +190,11 @@ void gui_object::add_handler(handler&& handler_, GUI_EVENT type) {
 
 void gui_object::handle(const GUI_EVENT gui_evt) {
 	lock();
-	for(const auto& hndlr : handlers) {
+	const auto range = handlers.equal_range(gui_evt);
+	for(auto iter = range.first; iter != range.second; iter++) {
+		// we need a ref to the actual object, since we can't capture an iterator that
+		// will be invalid/different after the next iteration
+		const auto& hndlr = *iter;
 		task::spawn([&hndlr, &gui_evt, this]() {
 			hndlr.second(gui_evt, *this);
 		});

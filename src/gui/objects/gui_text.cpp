@@ -33,7 +33,7 @@ void gui_text::draw() {
 	
 	// TODO: handle disabled state
 	// TODO: handle centering
-	theme->draw("text", "normal",
+	theme->draw("text", shade ? "normal_shade" : "normal",
 				position_abs, size_abs, true,
 				[this](const string& str a2e_unused) { return label; });
 }
@@ -44,4 +44,12 @@ void gui_text::set_label(const string& label_) {
 
 const string& gui_text::get_label() const {
 	return label;
+}
+
+void gui_text::set_shade(const bool& state) {
+	shade = state;
+}
+
+const bool& gui_text::get_shade() const {
+	return shade;
 }

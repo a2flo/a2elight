@@ -296,9 +296,15 @@ void gui::run() {
 		}
 		// key events:
 		else if((gevt.first & EVENT_TYPE::__KEY_EVENT) == EVENT_TYPE::__KEY_EVENT) {
-			// key events should only be sent to the active window
-			if(!windows.empty()) {
+			// TODO: key events should only be sent to the active window
+			/*if(!windows.empty()) {
 				windows[0]->handle_key_event(gevt.first, gevt.second);
+			}*/
+			// for now: send to all windows
+			for(const auto& wnd : windows) {
+				if(wnd->handle_key_event(gevt.first, gevt.second)) {
+					break;
+				}
 			}
 		}
 	}

@@ -185,7 +185,7 @@ bool gui_input_box::handle_key_event(const EVENT_TYPE& type, const shared_ptr<ev
 		
 		//
 		case EVENT_TYPE::KEY_DOWN: {
-			const shared_ptr<key_up_event>& key_evt = (shared_ptr<key_up_event>&)obj;
+			const shared_ptr<key_down_event>& key_evt = (shared_ptr<key_down_event>&)obj;
 			const SDL_Keymod mod = SDL_GetModState();
 			bool handled = true;
 			switch(key_evt->key) {
@@ -302,7 +302,9 @@ bool gui_input_box::handle_key_event(const EVENT_TYPE& type, const shared_ptr<ev
 					update_text_display();
 				}
 				break;
-				//case SDLK_RETURN: // TODO: trigger event?
+				case SDLK_RETURN:
+					handle(GUI_EVENT::INPUT_BOX_ENTER);
+					break;
 				default:
 					handled = false;
 					break;

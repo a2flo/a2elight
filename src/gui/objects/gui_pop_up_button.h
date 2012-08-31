@@ -16,27 +16,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_GUI_TEXT_H__
-#define __A2E_GUI_TEXT_H__
+#ifndef __A2E_GUI_POP_UP_BUTTON_H__
+#define __A2E_GUI_POP_UP_BUTTON_H__
 
-#include "gui/objects/gui_object.h"
+#include "gui/objects/gui_text.h"
 
-class A2E_API gui_text : public gui_object {
+class A2E_API gui_pop_up_button : public gui_object {
 public:
-	gui_text(engine* e, const float2& size, const float2& position);
-	virtual ~gui_text();
+	gui_pop_up_button(engine* e, const float2& size, const float2& position);
+	virtual ~gui_pop_up_button();
 	
 	virtual void draw();
 	
-	void set_label(const string& label);
-	const string& get_label() const;
-	
-	virtual void set_shade(const bool& state);
-	virtual const bool& get_shade() const;
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
 	
 protected:
-	string label = "";
-	bool shade = false;
 
 };
 

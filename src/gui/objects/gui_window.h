@@ -42,6 +42,8 @@ public:
 	
 	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
 	virtual bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj);
+	
+	virtual void clear(const bool delete_children = true);
 
 protected:
 

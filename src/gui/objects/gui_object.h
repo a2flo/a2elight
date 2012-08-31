@@ -42,6 +42,9 @@ public:
 	// state functions
 	virtual void redraw();
 	virtual bool needs_redraw() const;
+	
+	virtual void set_visible(const bool& visible);
+	virtual void set_enabled(const bool& enabled);
 	virtual void set_active(const bool& state);
 	
 	virtual bool is_visible() const;

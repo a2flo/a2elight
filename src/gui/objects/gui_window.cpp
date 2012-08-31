@@ -25,12 +25,27 @@ gui_object(e_, buffer_size_, position_), gui_surface(e_, buffer_size_, position_
 }
 
 gui_window::~gui_window() {
-	// also delete all children (we need to copy the container, since deleting
-	// a child will modify the children container)
-	const set<gui_object*> children_copy(children);
-	for(const auto& child : children_copy) {
-		delete child;
+	// delete all children
+	clear();
+}
+
+void gui_window::clear(const bool delete_children) {
+	if(delete_children) {
+		// delete all children (we need to copy the container, since deleting
+		// a child will modify the children container)
+		const set<gui_object*> children_copy(children);
+		for(const auto& child : children_copy) {
+			delete child;
+		}
 	}
+	else {
+		// just remove all children from the window
+		const set<gui_object*> children_copy(children);
+		for(const auto& child : children_copy) {
+			child->set_parent(nullptr); // this will also remove the child from this window
+		}
+	}
+	redraw();
 }
 
 void gui_window::draw() {
