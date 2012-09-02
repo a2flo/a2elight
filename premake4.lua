@@ -91,7 +91,8 @@ project "a2elight"
 				  "src/rendering/renderer/",
 				  "src/rendering/renderer/gl3/",
 				  "src/scene/",
-				  "src/scene/model/" }
+				  "src/scene/model/",
+				  "src/threading/" }
 	
 	-- os specifics
 	if(not os.is("windows") or win_unixenv) then

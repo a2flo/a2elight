@@ -83,16 +83,13 @@ void gui_pop_up_window::draw() {
 	const float2 text_margin(10.0f, -6.0f); // 5pt, -3pt (TODO: dpi)
 	
 	const auto selected_item = pop_up_button->get_selected_item();
-	size_t selected_item_num = 0, item_counter = 0;
 	float total_height = margin * 2.0f;
 	float selected_item_height = 0.0f;
 	for(const auto& item : items) {
 		if(item == selected_item) {
-			selected_item_num = item_counter;
 			selected_item_height = total_height;
 		}
 		total_height += ceilf(item_text_cache.at(item).second.x + item_margin * 2.0f);
-		item_counter++;
 	}
 	
 	// compute overlay position and size
@@ -111,7 +108,6 @@ void gui_pop_up_window::draw() {
 	
 	// draw items
 	const pnt mouse_pos(gui_object::e->get_event()->get_mouse_pos());
-	//size_t item_counter = 0;
 	float y_offset = margin + overlay_position.y;
 	const float4 font_color(theme->get_color_scheme().get("TEXT_INVERSE"));
 	const float4 font_color_active(theme->get_color_scheme().get("TEXT"));
