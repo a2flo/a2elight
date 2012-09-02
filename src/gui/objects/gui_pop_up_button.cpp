@@ -142,7 +142,9 @@ void gui_pop_up_window::draw() {
 bool gui_pop_up_window::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj a2e_unused, const ipnt& point) {
 	// handle select
 	if(type == EVENT_TYPE::MOUSE_LEFT_UP &&
-	   point.x >= 0) {
+	   point.x >= 0 &&
+	   point.x > overlay_position.x &&
+	   point.x <= (overlay_position.x + overlay_size.x)) {
 		const float ypos(point.y - overlay_position.y - margin);
 		float height = 0.0f;
 		for(const auto& item : items) {
