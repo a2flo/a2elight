@@ -30,6 +30,7 @@ template class vector2<size_t>;
 template class vector2<ssize_t>;
 #endif
 
+//
 template<> A2E_API float2& vector2<float>::floor() {
 	x = floorf(x);
 	y = floorf(y);
@@ -60,6 +61,32 @@ template<> A2E_API float2 vector2<float>::rounded() const {
 	return float2(::roundf(x), ::roundf(y));
 }
 
+//
+template<> A2E_API bool2& vector2<bool>::floor() {
+	return *this;
+}
+
+template<> A2E_API bool2& vector2<bool>::ceil() {
+	return *this;
+}
+
+template<> A2E_API bool2& vector2<bool>::round() {
+	return *this;
+}
+
+template<> A2E_API bool2 vector2<bool>::floored() const {
+	return *this;
+}
+
+template<> A2E_API bool2 vector2<bool>::ceiled() const {
+	return *this;
+}
+
+template<> A2E_API bool2 vector2<bool>::rounded() const {
+	return *this;
+}
+
+//
 template<> A2E_API float2 vector2<float>::operator%(const float2& v) const {
 	return float2(fmodf(x, v.x), fmodf(y, v.y));
 }

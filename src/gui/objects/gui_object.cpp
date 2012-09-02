@@ -69,6 +69,8 @@ void gui_object::set_active(const bool& active_state) {
 	   (!state.active && ui->get_active_object() == this)) {
 		ui->set_active_object(state.active ? this : nullptr);
 	}
+	
+	redraw();
 }
 
 bool gui_object::is_visible() const {
@@ -167,6 +169,12 @@ bool gui_object::handle_key_event(const EVENT_TYPE& type a2e_unused, const share
 ipnt gui_object::abs_to_rel_position(const ipnt& point) const {
 	// override this in objects that contain other objects (e.g. gui_window)
 	if(parent != nullptr) return parent->abs_to_rel_position(point);
+	return point;
+}
+
+ipnt gui_object::rel_to_abs_position(const ipnt& point) const {
+	// override this in objects that contain other objects (e.g. gui_window)
+	if(parent != nullptr) return parent->rel_to_abs_position(point);
 	return point;
 }
 

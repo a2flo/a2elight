@@ -24,5 +24,4 @@ template class matrix4<float>;
 template class matrix4<double>;
 template class matrix4<int>;
 template class matrix4<unsigned int>;
-template class matrix4<bool>;
 #endif

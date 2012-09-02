@@ -167,3 +167,9 @@ ipnt gui_window::abs_to_rel_position(const ipnt& point) const {
 	p -= position_abs;
 	return p;
 }
+
+ipnt gui_window::rel_to_abs_position(const ipnt& point) const {
+	ipnt p = (parent != nullptr ? parent->rel_to_abs_position(point) : point);
+	p += position_abs;
+	return p;
+}

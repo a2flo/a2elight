@@ -153,8 +153,8 @@ void gui::draw() {
 	r->clear();
 	r->start_2d_draw();
 	
-	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::ADD);
-	texture_shd->use("passthrough");
+	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
+	texture_shd->use();
 	texture_shd->uniform("mvpm", *e->get_mvp_matrix());
 	texture_shd->uniform("orientation", float4(0.0f, 0.0f, 1.0f, 1.0f));
 	
@@ -163,10 +163,10 @@ void gui::draw() {
 		cb_surfaces[cb]->blit(texture_shd);
 	}
 	
-	// blit windows
+	// blit windows (in reverse order)
 	// TODO: lock?
-	for(const auto& wnd : windows) {
-		wnd->blit(texture_shd);
+	for(auto riter = windows.crbegin(); riter != windows.crend(); riter++) {
+		if((*riter)->is_visible()) (*riter)->blit(texture_shd);
 	}
 	
 	// post ui callbacks
@@ -462,7 +462,7 @@ gui_theme* gui::get_theme() const {
 }
 
 void gui::add_window(gui_window* wnd) {
-	windows.emplace_back(wnd);
+	windows.emplace_front(wnd);
 }
 
 void gui::remove_window(gui_window* wnd) {

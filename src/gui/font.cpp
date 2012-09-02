@@ -315,7 +315,7 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-pair<uint2, float2> font::cache_text(const string& text, const GLuint existing_ubo) {
+font::text_cache font::cache_text(const string& text, const GLuint existing_ubo) {
 	//
 	GLuint ubo = existing_ubo;
 	if(ubo == 0 || !glIsBuffer(ubo)) {
@@ -336,6 +336,13 @@ pair<uint2, float2> font::cache_text(const string& text, const GLuint existing_u
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	
 	return { uint2(ubo, (unsigned int)text_data.first.size()), text_data.second };
+}
+
+void font::destroy_text_cache(text_cache& cached_text) {
+	if(glIsBuffer(cached_text.first.x)) {
+		glDeleteBuffers(1, &cached_text.first.x);
+		cached_text.first.x = 0;
+	}
 }
 
 void font::recreate_texture_array(const size_t& layers) {
@@ -409,71 +416,112 @@ pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
 													   std::function<void(unsigned int)> cache_fnc) const {
 	vector<uint2> ubo_data;
 	const float2 extent = text_stepper(text,
-									   [&ubo_data](unsigned int code a2e_unused, const glyph_data& glyph,
-												   const float2& origin a2e_unused, const float2& fpos) {
+									   [&ubo_data](unsigned int code a2e_unused,
+												   const glyph_data& glyph,
+												   const float2& origin a2e_unused,
+												   const float2& fpos) {
 										   const int2 pos(fpos); // round to integer
 										   ubo_data.emplace_back(glyph.tex_index,
 																 (unsigned int)(((short int)pos.x) & 0xFFFFu) +
 																 (((unsigned int)(((short int)pos.y) & 0xFFFFu)) << 16u));
 									   },
+									   [](unsigned int, const float2&, const float&){},
 									   cache_fnc);
 	return { ubo_data, extent };
 }
 
-float2 font::text_stepper(const string& str,
-						  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
-						  std::function<void(unsigned int)> cache_fnc) const {
-	// replace control strings by control characters (easier to handle later on)
-	static const struct {
-		const string search;
-		const string repl;
-	} control_chars[] = {
-		{ u8"<i>", u8"\u0001" },
-		{ u8"</i>", u8"\u0002" },
-		{ u8"<b>", u8"\u0003" },
-		{ u8"</b>", u8"\u0004" },
-	};
-	string repl_str(str);
-	for(const auto& cc : control_chars) {
-		repl_str = core::find_and_replace(repl_str, cc.search, cc.repl);
-	}
-	
-	//
-	return text_stepper(unicode::utf8_to_unicode(repl_str), fnc, cache_fnc);
+float font::compute_advance(const string& str, const unsigned int component) const {
+	return compute_advance(unicode::utf8_to_unicode(str), component);
 }
 
-float font::compute_advance(const string& str) const {
-	return compute_advance(unicode::utf8_to_unicode(str));
-}
-
-float font::compute_advance(const vector<unsigned int>& unicode_str) const {
+float font::compute_advance(const vector<unsigned int>& unicode_str, const unsigned int component) const {
 	const float2 extent = text_stepper(unicode_str);
-	return extent.x;
+	return extent[component];
 }
 
-vector<float2> font::compute_advance_map(const string& str) const {
-	return compute_advance_map(unicode::utf8_to_unicode(str));
+vector<float2> font::compute_advance_map(const string& str, const unsigned int component) const {
+	return compute_advance_map(unicode::utf8_to_unicode(str), component);
 }
 
-vector<float2> font::compute_advance_map(const vector<unsigned int>& unicode_str) const {
+vector<float2> font::compute_advance_map(const vector<unsigned int>& unicode_str, const unsigned int component) const {
 	vector<float2> advance_map;
 	advance_map.reserve(unicode_str.size());
 	float total_advance = 0.0f;
+	int2 line_advance(numeric_limits<int>::max(), 0);
 	text_stepper(unicode_str,
-				 [&advance_map, &total_advance](unsigned int code a2e_unused, const glyph_data& glyph,
-												const float2& origin a2e_unused, const float2& fpos a2e_unused) {
-		const float glyph_advance { (float)(glyph.layout.z >> 6) };
-		advance_map.emplace_back(float2(total_advance, glyph_advance));
-		total_advance += glyph_advance;
+				 [&advance_map, &total_advance, &line_advance, &component]
+				 (unsigned int code a2e_unused,
+				  const glyph_data& glyph,
+				  const float2& origin a2e_unused,
+				  const float2& fpos a2e_unused)
+	{
+		if(component == 0) { //x
+			const float glyph_advance = float(glyph.layout.z >> 6);
+			advance_map.emplace_back(float2(total_advance, glyph_advance));
+			total_advance += glyph_advance;
+		}
+		else { // y
+			advance_map.emplace_back(float2(total_advance + float(glyph.layout.z >> 6) + float(glyph.layout.y),
+											float(glyph.size.y)));
+			line_advance.x = std::min(line_advance.x, glyph.layout.w + glyph.layout.y);
+			line_advance.y = std::max(line_advance.y, (glyph.layout.w + glyph.layout.y) + glyph.size.y);
+		}
+	},
+				 [&total_advance, &line_advance, &component]
+				 (unsigned int code a2e_unused,
+				  const float2& origin a2e_unused,
+				  const float& break_size)
+	{
+		if(component == 1) { // y
+			total_advance += break_size;
+			line_advance.set(numeric_limits<int>::max(), 0);
+		}
 	});
 	// advance after the last character:
-	advance_map.emplace_back(float2(total_advance, 0.0f));
+	if(component == 0) { // x
+		advance_map.emplace_back(float2(total_advance, 0.0f));
+	}
+	if(component == 1) { // y
+		if(line_advance.x != numeric_limits<int>::max()) {
+			advance_map.emplace_back(float2(total_advance + line_advance.x, line_advance.y));
+		}
+		else advance_map.emplace_back(float2(total_advance, 0.0f));
+	}
 	return advance_map;
 }
 
-float2 font::text_stepper(const vector<unsigned int>& unicode_str,
+float2 font::text_stepper(const string& str,
 						  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
+						  std::function<void(unsigned int, const float2&, const float&)> line_break_fnc,
 						  std::function<void(unsigned int)> cache_fnc) const {
+	return text_stepper(unicode::utf8_to_unicode(str), fnc, line_break_fnc, cache_fnc);
+}
+
+float2 font::text_stepper(const vector<unsigned int>& unicode_str_,
+						  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
+						  std::function<void(unsigned int, const float2&, const float&)> line_break_fnc,
+						  std::function<void(unsigned int)> cache_fnc) const {
+	// replace control strings by control characters (easier to handle later on)
+	static const struct {
+		const vector<unsigned int> search;
+		const unsigned int repl;
+	} control_chars[] = {
+		{ unicode::utf8_to_unicode(u8"<i>"), 1 },
+		{ unicode::utf8_to_unicode(u8"</i>"), 2 },
+		{ unicode::utf8_to_unicode(u8"<b>"), 3 },
+		{ unicode::utf8_to_unicode(u8"</b>"), 4 },
+	};
+	auto unicode_str(unicode_str_); // copy!
+	for(const auto& cc : control_chars) {
+		auto iter = unicode_str.begin();
+		while((iter = search(begin(unicode_str), end(unicode_str),
+							 begin(cc.search), end(cc.search)))
+			  != end(unicode_str)) {
+			unicode_str.insert(unicode_str.erase(iter, iter + cc.search.size()), cc.repl);
+		}
+	}
+	
+	//
 	float2 origin(0.0f);
 	string cur_style = "Regular";
 	
@@ -541,10 +589,13 @@ float2 font::text_stepper(const vector<unsigned int>& unicode_str,
 				style_bold = false;
 				break;
 			case 0x0A:
-			case 0x0D:
-				origin.y += whitespace_size(0x0A);
+			case 0x0D: {
+				const float line_break_size = whitespace_size(0x0A);
+				origin.y += line_break_size;
 				origin.x = 0.0f;
+				line_break_fnc(code, origin, line_break_size);
 				continue;
+			}
 			case 0x09:
 				origin.x += whitespace_size(0x09);
 				continue;

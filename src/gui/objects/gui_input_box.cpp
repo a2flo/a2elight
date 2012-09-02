@@ -48,7 +48,7 @@ void gui_input_box::draw() {
 	glScissor(floorf(position_abs.x + input_text_margin.x),
 			  floorf(position_abs.y + input_text_margin.y),
 			  ceilf(input_size_abs.x), ceilf(input_size_abs.y));
-	fnt->draw_cached(input, input_text_position, float4(0.0f, 0.0f, 0.0f, 1.0f));
+	fnt->draw_cached(input, input_text_position, theme->get_color_scheme().get("TEXT_INVERSE"));
 	
 	// draw blink character
 	if(blink_state && blink_task) {

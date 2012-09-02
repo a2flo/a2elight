@@ -39,6 +39,7 @@ public:
 	virtual void set_position(const float2& position); // from gui_object
 	
 	virtual ipnt abs_to_rel_position(const ipnt& point) const;
+	virtual ipnt rel_to_abs_position(const ipnt& point) const;
 	
 	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
 	virtual bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj);

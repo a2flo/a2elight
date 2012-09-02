@@ -44,26 +44,22 @@ bool gui_button::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<eve
 		case EVENT_TYPE::MOUSE_LEFT_DOWN:
 			ui->set_active_object(this);
 			return true;
-		case EVENT_TYPE::MOUSE_LEFT_UP:
-			if(state.active) {
-				ui->set_active_object(nullptr);
-			}
-			return true;
 		case EVENT_TYPE::MOUSE_LEFT_CLICK:
 		case EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK: {
 			if(state.active) {
 				ui->set_active_object(nullptr);
+				
+				// down position has already been checked (we wouldn't be in here otherwise)
+				// -> check if the up position is also within the button, if so, we have a button click
+				const auto& click_event = (const mouse_left_click_event&)*obj;
+				const ipnt up_position(abs_to_rel_position(click_event.up->position));
+				if(gfx2d::is_pnt_in_rectangle(rectangle_abs, up_position)) {
+					// handle click
+					handle(GUI_EVENT::BUTTON_PRESS);
+				}
+				return true;
 			}
-			
-			// down position has already been checked (we wouldn't be in here otherwise)
-			// -> check if the up position is also within the button, if so, we have a button click
-			const auto& click_event = (const mouse_left_click_event&)*obj;
-			const ipnt up_position(abs_to_rel_position(click_event.up->position));
-			if(gfx2d::is_pnt_in_rectangle(rectangle_abs, up_position)) {
-				// handle click
-				handle(GUI_EVENT::BUTTON_PRESS);
-			}
-			return true;
+			break;
 		}
 		default: break;
 	}

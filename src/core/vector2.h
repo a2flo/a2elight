@@ -232,20 +232,23 @@ template<typename T> vector2<T>& vector2<T>::operator%=(const vector2<T>& v) {
 	return *this;
 }
 
+template<> vector2<bool>& vector2<bool>::floor();
 template<> vector2<float>& vector2<float>::floor();
 template<typename T> vector2<T>& vector2<T>::floor() {
 	x = ::floor(x);
 	y = ::floor(y);
 	return *this;
 }
-
+		
+template<> vector2<bool>& vector2<bool>::ceil();
 template<> vector2<float>& vector2<float>::ceil();
 template<typename T> vector2<T>& vector2<T>::ceil() {
 	x = ::ceil(x);
 	y = ::ceil(y);
 	return *this;
 }
-
+		
+template<> vector2<bool>& vector2<bool>::round();
 template<> vector2<float>& vector2<float>::round();
 template<typename T> vector2<T>& vector2<T>::round() {
 	x = ::round(x);
@@ -258,17 +261,20 @@ template<typename T> vector2<T>& vector2<T>::normalize() {
 	}
 	return *this;
 }
-
+		
+template<> vector2<bool> vector2<bool>::floored() const;
 template<> vector2<float> vector2<float>::floored() const;
 template<typename T> vector2<T> vector2<T>::floored() const {
 	return vector2<T>(::floor(x), ::floor(y));
 }
-
+		
+template<> vector2<bool> vector2<bool>::ceiled() const;
 template<> vector2<float> vector2<float>::ceiled() const;
 template<typename T> vector2<T> vector2<T>::ceiled() const {
 	return vector2<T>(::ceil(x), ::ceil(y));
 }
 
+template<> vector2<bool> vector2<bool>::rounded() const;
 template<> vector2<float> vector2<float>::rounded() const;
 template<typename T> vector2<T> vector2<T>::rounded() const {
 	return vector2<T>(::round(x), ::round(y));

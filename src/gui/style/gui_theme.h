@@ -44,6 +44,8 @@ public:
 			  std::function<string(const string&)> text_lookup = [](const string& str a2e_unused){return "";},
 			  std::function<unsigned int(const string&)> texture_lookup = [](const string& tex_name a2e_unused){return 0;});
 	
+	const gui_color_scheme& get_color_scheme() const;
+	
 	//
 	enum class PRIMITIVE_TYPE : unsigned int {
 		POINT,

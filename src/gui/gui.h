@@ -112,7 +112,7 @@ protected:
 	
 	//
 	gui_object* active_object = nullptr;
-	vector<gui_window*> windows;
+	deque<gui_window*> windows;
 	void add_window(gui_window* wnd);
 	void remove_window(gui_window* wnd);
 	recursive_mutex object_lock;

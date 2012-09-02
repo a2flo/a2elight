@@ -27,7 +27,6 @@ typedef matrix4<float> matrix4f;
 typedef matrix4<double> matrix4d;
 typedef matrix4<int> matrix4i;
 typedef matrix4<unsigned int> matrix4ui;
-typedef matrix4<bool> matrix4b;
 
 template <typename T> class vector4;
 
@@ -412,7 +411,6 @@ extern template class matrix4<float>;
 extern template class matrix4<double>;
 extern template class matrix4<int>;
 extern template class matrix4<unsigned int>;
-extern template class matrix4<bool>;
 #endif
 
 #if defined(__clang__)

@@ -55,12 +55,14 @@ public:
 	
 	void blit(gl3shader& shd);
 	
+	void set_flags(const SURFACE_FLAGS& flags);
+	const SURFACE_FLAGS& get_flags() const;
 	
 protected:
 	engine* e;
 	rtt* r;
 	
-	const SURFACE_FLAGS flags;
+	SURFACE_FLAGS flags;
 	float2 buffer_size;
 	uint2 buffer_size_abs;
 	rtt::fbo* buffer = nullptr;

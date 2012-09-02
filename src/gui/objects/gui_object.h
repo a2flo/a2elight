@@ -69,6 +69,7 @@ public:
 	virtual void add_child(gui_object* child);
 	virtual void remove_child(gui_object* child);
 	virtual ipnt abs_to_rel_position(const ipnt& point) const;
+	virtual ipnt rel_to_abs_position(const ipnt& point) const;
 	
 	//
 	void lock();

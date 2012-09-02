@@ -70,6 +70,10 @@ gui_theme::gui_theme(engine* e_, font_manager* fm_) : e(e_), fm(fm_), x(e->get_x
 gui_theme::~gui_theme() {
 }
 
+const gui_color_scheme& gui_theme::get_color_scheme() const {
+	return scheme;
+}
+
 void gui_theme::reload() {
 	if(filename == "") {
 		a2e_error("no theme has been loaded yet!");
@@ -616,6 +620,21 @@ void gui_theme::draw(const string& type, const string& state,
 				}
 				else {
 					text_data = fnt->cache_text(text);
+					const auto x_advance_map(fnt->compute_advance_map(text, 0));
+					const auto y_advance_map(fnt->compute_advance_map(text, 1));
+					float y_alignment = 0.0f;
+					if(y_advance_map.back().x < y_advance_map.back().y) {
+						// single line
+						// -> center in itself
+						y_alignment = (y_advance_map.back().y - y_advance_map.back().x) * 0.5f;
+						// -> text offset
+						y_alignment += y_advance_map.back().x;
+					}
+					else {
+						// multi-line
+						y_alignment = (y_advance_map.back().x + y_advance_map.back().y) * 0.5f;
+					}
+					text_data.second.set(x_advance_map.back().x, y_alignment);
 					text_cache.insert(make_pair(text, text_data));
 				}
 				
@@ -629,13 +648,7 @@ void gui_theme::draw(const string& type, const string& state,
 					position.x -= text_data.second.x * 0.5f;
 				}
 				if(pd->position.ui_value[1].type == VALUE_TYPE::CENTER) {
-					const float line_size(fnt->get_display_size());
-					// for a single line: subtract the half from the max line height
-					if(text_data.second.y <= line_size) {
-						position.y -= line_size - text_data.second.y * 0.5f;
-					}
-					// for multiple lines: add another line and just subtract the half
-					else position.y -= (line_size + text_data.second.y) * 0.5f;
+					position.y -= text_data.second.y;
 				}
 				
 				// floor position, so we don't get any draw artificats due to float imprecision

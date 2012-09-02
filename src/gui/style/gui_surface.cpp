@@ -162,6 +162,14 @@ void gui_surface::stop_draw() {
 	r->stop_draw();
 }
 
+void gui_surface::set_flags(const gui_surface::SURFACE_FLAGS& flags_) {
+	flags = flags_;
+}
+
+const gui_surface::SURFACE_FLAGS& gui_surface::get_flags() const {
+	return flags;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 gui_simple_callback::gui_simple_callback(ui_draw_callback& callback_, const DRAW_MODE_UI& mode_,
