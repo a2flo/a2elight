@@ -704,6 +704,8 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 				
 				glCullFace(GL_BACK);
+				glFrontFace(GL_CCW);
+				glDepthFunc(GL_LESS);
 				for(const auto& li : lights) {
 					if(!li->is_enabled()) continue;
 					if(li->get_type() != light::LIGHT_TYPE::DIRECTIONAL) continue;
