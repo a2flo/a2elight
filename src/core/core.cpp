@@ -231,8 +231,11 @@ map<string, file_io::FILE_TYPE> core::get_file_list(const string& directory, con
 	if((h_file = _findfirst(dir_str.c_str(), &c_file)) != -1L) {
 		do {
 			const string name = c_file.name;
-			if(file_extension != "" && (pos = name.rfind(".")) != string::npos) {
-				if(name.substr(pos+1, name.size()-pos-1) != file_extension) continue;
+			if(file_extension != "") {
+				if((pos = name.rfind(".")) != string::npos) {
+					if(name.substr(pos+1, name.size()-pos-1) != file_extension) continue;
+				}
+				else continue; // no extension
 			}
 			
 			if(c_file.attrib & _A_SUBDIR) file_list[name] = file_io::FILE_TYPE::DIR;
@@ -250,8 +253,11 @@ map<string, file_io::FILE_TYPE> core::get_file_list(const string& directory, con
 	
 	for(int j = 1; j < n; j++) {
 		const string name = namelist[j]->d_name;
-		if(file_extension != "" && (pos = name.rfind(".")) != string::npos) {
-			if(name.substr(pos+1, name.size()-pos-1) != file_extension) continue;
+		if(file_extension != "") {
+			if((pos = name.rfind(".")) != string::npos) {
+				if(name.substr(pos+1, name.size()-pos-1) != file_extension) continue;
+			}
+			else continue; // no extension
 		}
 
 		// TODO: use sys/stat.h instead (glibc has some issues where DT_DIR is not defined or recursively-self-defined ...)
