@@ -52,14 +52,18 @@ case $( uname | tr [:upper:] [:lower:] ) in
 		;;
 	"mingw"*)
 		A2_MINGW_ROOT="/c/MinGW/"
-		if [[ $MINGW_ROOT ]]; then
-			A2_MINGW_ROOT=$MINGW_ROOT
-		fi
 		if [[ $A2_PLATFORM == "x64" ]]; then
+			A2_MINGW_ROOT="/c/mingw64/"
+			if [[ $MINGW_ROOT ]]; then
+				A2_MINGW_ROOT=$MINGW_ROOT
+			fi
 			if [[ $MINGW64_ROOT ]]; then
 				A2_MINGW_ROOT=$MINGW64_ROOT
 			fi
 		else
+			if [[ $MINGW_ROOT ]]; then
+				A2_MINGW_ROOT=$MINGW_ROOT
+			fi
 			if [[ $MINGW32_ROOT ]]; then
 				A2_MINGW_ROOT=$MINGW32_ROOT
 			fi
@@ -68,6 +72,11 @@ case $( uname | tr [:upper:] [:lower:] ) in
 		A2_INCLUDE_PATH=$A2_MINGW_ROOT"/msys/include"
 		A2_BIN_PATH=$A2_MINGW_ROOT"/export"
 		A2_LIB_PATH=$A2_MINGW_ROOT"/msys/lib"
+
+		# create bin/export folder if it doesn't exist
+		if [[ ! -d "${A2_BIN_PATH}" ]]; then
+			mkdir -p ${A2_BIN_PATH}
+		fi
 	
 		# remove old files and folders
 		rm -Rf ${A2_INCLUDE_PATH}/a2elight
