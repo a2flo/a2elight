@@ -36,8 +36,8 @@ public:
 	virtual void remove_item(const string& identifier);
 	
 	virtual const pair<const string, string>* get_selected_item() const;
-	virtual void set_selected_item(const string& identifier);
-	virtual void set_selected_item(const size_t& index);
+	virtual void set_selected_item(const string& identifier, const bool event_on_equal = false);
+	virtual void set_selected_item(const size_t& index, const bool event_on_equal = false);
 	
 	virtual void set_active(const bool& state);
 	

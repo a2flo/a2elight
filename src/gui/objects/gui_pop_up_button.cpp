@@ -150,7 +150,7 @@ bool gui_pop_up_window::handle_mouse_event(const EVENT_TYPE& type, const shared_
 		for(const auto& item : items) {
 			const auto& cached_item(item_text_cache.at(item));
 			if(ypos > height && ypos <= (height + cached_item.second.y)) {
-				pop_up_button->set_selected_item(item->first);
+				pop_up_button->set_selected_item(item->first, true);
 				break;
 			}
 			height += cached_item.second.y;
@@ -291,24 +291,24 @@ const pair<const string, string>* gui_pop_up_button::get_selected_item() const {
 	return selected_item;
 }
 
-void gui_pop_up_button::set_selected_item(const string& identifier) {
+void gui_pop_up_button::set_selected_item(const string& identifier, const bool event_on_equal) {
 	const auto iter = items.find(identifier);
 	if(iter == items.end()) {
 		a2e_error("no item with the identifier \"%s\" found!", identifier);
 		return;
 	}
-	if(selected_item != &*iter) {
+	if(selected_item != &*iter || event_on_equal) {
 		handle(GUI_EVENT::POP_UP_BUTTON_SELECT);
 	}
 	selected_item = &*iter;
 }
 
-void gui_pop_up_button::set_selected_item(const size_t& index) {
+void gui_pop_up_button::set_selected_item(const size_t& index, const bool event_on_equal) {
 	if(index >= display_items.size()) {
 		a2e_error("index \"%u\" is greater than the amount of items!", index);
 		return;
 	}
-	if(selected_item != display_items[index]) {
+	if(selected_item != display_items[index] || event_on_equal) {
 		handle(GUI_EVENT::POP_UP_BUTTON_SELECT);
 	}
 	selected_item = display_items[index];
