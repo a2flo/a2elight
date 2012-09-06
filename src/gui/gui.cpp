@@ -125,6 +125,7 @@ void gui::draw() {
 	//
 	glEnable(GL_BLEND);
 	glEnable(GL_SCISSOR_TEST);
+	glScissor(0, 0, aa_fbo->draw_width, aa_fbo->draw_height);
 	glDepthFunc(GL_LEQUAL);
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 	

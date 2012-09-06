@@ -42,6 +42,7 @@ void gui_surface::delete_buffer() {
 		shared_buffer = false;
 	}
 	r->delete_buffer(buffer);
+	buffer = nullptr;
 }
 
 void gui_surface::resize(const float2& buffer_size_) {

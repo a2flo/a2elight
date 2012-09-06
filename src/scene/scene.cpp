@@ -92,12 +92,40 @@ void scene::delete_buffers(frame_buffers& buffers) {
 	if(buffers.cl.light_buffer[3] != nullptr) cl->delete_buffer(buffers.cl.light_buffer[3]);
 #endif
 	
-	if(buffers.scene_buffer != nullptr) r->delete_buffer(buffers.scene_buffer);
-	if(buffers.fxaa_buffer != nullptr) r->delete_buffer(buffers.fxaa_buffer);
-	if(buffers.g_buffer[0] != nullptr) r->delete_buffer(buffers.g_buffer[0]);
-	if(buffers.l_buffer[0] != nullptr) r->delete_buffer(buffers.l_buffer[0]);
-	if(buffers.g_buffer[1] != nullptr) r->delete_buffer(buffers.g_buffer[1]);
-	if(buffers.l_buffer[1] != nullptr) r->delete_buffer(buffers.l_buffer[1]);
+	if(buffers.scene_buffer != nullptr) {
+		if(buffers.g_buffer[0] != nullptr &&
+		   buffers.scene_buffer->depth_buffer == buffers.g_buffer[0]->depth_buffer) {
+			buffers.scene_buffer->depth_buffer = 0;
+		}
+		r->delete_buffer(buffers.scene_buffer);
+		buffers.scene_buffer = nullptr;
+	}
+	if(buffers.fxaa_buffer != nullptr) {
+		r->delete_buffer(buffers.fxaa_buffer);
+		buffers.fxaa_buffer = nullptr;
+	}
+	if(buffers.g_buffer[0] != nullptr) {
+		r->delete_buffer(buffers.g_buffer[0]);
+		buffers.g_buffer[0] = nullptr;
+	}
+	if(buffers.l_buffer[0] != nullptr) {
+#if !defined(A2E_COPY_DEPTH_BUFFER)
+		buffers.l_buffer[0]->depth_buffer = 0; // already deleted by g_buffer
+#endif
+		r->delete_buffer(buffers.l_buffer[0]);
+		buffers.l_buffer[0] = nullptr;
+	}
+	if(buffers.g_buffer[1] != nullptr) {
+		r->delete_buffer(buffers.g_buffer[1]);
+		buffers.g_buffer[1] = nullptr;
+	}
+	if(buffers.l_buffer[1] != nullptr) {
+#if !defined(A2E_COPY_DEPTH_BUFFER)
+		buffers.l_buffer[1]->depth_buffer = 0; // already deleted by g_buffer
+#endif
+		r->delete_buffer(buffers.l_buffer[1]);
+		buffers.l_buffer[1] = nullptr;
+	}
 }
 
 void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer_size, const bool create_alpha_buffer) {

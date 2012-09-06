@@ -142,12 +142,6 @@ public:
 	static void draw_fullscreen_triangle();
 	static void draw_fullscreen_quad();
 	
-	// scissor test
-	static void begin_scissor();
-	static void set_scissor(const rect& rectangle);
-	static void set_scissor(const unsigned int& x1, const unsigned int& y1, const unsigned int& x2, const unsigned int& y2);
-	static void end_scissor();
-	
 	// helper functions
 	static void set_blend_mode(const BLEND_MODE mode);
 			

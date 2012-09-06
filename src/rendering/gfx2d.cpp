@@ -147,29 +147,6 @@ void gfx2d::upload_points_and_draw(const gl3shader& shd, const primitive_propert
 	shd->disable();
 }
 
-//! begins/enables the scissor
-void gfx2d::begin_scissor() {
-	glEnable(GL_SCISSOR_TEST);
-}
-
-/*! sets the scissor
- *  @param rectangle the scissor box
- */
-void gfx2d::set_scissor(const rect& rectangle) {
-	set_scissor(rectangle.x1, rectangle.y1, rectangle.x2, rectangle.y2);
-}
-
-/*! sets the scissor
- */
-void gfx2d::set_scissor(const unsigned int& x1, const unsigned int& y1, const unsigned int& x2, const unsigned int& y2) {
-	glScissor(x1, y1, x2 - x1, y2 - y1);
-}
-
-//! ends/disables scissor test
-void gfx2d::end_scissor() {
-	glDisable(GL_SCISSOR_TEST);
-}
-
 void gfx2d::set_blend_mode(const BLEND_MODE mode) {
 	switch(mode) {
 		case BLEND_MODE::ADD:
