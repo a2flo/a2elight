@@ -71,8 +71,7 @@ void a2ematerial::load_material(const string& filename_) {
 	filename = filename_;
 	
 	// read mat data
-	file_io f;
-	if(!f.file_to_buffer(filename, buffer)) return;
+	if(!file_io::file_to_buffer(filename, buffer)) return;
 	const string mat_data = buffer.str();
 	
 	// check if we have a xml (mat) file

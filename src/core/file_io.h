@@ -43,7 +43,7 @@ public:
 	};
 	
 	file_io();
-	file_io(const string& filename, OPEN_TYPE open_type = OPEN_TYPE::READWRITE_BINARY);
+	file_io(const string& filename, const OPEN_TYPE open_type = OPEN_TYPE::READWRITE_BINARY);
 	~file_io();
 	
 	enum class FILE_TYPE : unsigned int {
@@ -62,9 +62,10 @@ public:
 		TEXT,
 		OPENCL
 	};
+	
+	static bool file_to_buffer(const string& filename, stringstream& buffer);
 
 	bool open(const string& filename, OPEN_TYPE open_type);
-	bool file_to_buffer(const string& filename, stringstream& buffer);
 	void close();
 	uint64_t get_filesize();
 	fstream* get_filestream();

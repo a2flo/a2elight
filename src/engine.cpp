@@ -67,7 +67,12 @@ engine::engine(const char* callpath_, const char* datapath_) {
 	}
 #endif
 	
-	engine::datapath = datapath.substr(0, datapath.rfind(dir_slash)+1) + rel_datapath;
+	// no '/' -> relative path
+	if(rel_datapath[0] != '/') {
+		engine::datapath = datapath.substr(0, datapath.rfind(dir_slash)+1) + rel_datapath;
+	}
+	// absolute path
+	else engine::datapath = rel_datapath;
 	
 #if defined(CYGWIN)
 	engine::callpath = "./";
@@ -105,7 +110,10 @@ engine::~engine() {
 	if(shd != nullptr) delete shd;
 	if(ui != nullptr) delete ui;
 	if(sce != nullptr) delete sce;
-	if(ocl != nullptr) delete ocl;
+	if(ocl != nullptr) {
+		delete ocl;
+		ocl = nullptr;
+	}
 	
 	// delete this at the end, b/c other classes will remove event handlers
 	if(e != nullptr) delete e;
@@ -260,6 +268,11 @@ void engine::create() {
 		
 		config.opencl_platform = config_doc.get<size_t>("config.opencl.platform", 0);
 		config.clear_cache = config_doc.get<bool>("config.opencl.clear_cache", false);
+		const auto cl_dev_tokens(core::tokenize(config_doc.get<string>("config.opencl.restrict", ""), ','));
+		for(const auto& dev_token : cl_dev_tokens) {
+			if(dev_token == "") continue;
+			config.cl_device_restriction.insert(dev_token);
+		}
 	}
 }
 
@@ -414,7 +427,7 @@ void engine::init(const char* ico) {
 	
 	// TODO: this is only a rudimentary solution, think of or wait for a better one ...
 #if !defined(A2E_NO_OPENCL)
-	ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), f, config.wnd, config.clear_cache); // use absolute path
+	ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache); // use absolute path
 #endif
 	
 	// make an early clear
@@ -570,7 +583,7 @@ void engine::init(const char* ico) {
 	
 #if !defined(A2E_NO_OPENCL)
 	// init opencl
-	ocl->init(false, config.opencl_platform);
+	ocl->init(false, config.opencl_platform, config.cl_device_restriction);
 #endif
 	
 	// create scene
@@ -1300,10 +1313,13 @@ void engine::acquire_gl_context() {
 void engine::release_gl_context() {
 	// only call SDL_GL_MakeCurrent will nullptr, when this is the last lock
 	const int cur_active_locks = AtomicFetchThenDecrement(&config.ctx_active_locks);
-	if(cur_active_locks == 1 &&
-	   SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
-		a2e_error("couldn't release current gl context: %s!", SDL_GetError());
-		return;
+	if(cur_active_locks == 1) {
+		glFinish();
+		if(ocl != nullptr) ocl->finish();
+		if(SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
+			a2e_error("couldn't release current gl context: %s!", SDL_GetError());
+			return;
+		}
 	}
 	config.ctx_lock.unlock();
 }

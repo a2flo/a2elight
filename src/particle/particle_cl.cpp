@@ -104,32 +104,49 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	particle_system::internal_particle_data* pdata = ps->get_internal_particle_data();
 	
 	// delete old data, if there is some ...
-	if(glIsBuffer(pdata->ocl_gl_pos_time_vbo)) glDeleteBuffers(1, &pdata->ocl_gl_pos_time_vbo);
-	if(glIsBuffer(pdata->ocl_gl_dir_vbo)) glDeleteBuffers(1, &pdata->ocl_gl_dir_vbo);
-	if(glIsBuffer(pdata->particle_indices_vbo[0])) glDeleteBuffers(1, &pdata->particle_indices_vbo[0]);
-	if(glIsBuffer(pdata->particle_indices_vbo[1])) glDeleteBuffers(1, &pdata->particle_indices_vbo[1]);
-	if(pdata->ocl_pos_time_buffer != nullptr) cl->delete_buffer(pdata->ocl_pos_time_buffer);
-	if(pdata->ocl_dir_buffer != nullptr) cl->delete_buffer(pdata->ocl_dir_buffer);
-	if(pdata->ocl_distances != nullptr) cl->delete_buffer(pdata->ocl_distances);
-	
+	if(pdata->ocl_pos_time_buffer != nullptr) {
+		cl->delete_buffer(pdata->ocl_pos_time_buffer);
+		pdata->ocl_pos_time_buffer = nullptr;
+	}
+	if(pdata->ocl_dir_buffer != nullptr) {
+		cl->delete_buffer(pdata->ocl_dir_buffer);
+		pdata->ocl_dir_buffer = nullptr;
+	}
+	if(pdata->ocl_distances != nullptr) {
+		cl->delete_buffer(pdata->ocl_distances);
+		pdata->ocl_distances = nullptr;
+	}
+	if(pdata->ocl_indices[0] != nullptr) {
+		cl->delete_buffer(pdata->ocl_indices[0]);
+		pdata->ocl_indices[0] = nullptr;
+	}
+	if(pdata->ocl_indices[1] != nullptr) {
+		cl->delete_buffer(pdata->ocl_indices[1]);
+		pdata->ocl_indices[1] = nullptr;
+	}
+	if(glIsBuffer(pdata->ocl_gl_pos_time_vbo)) {
+		glDeleteBuffers(1, &pdata->ocl_gl_pos_time_vbo);
+		pdata->ocl_gl_pos_time_vbo = 0;
+	}
+	if(glIsBuffer(pdata->ocl_gl_dir_vbo)) {
+		glDeleteBuffers(1, &pdata->ocl_gl_dir_vbo);
+		pdata->ocl_gl_dir_vbo = 0;
+	}
+	if(glIsBuffer(pdata->particle_indices_vbo[0])) {
+		glDeleteBuffers(1, &pdata->particle_indices_vbo[0]);
+		pdata->particle_indices_vbo[0] = 0;
+	}
+	if(glIsBuffer(pdata->particle_indices_vbo[1])) {
+		glDeleteBuffers(1, &pdata->particle_indices_vbo[1]);
+		pdata->particle_indices_vbo[1] = 0;
+	}
+
 	// compute new particle count
 	compute_particle_count(ps);
 	
 	// init/allocate data
-	float4* pos_time_data = new float4[pdata->particle_count];
+	float4* pos_time_data = new float4[pdata->particle_count]; // constructor will set data to 0.0f
 	float4* dir_data = new float4[pdata->particle_count];
-	
-	for(unsigned int i = 0; i < pdata->particle_count; i++) {
-		pos_time_data[i].x = 0.0f;
-		pos_time_data[i].y = 0.0f;
-		pos_time_data[i].z = 0.0f;
-		pos_time_data[i].w = 0.0f;
-		
-		dir_data[i].x = 0.0f;
-		dir_data[i].y = 0.0f;
-		dir_data[i].z = 0.0f;
-		dir_data[i].w = 0.0f;
-	}
 	
 	glGenBuffers(1, &pdata->ocl_gl_pos_time_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, pdata->ocl_gl_pos_time_vbo);
@@ -137,8 +154,8 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	glGenBuffers(1, &pdata->ocl_gl_dir_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, pdata->ocl_gl_dir_vbo);
 	glBufferData(GL_ARRAY_BUFFER, pdata->particle_count * sizeof(float4), dir_data, GL_DYNAMIC_DRAW);
-	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	
 	delete [] pos_time_data;
 	delete [] dir_data;
 	
@@ -158,29 +175,24 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	for(unsigned int i = 0; i < 2; i++) {
 		glGenBuffers(1, &pdata->particle_indices_vbo[i]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_indices_vbo[i]);
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_count * sizeof(unsigned int), particle_indices, GL_STATIC_READ);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_count * sizeof(unsigned int), particle_indices, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		
 		pdata->ocl_indices[i] = cl->create_ogl_buffer(opencl::BT_READ_WRITE, pdata->particle_indices_vbo[i]);
 		cl->set_manual_gl_sharing(pdata->ocl_indices[i], true);
 	}
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	delete [] particle_indices;
 	
 	// create distances buffer for sorting
 	pdata->ocl_distances = cl->create_buffer(opencl::BT_READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
 	
-	a2e_debug("particle count: %u", ps->get_internal_particle_data()->particle_count);
+	a2e_debug("particle count: %u", pdata->particle_count);
 }
 
 void particle_manager_cl::reset_particle_system(particle_system* ps) {
 	particle_system::internal_particle_data* pdata = ps->get_internal_particle_data();
-	
-	if(pdata->particle_count != (ps->get_living_time() * ps->get_spawn_rate()) / 1000) {
-		reset_particle_count(ps);
-	}
+	reset_particle_count(ps);
 	
 	cl->acquire_gl_object(pdata->ocl_pos_time_buffer);
 	cl->acquire_gl_object(pdata->ocl_dir_buffer);

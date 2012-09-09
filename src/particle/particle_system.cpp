@@ -63,16 +63,19 @@ particle_system::particle_system(engine* e_) : e(e_) {
 particle_system::~particle_system() {
 	if(glIsBuffer(lights_ubo)) glDeleteBuffers(1, &lights_ubo);
 	
-	if(glIsBuffer(data.particle_indices_vbo[0])) glDeleteBuffers(1, &data.particle_indices_vbo[0]);
-	if(glIsBuffer(data.particle_indices_vbo[1])) glDeleteBuffers(1, &data.particle_indices_vbo[1]);
 
 #if !defined(A2E_NO_OPENCL)
-	if(glIsBuffer(data.ocl_gl_pos_time_vbo)) glDeleteBuffers(1, &data.ocl_gl_pos_time_vbo);
-	if(glIsBuffer(data.ocl_gl_dir_vbo)) glDeleteBuffers(1, &data.ocl_gl_dir_vbo);
 	if(data.ocl_pos_time_buffer != nullptr) e->get_opencl()->delete_buffer(data.ocl_pos_time_buffer);
 	if(data.ocl_dir_buffer != nullptr) e->get_opencl()->delete_buffer(data.ocl_dir_buffer);
 	if(data.ocl_distances != nullptr) e->get_opencl()->delete_buffer(data.ocl_distances);
+	if(data.ocl_indices[0] != nullptr) e->get_opencl()->delete_buffer(data.ocl_indices[0]);
+	if(data.ocl_indices[1] != nullptr) e->get_opencl()->delete_buffer(data.ocl_indices[1]);
+	if(glIsBuffer(data.ocl_gl_pos_time_vbo)) glDeleteBuffers(1, &data.ocl_gl_pos_time_vbo);
+	if(glIsBuffer(data.ocl_gl_dir_vbo)) glDeleteBuffers(1, &data.ocl_gl_dir_vbo);
 #endif
+	
+	if(glIsBuffer(data.particle_indices_vbo[0])) glDeleteBuffers(1, &data.particle_indices_vbo[0]);
+	if(glIsBuffer(data.particle_indices_vbo[1])) glDeleteBuffers(1, &data.particle_indices_vbo[1]);
 }
 
 void particle_system::set_type(particle_system::EMITTER_TYPE type_) {

@@ -67,7 +67,7 @@ public:
 	
 	opencl& operator=(const opencl&) = delete;
 	opencl(const opencl&) = delete;
-	opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache);
+	opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache);
 	~opencl();
 	
 	bool is_supported() { return supported; }
@@ -135,7 +135,8 @@ public:
 	};
 	typedef unsigned int BUFFER_TYPE;
 	
-	void init(bool use_platform_devices = false, const size_t platform_index = 0);
+	void init(bool use_platform_devices = false, const size_t platform_index = 0,
+			  const set<string> device_restriction = set<string> {});
 	void reload_kernels();
 	
 	void use_kernel(const string& identifier);
@@ -247,15 +248,12 @@ public:
 	}
 	
 protected:
-	file_io* f;
 	SDL_Window* sdl_wnd;
 	bool supported = true;
 	
 	string build_options;
 	string nv_build_options;
 	string kernel_path_str;
-	
-	stringstream buffer;
 	
 	buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr);
 	void load_internal_kernels();
@@ -287,7 +285,7 @@ protected:
 	map<string, kernel_object*> kernels;
 	kernel_object* cur_kernel;
 	
-	map<const cl::Device*, cl::CommandQueue*> queues;
+	unordered_map<const cl::Device*, cl::CommandQueue*> queues;
 	
 	// identifier -> <file_name, func_name, options>
 	map<string, tuple<string, string, string>> external_kernels;

@@ -154,7 +154,6 @@ public:
 	
 protected:
 	engine* e;
-	file_io* f;
 	ext* exts;
 	xml* x;
 	shader* shader_obj;

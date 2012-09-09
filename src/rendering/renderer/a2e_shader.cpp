@@ -23,7 +23,7 @@
 #include <regex>
 
 a2e_shader::a2e_shader(engine* eng) :
-e(eng), f(e->get_file_io()), exts(e->get_ext()), x(e->get_xml()),
+e(eng), exts(e->get_ext()), x(e->get_xml()),
 conditions({
 	// add graphic card specific conditions
 	{ ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[(unsigned int)exts->get_vendor()], true },
@@ -87,7 +87,7 @@ a2e_shader::a2e_shader_include_object* a2e_shader::create_a2e_shader_include() {
 bool a2e_shader::load_a2e_shader(const string& identifier, const string& filename, a2e_shader_object* shader_object) {
 	// read file data
 	stringstream buffer(stringstream::in | stringstream::out | stringstream::binary);
-	if(!f->file_to_buffer(filename, buffer)) {
+	if(!file_io::file_to_buffer(filename, buffer)) {
 		return false;
 	}
 	string shader_data(buffer.str());

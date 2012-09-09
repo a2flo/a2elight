@@ -258,6 +258,7 @@ protected:
 		// opencl
 		size_t opencl_platform = 0;
 		bool clear_cache = false;
+		set<string> cl_device_restriction;
 
 		// sdl
 		SDL_Window* wnd = nullptr;

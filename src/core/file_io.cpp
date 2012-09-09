@@ -23,7 +23,7 @@
 file_io::file_io() {
 }
 
-file_io::file_io(const string& filename, OPEN_TYPE open_type_) {
+file_io::file_io(const string& filename, const OPEN_TYPE open_type_) {
 	open(filename, open_type_);
 }
 
@@ -92,7 +92,8 @@ void file_io::close() {
 }
 
 bool file_io::file_to_buffer(const string& filename, stringstream& buffer) {
-	if(!open(filename, file_io::OPEN_TYPE::READ)) {
+	file_io file(filename, file_io::OPEN_TYPE::READ);
+	if(!file.is_open()) {
 		return false;
 	}
 	
@@ -100,8 +101,8 @@ bool file_io::file_to_buffer(const string& filename, stringstream& buffer) {
 	buffer.seekg(0);
 	buffer.clear();
 	buffer.str("");
-	read_file(&buffer);
-	close();
+	file.read_file(&buffer);
+	file.close();
 	return true;
 }
 

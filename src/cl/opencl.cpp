@@ -109,10 +109,7 @@ catch(cl::Error err) {																				\
 
 /*! creates a opencl object
  */
-opencl::opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache) :
-buffer(stringstream::in | stringstream::out)
-{
-	opencl::f = f_;
+opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache) {
 	opencl::sdl_wnd = wnd;
 	opencl::kernel_path_str = kernel_path;
 	
@@ -126,26 +123,26 @@ buffer(stringstream::in | stringstream::out)
 	// TODO: this currently doesn't work if there are spaces inside the path and surrounding
 	// the path by "" doesn't work either, probably a bug in the apple implementation -- or clang?
 	build_options = "-I" + kernel_path_str.substr(0, kernel_path_str.length()-1);
+	build_options += " -cl-std=CL1.0";
 	build_options += " -cl-strict-aliasing";
 	build_options += " -cl-mad-enable";
 	build_options += " -cl-no-signed-zeros";
 	build_options += " -cl-fast-relaxed-math";
 	build_options += " -cl-single-precision-constant";
 	build_options += " -cl-denorms-are-zero";
-	build_options += " -w";
+	//build_options += " -w";
 	
 #if !defined(__APPLE__)
 	//nv_build_options = " -cl-nv-verbose";
 	//nv_build_options = " -check-kernel-functions";
 	//nv_build_options += " -nvptx-mad-enable -inline-all";
 #else
-	build_options += " -cl-auto-vectorize-enable";
+	//build_options += " -cl-auto-vectorize-enable";
 #endif
 	
 	// clear opencl cache
 	if(clear_cache) {
 #if defined(__APPLE__)
-		system("rm -R ~/Library/Caches/com.apple.opencl > /dev/null 2>&1");
 		// TODO: delete app specific cache (~/Library/Caches/$identifier/com.apple.opencl)
 #elif defined(__WINDOWS__)
 		// TODO: find it (/Users/$user/AppData/Roaming/NVIDIA/ComputeCache)
@@ -183,7 +180,7 @@ void opencl::destroy_kernels() {
 	cur_kernel = nullptr;
 }
 
-void opencl::init(bool use_platform_devices, const size_t platform_index) {
+void opencl::init(bool use_platform_devices, const size_t platform_index, const set<string> device_restriction) {
 	try {
 		platform = new cl::Platform();
 		platform->get(&platforms);
@@ -210,8 +207,22 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 #endif
 			0 };
 		
-		// create a context with all platform devices (this works fine since 10.7)
-		context = new cl::Context(internal_devices, cl_properties, clLogMessagesToStdoutAPPLE, nullptr, &ierr);
+		// from cl_gl_ext.h:
+		// "If the <num_devices> and <devices> argument values to clCreateContext are 0 and NULL respectively,
+		// all CL compliant devices in the CGL share group will be used to create the context.
+		// Additional CL devices can also be specified using the <num_devices> and <devices> arguments.
+		// These, however, cannot be GPU devices. On Mac OS X, you can add the CPU to the list of CL devices
+		// (in addition to the CL compliant devices in the CGL share group) used to create the CL context.
+		// Note that if a CPU device is specified, the CGL share group must also include the GL float renderer;
+		// Otherwise CL_INVALID_DEVICE will be returned."
+		// -> create a vector of all cpu devices and create the context
+		vector<cl::Device> cpu_devices;
+		for(const auto& device : internal_devices) {
+			if(device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU) {
+				cpu_devices.emplace_back(device);
+			}
+		}
+		context = new cl::Context(cpu_devices, cl_properties, clLogMessagesToStdoutAPPLE, nullptr, &ierr);
 		
 #else
 		// context with gl share group (cl/gl interop)
@@ -277,6 +288,22 @@ void opencl::init(bool use_platform_devices, const size_t platform_index) {
 		unsigned int gpu_score = 0;
 		for(const auto& internal_device : internal_devices) {
 			dev_type_str = "";
+			
+			// device restriction
+			if(!device_restriction.empty()) {
+				switch(internal_device.getInfo<CL_DEVICE_TYPE>()) {
+					case CL_DEVICE_TYPE_CPU:
+						if(device_restriction.count("CPU") == 0) continue;
+						break;
+					case CL_DEVICE_TYPE_GPU:
+						if(device_restriction.count("GPU") == 0) continue;
+						break;
+					case CL_DEVICE_TYPE_ACCELERATOR:
+						if(device_restriction.count("ACCELERATOR") == 0) continue;
+						break;
+					default: break;
+				}
+			}
 			
 			opencl::device_object* device = new opencl::device_object();
 			device->device = &internal_device;
@@ -530,8 +557,8 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 		return kernels[identifier];
 	}
 	
-	core::reset(buffer);
-	if(!f->file_to_buffer(file_name, buffer)) {
+	stringstream buffer(stringstream::in | stringstream::out);
+	if(!file_io::file_to_buffer(file_name, buffer)) {
 		return nullptr;
 	}
 	string kernel_data(buffer.str());
@@ -566,9 +593,7 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 			options += (additional_options[0] != ' ' ? " " : "") + additional_options;
 		}
 		
-#if defined(__APPLE__)
-		//options += " -D__APPLE__"; // not necessary any more
-#else
+#if !defined(__APPLE__)
 		// workaround for the nvidia compiler which apparently defines __APPLE__
 		options += " -DUNDEF__APPLE__";
 #endif
@@ -643,21 +668,21 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 		}*/
 	}
 	__HANDLE_CL_EXCEPTION_START("add_kernel")
-		// print out build log
+		// print out build log and build options
 		for(const auto& internal_device : internal_devices) {
 			char build_log[CLINFO_STR_SIZE];
 			memset(build_log, 0, CLINFO_STR_SIZE);
 			kernels[identifier]->program->getBuildInfo(internal_device, CL_PROGRAM_BUILD_LOG, &build_log);
 			a2e_error("build log (%s): %s", identifier, build_log);
+			
+			// print out current build options
+			char buildoptions[CLINFO_STR_SIZE];
+			memset(buildoptions, 0, CLINFO_STR_SIZE);
+			kernels[identifier]->program->getBuildInfo(internal_device, CL_PROGRAM_BUILD_OPTIONS, &buildoptions);
+			a2e_debug("build options: %s", buildoptions);
 		}
 		
 		//log_program_binary(kernels[identifier], options);
-		
-		// print out current build options
-		char buildoptions[CLINFO_STR_SIZE];
-		memset(buildoptions, 0, CLINFO_STR_SIZE);
-		kernels[identifier]->program->getBuildInfo(internal_devices.back(), CL_PROGRAM_BUILD_OPTIONS, &buildoptions);
-		a2e_debug("build options: %s", buildoptions);
 	__HANDLE_CL_EXCEPTION_END
 	//log_program_binary(kernels[identifier], options);
 	return kernels[identifier];
@@ -774,7 +799,8 @@ void opencl::use_kernel(const string& identifier) {
 
 opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, void* data) {
 	try {
-		buffers.push_back(new opencl::buffer_object());
+		opencl::buffer_object* buffer = new opencl::buffer_object();
+		buffers.push_back(buffer);
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
@@ -807,10 +833,10 @@ opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, vo
 		if(data != nullptr && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_USE_HOST_PTR;
 		if(data == nullptr && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_ALLOC_HOST_PTR;
 		
-		buffers.back()->type = vtype;
-		buffers.back()->flags = flags;
-		buffers.back()->data = data;
-		return buffers.back();
+		buffer->type = vtype;
+		buffer->flags = flags;
+		buffer->data = data;
+		return buffer;
 	}
 	__HANDLE_CL_EXCEPTION("create_buffer_object")
 	return nullptr;
@@ -869,7 +895,8 @@ opencl::buffer_object* opencl::create_image3d_buffer(opencl::BUFFER_TYPE type, c
 
 opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuint ogl_buffer) {
 	try {
-		buffers.push_back(new opencl::buffer_object());
+		opencl::buffer_object* buffer = new opencl::buffer_object();
+		buffers.push_back(buffer);
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
@@ -897,12 +924,12 @@ opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuin
 		
 		vtype |= BT_OPENGL_BUFFER;
 		
-		buffers.back()->type = vtype;
-		buffers.back()->ogl_buffer = ogl_buffer;
-		buffers.back()->data = nullptr;
-		buffers.back()->size = 0;
-		buffers.back()->buffer = new cl::BufferGL(*context, flags, ogl_buffer, &ierr);
-		return buffers.back();
+		buffer->type = vtype;
+		buffer->ogl_buffer = ogl_buffer;
+		buffer->data = nullptr;
+		buffer->size = 0;
+		buffer->buffer = new cl::BufferGL(*context, flags, ogl_buffer, &ierr);
+		return buffer;
 	}
 	__HANDLE_CL_EXCEPTION("create_ogl_buffer")
 	return nullptr;
@@ -910,7 +937,8 @@ opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuin
 
 opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target) {
 	try {
-		buffers.push_back(new opencl::buffer_object());
+		opencl::buffer_object* buffer = new opencl::buffer_object();
+		buffers.push_back(buffer);
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
@@ -938,12 +966,12 @@ opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type, GLuin
 		
 		vtype |= BT_OPENGL_BUFFER;
 		
-		buffers.back()->type = vtype;
-		buffers.back()->ogl_buffer = texture;
-		buffers.back()->data = nullptr;
-		buffers.back()->size = 0;
-		buffers.back()->image_buffer = new cl::Image2DGL(*context, flags, target, 0, texture, &ierr);
-		return buffers.back();
+		buffer->type = vtype;
+		buffer->ogl_buffer = texture;
+		buffer->data = nullptr;
+		buffer->size = 0;
+		buffer->image_buffer = new cl::Image2DGL(*context, flags, target, 0, texture, &ierr);
+		return buffer;
 	}
 	__HANDLE_CL_EXCEPTION("create_ogl_image2d_buffer")
 	return nullptr;
@@ -951,7 +979,8 @@ opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type, GLuin
 
 opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer) {
 	try {
-		buffers.push_back(new opencl::buffer_object());
+		opencl::buffer_object* buffer = new opencl::buffer_object();
+		buffers.push_back(buffer);
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
@@ -979,12 +1008,12 @@ opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type,
 		
 		vtype |= BT_OPENGL_BUFFER;
 		
-		buffers.back()->type = vtype;
-		buffers.back()->ogl_buffer = renderbuffer;
-		buffers.back()->data = nullptr;
-		buffers.back()->size = 0;
-		buffers.back()->buffer = new cl::BufferRenderGL(*context, flags, renderbuffer, &ierr);
-		return buffers.back();
+		buffer->type = vtype;
+		buffer->ogl_buffer = renderbuffer;
+		buffer->data = nullptr;
+		buffer->size = 0;
+		buffer->buffer = new cl::BufferRenderGL(*context, flags, renderbuffer, &ierr);
+		return buffer;
 	}
 	__HANDLE_CL_EXCEPTION("create_ogl_image2d_renderbuffer")
 	return nullptr;
@@ -1129,7 +1158,9 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 			if((buffer_arg.second->type & opencl::BT_COPY_ON_USE) != 0) write_buffer(buffer_arg.second, buffer_arg.second->data);
 			if((buffer_arg.second->type & opencl::BT_OPENGL_BUFFER) != 0 &&
 			   !buffer_arg.second->manual_gl_sharing) {
-				gl_objects.push_back(*(buffer_arg.second->buffer != nullptr ? (cl::Memory*)buffer_arg.second->buffer : (cl::Memory*)buffer_arg.second->image_buffer));
+				gl_objects.push_back(*(buffer_arg.second->buffer != nullptr ?
+									   (cl::Memory*)buffer_arg.second->buffer :
+									   (cl::Memory*)buffer_arg.second->image_buffer));
 				kernel_obj->has_ogl_buffers = true;
 			}
 		}
@@ -1138,8 +1169,8 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 		}
 		
 		cl::KernelFunctor func = kernel_obj->kernel->bind(*queues[active_device->device], *kernel_obj->global, *kernel_obj->local);
-		//func().wait();
-		func();
+		func().wait();
+		//func();
 		
 		for(const auto& buffer_arg : kernel_obj->buffer_args) {
 			if((buffer_arg.second->type & opencl::BT_READ_BACK_RESULT) != 0) read_buffer(buffer_arg.second->data, buffer_arg.second);
@@ -1160,10 +1191,12 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 }
 
 void opencl::finish() {
+	if(active_device == nullptr) return;
 	queues[active_device->device]->finish();
 }
 
 void opencl::flush() {
+	if(active_device == nullptr) return;
 	queues[active_device->device]->flush();
 }
 
