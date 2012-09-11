@@ -132,6 +132,12 @@ project "a2elight"
 		if(gcc_compat) then
 			buildoptions { "-Wno-trigraphs -Wreturn-type -Wunused-variable -Wno-strict-aliasing" }
 		end
+		
+		if(cuda) then
+			add_include("/usr/local/cuda/include")
+			add_include("/usr/local/cuda-5.0/include")
+			defines { "A2E_CUDA_CL=1" }
+		end
 	end
 	
 	if(win_unixenv) then
@@ -180,12 +186,6 @@ project "a2elight"
 				defines { "_GLIBCXX__PTHREADS" }
 			end
 			defines { "_GLIBCXX_USE_NANOSLEEP", "_GLIBCXX_USE_SCHED_YIELD" }
-		end
-
-		if(cuda) then
-			add_include("/usr/local/cuda/include")
-			add_include("/usr/local/cuda-5.0/include")
-			defines { "A2E_CUDA_CL=1" }
 		end
 	end
 	
