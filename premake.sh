@@ -6,13 +6,24 @@ A2_MAKE="make"
 A2_MAKE_PLATFORM="32"
 A2_ARGS=""
 A2_CPU_COUNT=1
-A2_USE_CLANG=0
+A2_USE_CLANG=1
 
-if [[ $# > 0 && $1 == "gcc" ]]; then
-	A2_ARGS="--gcc"
-else
-	A2_ARGS="--clang"
-	A2_USE_CLANG=1
+for arg in "$@"; do
+	case $arg in
+		"gcc")
+			A2_ARGS+=" --gcc"
+			A2_USE_CLANG=0
+			;;
+		"cuda")
+			A2_ARGS+=" --cuda"
+			;;
+		*)
+			;;
+	esac
+done
+
+if [[ $A2_USE_CLANG == 1 ]]; then
+	A2_ARGS+=" --clang"
 fi
 
 case $( uname | tr [:upper:] [:lower:] ) in

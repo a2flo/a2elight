@@ -20,8 +20,14 @@
 
 #include "opencl.h"
 #include "cudacl_translator.h"
+
+#if defined(__APPLE__)
 #include <CUDA/cuda.h>
 #include <CUDA/cudaGL.h>
+#else
+#include <cuda.h>
+#include <cudaGL.h>
+#endif
 
 //
 class A2E_API cudacl {

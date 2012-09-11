@@ -20,9 +20,15 @@
 
 #include "cudacl_translator.h"
 #include "core/core.h"
+#include <regex>
+
+#if defined(__APPLE__)
 #include <CUDA/cuda.h>
 #include <CUDA/cudaGL.h>
-#include <regex>
+#else
+#include <cuda.h>
+#include <cudaGL.h>
+#endif
 
 // parameter mappings
 struct param_address_space_type_map { const char* type_str; CUDACL_PARAM_ADDRESS_SPACE type; };
