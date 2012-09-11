@@ -16,12 +16,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#if defined(A2E_CUDA_CL)
+
 #include "opencl.h"
 #include "cudacl_translator.h"
 #include <CUDA/cuda.h>
 #include <CUDA/cudaGL.h>
-
-#if defined(A2E_CUDA_CL)
 
 //
 class A2E_API cudacl {
