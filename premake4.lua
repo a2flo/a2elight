@@ -185,6 +185,7 @@ project "a2elight"
 		if(cuda) then
 			add_include("/usr/local/cuda/include")
 			add_include("/usr/local/cuda-5.0/include")
+			defines { "A2E_CUDA_CL=1" }
 		end
 	end
 	
