@@ -55,6 +55,10 @@
 #define A2E_IR_TILE_SIZE_X (8)
 #define A2E_IR_TILE_SIZE_Y (16)
 
+#if defined(A2E_CUDA_CL)
+class cudacl;
+#endif
+
 /*! @class opencl
  *  @brief opencl routines
  */
@@ -186,7 +190,7 @@ public:
 		unsigned int arg_count = 0;
 		bool has_ogl_buffers = false;
 		vector<bool> args_passed;
-		map<unsigned int, buffer_object*> buffer_args;
+		unordered_map<unsigned int, buffer_object*> buffer_args;
 		string kernel_name = "";
 		
 		kernel_object() : args_passed(), buffer_args() {}
@@ -213,7 +217,7 @@ public:
 		cl::ImageFormat format = cl::ImageFormat(0, 0);
 		size3 origin = size3(size_t(0));
 		size3 region = size3(size_t(0));
-		map<kernel_object*, vector<unsigned int>> associated_kernels; // kernels + argument numbers
+		unordered_map<kernel_object*, vector<unsigned int>> associated_kernels; // kernels + argument numbers
 		
 		buffer_object() : associated_kernels() {}
 		~buffer_object() {}
@@ -282,17 +286,23 @@ protected:
 	bool successful_internal_compilation;
 	
 	vector<buffer_object*> buffers;
-	map<string, kernel_object*> kernels;
+	unordered_map<string, kernel_object*> kernels;
 	kernel_object* cur_kernel;
 	
 	unordered_map<const cl::Device*, cl::CommandQueue*> queues;
 	
 	// identifier -> <file_name, func_name, options>
-	map<string, tuple<string, string, string>> external_kernels;
+	unordered_map<string, tuple<string, string, string>> external_kernels;
 	vector<tuple<string, string, string, string>> internal_kernels;
+	
+	//
+#if defined(A2E_CUDA_CL)
+	cudacl* ccl = nullptr;
+#endif
 	
 };
 
+#if !defined(A2E_CUDA_CL)
 template<typename T> bool opencl::set_kernel_argument(const unsigned int& index, T&& arg) {
 	try {
 		cur_kernel->kernel->setArg(index, arg);
@@ -316,6 +326,19 @@ template<typename T> bool opencl::set_kernel_argument(const unsigned int& index,
 	}
 	return false;
 }
+#else
+template<typename T> bool opencl::set_kernel_argument(const unsigned int& index, T&& arg) {
+	set_kernel_argument(index, sizeof(T), (void*)&arg);
+	
+	// remove "references" of the last used buffer for this kernel and argument index (if there is one)
+	if(cur_kernel->buffer_args.count(index) > 0) {
+		auto& associated_kernels = cur_kernel->buffer_args[index]->associated_kernels[cur_kernel];
+		associated_kernels.erase(remove(begin(associated_kernels), end(associated_kernels), index), end(associated_kernels));
+		cur_kernel->buffer_args.erase(index);
+	}
+	return true;
+}
+#endif
 
 #else
 

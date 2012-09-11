@@ -2225,12 +2225,22 @@ private:
 public:
     NDRange()
         : dimensions_(0)
-    { }
+    {
+#if defined(A2E_CUDA_CL)
+        sizes_.push_back(0);
+        sizes_.push_back(0);
+        sizes_.push_back(0);
+#endif
+	}
 
     NDRange(::size_t size0)
         : dimensions_(1)
     {
         sizes_.push_back(size0);
+#if defined(A2E_CUDA_CL)
+        sizes_.push_back(0);
+        sizes_.push_back(0);
+#endif
     }
 
     NDRange(::size_t size0, ::size_t size1)
@@ -2238,6 +2248,9 @@ public:
     {
         sizes_.push_back(size0);
         sizes_.push_back(size1);
+#if defined(A2E_CUDA_CL)
+        sizes_.push_back(0);
+#endif
     }
 
     NDRange(::size_t size0, ::size_t size1, ::size_t size2)
@@ -2252,6 +2265,10 @@ public:
 		sizes_.clear();
 		dimensions_ = 1;
         sizes_.push_back(size0);
+#if defined(A2E_CUDA_CL)
+        sizes_.push_back(0);
+        sizes_.push_back(0);
+#endif
 	}
 	
 	void set(::size_t size0, ::size_t size1) {
@@ -2259,6 +2276,9 @@ public:
 		dimensions_ = 2;
         sizes_.push_back(size0);
         sizes_.push_back(size1);
+#if defined(A2E_CUDA_CL)
+        sizes_.push_back(0);
+#endif
 	}
 	
 	void set(::size_t size0, ::size_t size1, ::size_t size2) {
@@ -2278,6 +2298,11 @@ public:
 		for(cl_uint i = 0; i < dimensions_; i++) {
 			sizes_.push_back(range[i]);
 		}
+#if defined(A2E_CUDA_CL)
+		for(cl_uint i = dimensions_; i < 3; i++) {
+			sizes_.push_back(0);
+		}
+#endif
 		return *this;
 	}
 #pragma warning(default: 4267)

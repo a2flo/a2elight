@@ -82,6 +82,8 @@
 		5C3EC498123182970055330C /* engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C3EC3F2123182960055330C /* engine.cpp */; };
 		5C3EC499123182970055330C /* engine.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C3EC3F3123182960055330C /* engine.h */; };
 		5C3EC49A123182970055330C /* global.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C3EC3F4123182960055330C /* global.h */; };
+		5C4ABF8B15FD818F00E8BDE1 /* cudacl_translator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C4ABF8915FD818F00E8BDE1 /* cudacl_translator.cpp */; };
+		5C4ABF8C15FD818F00E8BDE1 /* cudacl_translator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C4ABF8A15FD818F00E8BDE1 /* cudacl_translator.h */; };
 		5C61BDAC1231D32000FD3451 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDA81231D32000FD3451 /* AppKit.framework */; };
 		5C61BDAD1231D32000FD3451 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDA91231D32000FD3451 /* Cocoa.framework */; };
 		5C61BDAE1231D32000FD3451 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDAA1231D32000FD3451 /* OpenCL.framework */; };
@@ -121,6 +123,8 @@
 		5CB985E315DE879D00654729 /* gui_button.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CB985DF15DE879D00654729 /* gui_button.h */; };
 		5CB985E415DE879D00654729 /* gui_window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB985E015DE879D00654729 /* gui_window.cpp */; };
 		5CB985E515DE879D00654729 /* gui_window.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CB985E115DE879D00654729 /* gui_window.h */; };
+		5CBD7DA915FC571700FB3954 /* cudacl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CBD7DA815FC571700FB3954 /* cudacl.cpp */; };
+		5CBD7DAB15FC5B1400FB3954 /* CUDA.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CBD7DAA15FC5B1400FB3954 /* CUDA.framework */; };
 		5CBF520B123458FD00971741 /* texture_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CBF520A123458FD00971741 /* texture_object.h */; };
 		5CC74A3415C192B5003A602B /* gl_timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CC74A3215C192B5003A602B /* gl_timer.cpp */; };
 		5CC74A3515C192B5003A602B /* gl_timer.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CC74A3315C192B5003A602B /* gl_timer.h */; };
@@ -216,6 +220,8 @@
 		5C3EC3F3123182960055330C /* engine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = engine.h; sourceTree = SOURCE_ROOT; };
 		5C3EC3F4123182960055330C /* global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = global.h; sourceTree = SOURCE_ROOT; };
 		5C47242915E3CCE5000CA003 /* install.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = install.sh; path = ../install.sh; sourceTree = "<group>"; };
+		5C4ABF8915FD818F00E8BDE1 /* cudacl_translator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cudacl_translator.cpp; sourceTree = "<group>"; };
+		5C4ABF8A15FD818F00E8BDE1 /* cudacl_translator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cudacl_translator.h; sourceTree = "<group>"; };
 		5C61BDA81231D32000FD3451 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		5C61BDA91231D32000FD3451 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		5C61BDAA1231D32000FD3451 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = /System/Library/Frameworks/OpenCL.framework; sourceTree = "<absolute>"; };
@@ -261,6 +267,8 @@
 		5CB985E015DE879D00654729 /* gui_window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_window.cpp; sourceTree = "<group>"; };
 		5CB985E115DE879D00654729 /* gui_window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_window.h; sourceTree = "<group>"; };
 		5CBCBF52158C139E007A661C /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
+		5CBD7DA815FC571700FB3954 /* cudacl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cudacl.cpp; sourceTree = "<group>"; };
+		5CBD7DAA15FC5B1400FB3954 /* CUDA.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CUDA.framework; path = /Library/Frameworks/CUDA.framework; sourceTree = "<group>"; };
 		5CBF520A123458FD00971741 /* texture_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = texture_object.h; sourceTree = "<group>"; };
 		5CC74A3215C192B5003A602B /* gl_timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gl_timer.cpp; sourceTree = "<group>"; };
 		5CC74A3315C192B5003A602B /* gl_timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gl_timer.h; sourceTree = "<group>"; };
@@ -291,6 +299,7 @@
 				5CC97E3F1501677200AB0D95 /* SDL2_image.framework in Frameworks */,
 				5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */,
 				5CD83A3E1540FB4F002E5954 /* libfreetype.6.dylib in Frameworks */,
+				5CBD7DAB15FC5B1400FB3954 /* CUDA.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,6 +368,7 @@
 				5C61BDA91231D32000FD3451 /* Cocoa.framework */,
 				5C61BDAA1231D32000FD3451 /* OpenCL.framework */,
 				5C61BDAB1231D32000FD3451 /* OpenGL.framework */,
+				5CBD7DAA15FC5B1400FB3954 /* CUDA.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -375,6 +385,9 @@
 			isa = PBXGroup;
 			children = (
 				5C3975A4123189750075C168 /* cl.hpp */,
+				5C4ABF8915FD818F00E8BDE1 /* cudacl_translator.cpp */,
+				5C4ABF8A15FD818F00E8BDE1 /* cudacl_translator.h */,
+				5CBD7DA815FC571700FB3954 /* cudacl.cpp */,
 				5C3975A5123189750075C168 /* opencl.cpp */,
 				5C3975A6123189750075C168 /* opencl.h */,
 			);
@@ -658,6 +671,7 @@
 				5C73907915E5150900D9FA43 /* gui_input_box.h in Headers */,
 				5C73AAA215EFDA9300BE6DE7 /* gui_pop_up_button.h in Headers */,
 				5C73AAA415EFDA9300BE6DE7 /* gui_toggle_button.h in Headers */,
+				5C4ABF8C15FD818F00E8BDE1 /* cudacl_translator.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -780,6 +794,8 @@
 				5C73907815E5150900D9FA43 /* gui_input_box.cpp in Sources */,
 				5C73AAA115EFDA9300BE6DE7 /* gui_pop_up_button.cpp in Sources */,
 				5C73AAA315EFDA9300BE6DE7 /* gui_toggle_button.cpp in Sources */,
+				5CBD7DA915FC571700FB3954 /* cudacl.cpp in Sources */,
+				5C4ABF8B15FD818F00E8BDE1 /* cudacl_translator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -921,6 +937,7 @@
 					"A2E_DEBUG=1",
 					"A2E_EXPORT=1",
 					PLATFORM_X64,
+					"A2E_CUDA_CL=1",
 				);
 				GCC_STRICT_ALIASING = YES;
 				GCC_UNROLL_LOOPS = YES;

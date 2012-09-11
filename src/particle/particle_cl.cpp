@@ -212,7 +212,8 @@ void particle_manager_cl::reset_particle_system(particle_system* ps) {
 	cl->set_kernel_argument(11, pdata->ocl_dir_buffer);
 	//cl->set_kernel_range(pdata->ocl_range_global, init_range_local);
 	cl->set_kernel_range(pdata->ocl_range_global,
-						 cl::NDRange(std::min((unsigned long long int)std::min((size_t)256, init_range_local[0]), pdata->particle_count))); // TODO: compute local ws size
+						 cl::NDRange(std::min((unsigned long long int)std::min((size_t)256, init_range_local[0]),
+											  pdata->particle_count))); // TODO: compute local ws size
 	cl->run_kernel();
 	
 	cl->release_gl_object(pdata->ocl_pos_time_buffer);
