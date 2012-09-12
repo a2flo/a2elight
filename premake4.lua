@@ -137,6 +137,8 @@ project "a2elight"
 			add_include("/usr/local/cuda/include")
 			add_include("/usr/local/cuda-5.0/include")
 			defines { "A2E_CUDA_CL=1" }
+			libdirs { "/opt/cuda-toolkit/lib", "/usr/local/cuda/lib", "/usr/local/cuda-5.0/lib" }
+			links { "cudart" }
 		end
 	end
 	
