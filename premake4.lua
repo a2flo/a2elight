@@ -142,7 +142,7 @@ project "a2elight"
 			else
 				libdirs { "/opt/cuda-toolkit/lib", "/usr/local/cuda/lib", "/usr/local/cuda-5.0/lib" }
 			end
-			links { "cudart" }
+			links { "cuda", "cudart" }
 		end
 	end
 	
