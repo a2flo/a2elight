@@ -407,7 +407,7 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 						break;
 					case 2:
 						// this is inofficial, but support it anyways ...
-						ccl->cc_target_str = "32";
+						ccl->cc_target_str = "30";
 						ccl->cc_target = CU_TARGET_COMPUTE_30;
 						break;
 					case 5:
@@ -1201,6 +1201,11 @@ void opencl::finish() {
 
 void opencl::flush() {
 	return; // nothing?
+}
+
+void opencl::make_current() {
+	if(active_device == nullptr) return;
+	CU(cuCtxSetCurrent(*ccl->contexts.at(ccl->device_map.at(active_device))));
 }
 
 bool opencl::set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg) {

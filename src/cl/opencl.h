@@ -150,6 +150,7 @@ public:
 	kernel_object* get_cur_kernel() { return cur_kernel; }
 	void finish();
 	void flush();
+	void make_current();
 	
 	kernel_object* add_kernel_file(const string& identifier, const string& file_name, const string& func_name, const string additional_options = "");
 	kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "");

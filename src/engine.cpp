@@ -1300,10 +1300,12 @@ void engine::acquire_gl_context() {
 	config.ctx_lock.lock();
 	// note: not a race, since there can only be one active gl thread
 	const int cur_active_locks = AtomicFetchThenIncrement(&config.ctx_active_locks);
-	if(cur_active_locks == 0 &&
-	   SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
-		a2e_error("couldn't make gl context current: %s!", SDL_GetError());
-		return;
+	if(cur_active_locks == 0) {
+		if(SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
+			a2e_error("couldn't make gl context current: %s!", SDL_GetError());
+			return;
+		}
+		if(ocl != nullptr) ocl->make_current();
 	}
 #if defined(A2E_IOS)
 	glBindFramebuffer(GL_FRAMEBUFFER, 1);

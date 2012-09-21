@@ -1333,6 +1333,10 @@ void opencl::flush() {
 	queues[active_device->device]->flush();
 }
 
+void opencl::make_current() {
+	// nothing for opencl
+}
+
 bool opencl::set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg) {
 	if((arg->buffer != nullptr && set_kernel_argument(index, (*arg->buffer)())) ||
 	   (arg->image_buffer != nullptr && set_kernel_argument(index, *(cl::Memory*)arg->image_buffer))) {
