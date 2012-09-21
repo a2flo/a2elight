@@ -23,20 +23,20 @@
 
 #include "global.h"
 
-enum class CUDACL_PARAM_ADDRESS_SPACE {
+enum class CUDACL_PARAM_ADDRESS_SPACE : unsigned int {
 	NONE,
 	GLOBAL,
 	LOCAL,
 	CONSTANT,
 };
-enum class CUDACL_PARAM_TYPE {
+enum class CUDACL_PARAM_TYPE : unsigned int {
 	NONE,
 	BUFFER,
 	IMAGE_2D,
 	IMAGE_3D,
 	SAMPLER,
 };
-enum class CUDACL_PARAM_ACCESS {
+enum class CUDACL_PARAM_ACCESS : unsigned int {
 	NONE,
 	READ_ONLY,
 	WRITE_ONLY,
@@ -66,7 +66,8 @@ struct A2E_API cudacl_kernel_info {
 	cudacl_kernel_info(const string& kernel_name, const vector<kernel_param>& params) : name(kernel_name), parameters(params) {}
 };
 
-extern void A2E_API cudacl_translate(const string& cl_source,
+extern void A2E_API cudacl_translate(const string& tmp_name,
+									 const string& cl_source,
 									 const string& preprocess_options,
 									 string& cuda_source,
 									 vector<cudacl_kernel_info>& kernels);

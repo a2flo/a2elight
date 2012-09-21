@@ -63,12 +63,13 @@ static constexpr array<const param_access_type_map, 6> access_mapping {
 	}
 };
 
-void cudacl_translate(const string& cl_source,
+void cudacl_translate(const string& tmp_name,
+					  const string& cl_source,
 					  const string& preprocess_options,
 					  string& cuda_source,
 					  vector<cudacl_kernel_info>& kernels) {
-	static const string cuda_preprocess_header = "#include \"a2e_cudacl.h\"\n";
-	static const string cuda_header = "#include <cuda_runtime.h>\n#include \"cutil_math.h\"\n";
+	static a2e_constexpr const char* cuda_preprocess_header = "#include \"a2e_cudacl.h\"\n";
+	static a2e_constexpr const char* cuda_header = "#include <cuda_runtime.h>\n#include \"cutil_math.h\"\n";
 	
 	cuda_source = cuda_preprocess_header + cl_source;
 	
@@ -79,20 +80,20 @@ void cudacl_translate(const string& cl_source,
 	// and do some regex magic to get the final info
 	
 	// preprocess cl source with cc/gcc/clang
-	fstream c_file("/tmp/cudacl_tmp_11111111.c", fstream::out);
+	fstream c_file(tmp_name+".c", fstream::out);
 	c_file << cuda_source << endl;
 	c_file.close();
 	
 	//
 	string kernel_source = "";
-	string preprocess_call = "clang -E -I /usr/local/cuda/include/ "+preprocess_options+" -pipe /tmp/cudacl_tmp_11111111.c";
+	string preprocess_call = "clang -E -I /usr/local/cuda/include/ "+preprocess_options+" -pipe "+tmp_name+".c";
 	//a2e_msg("preprocess_call: %s", preprocess_call);
 	core::system(preprocess_call, kernel_source);
 	cuda_source = cuda_header + kernel_source; // use preprocessed source
 	
 	//
 	string rm_output = "";
-	core::system("rm /tmp/cudacl_tmp_11111111.c", rm_output);
+	core::system("rm "+tmp_name+".c", rm_output);
 	
 	// replace "__kernel" by "kernel"
 	static const regex rx_kernel_name("__kernel");

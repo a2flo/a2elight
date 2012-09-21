@@ -1311,7 +1311,7 @@ void engine::acquire_gl_context() {
 }
 
 void engine::release_gl_context() {
-	// only call SDL_GL_MakeCurrent will nullptr, when this is the last lock
+	// only call SDL_GL_MakeCurrent with nullptr, when this is the last lock
 	const int cur_active_locks = AtomicFetchThenDecrement(&config.ctx_active_locks);
 	if(cur_active_locks == 1) {
 		glFinish();

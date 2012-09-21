@@ -711,13 +711,13 @@ void opencl::init(bool use_platform_devices, const size_t platform_index, const 
 		
 		
 		internal_kernels = { // first time init:
-			make_tuple("PARTICLE INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
-			make_tuple("PARTICLE RESPAWN", "particle_spawn.cl", "particle_respawn", ""),
-			make_tuple("PARTICLE COMPUTE", "particle_compute.cl", "particle_compute", ""),
-			make_tuple("PARTICLE SORT LOCAL", "particle_sort.cl", "bitonicSortLocal", lsl_str),
-			make_tuple("PARTICLE SORT MERGE GLOBAL", "particle_sort.cl", "bitonicMergeGlobal", lsl_str),
-			make_tuple("PARTICLE SORT MERGE LOCAL", "particle_sort.cl", "bitonicMergeLocal", lsl_str),
-			make_tuple("PARTICLE COMPUTE DISTANCES", "particle_sort.cl", "compute_distances", lsl_str)
+			make_tuple("PARTICLE_INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
+			make_tuple("PARTICLE_RESPAWN", "particle_spawn.cl", "particle_respawn", ""),
+			make_tuple("PARTICLE_COMPUTE", "particle_compute.cl", "particle_compute", ""),
+			make_tuple("PARTICLE_SORT_LOCAL", "particle_sort.cl", "bitonicSortLocal", lsl_str),
+			make_tuple("PARTICLE_SORT_MERGE_GLOBAL", "particle_sort.cl", "bitonicMergeGlobal", lsl_str),
+			make_tuple("PARTICLE_SORT_MERGE_LOCAL", "particle_sort.cl", "bitonicMergeLocal", lsl_str),
+			make_tuple("PARTICLE_COMPUTE_DISTANCES", "particle_sort.cl", "compute_distances", lsl_str)
 		};
 		
 		// TODO: make tile size dependent on #cores
@@ -726,7 +726,7 @@ void opencl::init(bool use_platform_devices, const size_t platform_index, const 
 									" -DA2E_LOCAL_ATOMICS");
 		// only add the inferred lighting kernel if there is support for local memory atomics
 		if(local_atomics_support) {
-			internal_kernels.emplace_back("INFERRED LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags);
+			internal_kernels.emplace_back("INFERRED_LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags);
 		}
 		
 		load_internal_kernels();

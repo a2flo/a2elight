@@ -324,8 +324,8 @@ void core::compute_normal_tangent_binormal(const float3& v1, const float3& v2, c
 }
 
 void core::system(const string& cmd, string& output) {
-	static const size_t buffer_size = 8192;
-	static char buffer[buffer_size+1];
+	static constexpr size_t buffer_size = 8192;
+	char buffer[buffer_size+1];
 	memset(&buffer, 0, buffer_size+1);
 	
 	FILE* sys_pipe = popen(cmd.c_str(), "r");

@@ -298,6 +298,7 @@ protected:
 	//
 #if defined(A2E_CUDA_CL)
 	cudacl* ccl = nullptr;
+	bool use_ptx_cache = false;
 #endif
 	
 };

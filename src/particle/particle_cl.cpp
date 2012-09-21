@@ -28,20 +28,20 @@
 particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
 	max_particle_count = 16*1024*1024; // limit to 16 million+
 	
-	cl->use_kernel("PARTICLE INIT");
+	cl->use_kernel("PARTICLE_INIT");
 	init_range_local = cl->compute_local_kernel_range(1);
-	cl->use_kernel("PARTICLE RESPAWN");
+	cl->use_kernel("PARTICLE_RESPAWN");
 	respawn_range_local = cl->compute_local_kernel_range(1);
-	cl->use_kernel("PARTICLE COMPUTE");
+	cl->use_kernel("PARTICLE_COMPUTE");
 	compute_range_local = cl->compute_local_kernel_range(1);
-	cl->use_kernel("PARTICLE SORT MERGE GLOBAL");
+	cl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
 	sort_range_local = cl->compute_local_kernel_range(1);
-	cl->use_kernel("PARTICLE COMPUTE DISTANCES");
+	cl->use_kernel("PARTICLE_COMPUTE_DISTANCES");
 	compute_distances_local = cl->compute_local_kernel_range(1);
 	
 	// find least common multiple of all local kernel sizes (will then be used for making sure that particle count is always a multiple of this)
 	local_lcm = core::lcm(core::lcm(init_range_local[0], respawn_range_local[0]), compute_range_local[0]);
-	cl->use_kernel("PARTICLE INIT");
+	cl->use_kernel("PARTICLE_INIT");
 	
 	kernel_seed = (unsigned int)time(nullptr);
 }
@@ -197,7 +197,7 @@ void particle_manager_cl::reset_particle_system(particle_system* ps) {
 	cl->acquire_gl_object(pdata->ocl_pos_time_buffer);
 	cl->acquire_gl_object(pdata->ocl_dir_buffer);
 	
-	cl->use_kernel("PARTICLE INIT");
+	cl->use_kernel("PARTICLE_INIT");
 	cl->set_kernel_argument(0, (unsigned int)ps->get_type());
 	cl->set_kernel_argument(1, (float)ps->get_living_time());
 	cl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
@@ -235,7 +235,7 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 		cl->acquire_gl_object(pdata->ocl_pos_time_buffer);
 		cl->acquire_gl_object(pdata->ocl_dir_buffer);
 		
-		cl->use_kernel("PARTICLE RESPAWN");
+		cl->use_kernel("PARTICLE_RESPAWN");
 		cl->set_kernel_argument(0, ps->get_type());
 		cl->set_kernel_argument(1, (float)ps->get_living_time());
 		cl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
@@ -264,7 +264,7 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 		}
 		
 		// update positions
-		cl->use_kernel("PARTICLE COMPUTE");
+		cl->use_kernel("PARTICLE_COMPUTE");
 		cl->set_kernel_argument(0, (float)(SDL_GetTicks() - pdata->step_timer));
 		cl->set_kernel_argument(1, (float)ps->get_living_time());
 		cl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
@@ -305,16 +305,16 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 	static bool debug_lsize = false;
 	if(!debug_lsize) {
 		debug_lsize = true;
-		cl->use_kernel("PARTICLE SORT LOCAL");
+		cl->use_kernel("PARTICLE_SORT_LOCAL");
 		size_t wgs = cl->get_kernel_work_group_size();
-		a2e_debug("PARTICLE SORT LOCAL wgs: %u", wgs);
-		cl->use_kernel("PARTICLE SORT MERGE GLOBAL");
+		a2e_debug("PARTICLE_SORT_LOCAL wgs: %u", wgs);
+		cl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
 		wgs = cl->get_kernel_work_group_size();
-		a2e_debug("PARTICLE SORT MERGE GLOBAL wgs: %u", wgs);
-		cl->use_kernel("PARTICLE SORT MERGE LOCAL");
+		a2e_debug("PARTICLE_SORT_MERGE_GLOBAL wgs: %u", wgs);
+		cl->use_kernel("PARTICLE_SORT_MERGE_LOCAL");
 		wgs = cl->get_kernel_work_group_size();
-		a2e_debug("PARTICLE SORT MERGE LOCAL wgs: %u", wgs);
-		a2e_debug("PARTICLE SORT local_size_limit: %u", cl->get_active_device()->max_wg_size);
+		a2e_debug("PARTICLE_SORT_MERGE_LOCAL wgs: %u", wgs);
+		a2e_debug("PARTICLE_SORT local_size_limit: %u", cl->get_active_device()->max_wg_size);
 	}
 	
 	const unsigned int local_size_limit = (unsigned int)cl->get_active_device()->max_wg_size; // TODO: actually use the compiled/build value
@@ -336,7 +336,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		pdata->particle_indices_swap = 1 - pdata->particle_indices_swap; // swap
 		
 		// compute particle distances
-		cl->use_kernel("PARTICLE COMPUTE DISTANCES");
+		cl->use_kernel("PARTICLE_COMPUTE_DISTANCES");
 		cl->set_kernel_argument(arg_num++, pdata->ocl_pos_time_buffer);
 		cl->set_kernel_argument(arg_num++, camera_pos);
 		cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
@@ -347,7 +347,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		
 		// first sorting step
 		arg_num = 0;
-		cl->use_kernel("PARTICLE SORT LOCAL");
+		cl->use_kernel("PARTICLE_SORT_LOCAL");
 		cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
 		cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
 		cl->set_kernel_argument(arg_num++, pdata->ocl_indices[1 - pdata->particle_indices_swap]);
@@ -401,7 +401,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 			}
 			
 			if(stride >= local_size_limit) {
-				cl->use_kernel("PARTICLE SORT MERGE GLOBAL");
+				cl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
 				arg_num = 0;
 				cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
 				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
@@ -419,7 +419,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 				overall_global_size += merge_global_global[0];
 			}
 			else {
-				cl->use_kernel("PARTICLE SORT MERGE LOCAL");
+				cl->use_kernel("PARTICLE_SORT_MERGE_LOCAL");
 				arg_num = 0;
 				cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
 				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);

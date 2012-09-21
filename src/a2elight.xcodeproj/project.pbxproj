@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		5C03756515A465350030C37B /* osx_helper.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C03756315A465350030C37B /* osx_helper.h */; };
 		5C03756615A465350030C37B /* osx_helper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5C03756415A465350030C37B /* osx_helper.mm */; };
+		5C053F90160CB31400540A7B /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C053F8F160CB31400540A7B /* libz.dylib */; };
 		5C08D66D152F45660066381D /* gfx2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C08D66B152F45660066381D /* gfx2d.cpp */; };
 		5C08D66E152F45660066381D /* gfx2d.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C08D66C152F45660066381D /* gfx2d.h */; };
 		5C08D8D715D9FBD90007C019 /* gui_surface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C08D8D515D9FBD90007C019 /* gui_surface.cpp */; };
@@ -144,6 +145,7 @@
 /* Begin PBXFileReference section */
 		5C03756315A465350030C37B /* osx_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osx_helper.h; sourceTree = "<group>"; };
 		5C03756415A465350030C37B /* osx_helper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = osx_helper.mm; sourceTree = "<group>"; };
+		5C053F8F160CB31400540A7B /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		5C05F790123171DA00D122BF /* liba2elightd.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liba2elightd.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C05F792123171DA00D122BF /* a2e_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e_Prefix.pch; sourceTree = "<group>"; };
 		5C08D66B152F45660066381D /* gfx2d.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gfx2d.cpp; sourceTree = "<group>"; };
@@ -300,6 +302,7 @@
 				5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */,
 				5CD83A3E1540FB4F002E5954 /* libfreetype.6.dylib in Frameworks */,
 				5CBD7DAB15FC5B1400FB3954 /* CUDA.framework in Frameworks */,
+				5C053F90160CB31400540A7B /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,6 +362,7 @@
 		5C05F78B123171DA00D122BF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5C053F8F160CB31400540A7B /* libz.dylib */,
 				5CD83A3D1540FB4F002E5954 /* libfreetype.6.dylib */,
 				5C2C9274140AA9D900AC808C /* libxml2.dylib */,
 				5CBCBF52158C139E007A661C /* ApplicationServices.framework */,

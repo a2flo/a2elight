@@ -20,6 +20,7 @@
 
 #include "opencl.h"
 #include "cudacl_translator.h"
+#include "zlib.h"
 
 #if defined(__APPLE__)
 #include <CUDA/cuda.h>
@@ -64,6 +65,7 @@ public:
 	
 	// vars
 	bool valid = true;
+	string cache_path = "";
 	string cc_target_str = "10";
 	unsigned int cc_target = CU_TARGET_COMPUTE_10;
 	vector<CUdevice*> devices;
@@ -227,13 +229,63 @@ opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache)
 	
 	// clear cuda cache
 	if(clear_cache) {
-		// TODO
+		// TODO (ignore this for now)
 	}
 	
 	//
 	ccl = new cudacl();
 	if(!ccl->valid) {
 		supported = false;
+	}
+	
+	// check if the cache can be used
+	ccl->cache_path = kernel_path_str.substr(0, kernel_path_str.rfind('/', kernel_path_str.length()-2)) + "/cache/";
+	if(file_io::is_file(ccl->cache_path+"CACHECRC")) {
+		file_io crc_file(ccl->cache_path+"CACHECRC", file_io::OPEN_TYPE::READ);
+		if(crc_file.is_open()) {
+			use_ptx_cache = true;
+			
+			auto& crc_fstream = *crc_file.get_filestream();
+			unordered_map<string, unsigned int> cache_crcs;
+			while(!crc_fstream.eof()) {
+				string kernel_fname = "";
+				unsigned int kernel_crc = 0;
+				crc_fstream >> kernel_fname;
+				crc_fstream >> hex >> kernel_crc >> dec;
+				if(kernel_fname.empty()) continue;
+				cache_crcs.insert({ kernel_fname, kernel_crc });
+			}
+			
+			const auto kernel_files = core::get_file_list(kernel_path_str);
+			for(const auto& kfile : kernel_files) {
+				if(kfile.first[0] == '.') continue;
+				stringstream buffer(stringstream::in | stringstream::out);
+				if(!file_io::file_to_buffer(kernel_path+kfile.first, buffer)) {
+					a2e_error("failed to read kernel source for \"%s\"!", kernel_path+kfile.first);
+					return;
+				}
+				const string src(buffer.str());
+				const unsigned int crc = (unsigned int)crc32(crc32(0L, Z_NULL, 0), (const Bytef*)src.c_str(), (uInt)src.size());
+				
+				//
+				const auto cache_iter = cache_crcs.find(kfile.first);
+				if(cache_iter == cache_crcs.end()) {
+					use_ptx_cache = false;
+					a2e_error("kernel file \"%s\" doesn't exist in cache!", kfile.first);
+					break;
+				}
+				
+				if(cache_iter->second != crc) {
+					use_ptx_cache = false;
+					a2e_error("CRC mismatch for kernel file \"%s\": %X (cache) != %X (current)", kfile.first, cache_iter->second, crc);
+					break;
+				}
+			}
+			crc_file.close();
+		}
+	}
+	if(use_ptx_cache) {
+		a2e_debug("using ptx cache!");
 	}
 }
 
@@ -495,13 +547,13 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 	const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
 	
 	internal_kernels = { // first time init:
-		make_tuple("PARTICLE INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
-		make_tuple("PARTICLE RESPAWN", "particle_spawn.cl", "particle_respawn", ""),
-		make_tuple("PARTICLE COMPUTE", "particle_compute.cl", "particle_compute", ""),
-		make_tuple("PARTICLE SORT LOCAL", "particle_sort.cl", "bitonicSortLocal", lsl_str),
-		make_tuple("PARTICLE SORT MERGE GLOBAL", "particle_sort.cl", "bitonicMergeGlobal", lsl_str),
-		make_tuple("PARTICLE SORT MERGE LOCAL", "particle_sort.cl", "bitonicMergeLocal", lsl_str),
-		make_tuple("PARTICLE COMPUTE DISTANCES", "particle_sort.cl", "compute_distances", lsl_str)
+		make_tuple("PARTICLE_INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
+		make_tuple("PARTICLE_RESPAWN", "particle_spawn.cl", "particle_respawn", ""),
+		make_tuple("PARTICLE_COMPUTE", "particle_compute.cl", "particle_compute", ""),
+		make_tuple("PARTICLE_SORT_LOCAL", "particle_sort.cl", "bitonicSortLocal", lsl_str),
+		make_tuple("PARTICLE_SORT_MERGE_GLOBAL", "particle_sort.cl", "bitonicMergeGlobal", lsl_str),
+		make_tuple("PARTICLE_SORT_MERGE_LOCAL", "particle_sort.cl", "bitonicMergeLocal", lsl_str),
+		make_tuple("PARTICLE_COMPUTE_DISTANCES", "particle_sort.cl", "compute_distances", lsl_str)
 	};
 	
 	// TODO: support this in cuda
@@ -512,7 +564,7 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 	// only add the inferred lighting kernel if there is support for local memory atomics
 	bool local_atomics_support = true;
 	if(local_atomics_support) {
-		internal_kernels.emplace_back("INFERRED LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags);
+		internal_kernels.emplace_back("INFERRED_LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags);
 	}*/
 	
 	load_internal_kernels();
@@ -523,78 +575,103 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 	string options = build_options;
 	string nvcc_log = "";
 	string build_cmd = "";
+	const string tmp_name = "/tmp/cudacl_tmp_"+identifier+"_"+size_t2string(SDL_GetPerformanceCounter());
 	try {
 		if(kernels.count(identifier) != 0) {
 			a2e_error("kernel \"%s\" already exists!", identifier);
 			return kernels[identifier];
 		}
 		
-		if(!additional_options.empty()) {
-			// convert all -DDEFINEs to -D DEFINE
-			options += " " + core::find_and_replace(additional_options, "-D", "-D ");
-		}
-		
 		// add kernel
 		opencl::kernel_object* kernel = new opencl::kernel_object();
 		kernels[identifier] = kernel;
 		kernel->kernel_name = identifier;
-		
-		vector<cudacl_kernel_info> kernels_info;
-		string cuda_source = "";
-		cudacl_translate(src.c_str(), options, cuda_source, kernels_info);
-		
-		// debug output
-		/*a2e_msg("cuda source:\n%s", cuda_source);
-		for(const auto& info : kernels_info) {
-			a2e_debug("kernel: %s, #%u", info.name, info.parameters.size());
-			for(const auto& param : info.parameters) {
-				a2e_debug("param: %s %u %u %u", get<0>(param), get<1>(param), get<2>(param), get<3>(param));
-			}
-		}*/
-		
-		// create tmp cu file
-		fstream cu_file("/tmp/cudacl_tmp_11111111.cu", fstream::out);
-		cu_file << cuda_source << endl;
-		cu_file.close();
-		
-		// nvcc compile
-		build_cmd = "/usr/local/cuda/bin/nvcc --ptx --machine 64 -arch sm_" + ccl->cc_target_str + " -O3";
-		build_cmd += " " + options;
-		build_cmd += " -D NVIDIA";
-		build_cmd += " -D GPU";
-		build_cmd += " -D PLATFORM_"+platform_vendor_to_str(platform_vendor);
-		build_cmd += " -o /tmp/cudacl_tmp_11111111.ptx";
-		build_cmd += " /tmp/cudacl_tmp_11111111.cu";
-		//build_cmd += " 2>&1";
-		core::system(build_cmd.c_str(), nvcc_log);
-		
-		// read ptx
-		stringstream ptx_buffer(stringstream::in | stringstream::out);
-		if(!file_io::file_to_buffer("/tmp/cudacl_tmp_11111111.ptx", ptx_buffer)) {
-			throw cudacl_exception("ptx file doesn't exist!");
-		}
-		
-		//
 		kernel->kernel = nullptr;
 		kernel->global = new cl::NDRange(1);
 		kernel->local = new cl::NDRange(1);
-		
-		bool found = false;
 		const cudacl_kernel_info* kernel_info = nullptr;
-		for(const auto& info : kernels_info) {
-			if(info.name == func_name) {
-				kernel_info = &info;
-				kernel->arg_count = (unsigned int)info.parameters.size();
-				found = true;
-				break;
+		vector<cudacl_kernel_info> kernels_info;
+		
+		//
+		stringstream ptx_buffer(stringstream::in | stringstream::out);
+		if(!use_ptx_cache) {
+			if(!additional_options.empty()) {
+				// convert all -DDEFINEs to -D DEFINE
+				options += " " + core::find_and_replace(additional_options, "-D", "-D ");
 			}
+			
+			string cuda_source = "";
+			cudacl_translate(tmp_name, src.c_str(), options, cuda_source, kernels_info);
+			
+			// create tmp cu file
+			fstream cu_file(tmp_name+".cu", fstream::out);
+			cu_file << cuda_source << endl;
+			cu_file.close();
+			
+			// nvcc compile
+			build_cmd = "/usr/local/cuda/bin/nvcc --ptx --machine 64 -arch sm_" + ccl->cc_target_str + " -O3";
+			build_cmd += " " + options;
+			build_cmd += " -D NVIDIA";
+			build_cmd += " -D GPU";
+			build_cmd += " -D PLATFORM_"+platform_vendor_to_str(platform_vendor);
+			build_cmd += " -o "+tmp_name+".ptx";
+			build_cmd += " "+tmp_name+".cu";
+			//build_cmd += " 2>&1";
+			core::system(build_cmd.c_str(), nvcc_log);
+			
+			// read ptx
+			if(!file_io::file_to_buffer(tmp_name+".ptx", ptx_buffer)) {
+				throw cudacl_exception("ptx file doesn't exist!");
+			}
+			
+			bool found = false;
+			for(const auto& info : kernels_info) {
+				if(info.name == func_name) {
+					kernel_info = &info;
+					kernel->arg_count = (unsigned int)info.parameters.size();
+					found = true;
+					break;
+				}
+			}
+			if(!found) throw cudacl_exception("kernel function \""+func_name+"\" does not exist in source file!");
 		}
-		if(!found) throw cudacl_exception("kernel function \""+func_name+"\" does not exist in source file!");
+		else {
+			// read cached ptx
+			if(!file_io::file_to_buffer(ccl->cache_path+identifier+"_"+ccl->cc_target_str+".ptx", ptx_buffer)) {
+				throw cudacl_exception("ptx file doesn't exist!");
+			}
+			
+			// read cached kernel info
+			stringstream info_buffer(stringstream::in | stringstream::out);
+			if(!file_io::file_to_buffer(ccl->cache_path+identifier+"_info_"+ccl->cc_target_str+".txt", info_buffer)) {
+				throw cudacl_exception("info file doesn't exist!");
+			}
+			
+			string info_kernel_name = "";
+			unsigned int info_param_count = 0;
+			info_buffer >> info_kernel_name;
+			info_buffer >> info_param_count;
+			kernel->arg_count = info_param_count;
+			vector<cudacl_kernel_info::kernel_param> kernel_parameters;
+			for(size_t i = 0; i < info_param_count; i++) {
+				string param_name = "";
+				unsigned int p0 = 0, p1 = 0, p2 = 0;
+				info_buffer >> param_name;
+				info_buffer >> p0;
+				info_buffer >> p1;
+				info_buffer >> p2;
+				kernel_parameters.emplace_back(param_name, (CUDACL_PARAM_ADDRESS_SPACE)p0, (CUDACL_PARAM_TYPE)p1, (CUDACL_PARAM_ACCESS)p2);
+			}
+			if(info_buffer.fail() || info_buffer.bad()) {
+				throw cudacl_exception("failed to parse cached kernel info file!");
+			}
+			
+			kernels_info.emplace_back(info_kernel_name, kernel_parameters);
+			kernel_info = &kernels_info.back();
+		}
 		kernel->args_passed.insert(kernel->args_passed.begin(),
 								   kernel->arg_count,
 								   false);
-		
-		//a2e_msg("PTX: %s", ptx_buffer.str()); // TODO: cache this
 		
 		// create cuda module (== opencl program)
 		array<CUjit_option, 1> jit_options { { CU_JIT_TARGET } };
@@ -628,9 +705,11 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 	__HANDLE_CL_EXCEPTION_END
 	
 	// cleanup
-	string dummy = "";
-	core::system("rm /tmp/cudacl_tmp_11111111.ptx", dummy);
-	core::system("rm /tmp/cudacl_tmp_11111111.cu", dummy);
+	if(!use_ptx_cache) {
+		string dummy = "";
+		core::system("rm "+tmp_name+".ptx", dummy);
+		core::system("rm "+tmp_name+".cu", dummy);
+	}
 	
 	return kernels[identifier];
 }
@@ -769,22 +848,18 @@ opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuin
 		if((type & opencl::BT_BLOCK_ON_READ) != 0) vtype |= opencl::BT_BLOCK_ON_READ;
 		if((type & opencl::BT_BLOCK_ON_WRITE) != 0) vtype |= opencl::BT_BLOCK_ON_WRITE;
 		
-		cl_mem_flags flags = 0;
 		unsigned int cuda_flags = 0;
 		switch((EBUFFER_TYPE)(type & 0x03)) {
 			case opencl::BT_READ_WRITE:
 				vtype |= BT_READ_WRITE;
-				flags |= CL_MEM_READ_WRITE;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_NONE;
 				break;
 			case opencl::BT_READ:
 				vtype |= BT_READ;
-				flags |= CL_MEM_READ_ONLY;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_READ_ONLY;
 				break;
 			case opencl::BT_WRITE:
 				vtype |= BT_WRITE;
-				flags |= CL_MEM_WRITE_ONLY;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_WRITE_DISCARD;
 				break;
 			default:
