@@ -1305,7 +1305,7 @@ void engine::acquire_gl_context() {
 			a2e_error("couldn't make gl context current: %s!", SDL_GetError());
 			return;
 		}
-		if(ocl != nullptr) ocl->make_current();
+		if(ocl != nullptr) ocl->activate_context();
 	}
 #if defined(A2E_IOS)
 	glBindFramebuffer(GL_FRAMEBUFFER, 1);
@@ -1317,7 +1317,10 @@ void engine::release_gl_context() {
 	const int cur_active_locks = AtomicFetchThenDecrement(&config.ctx_active_locks);
 	if(cur_active_locks == 1) {
 		glFinish();
-		if(ocl != nullptr) ocl->finish();
+		if(ocl != nullptr) {
+			ocl->finish();
+			ocl->deactivate_context();
+		}
 		if(SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
 			a2e_error("couldn't release current gl context: %s!", SDL_GetError());
 			return;

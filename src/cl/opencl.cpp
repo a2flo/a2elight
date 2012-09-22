@@ -1333,7 +1333,11 @@ void opencl::flush() {
 	queues[active_device->device]->flush();
 }
 
-void opencl::make_current() {
+void opencl::activate_context() {
+	// nothing for opencl
+}
+
+void opencl::deactivate_context() {
 	// nothing for opencl
 }
 

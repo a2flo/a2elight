@@ -1203,9 +1203,13 @@ void opencl::flush() {
 	return; // nothing?
 }
 
-void opencl::make_current() {
+void opencl::activate_context() {
 	if(active_device == nullptr) return;
 	CU(cuCtxSetCurrent(*ccl->contexts.at(ccl->device_map.at(active_device))));
+}
+
+void opencl::deactivate_context() {
+	CU(cuCtxSetCurrent(nullptr));
 }
 
 bool opencl::set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg) {
