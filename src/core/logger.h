@@ -69,10 +69,6 @@ protected:
 	~logger() = delete;
 	logger& operator=(const logger& l) = delete;
 	
-	static ofstream log_file;
-	static atomic_t err_counter;
-	static SDL_SpinLock slock;
-	
 	//
 	static void prepare_log(stringstream& buffer, const LOG_TYPE& type, const char* file, const char* func);
 	

@@ -570,7 +570,8 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	const float2 screen_size = float2(float(l_buffer->width), float(l_buffer->height));
 #if !defined(A2E_IOS)
 	const bool light_alpha_objects = (!alpha_objects.empty() &&
-									  buffers.l_buffer[0] != nullptr);
+									  buffers.l_buffer[0] != nullptr &&
+									  buffers.g_buffer[1] != nullptr);
 #else
 	const bool light_alpha_objects = false; // TODO: iOS: implement this!
 #endif

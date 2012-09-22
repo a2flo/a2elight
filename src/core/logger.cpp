@@ -25,19 +25,20 @@
 #define A2E_LOG_FILENAME "/tmp/a2e_log.txt"
 #endif
 
-ofstream logger::log_file(A2E_LOG_FILENAME);
-atomic_t logger::err_counter;
-SDL_SpinLock logger::slock;
+static ofstream* log_file = new ofstream(A2E_LOG_FILENAME);
+static atomic<unsigned int> err_counter { 0 };
+static SDL_SpinLock slock;
 
 void logger::init() {
-	logger::err_counter.value = 0;
-	if(!log_file.is_open()) {
+	if(!log_file->is_open()) {
 		cout << "LOG ERROR: couldn't open log file!" << endl;
 	}
 }
 
 void logger::destroy() {
-	log_file.close();
+	log_file->close();
+	delete log_file;
+	log_file = nullptr;
 }
 
 void logger::prepare_log(stringstream& buffer, const LOG_TYPE& type, const char* file, const char* func) {
@@ -63,7 +64,7 @@ void logger::prepare_log(stringstream& buffer, const LOG_TYPE& type, const char*
 				break;
 			case LOG_TYPE::NONE: break;
 		}
-		if(type == LOG_TYPE::ERROR_MSG) buffer << " #" << AtomicFetchThenIncrement(&err_counter) << ":";
+		if(type == LOG_TYPE::ERROR_MSG) buffer << " #" << err_counter++ << ":";
 		buffer << " ";
 		// prettify file string (aka strip path)
 		string file_str = file;
@@ -90,14 +91,14 @@ void logger::_log(stringstream& buffer, const char* str) {
 	string bstr(buffer.str());
 	cout << bstr;
 	if(bstr[0] != 0x1B) {
-		log_file << bstr;
+		*log_file << bstr;
 	}
 	else {
 		bstr.erase(0, 5);
 		bstr.erase(7, 3);
-		log_file << bstr;
+		*log_file << bstr;
 	}
-	log_file.flush();
+	log_file->flush();
 	SDL_AtomicUnlock(&slock);
 }
 

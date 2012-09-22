@@ -441,16 +441,14 @@ void gui::recreate_buffers(const size2 size) {
 }
 
 void gui::delete_buffers() {
-	if(r != nullptr) {
-		// note: main_fbo and aa_fbo share buffer data, so only delete the fbo of main_fbo
-		if(main_fbo.fbo_id != 0) {
-			main_fbo.tex[0] = 0;
-			r->delete_buffer(&main_fbo);
-		}
-		if(aa_fbo != nullptr) {
-			r->delete_buffer(aa_fbo);
-			aa_fbo = nullptr;
-		}
+	// note: main_fbo and aa_fbo share buffer data, so only delete the fbo of main_fbo
+	if(main_fbo.fbo_id != 0) {
+		main_fbo.tex[0] = 0;
+		r->delete_buffer(&main_fbo);
+	}
+	if(aa_fbo != nullptr) {
+		r->delete_buffer(aa_fbo);
+		aa_fbo = nullptr;
 	}
 }
 

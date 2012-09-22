@@ -48,7 +48,9 @@ bool gui_color_scheme::load(const string& filename) {
 	// process nodes
 	const auto scheme_node = ui_doc.get_node("a2e_color_scheme");
 	for(const auto& node : scheme_node->children) {
-		process_node(node.second, nullptr);
+		if(node.first[0] != '#') {
+			process_node(node.second, nullptr);
+		}
 	}
 	
 	return true;

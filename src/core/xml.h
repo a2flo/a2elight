@@ -43,6 +43,7 @@ public:
 		public: static T def() { return T(); }
 		};
 		const string& extract_attr(const string& path) const;
+		bool set_attr(const string& path, const string& value);
 		
 	public:
 		xml_doc() : nodes(), valid(true) {}
@@ -62,14 +63,16 @@ public:
 		
 		//! "root.subnode.subnode.attr"
 		template<typename T> T get(const string& path, const T default_val = default_value<T>::def()) const;
+		template<typename T> bool set(const string& path, const T& value);
 	};
 	struct xml_node {
+		xml_node(const xmlNode* node, const string name);
 		xml_node(const xmlNode* node);
 		~xml_node();
 		const string node_name;
 		const string node_content;
 		vector<pair<string, xml_node*>> children;
-		unordered_map<string, const string> attributes;
+		unordered_map<string, string> attributes;
 		
 		const string& name() const { return node_name; }
 		const string& content() const { return node_content; }
@@ -79,9 +82,17 @@ public:
 			if(attr == attributes.end()) return invalid_attr;
 			return attr->second;
 		}
+		bool set(const string& attr_name, const string& value) {
+			const auto attr = attributes.find(attr_name);
+			if(attr == attributes.end()) return false;
+			attr->second = value;
+			return true;
+		}
 	};
 	xml_doc process_file(const string& filename, const bool validate = true) const;
 	xml_doc process_data(const string& data, const bool validate = true) const;
+	
+	bool save_file(const xml_doc& doc, const string& filename, const string doc_type) const;
 
 	// for manual reading
 	template <typename T> T get_attribute(const xmlAttribute* attr, const char* attr_name) {
@@ -106,6 +117,8 @@ protected:
 	engine* e;
 	
 	void create_node_structure(xml_doc& doc, xmlDocPtr xmldoc) const;
+	
+	bool write_node(const xml_node& node, xmlTextWriterPtr* writer, const string& filename, size_t& tabs) const;
 
 };
 
@@ -167,5 +180,20 @@ template<> size4 xml::xml_doc::get<size4>(const string& path, const size4 defaul
 template<> ssize2 xml::xml_doc::get<ssize2>(const string& path, const ssize2 default_value) const;
 template<> ssize3 xml::xml_doc::get<ssize3>(const string& path, const ssize3 default_value) const;
 template<> ssize4 xml::xml_doc::get<ssize4>(const string& path, const ssize4 default_value) const;
+
+template<> bool xml::xml_doc::set<string>(const string& path, const string& value);
+template<> bool xml::xml_doc::set<float>(const string& path, const float& value);
+template<> bool xml::xml_doc::set<size_t>(const string& path, const size_t& value);
+template<> bool xml::xml_doc::set<ssize_t>(const string& path, const ssize_t& value);
+template<> bool xml::xml_doc::set<bool>(const string& path, const bool& value);
+template<> bool xml::xml_doc::set<float2>(const string& path, const float2& value);
+template<> bool xml::xml_doc::set<float3>(const string& path, const float3& value);
+template<> bool xml::xml_doc::set<float4>(const string& path, const float4& value);
+template<> bool xml::xml_doc::set<size2>(const string& path, const size2& value);
+template<> bool xml::xml_doc::set<size3>(const string& path, const size3& value);
+template<> bool xml::xml_doc::set<size4>(const string& path, const size4& value);
+template<> bool xml::xml_doc::set<ssize2>(const string& path, const ssize2& value);
+template<> bool xml::xml_doc::set<ssize3>(const string& path, const ssize3& value);
+template<> bool xml::xml_doc::set<ssize4>(const string& path, const ssize4& value);
 
 #endif

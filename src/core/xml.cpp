@@ -54,6 +54,131 @@ xml::xml(engine* e_) : e(e_) {
 xml::~xml() {
 }
 
+bool xml::save_file(const xml_doc& doc, const string& filename, const string doc_type) const {
+	//
+	if(!doc.valid) {
+		a2e_error("can't write invalid xml doc!");
+		return false;
+	}
+	
+	//
+	xmlTextWriterPtr* writer = new xmlTextWriterPtr();
+	const auto close_writer = [&writer]() {
+		if(*writer != nullptr) xmlFreeTextWriter(*writer);
+		xmlMemoryDump();
+		if(writer != nullptr) delete writer;
+		writer = nullptr;
+	};
+	
+	*writer = xmlNewTextWriterFilename(filename.c_str(), 0);
+	if(*writer == nullptr) {
+		a2e_error("unable to write to file \"%s\"!", filename);
+		close_writer();
+		return false;
+	}
+	
+	if(xmlTextWriterStartDocument(*writer, nullptr, "UTF-8",
+								  (doc_type.empty() ? nullptr : "no")) < 0) {
+		a2e_error("unable to start document \"%s\"!", filename);
+		close_writer();
+		return false;
+	}
+	
+	// write doc type if there is one
+	if(!doc_type.empty()) {
+		xmlTextWriterWriteRaw(*writer, (const xmlChar*)(doc_type+"\n").c_str());
+	}
+	
+	// write all nodes:
+	size_t tabs = 0;
+	for(const auto& node : doc.nodes) {
+		if(!write_node(*node.second, writer, filename, tabs)) {
+			close_writer();
+			a2e_error("failed to write document \"%s\"!", filename);
+			return false;
+		}
+	}
+	
+	close_writer();
+	return true;
+}
+
+bool xml::write_node(const xml_node& node, xmlTextWriterPtr* writer, const string& filename, size_t& tabs) const {
+	// write tabs
+	string tab_str = "";
+	for(size_t i = 0; i < tabs; i++) tab_str += "\t";
+	xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
+	
+	// start node:
+	if(node.name()[0] != '#') {
+		if(xmlTextWriterStartElement(*writer, BAD_CAST node.name().c_str()) < 0) {
+			a2e_error("unable to start element \"%s\" in file \"%s\"!",
+					  node.name(), filename);
+			return false;
+		}
+		tabs++;
+		
+		// node attributes:
+		for(const auto& attr : node.attributes) {
+			if(xmlTextWriterWriteAttribute(*writer, BAD_CAST attr.first.c_str(),
+										   BAD_CAST attr.second.c_str()) < 0) {
+				a2e_error("error while writing attribute \"%s\" in node \"%s\" in file %s!",
+						  attr.first, node.name(), filename);
+			}
+		}
+		
+		// node content/children:
+		const bool has_conent = (node.content().empty() ? false :
+								 (node.content().find_first_not_of("\t\n\r\v ") != string::npos));
+		if(!node.children.empty() || has_conent) {
+			xmlTextWriterWriteRaw(*writer, BAD_CAST "\n");
+			for(const auto& child : node.children) {
+				if(!write_node(*child.second, writer, filename, tabs)) {
+					a2e_error("failed to write node \"%s\"!", child.first);
+					return false;
+				}
+			}
+			
+			// content:
+			if(has_conent) {
+				if(xmlTextWriterWriteString(*writer, BAD_CAST node.content().c_str()) < 0) {
+					a2e_error("error while writing content \"%s\" of node \"%s\" in file %s!",
+							  node.content(), node.name(), filename);
+				}
+			}
+			
+			// end node:
+			xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
+			if(xmlTextWriterEndElement(*writer) < 0) {
+				a2e_error("unable to end element \"%s\" in file \"%s\"!",
+						  node.name(), filename);
+				return false;
+			}
+		}
+		else {
+			// TODO: clean end tag / simple tag end
+			if(xmlTextWriterFullEndElement(*writer) < 0) {
+				a2e_error("unable to end element \"%s\" in file \"%s\"!",
+						  node.name(), filename);
+				return false;
+			}
+		}
+		tabs--;
+	}
+	else if(node.name() == "#comment") {
+		// TODO: correct spacing / newline? (check if this is the first element?)
+		xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\n");
+		xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
+		xmlTextWriterWriteComment(*writer, BAD_CAST node.content().c_str());
+	}
+	else {
+		a2e_error("unknown node type \"%s\" in file \"%s\"!", node.name(), filename);
+		return false;
+	}
+	xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\n");
+	return true;
+}
+
 xml::xml_doc xml::process_file(const string& filename, const bool validate) const {
 	xml_doc doc;
 	
@@ -148,6 +273,10 @@ void xml::create_node_structure(xml::xml_doc& doc, xmlDocPtr xmldoc) const {
 				if(cur_node->children != nullptr) {
 					node_stack.push_back(make_pair(cur_node->children, &node->children));
 				}
+			}
+			else if(cur_node->type == XML_COMMENT_NODE) {
+				xml_node* node = new xml_node(cur_node, "#comment");
+				nodes->emplace_back(make_pair("#comment", node));
 			}
 		}
 	}
@@ -281,9 +410,88 @@ template<> ssize4 xml::xml_doc::get<ssize4>(const string& path, const ssize4 def
 			: default_value);
 }
 
+bool xml::xml_doc::set_attr(const string& path, const string& value) {
+	const size_t lp = path.rfind(".");
+	if(lp == string::npos) return false;
+	const string node_path = path.substr(0, lp);
+	const string attr_name = path.substr(lp+1, path.length()-lp-1);
+	
+	xml_node* node = get_node(node_path);
+	if(node == nullptr) return false;
+	if(attr_name == "content") return false; // TODO: implement this?
+	return node->set(attr_name, value);
+}
+
+template<> bool xml::xml_doc::set<string>(const string& path, const string& value) {
+	return set_attr(path, value);
+}
+
+template<> bool xml::xml_doc::set<float>(const string& path, const float& value) {
+	return set_attr(path, float2string(value));
+}
+
+template<> bool xml::xml_doc::set<size_t>(const string& path, const size_t& value) {
+	return set_attr(path, size_t2string(value));
+}
+
+template<> bool xml::xml_doc::set<ssize_t>(const string& path, const ssize_t& value) {
+	return set_attr(path, ssize_t2string(value));
+}
+
+template<> bool xml::xml_doc::set<bool>(const string& path, const bool& value) {
+	return set_attr(path, bool2string(value));
+}
+
+template<> bool xml::xml_doc::set<float2>(const string& path, const float2& value) {
+	return set_attr(path, float2string(value.x)+","+float2string(value.y));
+}
+
+template<> bool xml::xml_doc::set<float3>(const string& path, const float3& value) {
+	return set_attr(path, float2string(value.x)+","+float2string(value.y)+","+float2string(value.z));
+}
+
+template<> bool xml::xml_doc::set<float4>(const string& path, const float4& value) {
+	return set_attr(path,
+					float2string(value.x)+","+float2string(value.y)+
+					","+float2string(value.z)+","+float2string(value.w));
+}
+
+template<> bool xml::xml_doc::set<size2>(const string& path, const size2& value) {
+	return set_attr(path, size_t2string(value.x)+","+size_t2string(value.y));
+}
+
+template<> bool xml::xml_doc::set<size3>(const string& path, const size3& value) {
+	return set_attr(path, size_t2string(value.x)+","+size_t2string(value.y)+","+size_t2string(value.z));
+}
+
+template<> bool xml::xml_doc::set<size4>(const string& path, const size4& value) {
+	return set_attr(path,
+					size_t2string(value.x)+","+size_t2string(value.y)+
+					","+size_t2string(value.z)+","+size_t2string(value.w));
+}
+
+template<> bool xml::xml_doc::set<ssize2>(const string& path, const ssize2& value) {
+	return set_attr(path, ssize_t2string(value.x)+","+ssize_t2string(value.y));
+}
+
+template<> bool xml::xml_doc::set<ssize3>(const string& path, const ssize3& value) {
+	return set_attr(path, ssize_t2string(value.x)+","+ssize_t2string(value.y)+","+ssize_t2string(value.z));
+}
+
+template<> bool xml::xml_doc::set<ssize4>(const string& path, const ssize4& value) {
+	return set_attr(path,
+					ssize_t2string(value.x)+","+ssize_t2string(value.y)+
+					","+ssize_t2string(value.z)+","+ssize_t2string(value.w));
+}
+
 xml::xml_node::xml_node(const xmlNode* node) :
-node_name((const char*)node->name),
-node_content(xmlNodeGetContent((xmlNodePtr)node) != nullptr ? (const char*)xmlNodeGetContent((xmlNodePtr)node) : "") {
+xml::xml_node::xml_node(node, (const char*)node->name) {}
+
+xml::xml_node::xml_node(const xmlNode* node, const string name) :
+node_name(name),
+node_content(xmlNodeGetContent((xmlNodePtr)node) != nullptr ?
+			 (const char*)xmlNodeGetContent((xmlNodePtr)node) :
+			 (node->content != nullptr ? (const char*)node->content : "")) {
 	for(xmlAttr* cur_attr = node->properties; cur_attr; cur_attr = cur_attr->next) {
 		attributes.insert(make_pair(string((const char*)cur_attr->name),
 									string((cur_attr->children != nullptr ? (const char*)cur_attr->children->content : "INVALID"))

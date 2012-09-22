@@ -124,7 +124,7 @@ void file_io::get_block(char* data, size_t size) {
 /*! reads a single char from the current file input stream and returns it
  */
 char file_io::get_char() {
-	char c;
+	char c = '\0'; // must be initialized, since fstream get might fail!
 	filestream.get(c);
 	return c;
 }

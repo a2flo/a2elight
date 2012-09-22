@@ -135,7 +135,7 @@ bool gui_theme::load(const string& filename_) {
 				}
 			}
 		}
-		else {
+		else if(node.first[0] != '#') {
 			a2e_error("unknown node \"%s\" in theme \"%s\"!", node.first, filename_);
 		}
 	}
@@ -172,7 +172,7 @@ bool gui_theme::load_ui_object(const string& type, const string& obj_filename) {
 			process_state(st, node.second);
 			obj->states.insert(make_pair((*node.second)["type"], unique_ptr<gui_ui_object::state>(st)));
 		}
-		else {
+		else if(node.first[0] != '#') {
 			a2e_error("unknown node \"%s\" in ui object \"%s\"!", node.first, obj_filename);
 		}
 	}
@@ -183,7 +183,9 @@ bool gui_theme::load_ui_object(const string& type, const string& obj_filename) {
 void gui_theme::process_state(gui_ui_object::state* st, const xml::xml_node* node) {
 	// process child nodes
 	for(const auto& child : node->children) {
-		process_primitive(st, child.second);
+		if(child.first[0] != '#') {
+			process_primitive(st, child.second);
+		}
 	}
 }
 
