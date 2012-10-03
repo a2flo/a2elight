@@ -29,6 +29,7 @@ class osx_helper {
 public:
 	static size_t get_dpi(SDL_Window* wnd);
 	static float get_scale_factor(SDL_Window* wnd);
+	static float get_menu_bar_height();
 	
 };
 

@@ -37,8 +37,8 @@ const char* rtt::TEXTURE_ANTI_ALIASING_STR[] = {
 	"2xSSAA",
 	"4xSSAA",
 	"FXAA",
-	"4/3xSSAA + FXAA",
-	"2xSSAA + FXAA",
+	"4/3xSSAA+FXAA",
+	"2xSSAA+FXAA",
 };
 
 /*! there is no function currently

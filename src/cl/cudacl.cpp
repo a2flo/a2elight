@@ -337,237 +337,244 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 	platform_vendor = PLATFORM_VENDOR::NVIDIA;
 	
 	//
-	int device_count = 0;
-	unsigned int fastest_gpu_score = 0;
-	unsigned int gpu_score = 0;
-	cuDeviceGetCount(&device_count);
-	for(int cur_device = 0; cur_device < device_count; cur_device++) {
-		// get and create device
-		CUdevice* cuda_dev = new CUdevice();
-		CUresult cu_err = cuDeviceGet(cuda_dev, cur_device);
-		ccl->devices.emplace_back(cuda_dev);
-		if(cu_err != CUDA_SUCCESS) {
-			a2e_error("failed to get device #%i: %i", cur_device, cu_err);
-			continue;
-		}
-		CUdevice& cuda_device = *cuda_dev;
-		
-		// get all attributes
-		char dev_name[256];
-		memset(dev_name, 0, 256);
-		CU(cuDeviceGetName(dev_name, 255, cuda_device));
-		
-		pair<int, int> cc;
-		CU(cuDeviceComputeCapability(&cc.first, &cc.second, cuda_device));
-		
-		switch(cc.first) {
-			case 0:
-				a2e_error("invalid compute capability: %u.%u", cc.first, cc.second);
-				break;
-			case 1:
-				switch(cc.second) {
-					case 0:
-						ccl->cc_target_str = "10";
-						ccl->cc_target = CU_TARGET_COMPUTE_10;
-						break;
-					case 1:
-						ccl->cc_target_str = "11";
-						ccl->cc_target = CU_TARGET_COMPUTE_11;
-						break;
-					case 2:
-						ccl->cc_target_str = "12";
-						ccl->cc_target = CU_TARGET_COMPUTE_12;
-						break;
-					case 3:
-					default: // ignore invalid ones ...
-						ccl->cc_target_str = "13";
-						ccl->cc_target = CU_TARGET_COMPUTE_13;
-						break;
-				}
-				break;
-			case 2:
-				switch(cc.second) {
-					case 0:
-						ccl->cc_target_str = "20";
-						ccl->cc_target = CU_TARGET_COMPUTE_20;
-						break;
-					case 1:
-					default: // ignore invalid ones ...
-						ccl->cc_target_str = "21";
-						ccl->cc_target = CU_TARGET_COMPUTE_21;
-						break;
-				}
-				break;
-			case 3:
-			default: // default higher ones to highest 3.x (drivers already mention sm_40 and sm_50)
-				switch(cc.second) {
-					case 0:
-						ccl->cc_target_str = "30";
-						ccl->cc_target = CU_TARGET_COMPUTE_30;
-						break;
-					case 2:
-						// this is inofficial, but support it anyways ...
-						ccl->cc_target_str = "30";
-						ccl->cc_target = CU_TARGET_COMPUTE_30;
-						break;
-					case 5:
-					default: // ignore invalid ones ...
-						ccl->cc_target_str = "35";
-						ccl->cc_target = CU_TARGET_COMPUTE_35;
-						break;
-				}
-				break;
-		}
-		
-		bool fp64 = cc.first > 1 || (cc.first == 1 && cc.second >= 3);
-		string extensions = "cl_APPLE_gl_sharing cl_khr_byte_addressable_store cl_khr_global_int32_base_atomics cl_khr_global_int32_extended_atomics cl_khr_local_int32_base_atomics cl_khr_local_int32_extended_atomics cl_khr_fp16 cl_nv_device_attribute_query cl_nv_pragma_unroll";
-		if(fp64) extensions += " cl_khr_fp64";
-		extensions += " "; // add additional space char, since some applications get confused otherwise
-		
-		size_t global_mem;
-		CU(cuDeviceTotalMem(&global_mem, cuda_device));
-		
-		int vendor_id, proc_count, const_mem, local_mem, priv_mem, cache_size;
-		CU(cuDeviceGetAttribute(&vendor_id, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, cuda_device));
-		CU(cuDeviceGetAttribute(&proc_count, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, cuda_device));
-		CU(cuDeviceGetAttribute(&const_mem, CU_DEVICE_ATTRIBUTE_TOTAL_CONSTANT_MEMORY, cuda_device));
-		CU(cuDeviceGetAttribute(&local_mem, CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, cuda_device));
-		CU(cuDeviceGetAttribute(&priv_mem, CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_BLOCK, cuda_device));
-		CU(cuDeviceGetAttribute(&cache_size, CU_DEVICE_ATTRIBUTE_L2_CACHE_SIZE, cuda_device));
-		cache_size = (cache_size < 0 ? 0 : cache_size);
-		
-		int warp_size, max_work_group_size, memory_pitch;
-		tuple<int, int, int> max_work_item_size;
-		tuple<int, int, int> max_grid_dim;
-		CU(cuDeviceGetAttribute(&warp_size, CU_DEVICE_ATTRIBUTE_WARP_SIZE, cuda_device));
-		CU(cuDeviceGetAttribute(&max_work_group_size, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, cuda_device));
-		CU(cuDeviceGetAttribute(&memory_pitch, CU_DEVICE_ATTRIBUTE_MAX_PITCH, cuda_device));
-		CU(cuDeviceGetAttribute(&get<0>(max_work_item_size), CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, cuda_device));
-		CU(cuDeviceGetAttribute(&get<1>(max_work_item_size), CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Y, cuda_device));
-		CU(cuDeviceGetAttribute(&get<2>(max_work_item_size), CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Z, cuda_device));
-		CU(cuDeviceGetAttribute(&get<0>(max_grid_dim), CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, cuda_device));
-		CU(cuDeviceGetAttribute(&get<1>(max_grid_dim), CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y, cuda_device));
-		CU(cuDeviceGetAttribute(&get<2>(max_grid_dim), CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z, cuda_device));
-		
-		tuple<int, int> max_image_2d;
-		tuple<int, int, int> max_image_3d;
-		CU(cuDeviceGetAttribute(&get<0>(max_image_2d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE2D_WIDTH, cuda_device));
-		CU(cuDeviceGetAttribute(&get<1>(max_image_2d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE2D_HEIGHT, cuda_device));
-		CU(cuDeviceGetAttribute(&get<0>(max_image_3d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE3D_WIDTH, cuda_device));
-		CU(cuDeviceGetAttribute(&get<1>(max_image_3d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE3D_HEIGHT, cuda_device));
-		CU(cuDeviceGetAttribute(&get<2>(max_image_3d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE3D_DEPTH, cuda_device));
-		
-		int clock_rate, mem_clock_rate, mem_bus_width, async_engine_count, tex_align;
-		CU(cuDeviceGetAttribute(&clock_rate, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, cuda_device));
-		CU(cuDeviceGetAttribute(&mem_clock_rate, CU_DEVICE_ATTRIBUTE_MEMORY_CLOCK_RATE, cuda_device));
-		CU(cuDeviceGetAttribute(&mem_bus_width, CU_DEVICE_ATTRIBUTE_GLOBAL_MEMORY_BUS_WIDTH, cuda_device));
-		CU(cuDeviceGetAttribute(&async_engine_count, CU_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT, cuda_device));
-		CU(cuDeviceGetAttribute(&tex_align, CU_DEVICE_ATTRIBUTE_TEXTURE_ALIGNMENT, cuda_device));
-		
-		int exec_timeout, overlap, map_host_memory, integrated, concurrent, ecc, tcc, unified_memory;
-		CU(cuDeviceGetAttribute(&exec_timeout, CU_DEVICE_ATTRIBUTE_KERNEL_EXEC_TIMEOUT, cuda_device));
-		CU(cuDeviceGetAttribute(&overlap, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, cuda_device));
-		CU(cuDeviceGetAttribute(&map_host_memory, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, cuda_device));
-		CU(cuDeviceGetAttribute(&integrated, CU_DEVICE_ATTRIBUTE_INTEGRATED, cuda_device));
-		CU(cuDeviceGetAttribute(&concurrent, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, cuda_device));
-		CU(cuDeviceGetAttribute(&ecc, CU_DEVICE_ATTRIBUTE_ECC_ENABLED, cuda_device));
-		CU(cuDeviceGetAttribute(&tcc, CU_DEVICE_ATTRIBUTE_TCC_DRIVER, cuda_device));
-		CU(cuDeviceGetAttribute(&unified_memory, CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, cuda_device));
-		
-		//
-		opencl::device_object* device = new opencl::device_object();
-		ccl->device_map[device] = cuda_dev;
-		device->device = nullptr;
-		device->internal_type = CL_DEVICE_TYPE_GPU;
-		device->units = proc_count;
-		device->clock = clock_rate / 1000;
-		device->mem_size = global_mem;
-		device->name = dev_name;
-		device->vendor = "NVIDIA";
-		device->version = "OpenCL 1.1";
-		device->driver_version = "CLH 1.0";
-		device->extensions = extensions;
-		device->vendor_type = VENDOR::NVIDIA;
-		device->type = (opencl::DEVICE_TYPE)cur_device;
-		device->max_alloc = global_mem;
-		device->max_wg_size = max_work_group_size;
-		device->img_support = true;
-		device->max_img_2d.set(get<0>(max_image_2d), get<1>(max_image_2d));
-		device->max_img_3d.set(get<0>(max_image_3d), get<1>(max_image_3d), get<2>(max_image_3d));
-		
-		if(fastest_gpu == nullptr) {
-			fastest_gpu = device;
-			fastest_gpu_score = device->units * device->clock;
-		}
-		else {
-			gpu_score = device->units * device->clock;
-			if(gpu_score > fastest_gpu_score) {
-				fastest_gpu = device;
+	try {
+		int device_count = 0;
+		unsigned int fastest_gpu_score = 0;
+		unsigned int gpu_score = 0;
+		cuDeviceGetCount(&device_count);
+		for(int cur_device = 0; cur_device < device_count; cur_device++) {
+			// get and create device
+			CUdevice* cuda_dev = new CUdevice();
+			CUresult cu_err = cuDeviceGet(cuda_dev, cur_device);
+			ccl->devices.emplace_back(cuda_dev);
+			if(cu_err != CUDA_SUCCESS) {
+				a2e_error("failed to get device #%i: %i", cur_device, cu_err);
+				continue;
 			}
+			CUdevice& cuda_device = *cuda_dev;
+			
+			// get all attributes
+			char dev_name[256];
+			memset(dev_name, 0, 256);
+			CU(cuDeviceGetName(dev_name, 255, cuda_device));
+			
+			pair<int, int> cc;
+			CU(cuDeviceComputeCapability(&cc.first, &cc.second, cuda_device));
+			
+			switch(cc.first) {
+				case 0:
+					a2e_error("invalid compute capability: %u.%u", cc.first, cc.second);
+					break;
+				case 1:
+					switch(cc.second) {
+						case 0:
+							ccl->cc_target_str = "10";
+							ccl->cc_target = CU_TARGET_COMPUTE_10;
+							break;
+						case 1:
+							ccl->cc_target_str = "11";
+							ccl->cc_target = CU_TARGET_COMPUTE_11;
+							break;
+						case 2:
+							ccl->cc_target_str = "12";
+							ccl->cc_target = CU_TARGET_COMPUTE_12;
+							break;
+						case 3:
+						default: // ignore invalid ones ...
+							ccl->cc_target_str = "13";
+							ccl->cc_target = CU_TARGET_COMPUTE_13;
+							break;
+					}
+					break;
+				case 2:
+					switch(cc.second) {
+						case 0:
+							ccl->cc_target_str = "20";
+							ccl->cc_target = CU_TARGET_COMPUTE_20;
+							break;
+						case 1:
+						default: // ignore invalid ones ...
+							ccl->cc_target_str = "21";
+							ccl->cc_target = CU_TARGET_COMPUTE_21;
+							break;
+					}
+					break;
+				case 3:
+				default: // default higher ones to highest 3.x (drivers already mention sm_40 and sm_50)
+					switch(cc.second) {
+						case 0:
+							ccl->cc_target_str = "30";
+							ccl->cc_target = CU_TARGET_COMPUTE_30;
+							break;
+						case 2:
+							// this is inofficial, but support it anyways ...
+							ccl->cc_target_str = "30";
+							ccl->cc_target = CU_TARGET_COMPUTE_30;
+							break;
+						case 5:
+						default: // ignore invalid ones ...
+							ccl->cc_target_str = "35";
+							ccl->cc_target = CU_TARGET_COMPUTE_35;
+							break;
+					}
+					break;
+			}
+			
+			bool fp64 = cc.first > 1 || (cc.first == 1 && cc.second >= 3);
+			string extensions = "cl_APPLE_gl_sharing cl_khr_byte_addressable_store cl_khr_global_int32_base_atomics cl_khr_global_int32_extended_atomics cl_khr_local_int32_base_atomics cl_khr_local_int32_extended_atomics cl_khr_fp16 cl_nv_device_attribute_query cl_nv_pragma_unroll";
+			if(fp64) extensions += " cl_khr_fp64";
+			extensions += " "; // add additional space char, since some applications get confused otherwise
+			
+			size_t global_mem;
+			CU(cuDeviceTotalMem(&global_mem, cuda_device));
+			
+			int vendor_id, proc_count, const_mem, local_mem, priv_mem, cache_size;
+			CU(cuDeviceGetAttribute(&vendor_id, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, cuda_device));
+			CU(cuDeviceGetAttribute(&proc_count, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, cuda_device));
+			CU(cuDeviceGetAttribute(&const_mem, CU_DEVICE_ATTRIBUTE_TOTAL_CONSTANT_MEMORY, cuda_device));
+			CU(cuDeviceGetAttribute(&local_mem, CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, cuda_device));
+			CU(cuDeviceGetAttribute(&priv_mem, CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_BLOCK, cuda_device));
+			CU(cuDeviceGetAttribute(&cache_size, CU_DEVICE_ATTRIBUTE_L2_CACHE_SIZE, cuda_device));
+			cache_size = (cache_size < 0 ? 0 : cache_size);
+			
+			int warp_size, max_work_group_size, memory_pitch;
+			tuple<int, int, int> max_work_item_size;
+			tuple<int, int, int> max_grid_dim;
+			CU(cuDeviceGetAttribute(&warp_size, CU_DEVICE_ATTRIBUTE_WARP_SIZE, cuda_device));
+			CU(cuDeviceGetAttribute(&max_work_group_size, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, cuda_device));
+			CU(cuDeviceGetAttribute(&memory_pitch, CU_DEVICE_ATTRIBUTE_MAX_PITCH, cuda_device));
+			CU(cuDeviceGetAttribute(&get<0>(max_work_item_size), CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, cuda_device));
+			CU(cuDeviceGetAttribute(&get<1>(max_work_item_size), CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Y, cuda_device));
+			CU(cuDeviceGetAttribute(&get<2>(max_work_item_size), CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Z, cuda_device));
+			CU(cuDeviceGetAttribute(&get<0>(max_grid_dim), CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, cuda_device));
+			CU(cuDeviceGetAttribute(&get<1>(max_grid_dim), CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y, cuda_device));
+			CU(cuDeviceGetAttribute(&get<2>(max_grid_dim), CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z, cuda_device));
+			
+			tuple<int, int> max_image_2d;
+			tuple<int, int, int> max_image_3d;
+			CU(cuDeviceGetAttribute(&get<0>(max_image_2d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE2D_WIDTH, cuda_device));
+			CU(cuDeviceGetAttribute(&get<1>(max_image_2d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE2D_HEIGHT, cuda_device));
+			CU(cuDeviceGetAttribute(&get<0>(max_image_3d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE3D_WIDTH, cuda_device));
+			CU(cuDeviceGetAttribute(&get<1>(max_image_3d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE3D_HEIGHT, cuda_device));
+			CU(cuDeviceGetAttribute(&get<2>(max_image_3d), CU_DEVICE_ATTRIBUTE_MAXIMUM_TEXTURE3D_DEPTH, cuda_device));
+			
+			int clock_rate, mem_clock_rate, mem_bus_width, async_engine_count, tex_align;
+			CU(cuDeviceGetAttribute(&clock_rate, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, cuda_device));
+			CU(cuDeviceGetAttribute(&mem_clock_rate, CU_DEVICE_ATTRIBUTE_MEMORY_CLOCK_RATE, cuda_device));
+			CU(cuDeviceGetAttribute(&mem_bus_width, CU_DEVICE_ATTRIBUTE_GLOBAL_MEMORY_BUS_WIDTH, cuda_device));
+			CU(cuDeviceGetAttribute(&async_engine_count, CU_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT, cuda_device));
+			CU(cuDeviceGetAttribute(&tex_align, CU_DEVICE_ATTRIBUTE_TEXTURE_ALIGNMENT, cuda_device));
+			
+			int exec_timeout, overlap, map_host_memory, integrated, concurrent, ecc, tcc, unified_memory;
+			CU(cuDeviceGetAttribute(&exec_timeout, CU_DEVICE_ATTRIBUTE_KERNEL_EXEC_TIMEOUT, cuda_device));
+			CU(cuDeviceGetAttribute(&overlap, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, cuda_device));
+			CU(cuDeviceGetAttribute(&map_host_memory, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, cuda_device));
+			CU(cuDeviceGetAttribute(&integrated, CU_DEVICE_ATTRIBUTE_INTEGRATED, cuda_device));
+			CU(cuDeviceGetAttribute(&concurrent, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, cuda_device));
+			CU(cuDeviceGetAttribute(&ecc, CU_DEVICE_ATTRIBUTE_ECC_ENABLED, cuda_device));
+			CU(cuDeviceGetAttribute(&tcc, CU_DEVICE_ATTRIBUTE_TCC_DRIVER, cuda_device));
+			CU(cuDeviceGetAttribute(&unified_memory, CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, cuda_device));
+			
+			//
+			opencl::device_object* device = new opencl::device_object();
+			ccl->device_map[device] = cuda_dev;
+			device->device = nullptr;
+			device->internal_type = CL_DEVICE_TYPE_GPU;
+			device->units = proc_count;
+			device->clock = clock_rate / 1000;
+			device->mem_size = global_mem;
+			device->name = dev_name;
+			device->vendor = "NVIDIA";
+			device->version = "OpenCL 1.1";
+			device->driver_version = "CLH 1.0";
+			device->extensions = extensions;
+			device->vendor_type = VENDOR::NVIDIA;
+			device->type = (opencl::DEVICE_TYPE)cur_device;
+			device->max_alloc = global_mem;
+			device->max_wg_size = max_work_group_size;
+			device->img_support = true;
+			device->max_img_2d.set(get<0>(max_image_2d), get<1>(max_image_2d));
+			device->max_img_3d.set(get<0>(max_image_3d), get<1>(max_image_3d), get<2>(max_image_3d));
+			
+			if(fastest_gpu == nullptr) {
+				fastest_gpu = device;
+				fastest_gpu_score = device->units * device->clock;
+			}
+			else {
+				gpu_score = device->units * device->clock;
+				if(gpu_score > fastest_gpu_score) {
+					fastest_gpu = device;
+				}
+			}
+			
+			devices.push_back(device);
+			
+			// TYPE (Units: %, Clock: %): Name, Vendor, Version, Driver Version
+			const string dev_type_str = "GPU ";
+			a2e_debug("%s(Units: %u, Clock: %u MHz, Memory: %u MB): %s %s, %s / %s",
+					  dev_type_str,
+					  device->units,
+					  device->clock,
+					  (unsigned int)round(double(device->mem_size) / 1048576.0),
+					  device->vendor,
+					  device->name,
+					  device->version,
+					  device->driver_version);
 		}
 		
-		devices.push_back(device);
+		// no supported devices found -> disable opencl/cudacl support
+		if(devices.empty()) {
+			a2e_error("no supported device found for this platform!");
+			supported = false;
+			return;
+		}
 		
-		// TYPE (Units: %, Clock: %): Name, Vendor, Version, Driver Version
-		const string dev_type_str = "GPU ";
-		a2e_debug("%s(Units: %u, Clock: %u MHz, Memory: %u MB): %s %s, %s / %s",
-				  dev_type_str,
-				  device->units,
-				  device->clock,
-				  (unsigned int)round(double(device->mem_size) / 1048576.0),
-				  device->vendor,
-				  device->name,
-				  device->version,
-				  device->driver_version);
+		// create a (single) command queue (-> cuda context and stream) for each device
+		for(const auto& device : ccl->devices) {
+			CUcontext* ctx = new CUcontext();
+			ccl->contexts[device] = ctx;
+			CU(cuCtxCreate(ctx, CU_CTX_SCHED_AUTO, *device));
+			
+			CUstream* cuda_stream = new CUstream();
+			CU(cuStreamCreate(cuda_stream, 0));
+			ccl->queues[device] = cuda_stream;
+		}
+		CU(cuCtxSetCurrent(*ccl->contexts[ccl->devices[0]]));
+		
+		if(fastest_gpu != nullptr) a2e_debug("fastest GPU device: %s %s (score: %u)", fastest_gpu->vendor.c_str(), fastest_gpu->name.c_str(), fastest_gpu_score);
+		
+		// compile internal kernels
+		size_t local_size_limit = std::max((size_t)512, devices[0]->max_wg_size); // default to 512
+		const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
+		
+		internal_kernels = { // first time init:
+			make_tuple("PARTICLE_INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
+			make_tuple("PARTICLE_RESPAWN", "particle_spawn.cl", "particle_respawn", ""),
+			make_tuple("PARTICLE_COMPUTE", "particle_compute.cl", "particle_compute", ""),
+			make_tuple("PARTICLE_SORT_LOCAL", "particle_sort.cl", "bitonicSortLocal", lsl_str),
+			make_tuple("PARTICLE_SORT_MERGE_GLOBAL", "particle_sort.cl", "bitonicMergeGlobal", lsl_str),
+			make_tuple("PARTICLE_SORT_MERGE_LOCAL", "particle_sort.cl", "bitonicMergeLocal", lsl_str),
+			make_tuple("PARTICLE_COMPUTE_DISTANCES", "particle_sort.cl", "compute_distances", lsl_str)
+		};
+		
+		// TODO: support this in cuda
+		// TODO: make tile size dependent on #cores
+		/*string ir_lighting_flags = (" -DA2E_IR_TILE_SIZE_X="+uint2string(A2E_IR_TILE_SIZE_X) +
+		 " -DA2E_IR_TILE_SIZE_Y="+uint2string(A2E_IR_TILE_SIZE_Y) +
+		 " -DA2E_LOCAL_ATOMICS");
+		 // only add the inferred lighting kernel if there is support for local memory atomics
+		 bool local_atomics_support = true;
+		 if(local_atomics_support) {
+		 internal_kernels.emplace_back("INFERRED_LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags);
+		 }*/
+		
+		load_internal_kernels();
 	}
-	
-	// no supported devices found -> disable opencl/cudacl support
-	if(devices.empty()) {
-		a2e_error("no supported device found for this platform!");
+	catch(cudacl_exception& exc) {
+		a2e_error("failed to initialize cuda: %X: %s!", exc.code(), exc.what());
 		supported = false;
-		return;
+		ccl->valid = false;
 	}
-	
-	// create a (single) command queue (-> cuda context and stream) for each device
-	for(const auto& device : ccl->devices) {
-		CUcontext* ctx = new CUcontext();
-		ccl->contexts[device] = ctx;
-		CU(cuCtxCreate(ctx, CU_CTX_SCHED_AUTO, *device));
-		
-		CUstream* cuda_stream = new CUstream();
-		CU(cuStreamCreate(cuda_stream, 0));
-		ccl->queues[device] = cuda_stream;
-	}
-	CU(cuCtxSetCurrent(*ccl->contexts[ccl->devices[0]]));
-	
-	if(fastest_gpu != nullptr) a2e_debug("fastest GPU device: %s %s (score: %u)", fastest_gpu->vendor.c_str(), fastest_gpu->name.c_str(), fastest_gpu_score);
-	
-	// compile internal kernels	
-	size_t local_size_limit = std::max((size_t)512, devices[0]->max_wg_size); // default to 512
-	const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
-	
-	internal_kernels = { // first time init:
-		make_tuple("PARTICLE_INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
-		make_tuple("PARTICLE_RESPAWN", "particle_spawn.cl", "particle_respawn", ""),
-		make_tuple("PARTICLE_COMPUTE", "particle_compute.cl", "particle_compute", ""),
-		make_tuple("PARTICLE_SORT_LOCAL", "particle_sort.cl", "bitonicSortLocal", lsl_str),
-		make_tuple("PARTICLE_SORT_MERGE_GLOBAL", "particle_sort.cl", "bitonicMergeGlobal", lsl_str),
-		make_tuple("PARTICLE_SORT_MERGE_LOCAL", "particle_sort.cl", "bitonicMergeLocal", lsl_str),
-		make_tuple("PARTICLE_COMPUTE_DISTANCES", "particle_sort.cl", "compute_distances", lsl_str)
-	};
-	
-	// TODO: support this in cuda
-	// TODO: make tile size dependent on #cores
-	/*string ir_lighting_flags = (" -DA2E_IR_TILE_SIZE_X="+uint2string(A2E_IR_TILE_SIZE_X) +
-								" -DA2E_IR_TILE_SIZE_Y="+uint2string(A2E_IR_TILE_SIZE_Y) +
-								" -DA2E_LOCAL_ATOMICS");
-	// only add the inferred lighting kernel if there is support for local memory atomics
-	bool local_atomics_support = true;
-	if(local_atomics_support) {
-		internal_kernels.emplace_back("INFERRED_LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags);
-	}*/
-	
-	load_internal_kernels();
 }
 
 opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options) {

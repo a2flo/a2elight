@@ -328,6 +328,7 @@ void engine::init(const char* ico) {
 #if !defined(A2E_IOS)
 	config.flags |= SDL_WINDOW_INPUT_FOCUS;
 	config.flags |= SDL_WINDOW_MOUSE_FOCUS;
+	config.flags |= SDL_WINDOW_RESIZABLE;
 
 	int2 windows_pos(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	if(config.fullscreen) {
@@ -338,7 +339,6 @@ void engine::init(const char* ico) {
 	}
 	else {
 		a2e_debug("fullscreen disabled");
-		config.flags |= SDL_WINDOW_RESIZABLE;
 	}
 #else
 	config.flags |= SDL_WINDOW_FULLSCREEN;
@@ -489,32 +489,17 @@ void engine::init(const char* ico) {
 	// resize stuff
 	resize_window();
 
-	// check which anti-aliasing modes are supported (ranging from worst to best)
+	// set and check which anti-aliasing modes are supported (ranging from worst to best)
 	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::NONE);
 	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::FXAA);
 	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_2);
 	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_4);
 	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_4_3_FXAA);
 	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_2_FXAA);
-	
-	bool chosen_aa_mode_supported = false;
-	for(const auto& aa_mode : supported_aa_modes) {
-		if(aa_mode == config.anti_aliasing) chosen_aa_mode_supported = true;
-	}
+	set_anti_aliasing(config.anti_aliasing);
 
-	// if the chosen anti-aliasing mode isn't supported, use the next best one
-	if(!chosen_aa_mode_supported) {
-		config.anti_aliasing = supported_aa_modes.back();
-		a2e_error("your chosen anti-aliasing mode isn't supported by your graphic card - using \"%s\" instead!", rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
-	}
-	else a2e_debug("using \"%s\" anti-aliasing", rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
-
-	// check anisotropic
-	if(config.anisotropic > exts->get_max_anisotropic_filtering()) {
-		config.anisotropic = exts->get_max_anisotropic_filtering();
-		a2e_error("your chosen anisotropic-filtering value isn't supported by your graphic card - using \"%u\" instead!", config.anisotropic);
-	}
-	else a2e_debug("using \"%ux\" anisotropic-filtering", config.anisotropic);
+	// set and check anisotropic
+	set_anisotropic(config.anisotropic);
 	
 	// create texture manager and render to texture object
 	t = new texman(f, u, exts, datapath, config.anisotropic);
@@ -619,19 +604,65 @@ void engine::init(const char* ico) {
 /*! sets the windows width
  *  @param width the window width
  */
-void engine::set_width(unsigned int width) {
+void engine::set_width(const unsigned int& width) {
+	if(width == config.width) return;
 	config.width = width;
-	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
-				 make_shared<window_resize_event>(SDL_GetTicks(), size2(config.width, config.height)));
+	SDL_SetWindowSize(config.wnd, (int)config.width, (int)config.height);
+	// TODO: make this work:
+	/*SDL_SetWindowPosition(config.wnd,
+						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED,
+						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED);*/
 }
 
 /*! sets the window height
  *  @param height the window height
  */
-void engine::set_height(unsigned int height) {
+void engine::set_height(const unsigned int& height) {
+	if(height == config.height) return;
 	config.height = height;
+	SDL_SetWindowSize(config.wnd, (int)config.width, (int)config.height);
+	// TODO: make this work:
+	/*SDL_SetWindowPosition(config.wnd,
+						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED,
+						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED);*/
+}
+
+void engine::set_screen_size(const uint2& screen_size) {
+	if(screen_size.x == config.width && screen_size.y == config.height) return;
+	config.width = screen_size.x;
+	config.height = screen_size.y;
+	SDL_SetWindowSize(config.wnd, (int)config.width, (int)config.height);
+	
+	SDL_Rect bounds;
+	SDL_GetDisplayBounds(0, &bounds);
+	SDL_SetWindowPosition(config.wnd,
+						  bounds.x + (bounds.w - int(config.width)) / 2,
+						  bounds.y + (bounds.h - int(config.height)) / 2);
+	// TODO: make this work:
+	/*SDL_SetWindowPosition(config.wnd,
+						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED,
+						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED);*/
+}
+
+void engine::set_fullscreen(const bool& state) {
+	if(state == config.fullscreen) return;
+	config.fullscreen = state;
+	if(SDL_SetWindowFullscreen(config.wnd, (SDL_bool)state) != 0) {
+		a2e_error("failed to %s fullscreen: %s!",
+				  (state ? "enable" : "disable"), SDL_GetError());
+	}
 	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
-				 make_shared<window_resize_event>(SDL_GetTicks(), size2(config.width, config.height)));
+				 make_shared<window_resize_event>(SDL_GetTicks(),
+												  size2(config.width, config.height)));
+	// TODO: border?
+}
+
+void engine::set_vsync(const bool& state) {
+	if(state == config.vsync) return;
+	config.vsync = state;
+#if !defined(A2E_IOS)
+	SDL_GL_SetSwapInterval(config.vsync ? 1 : 0);
+#endif
 }
 
 /*! starts drawing the window
@@ -911,7 +942,7 @@ void engine::set_fps_limit(unsigned int ms) {
 
 /*! returns how many milliseconds the engine is "sleeping" after a frame is rendered
  */
-unsigned int engine::get_fps_limit() {
+unsigned int engine::get_fps_limit() const {
 	return (unsigned int)config.fps_limit;
 }
 
@@ -1050,28 +1081,71 @@ string engine::strip_data_path(const string& str) const {
 	return core::find_and_replace(str, datapath, "");
 }
 
-engine::server_data* engine::get_server_data() {
+/*engine::server_data* engine::get_server_data() {
 	return &config.server;
 }
 
 engine::client_data* engine::get_client_data() {
 	return &config.client;
-}
+}*/
 
 void engine::load_ico(const char* ico) {
 	SDL_SetWindowIcon(config.wnd, IMG_Load(data_path(ico).c_str()));
 }
 
-TEXTURE_FILTERING engine::get_filtering() {
+TEXTURE_FILTERING engine::get_filtering() const {
 	return config.filtering;
 }
 
-size_t engine::get_anisotropic() {
+void engine::set_filtering(const TEXTURE_FILTERING& filtering) {
+	if(filtering == config.filtering) return;
+	config.filtering = filtering;
+	t->set_filtering(filtering);
+}
+
+size_t engine::get_anisotropic() const {
 	return config.anisotropic;
 }
 
-rtt::TEXTURE_ANTI_ALIASING engine::get_anti_aliasing() {
+void engine::set_anisotropic(const size_t& anisotropic) {
+	config.anisotropic = anisotropic;
+	if(config.anisotropic > exts->get_max_anisotropic_filtering()) {
+		config.anisotropic = exts->get_max_anisotropic_filtering();
+		a2e_error("your chosen anisotropic-filtering value isn't supported by your graphic card - using \"%u\" instead!", config.anisotropic);
+	}
+	else a2e_debug("using \"%ux\" anisotropic-filtering", config.anisotropic);
+}
+
+rtt::TEXTURE_ANTI_ALIASING engine::get_anti_aliasing() const {
 	return config.anti_aliasing;
+}
+
+void engine::set_anti_aliasing(const rtt::TEXTURE_ANTI_ALIASING& anti_aliasing) {
+	//
+	const bool recreate_buffers = (anti_aliasing != config.anti_aliasing);
+	
+	//
+	bool chosen_aa_mode_supported = false;
+	config.anti_aliasing = anti_aliasing;
+	for(const auto& aa_mode : supported_aa_modes) {
+		if(aa_mode == config.anti_aliasing) chosen_aa_mode_supported = true;
+	}
+	
+	// if the chosen anti-aliasing mode isn't supported, use the next best one
+	if(!chosen_aa_mode_supported) {
+		config.anti_aliasing = supported_aa_modes.back();
+		a2e_error("your chosen anti-aliasing mode isn't supported by your graphic card - using \"%s\" instead!", rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
+	}
+	else {
+		a2e_debug("using \"%s\" anti-aliasing",
+				  rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
+	}
+	
+	if(recreate_buffers) {
+		e->add_event(EVENT_TYPE::WINDOW_RESIZE,
+					 make_shared<window_resize_event>(SDL_GetTicks(),
+													  size2(config.width, config.height)));
+	}
 }
 
 matrix4f* engine::get_projection_matrix() {
@@ -1192,32 +1266,36 @@ unsigned int engine::get_height() const {
 	return (unsigned int)config.height;
 }
 
-unsigned int engine::get_key_repeat() {
+uint2 engine::get_screen_size() const {
+	return uint2((unsigned int)config.width, (unsigned int)config.height);
+}
+
+unsigned int engine::get_key_repeat() const {
 	return (unsigned int)config.key_repeat;
 }
 
-unsigned int engine::get_ldouble_click_time() {
+unsigned int engine::get_ldouble_click_time() const {
 	return (unsigned int)config.ldouble_click_time;
 }
 
-unsigned int engine::get_mdouble_click_time() {
+unsigned int engine::get_mdouble_click_time() const {
 	return (unsigned int)config.mdouble_click_time;
 }
 
-unsigned int engine::get_rdouble_click_time() {
+unsigned int engine::get_rdouble_click_time() const {
 	return (unsigned int)config.rdouble_click_time;
 }
 
-string* engine::get_disabled_extensions() {
-	return &config.disabled_extensions;
+const string& engine::get_disabled_extensions() const {
+	return config.disabled_extensions;
 }
 
-string* engine::get_force_device() {
-	return &config.force_device;
+const string& engine::get_force_device() const {
+	return config.force_device;
 }
 
-string* engine::get_force_vendor() {
-	return &config.force_vendor;
+const string& engine::get_force_vendor() const {
+	return config.force_vendor;
 }
 
 SDL_Window* engine::get_window() const {
@@ -1228,8 +1306,24 @@ float engine::get_upscaling() const {
 	return config.upscaling;
 }
 
+void engine::set_upscaling(const float& factor) {
+	if(factor == config.upscaling) return;
+	config.upscaling = factor;
+	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
+				 make_shared<window_resize_event>(SDL_GetTicks(),
+												  size2(config.width, config.height)));
+}
+
 float engine::get_geometry_light_scaling() const {
 	return config.geometry_light_scaling;
+}
+
+void engine::set_geometry_light_scaling(const float& factor) {
+	if(factor == config.geometry_light_scaling) return;
+	config.geometry_light_scaling = factor;
+	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
+				 make_shared<window_resize_event>(SDL_GetTicks(),
+												  size2(config.width, config.height)));
 }
 
 const string engine::get_version() const {
@@ -1277,6 +1371,14 @@ const float& engine::get_fov() const {
 	return config.fov;
 }
 
+void engine::set_fov(const float& fov) {
+	if(config.fov == fov) return;
+	config.fov = fov;
+	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
+				 make_shared<window_resize_event>(SDL_GetTicks(),
+												  size2(config.width, config.height)));
+}
+
 const float2& engine::get_near_far_plane() const {
 	return config.near_far_plane;
 }
@@ -1290,6 +1392,10 @@ const rtt::TEXTURE_ANTI_ALIASING& engine::get_ui_anti_aliasing() const {
 }
 
 const xml::xml_doc& engine::get_config_doc() const {
+	return config_doc;
+}
+
+xml::xml_doc& engine::get_config_doc() {
 	return config_doc;
 }
 

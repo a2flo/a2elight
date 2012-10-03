@@ -16,42 +16,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_text.h"
+#include "gui_list_box.h"
 #include "engine.h"
-#include "core/core.h"
+#include "gui.h"
 
-gui_text::gui_text(engine* e_, const float2& size_, const float2& position_) :
+gui_list_box::gui_list_box(engine* e_, const float2& size_, const float2& position_) :
 gui_object(e_, size_, position_) {
 	//
 }
 
-gui_text::~gui_text() {
+gui_list_box::~gui_list_box() {
 }
 
-void gui_text::draw() {
+void gui_list_box::draw() {
 	if(!gui_object::handle_draw()) return;
 	
 	// TODO: handle disabled state
-	// TODO: handle centering
-	theme->draw("text", shade ? "normal_shade" : "normal",
-				position_abs, size_abs, true,
-				[this](const string& str a2e_unused) { return label; });
+	theme->draw("list_box", "normal", position_abs, size_abs);
+	// TODO: !
 }
 
-void gui_text::set_label(const string& label_) {
-	label = label_;
-	redraw();
+bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type a2e_unused, const shared_ptr<event_object>& obj a2e_unused, const ipnt& point a2e_unused) {
+	if(!state.visible || !state.enabled) return false;
+	// TODO: !
+	return false;
 }
 
-const string& gui_text::get_label() const {
-	return label;
-}
-
-void gui_text::set_shade(const bool& state) {
-	shade = state;
-	redraw();
-}
-
-const bool& gui_text::get_shade() const {
-	return shade;
+bool gui_list_box::should_handle_mouse_event(const EVENT_TYPE& type, const ipnt& point) const {
+	return gui_object::should_handle_mouse_event(type, point);
 }

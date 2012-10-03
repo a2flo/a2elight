@@ -634,8 +634,8 @@ struct gfx2d::draw_style_border {
 			const float2& cur_point = (*points)[i];
 			
 			// (mp/#0) -> (sp/#1) -> #2 -> #3 -> ... -> #n-2 -> (ep/#n-1)
-			const float2& prev_point = (*points)[i > props.has_mid_point ? i-1 : orig_point_count - (1 + props.has_equal_start_end_point)];
-			const float2& next_point = (*points)[i < orig_point_count-1 ? i+1 : props.has_mid_point + props.has_equal_start_end_point];
+			const float2& prev_point = (*points)[i > props.has_mid_point ? i-1 : orig_point_count - (1 + props.has_mid_point + props.has_equal_start_end_point)];
+			const float2& next_point = (*points)[i < (orig_point_count-1) ? i+1 : (props.has_mid_point * 2) + props.has_equal_start_end_point];
 			
 			// ... and compute the normal of those three points (from the two vectors outgoing from the current point)
 			const float2 v0((prev_point - cur_point).normalize());

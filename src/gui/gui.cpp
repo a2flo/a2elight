@@ -275,8 +275,7 @@ void gui::run() {
 			// check all windows
 			bool handled = false;
 			for(const auto& wnd : windows) {
-				if(gfx2d::is_pnt_in_rectangle(wnd->get_rectangle_abs(), check_point) &&
-				   wnd->handle_mouse_event(gevt.first, gevt.second, check_point)) {
+				if(wnd->handle_mouse_event(gevt.first, gevt.second, check_point)) {
 					handled = true;
 					break;
 				}

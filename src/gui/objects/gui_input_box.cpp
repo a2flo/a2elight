@@ -51,7 +51,7 @@ void gui_input_box::draw() {
 	fnt->draw_cached(input, input_text_position, theme->get_color_scheme().get("TEXT_INVERSE"));
 	
 	// draw blink character
-	if(blink_state && blink_task) {
+	if(blink_state && blink_task && state.active) {
 		auto limited_size = size_abs;
 		auto blink_position = position_abs;
 		const float blink_offset = cursor_position - input_text_interval.x;

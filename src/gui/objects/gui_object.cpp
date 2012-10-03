@@ -224,3 +224,7 @@ void gui_object::remove_handlers() {
 	handlers.clear();
 	unlock();
 }
+
+bool gui_object::should_handle_mouse_event(const EVENT_TYPE& type a2e_unused, const ipnt& point) const {
+	return gfx2d::is_pnt_in_rectangle(get_rectangle_abs(), point);
+}

@@ -81,7 +81,6 @@ void gui_window::draw() {
 				const float2 child_size(child->get_size_abs().ceiled());
 				blit_rects.emplace_back(child_offset.x, child_offset.y,
 										child_offset.x + child_size.x, child_offset.y + child_size.y);
-				break;
 			}
 		}
 	}
@@ -139,7 +138,7 @@ bool gui_window::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<eve
 	// substract window position (all childs positions/sizes are relative to the window position)
 	const ipnt point_in_window { point - ipnt(floorf(position_abs.x), floorf(position_abs.y)) };
 	for(const auto& child : children) {
-		if(gfx2d::is_pnt_in_rectangle(child->get_rectangle_abs(), point_in_window)) {
+		if(child->should_handle_mouse_event(type, point_in_window)) {
 			child->lock();
 			if(child->handle_mouse_event(type, obj, point_in_window)) {
 				child->unlock();

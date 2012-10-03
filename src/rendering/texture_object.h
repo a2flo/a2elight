@@ -21,7 +21,7 @@
 
 #include "global.h"
 
-enum class TEXTURE_FILTERING {
+enum class TEXTURE_FILTERING : unsigned int {
 	POINT,
 	LINEAR,
 	BILINEAR,

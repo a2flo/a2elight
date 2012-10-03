@@ -16,17 +16,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_BASIC_MATH_H__
-#define __A2E_BASIC_MATH_H__
+#ifndef __A2E_GUI_LIST_BOX_H__
+#define __A2E_GUI_LIST_BOX_H__
 
-#define PI 3.1415926535897932384626433832795
-#define _180DIVPI 57.295779513082322
-#define _PIDIV180 0.01745329251994
-#define _PIDIV360 0.00872664625997
-#define RAD2DEG(rad) (rad * _180DIVPI)
-#define DEG2RAD(deg) (deg * _PIDIV180)
+#include "gui/objects/gui_object.h"
 
-#define EPSILON 0.00001f
-#define FLOAT_EQ(x, v) ((((v) - EPSILON) < (x)) && ((x) < ((v) + EPSILON)))
+class A2E_API gui_list_box : public gui_object {
+public:
+	gui_list_box(engine* e, const float2& size, const float2& position);
+	virtual ~gui_list_box();
+	
+	virtual void draw();
+	
+	//
+	virtual bool should_handle_mouse_event(const EVENT_TYPE& type, const ipnt& point) const;
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
+	
+protected:
+
+};
 
 #endif

@@ -58,8 +58,6 @@ public:
 	void init(const char* ico = nullptr);
 	void init(bool console, unsigned int width = 640, unsigned int height = 480,
 			  bool fullscreen = false, bool vsync = false, const char* ico = nullptr);
-	void set_width(unsigned int width);
-	void set_height(unsigned int height);
 	void start_draw();
 	void stop_draw();
 	void start_2d_draw();
@@ -147,53 +145,67 @@ public:
 
 	// config functions
 	const xml::xml_doc& get_config_doc() const;
+	xml::xml_doc& get_config_doc();
 	
 	// screen/window
 	SDL_Window* get_window() const;
 	unsigned int get_width() const;
 	unsigned int get_height() const;
+	uint2 get_screen_size() const;
 	bool get_fullscreen() const;
 	bool get_vsync() const;
 	bool get_stereo() const;
 	
+	void set_width(const unsigned int& width);
+	void set_height(const unsigned int& height);
+	void set_screen_size(const uint2& screen_size);
+	void set_fullscreen(const bool& state);
+	void set_vsync(const bool& state);
+	
 	// projection
 	const float& get_fov() const;
 	const float2& get_near_far_plane() const;
+	
+	void set_fov(const float& fov);
 	
 	// gui
 	const size_t& get_dpi() const;
 	const rtt::TEXTURE_ANTI_ALIASING& get_ui_anti_aliasing() const;
 	
 	// input
-	unsigned int get_key_repeat();
-	unsigned int get_ldouble_click_time();
-	unsigned int get_mdouble_click_time();
-	unsigned int get_rdouble_click_time();
+	unsigned int get_key_repeat() const;
+	unsigned int get_ldouble_click_time() const;
+	unsigned int get_mdouble_click_time() const;
+	unsigned int get_rdouble_click_time() const;
 	
 	// sleep / fps limit
 	void set_fps_limit(unsigned int ms);
-	unsigned int get_fps_limit();
+	unsigned int get_fps_limit() const;
 	
-	// thread
-	size_t get_thread_count();
-	
-	// server / client
-	server_data* get_server_data();
-	client_data* get_client_data();
+	// server / client (disabled/unused for now)
+	//server_data* get_server_data();
+	//client_data* get_client_data();
 	
 	// graphic
-	TEXTURE_FILTERING get_filtering();
-	size_t get_anisotropic();
-	rtt::TEXTURE_ANTI_ALIASING get_anti_aliasing();
+	TEXTURE_FILTERING get_filtering() const;
+	size_t get_anisotropic() const;
+	rtt::TEXTURE_ANTI_ALIASING get_anti_aliasing() const;
+	
+	void set_filtering(const TEXTURE_FILTERING& filtering);
+	void set_anisotropic(const size_t& anisotropic);
+	void set_anti_aliasing(const rtt::TEXTURE_ANTI_ALIASING& anti_aliasing);
 	
 	// graphic device
-	string* get_disabled_extensions();
-	string* get_force_device();
-	string* get_force_vendor();
+	const string& get_disabled_extensions() const;
+	const string& get_force_device() const;
+	const string& get_force_vendor() const;
 	
 	// inferred rendering
 	float get_upscaling() const;
 	float get_geometry_light_scaling() const;
+	
+	void set_upscaling(const float& factor);
+	void set_geometry_light_scaling(const float& factor);
 
 protected:
 	file_io* f = nullptr;
@@ -273,8 +285,7 @@ protected:
 		{
 			AtomicSet(&ctx_active_locks, 0);
 		}
-	};
-	engine_config config;
+	} config;
 	xml::xml_doc config_doc;
 	
 	// path variables

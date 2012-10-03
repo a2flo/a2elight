@@ -39,3 +39,7 @@ float osx_helper::get_scale_factor(SDL_Window* wnd) {
 	}
 	return 1.0f;
 }
+
+float osx_helper::get_menu_bar_height() {
+	return [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
+}

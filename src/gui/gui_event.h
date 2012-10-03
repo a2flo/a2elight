@@ -37,6 +37,10 @@ enum class GUI_EVENT : unsigned int {
 	POP_UP_BUTTON_DEACTIVATION,
 	POP_UP_BUTTON_SELECT,
 	
+	SLIDER_ACTIVATION,
+	SLIDER_DEACTIVATION,
+	SLIDER_MOVE,
+	
 	//LIST_ITEM_PRESS,
 	//LIST_ITEM_DOUBLE_CLICK,
 	
@@ -51,8 +55,6 @@ enum class GUI_EVENT : unsigned int {
 	
 	//FILE_OPEN,
 	//FILE_SAVE,
-	
-	//SLIDER_MOVE,
 	
 	// TODO: tree list
 	// TODO: color picker

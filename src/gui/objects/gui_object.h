@@ -87,6 +87,7 @@ public:
 	void remove_handlers();
 	
 	// must return true if event was handled, false if not!
+	virtual bool should_handle_mouse_event(const EVENT_TYPE& type, const ipnt& point) const;
 	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
 	virtual bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj);
 

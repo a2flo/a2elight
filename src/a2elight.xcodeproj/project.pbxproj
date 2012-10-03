@@ -91,12 +91,16 @@
 		5C61BDAF1231D32000FD3451 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDAB1231D32000FD3451 /* OpenGL.framework */; };
 		5C61BDEE1232A25500FD3451 /* logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C61BDEC1232A25500FD3451 /* logger.cpp */; };
 		5C61BDEF1232A25500FD3451 /* logger.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C61BDED1232A25500FD3451 /* logger.h */; };
+		5C6FD1B6161CB4EC00985DAA /* gui_list_box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C6FD1B4161CB4EC00985DAA /* gui_list_box.cpp */; };
+		5C6FD1B7161CB4EC00985DAA /* gui_list_box.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C6FD1B5161CB4EC00985DAA /* gui_list_box.h */; };
 		5C73907815E5150900D9FA43 /* gui_input_box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C73907615E5150900D9FA43 /* gui_input_box.cpp */; };
 		5C73907915E5150900D9FA43 /* gui_input_box.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C73907715E5150900D9FA43 /* gui_input_box.h */; };
 		5C73AAA115EFDA9300BE6DE7 /* gui_pop_up_button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C73AA9D15EFDA9200BE6DE7 /* gui_pop_up_button.cpp */; };
 		5C73AAA215EFDA9300BE6DE7 /* gui_pop_up_button.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C73AA9E15EFDA9300BE6DE7 /* gui_pop_up_button.h */; };
 		5C73AAA315EFDA9300BE6DE7 /* gui_toggle_button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C73AA9F15EFDA9300BE6DE7 /* gui_toggle_button.cpp */; };
 		5C73AAA415EFDA9300BE6DE7 /* gui_toggle_button.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C73AAA015EFDA9300BE6DE7 /* gui_toggle_button.h */; };
+		5C960C8A161B5ECF008B31F1 /* gui_slider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C960C88161B5ECF008B31F1 /* gui_slider.cpp */; };
+		5C960C8B161B5ECF008B31F1 /* gui_slider.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C960C89161B5ECF008B31F1 /* gui_slider.h */; };
 		5C970E0015E23C06007841C8 /* task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C970DFE15E23C06007841C8 /* task.cpp */; };
 		5C970E0115E23C06007841C8 /* task.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C970DFF15E23C06007841C8 /* task.h */; };
 		5C970E0615E2530C007841C8 /* gui_event.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C970E0515E2530C007841C8 /* gui_event.h */; };
@@ -230,6 +234,8 @@
 		5C61BDAB1231D32000FD3451 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		5C61BDEC1232A25500FD3451 /* logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = logger.cpp; sourceTree = "<group>"; };
 		5C61BDED1232A25500FD3451 /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
+		5C6FD1B4161CB4EC00985DAA /* gui_list_box.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_list_box.cpp; sourceTree = "<group>"; };
+		5C6FD1B5161CB4EC00985DAA /* gui_list_box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_list_box.h; sourceTree = "<group>"; };
 		5C73907615E5150900D9FA43 /* gui_input_box.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_input_box.cpp; sourceTree = "<group>"; };
 		5C73907715E5150900D9FA43 /* gui_input_box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_input_box.h; sourceTree = "<group>"; };
 		5C73AA9D15EFDA9200BE6DE7 /* gui_pop_up_button.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_pop_up_button.cpp; sourceTree = "<group>"; };
@@ -238,6 +244,8 @@
 		5C73AAA015EFDA9300BE6DE7 /* gui_toggle_button.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_toggle_button.h; sourceTree = "<group>"; };
 		5C7A8FF614B398B2004AA18B /* premake.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = premake.sh; path = ../premake.sh; sourceTree = "<group>"; };
 		5C7A8FF714B398B2004AA18B /* premake4.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = premake4.lua; path = ../premake4.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.python; };
+		5C960C88161B5ECF008B31F1 /* gui_slider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_slider.cpp; sourceTree = "<group>"; };
+		5C960C89161B5ECF008B31F1 /* gui_slider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_slider.h; sourceTree = "<group>"; };
 		5C970DFE15E23C06007841C8 /* task.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = task.cpp; sourceTree = "<group>"; };
 		5C970DFF15E23C06007841C8 /* task.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = task.h; sourceTree = "<group>"; };
 		5C970E0515E2530C007841C8 /* gui_event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui_event.h; sourceTree = "<group>"; };
@@ -571,8 +579,12 @@
 				5CD20D1A15DF9F4700610425 /* gui_text.h */,
 				5C73907615E5150900D9FA43 /* gui_input_box.cpp */,
 				5C73907715E5150900D9FA43 /* gui_input_box.h */,
+				5C6FD1B4161CB4EC00985DAA /* gui_list_box.cpp */,
+				5C6FD1B5161CB4EC00985DAA /* gui_list_box.h */,
 				5C73AA9D15EFDA9200BE6DE7 /* gui_pop_up_button.cpp */,
 				5C73AA9E15EFDA9300BE6DE7 /* gui_pop_up_button.h */,
+				5C960C88161B5ECF008B31F1 /* gui_slider.cpp */,
+				5C960C89161B5ECF008B31F1 /* gui_slider.h */,
 				5C73AA9F15EFDA9300BE6DE7 /* gui_toggle_button.cpp */,
 				5C73AAA015EFDA9300BE6DE7 /* gui_toggle_button.h */,
 			);
@@ -676,6 +688,8 @@
 				5C73AAA215EFDA9300BE6DE7 /* gui_pop_up_button.h in Headers */,
 				5C73AAA415EFDA9300BE6DE7 /* gui_toggle_button.h in Headers */,
 				5C4ABF8C15FD818F00E8BDE1 /* cudacl_translator.h in Headers */,
+				5C960C8B161B5ECF008B31F1 /* gui_slider.h in Headers */,
+				5C6FD1B7161CB4EC00985DAA /* gui_list_box.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -800,6 +814,8 @@
 				5C73AAA315EFDA9300BE6DE7 /* gui_toggle_button.cpp in Sources */,
 				5CBD7DA915FC571700FB3954 /* cudacl.cpp in Sources */,
 				5C4ABF8B15FD818F00E8BDE1 /* cudacl_translator.cpp in Sources */,
+				5C960C8A161B5ECF008B31F1 /* gui_slider.cpp in Sources */,
+				5C6FD1B6161CB4EC00985DAA /* gui_list_box.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
