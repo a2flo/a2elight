@@ -118,7 +118,7 @@ protected:
 	
 	void create_node_structure(xml_doc& doc, xmlDocPtr xmldoc) const;
 	
-	bool write_node(const xml_node& node, xmlTextWriterPtr* writer, const string& filename, size_t& tabs) const;
+	bool write_node(const xml_node& node, xmlTextWriterPtr* writer, const string& filename, size_t& tabs, bool& first_node) const;
 
 };
 

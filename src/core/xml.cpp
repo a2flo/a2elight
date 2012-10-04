@@ -91,8 +91,9 @@ bool xml::save_file(const xml_doc& doc, const string& filename, const string doc
 	
 	// write all nodes:
 	size_t tabs = 0;
+	bool first_node = true;
 	for(const auto& node : doc.nodes) {
-		if(!write_node(*node.second, writer, filename, tabs)) {
+		if(!write_node(*node.second, writer, filename, tabs, first_node)) {
 			close_writer();
 			a2e_error("failed to write document \"%s\"!", filename);
 			return false;
@@ -103,11 +104,15 @@ bool xml::save_file(const xml_doc& doc, const string& filename, const string doc
 	return true;
 }
 
-bool xml::write_node(const xml_node& node, xmlTextWriterPtr* writer, const string& filename, size_t& tabs) const {
+bool xml::write_node(const xml_node& node, xmlTextWriterPtr* writer, const string& filename, size_t& tabs, bool& first_node) const {
+	//
+	const bool insert_newline = !first_node;
+	first_node = false;
+	
 	// write tabs
 	string tab_str = "";
 	for(size_t i = 0; i < tabs; i++) tab_str += "\t";
-	xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
+	if(insert_newline) xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
 	
 	// start node:
 	if(node.name()[0] != '#') {
@@ -132,8 +137,9 @@ bool xml::write_node(const xml_node& node, xmlTextWriterPtr* writer, const strin
 								 (node.content().find_first_not_of("\t\n\r\v ") != string::npos));
 		if(!node.children.empty() || has_conent) {
 			xmlTextWriterWriteRaw(*writer, BAD_CAST "\n");
+			bool child_first_node = true;
 			for(const auto& child : node.children) {
-				if(!write_node(*child.second, writer, filename, tabs)) {
+				if(!write_node(*child.second, writer, filename, tabs, child_first_node)) {
 					a2e_error("failed to write node \"%s\"!", child.first);
 					return false;
 				}
@@ -156,8 +162,7 @@ bool xml::write_node(const xml_node& node, xmlTextWriterPtr* writer, const strin
 			}
 		}
 		else {
-			// TODO: clean end tag / simple tag end
-			if(xmlTextWriterFullEndElement(*writer) < 0) {
+			if(xmlTextWriterEndElement(*writer) < 0) {
 				a2e_error("unable to end element \"%s\" in file \"%s\"!",
 						  node.name(), filename);
 				return false;
@@ -166,8 +171,7 @@ bool xml::write_node(const xml_node& node, xmlTextWriterPtr* writer, const strin
 		tabs--;
 	}
 	else if(node.name() == "#comment") {
-		// TODO: correct spacing / newline? (check if this is the first element?)
-		xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\n");
+		if(insert_newline) xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\n");
 		xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
 		xmlTextWriterWriteComment(*writer, BAD_CAST node.content().c_str());
 	}
