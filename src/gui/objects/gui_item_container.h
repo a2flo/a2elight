@@ -16,32 +16,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_GUI_LIST_BOX_H__
-#define __A2E_GUI_LIST_BOX_H__
+#ifndef __A2E_GUI_ITEM_CONTAINER_H__
+#define __A2E_GUI_ITEM_CONTAINER_H__
 
-#include "gui/objects/gui_item_container.h"
+#include "gui/objects/gui_object.h"
 
-class A2E_API gui_list_box : public gui_item_container {
+// use this as the base class for all objects that need to store items (don't instantiate directly!)
+class A2E_API gui_item_container : public gui_object {
 public:
-	gui_list_box(engine* e, const float2& size, const float2& position);
-	virtual ~gui_list_box();
+	gui_item_container(engine* e, const float2& size, const float2& position, const GUI_EVENT select_event);
+	virtual ~gui_item_container();
 	
-	virtual void draw();
-	
-	//
 	virtual void clear();
 	virtual void add_item(const string& identifier, const string& label);
 	virtual void remove_item(const string& identifier);
 	
-	//
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
+	virtual const pair<const string, string>* get_selected_item() const;
+	virtual void set_selected_item(const string& identifier, const bool event_on_equal = false);
+	virtual void set_selected_item(const size_t& index, const bool event_on_equal = false);
 	
 protected:
-	float item_height = 0.0f;
-	float box_height = 0.0f;
-	float scroll_position = 0.0f;
+	// <identifier, label>
+	unordered_map<string, string> items;
+	vector<typename decltype(items)::value_type*> display_items;
+	typename decltype(items)::value_type* selected_item = nullptr;
 	
-	void recompute_height();
+	GUI_EVENT select_event;
 
 };
 
