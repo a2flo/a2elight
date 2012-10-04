@@ -412,7 +412,7 @@ opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache)
 	build_options += " -cl-fast-relaxed-math";
 	build_options += " -cl-single-precision-constant";
 	build_options += " -cl-denorms-are-zero";
-	//build_options += " -w";
+	build_options += " -w";
 	
 #if !defined(__APPLE__)
 	//nv_build_options = " -cl-nv-verbose";

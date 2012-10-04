@@ -109,13 +109,16 @@ bool xml::write_node(const xml_node& node, xmlTextWriterPtr* writer, const strin
 	const bool insert_newline = !first_node;
 	first_node = false;
 	
-	// write tabs
+	// create tabs string
 	string tab_str = "";
 	for(size_t i = 0; i < tabs; i++) tab_str += "\t";
-	if(insert_newline) xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
 	
 	// start node:
 	if(node.name()[0] != '#') {
+		// write tabs
+		xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
+		
+		// start node:
 		if(xmlTextWriterStartElement(*writer, BAD_CAST node.name().c_str()) < 0) {
 			a2e_error("unable to start element \"%s\" in file \"%s\"!",
 					  node.name(), filename);
@@ -171,7 +174,10 @@ bool xml::write_node(const xml_node& node, xmlTextWriterPtr* writer, const strin
 		tabs--;
 	}
 	else if(node.name() == "#comment") {
-		if(insert_newline) xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\n");
+		if(insert_newline) {
+			xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
+			xmlTextWriterWriteRaw(*writer, (const xmlChar*)"\n");
+		}
 		xmlTextWriterWriteRaw(*writer, BAD_CAST tab_str.c_str());
 		xmlTextWriterWriteComment(*writer, BAD_CAST node.content().c_str());
 	}
