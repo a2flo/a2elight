@@ -34,7 +34,7 @@ void gui_text::draw() {
 	// TODO: handle disabled state
 	// TODO: handle centering
 	theme->draw("text", shade ? "normal_shade" : "normal",
-				position_abs, size_abs, true,
+				position_abs, size_abs, true, true,
 				[this](const string& str a2e_unused) { return label; });
 }
 

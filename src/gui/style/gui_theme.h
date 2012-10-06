@@ -40,7 +40,7 @@ public:
 	// text lookup: takes an identifier and returns the associated string
 	void draw(const string& type, const string& state,
 			  const float2& offset, const float2& size,
-			  const bool clear = true,
+			  const bool clear = true, const bool scissor = true,
 			  std::function<string(const string&)> text_lookup = [](const string& str a2e_unused){return "";},
 			  std::function<unsigned int(const string&)> texture_lookup = [](const string& tex_name a2e_unused){return 0;});
 	

@@ -479,7 +479,7 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 //
 void gui_theme::draw(const string& type, const string& state,
 					 const float2& offset, const float2& size,
-					 const bool clear,
+					 const bool clear, const bool scissor,
 					 std::function<string(const string&)> text_lookup,
 					 std::function<unsigned int(const string&)> texture_lookup) {
 	const auto iter = ui_objects.find(type);
@@ -497,8 +497,10 @@ void gui_theme::draw(const string& type, const string& state,
 	}
 	
 	// set scissor test rect
-	glScissor(floorf(offset.x), floorf(offset.y),
-			  ceilf(size.x), ceilf(size.y));
+	if(scissor) {
+		glScissor(floorf(offset.x), floorf(offset.y),
+				  ceilf(size.x), ceilf(size.y));
+	}
 	if(clear) r->clear();
 	
 	//
@@ -780,5 +782,7 @@ void gui_theme::draw(const string& type, const string& state,
 	}
 	
 	// reset scissor rect
-	glScissor(0, 0, e->get_width(), e->get_height());
+	if(scissor) {
+		glScissor(0, 0, e->get_width(), e->get_height());
+	}
 }

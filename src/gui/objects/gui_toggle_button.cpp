@@ -33,7 +33,7 @@ void gui_toggle_button::draw() {
 	
 	// TODO: handle disabled state
 	theme->draw("toggle_button", toggled ? "toggled" : "normal",
-				position_abs, size_abs, true,
+				position_abs, size_abs, true, true,
 				[this](const string& str a2e_unused) { return toggled ? toggled_label : untoggled_label; });
 }
 

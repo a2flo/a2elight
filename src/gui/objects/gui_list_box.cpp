@@ -36,20 +36,29 @@ void gui_list_box::draw() {
 	
 	// TODO: handle disabled state
 	theme->draw("list_box", "normal", position_abs, size_abs);
-	float2 cur_position(position_abs);
+	
+	// manual scissor test:
+	glScissor(floorf(position_abs.x), floorf(position_abs.y),
+			  ceilf(size_abs.x), ceilf(size_abs.y));
+	
 	size_t item_counter = 0;
 	for(const auto& item : display_items) {
-		item_counter++;
 		// check if item is in box
-		if(float(item_counter) * item_height < scroll_position ||
-		   (float(item_counter-1) * item_height) - scroll_position >= size_abs.y) {
+		const float y_offset = float(item_counter) * item_height;
+		const float y_next_offset = y_offset + item_height;
+		item_counter++;
+		if(y_next_offset < scroll_position && y_offset >= size_abs.y) {
 			continue;
 		}
+		
+		const float2 cur_position(position_abs + float2(0.0f, y_offset - scroll_position));
 		theme->draw("list_box", item == selected_item ? "item_active" : "item",
 					cur_position, float2(size_abs.x, item_height),
-					false, [&item](const string&) -> string { return item->second; });
-		cur_position.y += item_height;
+					false, false,
+					[&item](const string&) -> string { return item->second; });
 	}
+	
+	glScissor(0, 0, e->get_width(), e->get_height());
 }
 
 bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj a2e_unused, const ipnt& point) {
@@ -58,13 +67,19 @@ bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<e
 		case EVENT_TYPE::MOUSE_LEFT_DOWN: {
 			ui->set_active_object(this);
 			const ipnt pos_in_box = point - position_abs;
-			const size_t select_item = floorf(float(pos_in_box.y) / item_height);
+			const size_t select_item = floorf((float(pos_in_box.y) + scroll_position) / item_height);
+			// this check is also done in set_selected_item, but since the item number can legitimately
+			// be out of range, do this check here to avoid the log error
+			if(select_item >= display_items.size()) {
+				return false;
+			}
 			set_selected_item(select_item);
 			return true;
 		}
 		case EVENT_TYPE::MOUSE_WHEEL_UP:
 		case EVENT_TYPE::MOUSE_WHEEL_DOWN:
-			scroll_position += item_height * (type == EVENT_TYPE::MOUSE_WHEEL_DOWN ? 1.0f : -1.0f);
+			if(box_height < size_abs.y) return false;
+			scroll_position += item_height * 1.5f * (type == EVENT_TYPE::MOUSE_WHEEL_DOWN ? 1.0f : -1.0f);
 			scroll_position = core::clamp(scroll_position, 0.0f, box_height-float(size_abs.y));
 			return true;
 		default: break;
@@ -89,4 +104,8 @@ void gui_list_box::remove_item(const string& identifier) {
 
 void gui_list_box::recompute_height() {
 	box_height = ceilf(item_height * float(display_items.size()));
+	if(box_height < size_abs.y) {
+		// reset scroll position if there are fewer items than the list can display
+		scroll_position = 0.0f;
+	}
 }

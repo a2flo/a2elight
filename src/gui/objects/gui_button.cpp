@@ -33,7 +33,7 @@ void gui_button::draw() {
 	
 	// TODO: handle disabled state
 	theme->draw("button", state.active ? "active" : "normal",
-				position_abs, size_abs, true,
+				position_abs, size_abs, true, true,
 				[this](const string& str a2e_unused) { return label; });
 }
 
