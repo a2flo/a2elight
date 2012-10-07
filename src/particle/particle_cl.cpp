@@ -227,6 +227,12 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 	particle_system::internal_particle_data* pdata = ps->get_internal_particle_data();
 	bool updated = false;
 	
+	// check if particle needs a reset
+	if(pdata->do_reset) {
+		pdata->do_reset = false;
+		reset_particle_system(ps);
+	}
+	
 	// delete old particles and create new ones
 	if(SDL_GetTicks() - pdata->reinit_timer > 40) { // do this 25 times every second (1000 / 25 = 40)
 		// update seed

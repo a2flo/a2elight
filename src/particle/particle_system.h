@@ -136,6 +136,7 @@ public:
 		size_t reinit_timer = 0;
 		GLuint particle_indices_vbo[2] = { 0, 0 };
 		unsigned int particle_indices_swap = 0; // either 0 or 1
+		bool do_reset = false;
 		
 #if !defined(A2E_NO_OPENCL)
 		// for opencl computed particle systems

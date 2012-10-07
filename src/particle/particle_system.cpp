@@ -242,6 +242,12 @@ const GLuint& particle_system::get_lights_ubo() const {
 }
 
 void particle_system::set_active(const bool state) {
+	if(state && active != state) {
+		// particle data is probably too old (this will lead to a seemingly delayed visibility of
+		// the particle system, b/c it will simulate a full cycle with old/dead particles)
+		// -> reset data
+		data.do_reset = true;
+	}
 	active = state;
 }
 
