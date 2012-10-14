@@ -362,6 +362,7 @@ void gui_input_box::update_text_display() {
 	}
 	input_text_position.x += input_text_margin.x;
 	input_text_position.y -= input_text_margin.y;
+	input_text_position.floor(); // necessary for correct text rendering
 	
 	// something changed -> display blink character for a tick
 	blink_state = true;

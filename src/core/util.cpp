@@ -40,6 +40,11 @@ template <> bool converter<string, bool>::convert(const string& var) {
 	return (var == "true" || var == "1" ? true : false);
 }
 
+template <> unsigned long long int converter<string, unsigned long long int>::convert(const string& var) {
+	A2E_CONVERT_VAR_TO_BUFFER;
+	return strtoull(buffer.str().c_str(), nullptr, 10);
+}
+
 #if defined(A2E_IOS)
 template <> unsigned long int converter<string, unsigned long int>::convert(const string& var) {
 	A2E_CONVERT_VAR_TO_BUFFER;

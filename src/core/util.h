@@ -78,6 +78,11 @@ template <> bool converter<string, bool>::convert(const string& var) {
 	return (var == "true" || var == "1" ? true : false);
 }
 
+template <> unsigned long long int converter<string, unsigned long long int>::convert(const string& var) {
+	A2E_CONVERT_VAR_TO_BUFFER;
+	return strtoull(buffer.str().c_str(), nullptr, 10);
+}
+
 #if defined(PLATFORM_X64)
 template <> size_t converter<string, size_t>::convert(const string& var) {
 	A2E_CONVERT_VAR_TO_BUFFER;
@@ -95,6 +100,7 @@ template <> float converter<string, float>::convert(const string& var);
 template <> unsigned int converter<string, unsigned int>::convert(const string& var);
 template <> int converter<string, int>::convert(const string& var);
 template <> bool converter<string, bool>::convert(const string& var);
+template <> unsigned long long int converter<string, unsigned long long int>::convert(const string& var);
 #if defined(A2E_IOS)
 template <> unsigned long int converter<string, unsigned long int>::convert(const string& var);
 #endif
@@ -110,6 +116,7 @@ template <> ssize_t converter<string, ssize_t>::convert(const string& var);
 #define string2bool(value) converter<string, bool>::convert(value)
 #define string2size_t(value) converter<string, size_t>::convert(value)
 #define string2ssize_t(value) converter<string, ssize_t>::convert(value)
+#define string2ull(value) converter<string, unsigned long long int>::convert(value)
 	
 #define float2string(value) converter<float, string>::convert(value)
 #define uint2string(value) converter<unsigned int, string>::convert(value)
@@ -117,6 +124,7 @@ template <> ssize_t converter<string, ssize_t>::convert(const string& var);
 #define bool2string(value) converter<bool, string>::convert(value)
 #define size_t2string(value) converter<size_t, string>::convert(value)
 #define ssize_t2string(value) converter<ssize_t, string>::convert(value)
+#define ull2string(value) converter<unsigned long long int, string>::convert(value)
 
 // misc
 class A2E_API a2e_exception : public exception {
@@ -146,6 +154,15 @@ friend enum_class operator&(const enum_class& e0, const enum_class& e1) { \
 friend enum_class& operator&=(enum_class& e0, const enum_class& e1) { \
 	e0 = e0 & e1; \
 	return e0; \
+}
+
+#define enum_class_hash(enum_class) \
+namespace std { \
+	template <> struct hash<enum_class> : public hash<typename underlying_type<enum_class>::type> { \
+		size_t operator()(enum_class type) const throw() { \
+			return hash<typename underlying_type<enum_class>::type>::operator()((typename underlying_type<enum_class>::type)type); \
+		} \
+	}; \
 }
 
 #endif
