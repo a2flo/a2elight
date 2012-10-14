@@ -303,6 +303,8 @@ bool gui_input_box::handle_key_event(const EVENT_TYPE& type, const shared_ptr<ev
 				}
 				break;
 				case SDLK_RETURN:
+				case SDLK_RETURN2:
+				case SDLK_KP_ENTER:
 					handle(GUI_EVENT::INPUT_BOX_ENTER);
 					break;
 				default:

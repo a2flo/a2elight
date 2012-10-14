@@ -158,6 +158,10 @@ void gui_object::remove_child(gui_object* child) {
 	unlock();
 }
 
+const set<gui_object*>& gui_object::get_children() const {
+	return children;
+}
+
 bool gui_object::handle_mouse_event(const EVENT_TYPE& type a2e_unused, const shared_ptr<event_object>& obj a2e_unused, const ipnt& point a2e_unused) {
 	return false;
 }
