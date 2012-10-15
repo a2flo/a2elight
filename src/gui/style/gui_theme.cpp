@@ -25,8 +25,12 @@
 #define A2E_UI_OBJECT_VERSION 1
 
 // some helper functions:
+static float screen_dpi = 72.0f;
+float gui_theme::point_to_pixel(const float& pt) {
+	return pt * (screen_dpi / 72.0f);
+}
 
-// converts a single "number(%)" to an ui_float
+// converts a single "number(%|pt)" to an ui_float
 static pair<float, gui_theme::VALUE_TYPE> str_to_ui_float_pair(const string& val_str) {
 	const auto at_pos(val_str.find("@"));
 	if(at_pos != string::npos) {
@@ -40,13 +44,18 @@ static pair<float, gui_theme::VALUE_TYPE> str_to_ui_float_pair(const string& val
 		return { scaled_value, gui_theme::VALUE_TYPE::PERCENTAGE };
 	}
 	
+	const auto pt_pos(val_str.find("pt"));
+	if(pt_pos != string::npos) {
+		return { string2float(val_str), gui_theme::VALUE_TYPE::POINT };
+	}
+	
 	return { string2float(val_str), gui_theme::VALUE_TYPE::PIXEL };
 };
 static gui_theme::ui_float str_to_ui_float(const pair<float, gui_theme::VALUE_TYPE>& uif_pair) {
 	return gui_theme::ui_float { uif_pair.first, uif_pair.second };
 };
 
-// converts "number(%),number(%)" to an ui_float2
+// converts "number(%|pt),number(%|pt)" to an ui_float2
 static gui_theme::ui_float2 str_to_ui_float2(const string& str) {
 	const auto comma_pos(str.find(","));
 	
@@ -65,6 +74,7 @@ static gui_theme::ui_float2 str_to_ui_float2(const string& str) {
 //
 gui_theme::gui_theme(engine* e_, font_manager* fm_) : e(e_), fm(fm_), x(e->get_xml()), r(e->get_rtt()), scheme(e_) {
 	fnt = fm->get_font("SYSTEM_SANS_SERIF");
+	screen_dpi = e->get_dpi();
 }
 
 gui_theme::~gui_theme() {
@@ -784,5 +794,26 @@ void gui_theme::draw(const string& type, const string& state,
 	// reset scissor rect
 	if(scissor) {
 		glScissor(0, 0, e->get_width(), e->get_height());
+	}
+}
+
+void gui_theme::ui_float::compute(const float& size) {
+	switch(type) {
+		case VALUE_TYPE::PIXEL:
+			// just clamp to size
+			value = std::min(ui_value, size);
+			break;
+		case VALUE_TYPE::PERCENTAGE:
+			// scale by size
+			value = ui_value * size;
+			break;
+		case VALUE_TYPE::POINT:
+			// convert point to pixel (-> multiply by dpi / 72)
+			value = point_to_pixel(ui_value);
+			break;
+		case VALUE_TYPE::CENTER:
+			// scale by size
+			value = 0.5f * size;
+			break;
 	}
 }

@@ -81,7 +81,7 @@ public:
 	template<size_t comp1, size_t comp2, size_t comp3, size_t comp4> vector4 swizzle() const {
 		return vector4(((T*)this)[comp1], ((T*)this)[comp2], ((T*)this)[comp3], ((T*)this)[comp4]);
 	}
-		
+	
 	// a component-wise minimum between two vector4s
 	static const vector4 min(const vector4& v1, const vector4& v2) {
 		return vector4(std::min(v1.x, v2.x), std::min(v1.y, v2.y), 
@@ -104,6 +104,13 @@ public:
 					   v1.z * coef + v2.z * ((T)1 - coef),
 					   v1.w * coef + v2.w * ((T)1 - coef));
 	}
+	
+	vector4& floor();
+	vector4& ceil();
+	vector4& round();
+	vector4 floored() const;
+	vector4 ceiled() const;
+	vector4 rounded() const;
 	
 	// cross equals the vector3 cross function
 	
@@ -237,6 +244,54 @@ template<typename T> void vector4<T>::scale(const vector4<T>& v) {
 	this->w *= v.w;
 }
 
+template<> vector4<bool>& vector4<bool>::floor();
+template<> vector4<float>& vector4<float>::floor();
+template<typename T> vector4<T>& vector4<T>::floor() {
+	this->x = ::floor(this->x);
+	this->y = ::floor(this->y);
+	this->z = ::floor(this->z);
+	this->w = ::floor(this->w);
+	return *this;
+}
+
+template<> vector4<bool>& vector4<bool>::ceil();
+template<> vector4<float>& vector4<float>::ceil();
+template<typename T> vector4<T>& vector4<T>::ceil() {
+	this->x = ::ceil(this->x);
+	this->y = ::ceil(this->y);
+	this->z = ::ceil(this->z);
+	this->w = ::ceil(this->w);
+	return *this;
+}
+
+template<> vector4<bool>& vector4<bool>::round();
+template<> vector4<float>& vector4<float>::round();
+template<typename T> vector4<T>& vector4<T>::round() {
+	this->x = ::round(this->x);
+	this->y = ::round(this->y);
+	this->z = ::round(this->z);
+	this->w = ::round(this->w);
+	return *this;
+}
+
+template<> vector4<bool> vector4<bool>::floored() const;
+template<> vector4<float> vector4<float>::floored() const;
+template<typename T> vector4<T> vector4<T>::floored() const {
+	return vector4<T>(::floor(this->x), ::floor(this->y), ::floor(this->z), ::floor(this->w));
+}
+
+template<> vector4<bool> vector4<bool>::ceiled() const;
+template<> vector4<float> vector4<float>::ceiled() const;
+template<typename T> vector4<T> vector4<T>::ceiled() const {
+	return vector4<T>(::ceil(this->x), ::ceil(this->y), ::ceil(this->z), ::ceil(this->w));
+}
+
+template<> vector4<bool> vector4<bool>::rounded() const;
+template<> vector4<float> vector4<float>::rounded() const;
+template<typename T> vector4<T> vector4<T>::rounded() const {
+	return vector4<T>(::round(this->x), ::round(this->y), ::round(this->z), ::round(this->w));
+}
+
 #if defined(A2E_EXPORT)
 // only instantiate this in the vector4.cpp
 extern template class vector4<float>;
@@ -250,7 +305,7 @@ extern template class vector4<bool>;
 extern template class vector4<size_t>;
 extern template class vector4<ssize_t>;
 #endif
-		
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif

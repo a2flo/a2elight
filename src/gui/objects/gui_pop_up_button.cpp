@@ -33,6 +33,7 @@ public:
 					  const vector<pair<const string, string>*>& items_)
 	: gui_window(e, size, position), pop_up_button(pop_up_button_),
 	button_position_abs(button_position_abs_), button_size_abs(button_size_abs_), items(items_) {
+		margin = roundf(gui_theme::point_to_pixel(margin));
 	}
 	virtual ~gui_pop_up_window() {
 		for(auto& cached_item : item_text_cache) {
@@ -51,7 +52,7 @@ protected:
 	// item ptr -> <cachce, item height>
 	unordered_map<pair<const string, string>*, pair<font::text_cache, float2>> item_text_cache;
 	
-	const float margin = 8.0f; // TODO: 4pt
+	float margin = 3.5f; // in pt
 	float2 overlay_size;
 	float2 overlay_position;
 	
@@ -79,8 +80,9 @@ void gui_pop_up_window::draw() {
 	}
 	
 	//
-	const float item_margin = 8.0f; // TODO: 4pt
-	const float2 text_margin(10.0f, -6.0f); // 5pt, -3pt (TODO: dpi)
+	const float item_margin = roundf(gui_theme::point_to_pixel(3.5f)); // in pt
+	const float2 text_margin(roundf(gui_theme::point_to_pixel(5.0f)),
+							 roundf(gui_theme::point_to_pixel(-1.5f))); // in pt
 	
 	const auto selected_item = pop_up_button->get_selected_item();
 	float total_height = margin * 2.0f;
@@ -126,11 +128,13 @@ void gui_pop_up_window::draw() {
 			// active item
 			theme->draw("pop_up_button", "item_active",
 						item_position, item_size, false);
-			fnt->draw_cached(cached_item.first.first.x, cached_item.first.first.y, item_position + text_margin,
+			fnt->draw_cached(cached_item.first.first.x, cached_item.first.first.y,
+							 (item_position + text_margin).rounded(),
 							 font_color_active);
 		}
 		else {
-			fnt->draw_cached(cached_item.first.first.x, cached_item.first.first.y, item_position + text_margin,
+			fnt->draw_cached(cached_item.first.first.x, cached_item.first.first.y,
+							 (item_position + text_margin).rounded(),
 							 font_color);
 		}
 	}

@@ -46,6 +46,8 @@ public:
 	
 	const gui_color_scheme& get_color_scheme() const;
 	
+	static float point_to_pixel(const float& pt);
+	
 	//
 	enum class PRIMITIVE_TYPE : unsigned int {
 		POINT,
@@ -75,28 +77,14 @@ public:
 	enum class VALUE_TYPE {
 		PIXEL,
 		PERCENTAGE,
+		POINT,
 		CENTER,
 	};
 	struct ui_float {
 		float ui_value;
 		float value;
 		VALUE_TYPE type;
-		void compute(const float& size) {
-			switch(type) {
-				case VALUE_TYPE::PIXEL:
-					// just clamp to size
-					value = std::min(ui_value, size);
-					break;
-				case VALUE_TYPE::PERCENTAGE:
-					// scale by size
-					value = ui_value * size;
-					break;
-				case VALUE_TYPE::CENTER:
-					// scale by size
-					value = 0.5f * size;
-					break;
-			}
-		}
+		void compute(const float& size);
 		a2e_constexpr ui_float(const float& ui_value_, const VALUE_TYPE& type_) noexcept :
 		ui_value(ui_value_), value(0.0f), type(type_) {}
 		a2e_constexpr ui_float(ui_float&& f) noexcept : ui_value(f.ui_value), value(f.value), type(f.type) {}

@@ -38,8 +38,8 @@ public:
 	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
 	
 protected:
-	const float knob_radius = 16.0f; // TODO: dpi?
-	const float knob_offset = knob_radius + 4.0f; // TODO: dpi?
+	float knob_radius = 6.0f; // in pt
+	float knob_offset = knob_radius + 2.0f; // in pt
 	atomic<float> knob_position { 0.5f };
 	float slider_width = 0.0f;
 	

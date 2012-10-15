@@ -239,7 +239,7 @@ template<typename T> vector2<T>& vector2<T>::floor() {
 	y = ::floor(y);
 	return *this;
 }
-		
+
 template<> vector2<bool>& vector2<bool>::ceil();
 template<> vector2<float>& vector2<float>::ceil();
 template<typename T> vector2<T>& vector2<T>::ceil() {
@@ -247,7 +247,7 @@ template<typename T> vector2<T>& vector2<T>::ceil() {
 	y = ::ceil(y);
 	return *this;
 }
-		
+
 template<> vector2<bool>& vector2<bool>::round();
 template<> vector2<float>& vector2<float>::round();
 template<typename T> vector2<T>& vector2<T>::round() {
@@ -255,19 +255,20 @@ template<typename T> vector2<T>& vector2<T>::round() {
 	y = ::round(y);
 	return *this;
 }
+
 template<typename T> vector2<T>& vector2<T>::normalize() {
 	if(!is_null()) {
 		*this = *this / length();
 	}
 	return *this;
 }
-		
+
 template<> vector2<bool> vector2<bool>::floored() const;
 template<> vector2<float> vector2<float>::floored() const;
 template<typename T> vector2<T> vector2<T>::floored() const {
 	return vector2<T>(::floor(x), ::floor(y));
 }
-		
+
 template<> vector2<bool> vector2<bool>::ceiled() const;
 template<> vector2<float> vector2<float>::ceiled() const;
 template<typename T> vector2<T> vector2<T>::ceiled() const {
@@ -328,7 +329,7 @@ extern template class vector2<bool>;
 extern template class vector2<size_t>;
 extern template class vector2<ssize_t>;
 #endif
-		
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif

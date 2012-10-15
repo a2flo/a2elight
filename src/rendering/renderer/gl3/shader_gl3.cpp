@@ -63,14 +63,14 @@ a2e_error("unknown uniform block name \"%s\" for shader \"%s\"!", name, shd_obj.
 return; \
 }
 
-#define A2E_CHECK_UNIFORM_TYPE(name, expected_type) \
-size_t uniform_type = shd_obj.programs[cur_program]->uniforms.find(name)->second.type; \
+#define A2E_CHECK_UNIFORM_TYPE(name, uniform_type) \
+size_t expected_type = shd_obj.programs[cur_program]->uniforms.find(name)->second.type; \
 if(uniform_type != (size_t)expected_type) { \
 a2e_error("unexpected type %s for uniform \"%s\" - expected %s (in shader \"%s\")!", gl3_type_to_string(uniform_type), name, gl3_type_to_string(expected_type), shd_obj.name.c_str()); \
 }
 
-#define A2E_CHECK_ATTRIBUTE_TYPE(name, expected_type) \
-size_t attribute_type = shd_obj.programs[cur_program]->attributes.find(name)->second.type; \
+#define A2E_CHECK_ATTRIBUTE_TYPE(name, attribute_type) \
+size_t expected_type = shd_obj.programs[cur_program]->attributes.find(name)->second.type; \
 if(attribute_type != (size_t)expected_type) { \
 a2e_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s\")!", gl3_type_to_string(attribute_type), name, gl3_type_to_string(expected_type), shd_obj.name.c_str()); \
 }
@@ -79,8 +79,8 @@ a2e_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s
 #define A2E_CHECK_UNIFORM_EXISTENCE(name)
 #define A2E_CHECK_ATTRIBUTE_EXISTENCE(name)
 #define A2E_CHECK_BLOCK_EXISTENCE(name)
-#define A2E_CHECK_UNIFORM_TYPE(name, expected_type)
-#define A2E_CHECK_ATTRIBUTE_TYPE(name, expected_type)
+#define A2E_CHECK_UNIFORM_TYPE(name, uniform_type)
+#define A2E_CHECK_ATTRIBUTE_TYPE(name, attribute_type)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////

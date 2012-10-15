@@ -30,3 +30,64 @@ template class vector4<bool>;
 template class vector4<size_t>;
 template class vector4<ssize_t>;
 #endif
+
+template<> A2E_API float4& vector4<float>::floor() {
+	x = floorf(x);
+	y = floorf(y);
+	z = floorf(z);
+	w = floorf(w);
+	return *this;
+}
+
+template<> A2E_API float4& vector4<float>::ceil() {
+	x = ceilf(x);
+	y = ceilf(y);
+	z = ceilf(z);
+	w = ceilf(w);
+	return *this;
+}
+
+template<> A2E_API float4& vector4<float>::round() {
+	x = roundf(x);
+	y = roundf(y);
+	z = roundf(z);
+	w = roundf(w);
+	return *this;
+}
+
+template<> A2E_API float4 vector4<float>::floored() const {
+	return float4(floorf(x), floorf(y), floorf(z), floorf(w));
+}
+
+template<> A2E_API float4 vector4<float>::ceiled() const {
+	return float4(ceilf(x), ceilf(y), ceilf(z), ceilf(w));
+}
+
+template<> A2E_API float4 vector4<float>::rounded() const {
+	return float4(roundf(x), roundf(y), roundf(z), roundf(w));
+}
+
+//
+template<> A2E_API bool4& vector4<bool>::floor() {
+	return *this;
+}
+
+template<> A2E_API bool4& vector4<bool>::ceil() {
+	return *this;
+}
+
+template<> A2E_API bool4& vector4<bool>::round() {
+	return *this;
+}
+
+template<> A2E_API bool4 vector4<bool>::floored() const {
+	return *this;
+}
+
+template<> A2E_API bool4 vector4<bool>::ceiled() const {
+	return *this;
+}
+
+template<> A2E_API bool4 vector4<bool>::rounded() const {
+	return *this;
+}

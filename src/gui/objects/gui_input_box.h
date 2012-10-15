@@ -44,7 +44,7 @@ protected:
 	void update_input();
 	void update_text_display();
 	
-	const float2 input_text_margin = float2(6.0f, 3.0f); // 3pt, 1.5pt (TODO: dpi)
+	float2 input_text_margin = float2(3.0f, 1.5f); // in pt
 	float2 input_size_abs;
 	float2 input_text_position;
 	float2 input_text_interval;
