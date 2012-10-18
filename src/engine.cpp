@@ -30,7 +30,8 @@
 
 // dll main for windows dll export
 #if defined(__WINDOWS__)
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
+BOOL APIENTRY DllMain(HANDLE hModule a2e_unused, DWORD ul_reason_for_call, LPVOID lpReserved a2e_unused);
+BOOL APIENTRY DllMain(HANDLE hModule a2e_unused, DWORD ul_reason_for_call, LPVOID lpReserved a2e_unused) {
 	switch(ul_reason_for_call) {
 		case DLL_PROCESS_ATTACH:
 		case DLL_THREAD_ATTACH:

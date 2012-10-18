@@ -121,11 +121,14 @@ project "a2elight"
 			buildoptions { "-Wno-documentation -Wno-system-headers -Wno-global-constructors -Wno-padded -Wno-packed" }
 			buildoptions { "-Wno-switch-enum -Wno-sign-conversion -Wno-conversion -Wno-exit-time-destructors" }
 			linkoptions { "-fvisibility=default" }
-			defines { "A2E_EXPORT=1" }
 			if(not win_unixenv) then
+				defines { "A2E_EXPORT=1" }
 				linkoptions { "-stdlib=libc++" }
 			else
-				linkoptions { "-lc++.dll" }
+				-- link against everything that libc++ links to, now that there are no default libs
+				linkoptions { "-lsupc++ -lpthread -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcr100 -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt" }
+				linkoptions { "-nodefaultlibs -stdlib=libc++ -lc++.dll" }
+				add_include("/usr/include/c++/v1")
 			end
 		end
 		
@@ -182,7 +185,7 @@ project "a2elight"
 			linkoptions { "`sdl2-config --libs | sed -E 's/(-lmingw32|-mwindows)//g'`" }
 		elseif(mingw) then
 			-- link against windows opengl libs on mingw
-			links { "opengl32", "SDL2_image", "libxml2" }
+			links { "opengl32", "glu32", "gdi32", "SDL2_image", "libxml2" }
 			buildoptions { "`sdl2-config --cflags | sed -E 's/-Dmain=SDL_main//g'`" }
 			linkoptions { "`sdl2-config --libs`" }
 		end
