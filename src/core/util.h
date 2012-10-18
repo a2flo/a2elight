@@ -100,7 +100,9 @@ template <> float converter<string, float>::convert(const string& var);
 template <> unsigned int converter<string, unsigned int>::convert(const string& var);
 template <> int converter<string, int>::convert(const string& var);
 template <> bool converter<string, bool>::convert(const string& var);
+#if !defined(WIN_UNIXENV)
 template <> unsigned long long int converter<string, unsigned long long int>::convert(const string& var);
+#endif
 #if defined(A2E_IOS)
 template <> unsigned long int converter<string, unsigned long int>::convert(const string& var);
 #endif
