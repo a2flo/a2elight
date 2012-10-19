@@ -140,10 +140,10 @@ public:
 		
 #if !defined(A2E_NO_OPENCL)
 		// for opencl computed particle systems
-		opencl::buffer_object* ocl_pos_time_buffer = nullptr;
-		opencl::buffer_object* ocl_dir_buffer = nullptr;
-		opencl::buffer_object* ocl_indices[2] = { nullptr, nullptr };
-		opencl::buffer_object* ocl_distances = nullptr;
+		opencl_base::buffer_object* ocl_pos_time_buffer = nullptr;
+		opencl_base::buffer_object* ocl_dir_buffer = nullptr;
+		opencl_base::buffer_object* ocl_indices[2] = { nullptr, nullptr };
+		opencl_base::buffer_object* ocl_distances = nullptr;
 		GLuint ocl_gl_pos_time_vbo = 0;
 		GLuint ocl_gl_dir_vbo = 0;
 		cl::NDRange ocl_range_global;

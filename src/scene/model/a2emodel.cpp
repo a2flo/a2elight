@@ -75,7 +75,6 @@ a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
 	a2emodel::sce = sce_;
 	a2emodel::t = e->get_texman();
 	a2emodel::exts = e->get_ext();
-	a2emodel::ocl = e->get_opencl();
 	a2emodel::material = nullptr;
 }
 

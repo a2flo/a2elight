@@ -165,7 +165,7 @@ protected:
 	shader* s;
 	ext* exts;
 	rtt* r;
-	opencl* cl;
+	opencl_base* cl;
 	
 	void setup_scene();
 	void geometry_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_mask = DRAW_MODE::NONE);

@@ -55,24 +55,31 @@
 #define A2E_IR_TILE_SIZE_X (8)
 #define A2E_IR_TILE_SIZE_Y (16)
 
+//
 #if defined(A2E_CUDA_CL)
-class cudacl;
+#if defined(__APPLE__)
+#include <CUDA/cuda.h>
+#include <CUDA/cudaGL.h>
+#else
+#include <cuda.h>
+#include <cudaGL.h>
+#endif
 #endif
 
-/*! @class opencl
- *  @brief opencl routines
+/*! @class opencl_base
+ *  @brief opencl_base interface
  */
 
-class A2E_API opencl {
+class A2E_API opencl_base {
 public:
 	struct kernel_object;
 	struct buffer_object;
 	struct device_object;
 	
-	opencl& operator=(const opencl&) = delete;
-	opencl(const opencl&) = delete;
-	opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache);
-	~opencl();
+	opencl_base& operator=(const opencl_base&) = delete;
+	opencl_base(const opencl_base&) = delete;
+	opencl_base();
+	virtual ~opencl_base();
 	
 	bool is_supported() { return supported; }
 	bool is_cpu_support();
@@ -103,7 +110,7 @@ public:
 		CPU7,
 		CPU255 = CPU0+254
 	};
-	device_object* get_device(DEVICE_TYPE device);
+	device_object* get_device(const DEVICE_TYPE& device);
 	device_object* get_active_device();
 	
 	enum class PLATFORM_VENDOR {
@@ -113,6 +120,9 @@ public:
 		APPLE,
 		UNKNOWN
 	};
+	// <vendor, index/identifier for use in engine config>
+	static vector<pair<PLATFORM_VENDOR, string>> get_platforms();
+	static string platform_vendor_to_str(const PLATFORM_VENDOR& pvendor);
 	
 	enum class VENDOR {
 		NVIDIA,
@@ -139,50 +149,50 @@ public:
 	};
 	typedef unsigned int BUFFER_TYPE;
 	
-	void init(bool use_platform_devices = false, const size_t platform_index = 0,
-			  const set<string> device_restriction = set<string> {});
+	virtual void init(bool use_platform_devices = false, const size_t platform_index = 0,
+					  const set<string> device_restriction = set<string> {}) = 0;
 	void reload_kernels();
 	
 	void use_kernel(const string& identifier);
 	void run_kernel();
-	void run_kernel(kernel_object* kernel_obj);
 	void run_kernel(const char* kernel_identifier);
+	virtual void run_kernel(kernel_object* kernel_obj) = 0;
 	kernel_object* get_cur_kernel() { return cur_kernel; }
-	void finish();
-	void flush();
-	void activate_context();
-	void deactivate_context();
+	virtual void finish() = 0;
+	virtual void flush() = 0;
+	virtual void activate_context() = 0;
+	virtual void deactivate_context() = 0;
 	
 	kernel_object* add_kernel_file(const string& identifier, const string& file_name, const string& func_name, const string additional_options = "");
-	kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "");
+	virtual kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "") = 0;
 	
-	buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr);
-	buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
-	buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr);
-	buffer_object* create_ogl_buffer(BUFFER_TYPE type, GLuint ogl_buffer);
-	buffer_object* create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target = GL_TEXTURE_2D);
-	buffer_object* create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer);
-	void delete_buffer(buffer_object* buffer_obj);
-	void write_buffer(buffer_object* buffer_obj, const void* src, const size_t offset = 0, const size_t size = 0);
-	void write_image2d(buffer_object* buffer_obj, const void* src, size2 origin, size2 region);
-	void write_image3d(buffer_object* buffer_obj, const void* src, size3 origin, size3 region);
-	void read_buffer(void* dst, buffer_object* buffer_obj);
-	void* map_buffer(buffer_object* buffer_obj, EBUFFER_TYPE access_type, bool blocking = true);
-	void unmap_buffer(buffer_object* buffer_obj, void* map_ptr);
+	virtual buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr) = 0;
+	virtual buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr) = 0;
+	virtual buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr) = 0;
+	virtual buffer_object* create_ogl_buffer(BUFFER_TYPE type, GLuint ogl_buffer) = 0;
+	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target = GL_TEXTURE_2D) = 0;
+	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer) = 0;
+	virtual void delete_buffer(buffer_object* buffer_obj) = 0;
+	virtual void write_buffer(buffer_object* buffer_obj, const void* src, const size_t offset = 0, const size_t size = 0) = 0;
+	virtual void write_image2d(buffer_object* buffer_obj, const void* src, size2 origin, size2 region) = 0;
+	virtual void write_image3d(buffer_object* buffer_obj, const void* src, size3 origin, size3 region) = 0;
+	virtual void read_buffer(void* dst, buffer_object* buffer_obj) = 0;
+	virtual void* map_buffer(buffer_object* buffer_obj, EBUFFER_TYPE access_type, bool blocking = true) = 0;
+	virtual void unmap_buffer(buffer_object* buffer_obj, void* map_ptr) = 0;
 	void set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool state);
 	
-	void set_active_device(DEVICE_TYPE dev);
-	bool set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg);
-	bool set_kernel_argument(const unsigned int& index, const opencl::buffer_object* arg);
+	virtual void set_active_device(const DEVICE_TYPE& dev) = 0;
+	virtual bool set_kernel_argument(const unsigned int& index, buffer_object* arg) = 0;
+	virtual bool set_kernel_argument(const unsigned int& index, const buffer_object* arg) = 0;
+	virtual bool set_kernel_argument(const unsigned int& index, size_t size, void* arg) = 0;
 	template<typename T> bool set_kernel_argument(const unsigned int& index, T&& arg);
-	bool set_kernel_argument(const unsigned int& index, size_t size, void* arg);
 	void set_kernel_range(const cl::NDRange& global, const cl::NDRange& local);
-	size_t get_kernel_work_group_size();
+	virtual size_t get_kernel_work_group_size() = 0;
 	cl::NDRange compute_local_kernel_range(const unsigned int dimensions);
 	
 	//! this is for manual handling only
-	void acquire_gl_object(buffer_object* gl_buffer_obj);
-	void release_gl_object(buffer_object* gl_buffer_obj);
+	virtual void acquire_gl_object(buffer_object* gl_buffer_obj) = 0;
+	virtual void release_gl_object(buffer_object* gl_buffer_obj) = 0;
 	
 	struct kernel_object {
 		cl::Kernel* kernel = nullptr;
@@ -227,8 +237,8 @@ public:
 	
 	struct device_object {
 		const cl::Device* device = nullptr;
-		opencl::DEVICE_TYPE type = DEVICE_TYPE::NONE;
-		opencl::VENDOR vendor_type = VENDOR::UNKNOWN;
+		opencl_base::DEVICE_TYPE type = DEVICE_TYPE::NONE;
+		opencl_base::VENDOR vendor_type = VENDOR::UNKNOWN;
 		unsigned int units = 0;
 		unsigned int clock = 0;
 		cl_ulong mem_size = 0;
@@ -261,20 +271,19 @@ protected:
 	string nv_build_options;
 	string kernel_path_str;
 	
-	buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr);
+	virtual buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr) = 0;
 	void load_internal_kernels();
 	void destroy_kernels();
 	void check_compilation(const bool ret, const string& filename);
-	void log_program_binary(const kernel_object* kernel);
+	virtual void log_program_binary(const kernel_object* kernel) = 0;
 	
-	bool has_vendor_device(opencl::VENDOR vendor_type);
-	string platform_vendor_to_str(const opencl::PLATFORM_VENDOR pvendor) const;
+	bool has_vendor_device(VENDOR vendor_type);
 	
-	const char* error_code_to_string(cl_int error_code);
+	virtual const char* error_code_to_string(cl_int error_code) = 0;
 	
 	cl::Context* context;
 	cl::Platform* platform;
-	opencl::PLATFORM_VENDOR platform_vendor = PLATFORM_VENDOR::UNKNOWN;
+	PLATFORM_VENDOR platform_vendor = PLATFORM_VENDOR::UNKNOWN;
 	vector<cl::Platform> platforms;
 	vector<cl::Device> internal_devices;
 	vector<device_object*> devices;
@@ -297,27 +306,11 @@ protected:
 	unordered_map<string, tuple<string, string, string>> external_kernels;
 	vector<tuple<string, string, string, string>> internal_kernels;
 	
-	//
-#if defined(A2E_CUDA_CL)
-	cudacl* ccl = nullptr;
-	bool use_ptx_cache = false;
-#endif
-	
 };
 
-#if !defined(A2E_CUDA_CL)
-template<typename T> bool opencl::set_kernel_argument(const unsigned int& index, T&& arg) {
+template<typename T> bool opencl_base::set_kernel_argument(const unsigned int& index, T&& arg) {
 	try {
-		cur_kernel->kernel->setArg(index, arg);
-		cur_kernel->args_passed[index] = true;
-		
-		// remove "references" of the last used buffer for this kernel and argument index (if there is one)
-		if(cur_kernel->buffer_args.count(index) > 0) {
-			auto& associated_kernels = cur_kernel->buffer_args[index]->associated_kernels[cur_kernel];
-			associated_kernels.erase(remove(begin(associated_kernels), end(associated_kernels), index), end(associated_kernels));
-			cur_kernel->buffer_args.erase(index);
-		}
-		return true;
+		set_kernel_argument(index, sizeof(T), (void*)&arg);
 	}
 	catch(cl::Error err) {
 		a2e_error("%s (%d: %s)!", err.what(), err.err(), error_code_to_string(err.err()));
@@ -327,11 +320,6 @@ template<typename T> bool opencl::set_kernel_argument(const unsigned int& index,
 		a2e_error("unknown error!");
 		return false;
 	}
-	return false;
-}
-#else
-template<typename T> bool opencl::set_kernel_argument(const unsigned int& index, T&& arg) {
-	set_kernel_argument(index, sizeof(T), (void*)&arg);
 	
 	// remove "references" of the last used buffer for this kernel and argument index (if there is one)
 	if(cur_kernel->buffer_args.count(index) > 0) {
@@ -341,16 +329,135 @@ template<typename T> bool opencl::set_kernel_argument(const unsigned int& index,
 	}
 	return true;
 }
+	
+/*! @class opencl
+ *  @brief opencl interface
+ */
+class A2E_API opencl : public opencl_base {
+public:
+	//
+	opencl(const char* kernel_path_, SDL_Window* wnd_, const bool clear_cache_);
+	virtual ~opencl();
+	
+	virtual void init(bool use_platform_devices = false, const size_t platform_index = 0,
+					  const set<string> device_restriction = set<string> {});
+	
+	virtual void run_kernel(kernel_object* kernel_obj);
+	
+	virtual void finish();
+	virtual void flush();
+	virtual void activate_context();
+	virtual void deactivate_context();
+	
+	virtual kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "");
+	
+	virtual buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr);
+	virtual buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
+	virtual buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr);
+	virtual buffer_object* create_ogl_buffer(BUFFER_TYPE type, GLuint ogl_buffer);
+	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target = GL_TEXTURE_2D);
+	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer);
+	virtual void delete_buffer(buffer_object* buffer_obj);
+	virtual void write_buffer(buffer_object* buffer_obj, const void* src, const size_t offset = 0, const size_t size = 0);
+	virtual void write_image2d(buffer_object* buffer_obj, const void* src, size2 origin, size2 region);
+	virtual void write_image3d(buffer_object* buffer_obj, const void* src, size3 origin, size3 region);
+	virtual void read_buffer(void* dst, buffer_object* buffer_obj);
+	virtual void* map_buffer(buffer_object* buffer_obj, EBUFFER_TYPE access_type, bool blocking = true);
+	virtual void unmap_buffer(buffer_object* buffer_obj, void* map_ptr);
+	
+	virtual void set_active_device(const DEVICE_TYPE& dev);
+	virtual bool set_kernel_argument(const unsigned int& index, buffer_object* arg);
+	virtual bool set_kernel_argument(const unsigned int& index, const buffer_object* arg);
+	virtual bool set_kernel_argument(const unsigned int& index, size_t size, void* arg);
+	virtual size_t get_kernel_work_group_size();
+	
+	virtual void acquire_gl_object(buffer_object* gl_buffer_obj);
+	virtual void release_gl_object(buffer_object* gl_buffer_obj);
+	
+protected:
+	virtual buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr);
+	virtual void log_program_binary(const kernel_object* kernel);
+	virtual const char* error_code_to_string(cl_int error_code);
+	
+};
+
+#if defined(A2E_CUDA_CL)
+/*! @class cudacl
+ *  @brief cudacl interface
+ */
+struct cuda_kernel_object;
+class A2E_API cudacl : public opencl_base {
+public:
+	//
+	cudacl(const char* kernel_path_, SDL_Window* wnd_, const bool clear_cache_);
+	virtual ~cudacl();
+	
+	virtual void init(bool use_platform_devices = false, const size_t platform_index = 0,
+					  const set<string> device_restriction = set<string> {});
+	
+	virtual void run_kernel(kernel_object* kernel_obj);
+	
+	virtual void finish();
+	virtual void flush();
+	virtual void activate_context();
+	virtual void deactivate_context();
+	
+	virtual kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "");
+	
+	virtual buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr);
+	virtual buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
+	virtual buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr);
+	virtual buffer_object* create_ogl_buffer(BUFFER_TYPE type, GLuint ogl_buffer);
+	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target = GL_TEXTURE_2D);
+	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer);
+	virtual void delete_buffer(buffer_object* buffer_obj);
+	virtual void write_buffer(buffer_object* buffer_obj, const void* src, const size_t offset = 0, const size_t size = 0);
+	virtual void write_image2d(buffer_object* buffer_obj, const void* src, size2 origin, size2 region);
+	virtual void write_image3d(buffer_object* buffer_obj, const void* src, size3 origin, size3 region);
+	virtual void read_buffer(void* dst, buffer_object* buffer_obj);
+	virtual void* map_buffer(buffer_object* buffer_obj, EBUFFER_TYPE access_type, bool blocking = true);
+	virtual void unmap_buffer(buffer_object* buffer_obj, void* map_ptr);
+	
+	virtual void set_active_device(const DEVICE_TYPE& dev);
+	virtual bool set_kernel_argument(const unsigned int& index, buffer_object* arg);
+	virtual bool set_kernel_argument(const unsigned int& index, const buffer_object* arg);
+	virtual bool set_kernel_argument(const unsigned int& index, size_t size, void* arg);
+	virtual size_t get_kernel_work_group_size();
+	
+	virtual void acquire_gl_object(buffer_object* gl_buffer_obj);
+	virtual void release_gl_object(buffer_object* gl_buffer_obj);
+	
+protected:
+	bool valid = true;
+	bool use_ptx_cache = false;
+	string cache_path = "";
+	string cc_target_str = "10";
+	unsigned int cc_target = 0;
+	vector<CUdevice*> cuda_devices;
+	unordered_map<opencl_base::device_object*, const CUdevice*> device_map;
+	unordered_map<const CUdevice*, CUcontext*> cuda_contexts;
+	unordered_map<const CUdevice*, CUstream*> cuda_queues;
+	unordered_map<opencl_base::buffer_object*, CUdeviceptr*> cuda_buffers;
+	unordered_map<opencl_base::buffer_object*, CUgraphicsResource*> cuda_gl_buffers;
+	unordered_map<CUgraphicsResource*, CUdeviceptr*> cuda_mapped_gl_buffers;
+	unordered_map<opencl_base::kernel_object*, cuda_kernel_object*> cuda_kernels;
+	
+	//
+	virtual buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr);
+	virtual void log_program_binary(const kernel_object* kernel);
+	virtual const char* error_code_to_string(cl_int error_code);
+	
+};
 #endif
 
 #else
 
-class opencl {
+class opencl_base {
 public:
-	opencl& operator=(const opencl&) = delete;
-	opencl(const opencl&) = delete;
-	opencl(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache) {}
-	~opencl() {}
+	opencl_base& operator=(const opencl_base&) = delete;
+	opencl_base(const opencl_base&) = delete;
+	opencl_base(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache) {}
+	~opencl_base() {}
 	
 	bool is_supported() { return false; }
 	bool is_cpu_support() { return false; }

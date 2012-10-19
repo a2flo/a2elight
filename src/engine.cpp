@@ -267,7 +267,7 @@ void engine::create() {
 		config.geometry_light_scaling = config_doc.get<float>("config.inferred.geometry_light_scaling", 1.0f);
 		config.geometry_light_scaling = core::clamp(config.geometry_light_scaling, 0.5f, 1.0f);
 		
-		config.opencl_platform = config_doc.get<size_t>("config.opencl.platform", 0);
+		config.opencl_platform = config_doc.get<string>("config.opencl.platform", "0");
 		config.clear_cache = config_doc.get<bool>("config.opencl.clear_cache", false);
 		const auto cl_dev_tokens(core::tokenize(config_doc.get<string>("config.opencl.restrict", ""), ','));
 		for(const auto& dev_token : cl_dev_tokens) {
@@ -426,9 +426,23 @@ void engine::init(const char* ico) {
 	
 	acquire_gl_context();
 	
-	// TODO: this is only a rudimentary solution, think of or wait for a better one ...
+	// check if a cudacl or pure opencl context should be created
+	// use absolute path
 #if !defined(A2E_NO_OPENCL)
-	ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache); // use absolute path
+#if defined(A2E_CUDA_CL)
+	if(config.opencl_platform == "cuda") {
+		ocl = new cudacl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache);
+	}
+	else {
+#else
+		if(config.opencl_platform == "cuda") {
+			a2e_error("CUDA support is not enabled!");
+		}
+#endif
+		ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache);
+#if defined(A2E_CUDA_CL)
+	}
+#endif
 #endif
 	
 	// make an early clear
@@ -569,7 +583,9 @@ void engine::init(const char* ico) {
 	
 #if !defined(A2E_NO_OPENCL)
 	// init opencl
-	ocl->init(false, config.opencl_platform, config.cl_device_restriction);
+	ocl->init(false,
+			  config.opencl_platform == "cuda" ? 0 : string2size_t(config.opencl_platform),
+			  config.cl_device_restriction);
 #endif
 	
 	// create scene
@@ -997,7 +1013,7 @@ unicode* engine::get_unicode() {
 
 /*! returns the opencl class
  */
-opencl* engine::get_opencl() {
+opencl_base* engine::get_opencl() {
 	return engine::ocl;
 }
 

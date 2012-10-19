@@ -64,7 +64,7 @@ public:
 protected:
 	engine* e;
 	shader* s;
-	opencl* cl;
+	opencl_base* cl;
 	rtt* r;
 	ext* exts;
 	texman* t;

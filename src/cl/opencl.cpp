@@ -23,7 +23,60 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // common in all opencl implementations:
 
-void opencl::destroy_kernels() {
+opencl_base::opencl_base() {
+}
+
+opencl_base::~opencl_base() {
+}
+
+vector<pair<opencl_base::PLATFORM_VENDOR, string>> opencl_base::get_platforms() {
+	vector<pair<PLATFORM_VENDOR, string>> available_platforms;
+#if !defined(__APPLE__)
+	vector<cl::Platform> available_cl_platforms;
+	cl::Platform::get(&available_cl_platforms);
+	size_t platform_index = 0;
+	for(const auto& pl : available_cl_platforms) {
+		const string platform_str = pl.getInfo<CL_PLATFORM_NAME>();
+		const string platform_vendor_str = core::str_to_lower(platform_str);
+		PLATFORM_VENDOR vendor = PLATFORM_VENDOR::UNKNOWN;
+		if(platform_vendor_str.find("nvidia") != string::npos) {
+			vendor = PLATFORM_VENDOR::NVIDIA;
+		}
+		else if(platform_vendor_str.find("amd") != string::npos) {
+			vendor = PLATFORM_VENDOR::AMD;
+		}
+		else if(platform_vendor_str.find("intel") != string::npos) {
+			vendor = PLATFORM_VENDOR::INTEL;
+		}
+		else if(platform_vendor_str.find("apple") != string::npos) {
+			vendor = PLATFORM_VENDOR::APPLE;
+		}
+		available_platforms.push_back({ vendor, size_t2string(platform_index) });
+		platform_index++;
+	}
+#else
+	available_platforms.push_back({ PLATFORM_VENDOR::APPLE, "0" });
+#endif
+	
+#if defined(A2E_CUDA_CL)
+	available_platforms.push_back({ PLATFORM_VENDOR::NVIDIA, "cuda" });
+#endif
+	
+	return available_platforms;
+}
+
+string opencl_base::platform_vendor_to_str(const opencl_base::PLATFORM_VENDOR& pvendor) {
+	switch(pvendor) {
+		case PLATFORM_VENDOR::NVIDIA: return "NVIDIA";
+		case PLATFORM_VENDOR::INTEL: return "INTEL";
+		case PLATFORM_VENDOR::AMD: return "AMD";
+		case PLATFORM_VENDOR::APPLE: return "APPLE";
+		case PLATFORM_VENDOR::UNKNOWN: break;
+	}
+	return "UNKNOWN";
+}
+
+void opencl_base::destroy_kernels() {
 	for(const auto& k : kernels) {
 		delete k.second;
 	}
@@ -31,17 +84,17 @@ void opencl::destroy_kernels() {
 	cur_kernel = nullptr;
 }
 
-bool opencl::is_cpu_support() {
+bool opencl_base::is_cpu_support() {
 	// if a fastest cpu exists, we do have cpu support
 	return (fastest_cpu != nullptr);
 }
 
-bool opencl::is_gpu_support() {
+bool opencl_base::is_gpu_support() {
 	// if a fastest gpu exists, we do have gpu support
 	return (fastest_gpu != nullptr);
 }
 
-opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const string& file_name, const string& func_name, const string additional_options) {
+opencl_base::kernel_object* opencl_base::add_kernel_file(const string& identifier, const string& file_name, const string& func_name, const string additional_options) {
 	if(kernels.count(identifier) != 0) {
 		a2e_error("kernel \"%s\" already exists!", identifier);
 		return kernels[identifier];
@@ -70,14 +123,14 @@ opencl::kernel_object* opencl::add_kernel_file(const string& identifier, const s
 	return add_kernel_src(identifier, kernel_data, func_name, additional_options);
 }
 
-void opencl::check_compilation(const bool ret, const string& filename) {
+void opencl_base::check_compilation(const bool ret, const string& filename) {
 	if(!ret) {
 		a2e_error("internal kernel \"%s\" didn't compile successfully!", filename.c_str());
 		successful_internal_compilation = false;
 	}
 }
 
-void opencl::reload_kernels() {
+void opencl_base::reload_kernels() {
 	destroy_kernels();
 	
 	successful_internal_compilation = true;
@@ -106,14 +159,14 @@ void opencl::reload_kernels() {
 	if(!external_kernels.empty()) a2e_debug("external kernels loaded successfully!");
 }
 
-void opencl::load_internal_kernels() {
+void opencl_base::load_internal_kernels() {
 	reload_kernels();
 	
 	if(is_gpu_support()) set_active_device(DEVICE_TYPE::FASTEST_GPU);
 	else if(is_cpu_support()) set_active_device(DEVICE_TYPE::FASTEST_CPU);
 }
 
-void opencl::use_kernel(const string& identifier) {
+void opencl_base::use_kernel(const string& identifier) {
 	if(kernels.count(identifier) == 0) {
 		a2e_error("kernel \"%s\" doesn't exist!", identifier.c_str());
 		cur_kernel = nullptr;
@@ -122,65 +175,18 @@ void opencl::use_kernel(const string& identifier) {
 	cur_kernel = kernels[identifier];
 }
 
-void opencl::set_active_device(opencl::DEVICE_TYPE dev) {
-	switch(dev) {
-		case DEVICE_TYPE::FASTEST_GPU:
-			if(fastest_gpu != nullptr) {
-				active_device = fastest_gpu;
-				return;
-			}
-			break;
-		case DEVICE_TYPE::FASTEST_CPU:
-			if(fastest_cpu != nullptr) {
-				active_device = fastest_cpu;
-				return;
-			}
-			break;
-		case DEVICE_TYPE::ALL_GPU:
-			// TODO: ...
-			break;
-		case DEVICE_TYPE::ALL_CPU:
-			// TODO: ...
-			break;
-		case DEVICE_TYPE::ALL_DEVICES:
-			// TODO: ...
-			break;
-		case DEVICE_TYPE::NONE:
-		default:
-			break;
-	}
-	
-	if((dev >= DEVICE_TYPE::GPU0 && dev <= DEVICE_TYPE::GPU255) ||
-	   (dev >= DEVICE_TYPE::CPU0 && dev <= DEVICE_TYPE::CPU255)) {
-		for(const auto& device : devices) {
-			if(device->type == dev) {
-				active_device = device;
-				return;
-			}
-		}
-	}
-	
-	if(active_device != nullptr) {
-		a2e_error("can't use device %u - keeping current one (%u)!", dev, active_device->type);
-	}
-	else {
-		// TODO: use _any_ device if there is at least one available ...
-		a2e_error("can't use device %u and no other device is currently active!", dev);
-	}
-}
-
-void opencl::run_kernel() {
+void opencl_base::run_kernel() {
 	run_kernel(cur_kernel);
 }
 
-void opencl::run_kernel(const char* kernel_identifier) {
+void opencl_base::run_kernel(const char* kernel_identifier) {
 	if(kernels.count(kernel_identifier) > 0) {
 		run_kernel(kernels[kernel_identifier]);
 	}
 	a2e_error("kernel \"%s\" doesn't exist!", kernel_identifier);
 }
 
-opencl::device_object* opencl::get_device(opencl::DEVICE_TYPE device) {
+opencl_base::device_object* opencl_base::get_device(const opencl_base::DEVICE_TYPE& device) {
 	if(device == DEVICE_TYPE::FASTEST_GPU) return fastest_gpu;
 	else if(device == DEVICE_TYPE::FASTEST_CPU) return fastest_cpu;
 	else {
@@ -196,25 +202,25 @@ opencl::device_object* opencl::get_device(opencl::DEVICE_TYPE device) {
 	return nullptr;
 }
 
-opencl::device_object* opencl::get_active_device() {
+opencl_base::device_object* opencl_base::get_active_device() {
 	return active_device;
 }
 
-bool opencl::has_vendor_device(opencl::VENDOR vendor_type) {
+bool opencl_base::has_vendor_device(opencl_base::VENDOR vendor_type) {
 	for(const auto& device : devices) {
 		if(device->vendor_type == vendor_type) return true;
 	}
 	return false;
 }
 
-void opencl::set_kernel_range(const cl::NDRange& global, const cl::NDRange& local) {
+void opencl_base::set_kernel_range(const cl::NDRange& global, const cl::NDRange& local) {
 	if(cur_kernel == nullptr) return;
 	
 	memcpy(cur_kernel->global, global, sizeof(cl::NDRange));
 	memcpy(cur_kernel->local, local, sizeof(cl::NDRange));
 }
 
-cl::NDRange opencl::compute_local_kernel_range(const unsigned int dimensions) {
+cl::NDRange opencl_base::compute_local_kernel_range(const unsigned int dimensions) {
 	cl::NDRange local;
 	if(dimensions < 1 || dimensions > 3) {
 		a2e_error("invalid dimensions number %d!", dimensions);
@@ -277,8 +283,8 @@ cl::NDRange opencl::compute_local_kernel_range(const unsigned int dimensions) {
 	return local;
 }
 
-void opencl::set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool state) {
-	if((gl_buffer_obj->type & opencl::BT_OPENGL_BUFFER) == 0 ||
+void opencl_base::set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool state) {
+	if((gl_buffer_obj->type & opencl_base::BT_OPENGL_BUFFER) == 0 ||
 	   gl_buffer_obj->ogl_buffer == 0) {
 		a2e_error("this is not a gl object!");
 		return;
@@ -287,21 +293,8 @@ void opencl::set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool stat
 	gl_buffer_obj->manual_gl_sharing = state;
 }
 
-string opencl::platform_vendor_to_str(const opencl::PLATFORM_VENDOR pvendor) const {
-	switch(pvendor) {
-		case PLATFORM_VENDOR::NVIDIA: return "NVIDIA";
-		case PLATFORM_VENDOR::INTEL: return "INTEL";
-		case PLATFORM_VENDOR::AMD: return "AMD";
-		case PLATFORM_VENDOR::APPLE: return "APPLE";
-		case PLATFORM_VENDOR::UNKNOWN: break;
-	}
-	return "UNKNOWN";
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // general/actual opencl implementation below
-#if !defined(A2E_CUDA_CL)
-
 #define __ERROR_CODE_INFO_CL_11(F) \
 F(CL_SUCCESS) \
 F(CL_DEVICE_NOT_FOUND) \
@@ -391,7 +384,7 @@ catch(cl::Error err) {																				\
 
 /*! creates a opencl object
  */
-opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache) {
+opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache) : opencl_base() {
 	opencl::sdl_wnd = wnd;
 	opencl::kernel_path_str = kernel_path;
 	
@@ -1342,8 +1335,8 @@ void opencl::deactivate_context() {
 }
 
 bool opencl::set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg) {
-	if((arg->buffer != nullptr && set_kernel_argument(index, (*arg->buffer)())) ||
-	   (arg->image_buffer != nullptr && set_kernel_argument(index, *(cl::Memory*)arg->image_buffer))) {
+	if((arg->buffer != nullptr && opencl_base::set_kernel_argument(index, (*arg->buffer)())) ||
+	   (arg->image_buffer != nullptr && opencl_base::set_kernel_argument(index, *(cl::Memory*)arg->image_buffer))) {
 		cur_kernel->buffer_args[index] = arg;
 		arg->associated_kernels[cur_kernel].push_back(index);
 		return true;
@@ -1436,5 +1429,51 @@ void opencl::release_gl_object(buffer_object* gl_buffer_obj) {
 	queues[active_device->device]->enqueueReleaseGLObjects(&gl_objects);
 }
 
-#endif
+void opencl::set_active_device(const opencl_base::DEVICE_TYPE& dev) {
+	switch(dev) {
+		case DEVICE_TYPE::FASTEST_GPU:
+			if(fastest_gpu != nullptr) {
+				active_device = fastest_gpu;
+				return;
+			}
+			break;
+		case DEVICE_TYPE::FASTEST_CPU:
+			if(fastest_cpu != nullptr) {
+				active_device = fastest_cpu;
+				return;
+			}
+			break;
+		case DEVICE_TYPE::ALL_GPU:
+			// TODO: ...
+			break;
+		case DEVICE_TYPE::ALL_CPU:
+			// TODO: ...
+			break;
+		case DEVICE_TYPE::ALL_DEVICES:
+			// TODO: ...
+			break;
+		case DEVICE_TYPE::NONE:
+		default:
+			break;
+	}
+	
+	if((dev >= DEVICE_TYPE::GPU0 && dev <= DEVICE_TYPE::GPU255) ||
+	   (dev >= DEVICE_TYPE::CPU0 && dev <= DEVICE_TYPE::CPU255)) {
+		for(const auto& device : devices) {
+			if(device->type == dev) {
+				active_device = device;
+				return;
+			}
+		}
+	}
+	
+	if(active_device != nullptr) {
+		a2e_error("can't use device %u - keeping current one (%u)!", dev, active_device->type);
+	}
+	else {
+		// TODO: use _any_ device if there is at least one available ...
+		a2e_error("can't use device %u and no other device is currently active!", dev);
+	}
+}
+
 #endif

@@ -140,7 +140,6 @@ protected:
 	texman* t;
 	shader* s;
 	ext* exts;
-	opencl* ocl;
 	a2ematerial* material;
 	scene* sce;
 	string filename = "";

@@ -159,8 +159,8 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	delete [] pos_time_data;
 	delete [] dir_data;
 	
-	pdata->ocl_pos_time_buffer = cl->create_ogl_buffer(opencl::BT_READ_WRITE, pdata->ocl_gl_pos_time_vbo);
-	pdata->ocl_dir_buffer = cl->create_ogl_buffer(opencl::BT_READ_WRITE, pdata->ocl_gl_dir_vbo);
+	pdata->ocl_pos_time_buffer = cl->create_ogl_buffer(opencl_base::BT_READ_WRITE, pdata->ocl_gl_pos_time_vbo);
+	pdata->ocl_dir_buffer = cl->create_ogl_buffer(opencl_base::BT_READ_WRITE, pdata->ocl_gl_dir_vbo);
 	pdata->ocl_range_global = pdata->particle_count;
 	
 	cl->set_manual_gl_sharing(pdata->ocl_pos_time_buffer, true);
@@ -178,14 +178,14 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_count * sizeof(unsigned int), particle_indices, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		
-		pdata->ocl_indices[i] = cl->create_ogl_buffer(opencl::BT_READ_WRITE, pdata->particle_indices_vbo[i]);
+		pdata->ocl_indices[i] = cl->create_ogl_buffer(opencl_base::BT_READ_WRITE, pdata->particle_indices_vbo[i]);
 		cl->set_manual_gl_sharing(pdata->ocl_indices[i], true);
 	}
 	
 	delete [] particle_indices;
 	
 	// create distances buffer for sorting
-	pdata->ocl_distances = cl->create_buffer(opencl::BT_READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
+	pdata->ocl_distances = cl->create_buffer(opencl_base::BT_READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
 	
 	a2e_debug("particle count: %u", pdata->particle_count);
 }

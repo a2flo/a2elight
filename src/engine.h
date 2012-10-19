@@ -46,7 +46,7 @@ enum class INIT_MODE : unsigned int {
 };
 
 class shader;
-class opencl;
+class opencl_base;
 class gui;
 class scene;
 class A2E_API engine {
@@ -78,7 +78,7 @@ public:
 	xml* get_xml();
 	rtt* get_rtt();
 	unicode* get_unicode();
-	opencl* get_opencl();
+	opencl_base* get_opencl();
 	shader* get_shader();
 	gui* get_gui();
 	scene* get_scene();
@@ -215,7 +215,7 @@ protected:
 	xml* x = nullptr;
 	rtt* r = nullptr;
 	unicode* u = nullptr;
-	opencl* ocl = nullptr;
+	opencl_base* ocl = nullptr;
 	shader* shd = nullptr;
 	gui* ui = nullptr;
 	scene* sce = nullptr;
@@ -268,7 +268,7 @@ protected:
 		float geometry_light_scaling = 1.0f;
 		
 		// opencl
-		size_t opencl_platform = 0;
+		string opencl_platform = "0";
 		bool clear_cache = false;
 		set<string> cl_device_restriction;
 

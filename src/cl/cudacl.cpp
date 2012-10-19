@@ -22,95 +22,39 @@
 #include "cudacl_translator.h"
 #include "zlib.h"
 
-#if defined(__APPLE__)
-#include <CUDA/cuda.h>
-#include <CUDA/cudaGL.h>
-#else
-#include <cuda.h>
-#include <cudaGL.h>
-#endif
-
 //
-class A2E_API cudacl {
-public:
-	//
-	cudacl() {
-		CUresult cu_err = CUDA_SUCCESS;
-		cu_err = cuInit(0);
-		if(cu_err != CUDA_SUCCESS) {
-			a2e_error("failed to initialize CUDA: %i", cu_err);
-			valid = false;
+struct cuda_kernel_object {
+	CUmodule* module = nullptr;
+	CUfunction* function = nullptr;
+	const cudacl_kernel_info info;
+	
+	// <arg#, <arg size, arg ptr>>
+	struct kernel_arg {
+		size_t size = 0;
+		void* ptr = nullptr;
+		bool free_ptr = true;
+	};
+	unordered_map<cl_uint, kernel_arg> arguments;
+	
+	cuda_kernel_object(const cudacl_kernel_info& info_) : info(info_) {}
+	~cuda_kernel_object() {
+		for(const auto& arg : arguments) {
+			if(arg.second.free_ptr &&
+			   arg.second.ptr != nullptr) {
+				free(arg.second.ptr);
+			}
 		}
+		arguments.clear();
 		
-		//
-		int driver_version = 0;
-		cuDriverGetVersion(&driver_version);
-		if((driver_version/1000) < 5) {
-			a2e_error("A2E requires at least CUDA 5.0!");
-			valid = false;
+		if(function != nullptr) {
+			delete function;
 		}
-		
-		//
-		int device_count = 0;
-		if(cuDeviceGetCount(&device_count) != CUDA_SUCCESS) {
-			a2e_error("cuDeviceGetCount failed!");
-			valid = false;
-		}
-		if(device_count == 0) {
-			a2e_error("there is no device that supports CUDA!");
-			valid = false;
+		if(module != nullptr) {
+			// no CU, since we shouldn't throw here and it doesn't really matter if the unload fails
+			cuModuleUnload(*module);
+			delete module;
 		}
 	}
-	~cudacl() {}
-	
-	// vars
-	bool valid = true;
-	string cache_path = "";
-	string cc_target_str = "10";
-	unsigned int cc_target = CU_TARGET_COMPUTE_10;
-	vector<CUdevice*> devices;
-	unordered_map<opencl::device_object*, const CUdevice*> device_map;
-	unordered_map<const CUdevice*, CUcontext*> contexts;
-	unordered_map<const CUdevice*, CUstream*> queues;
-	unordered_map<opencl::buffer_object*, CUdeviceptr*> buffers;
-	unordered_map<opencl::buffer_object*, CUgraphicsResource*> gl_buffers;
-	unordered_map<CUgraphicsResource*, CUdeviceptr*> mapped_gl_buffers;
-	
-	struct cuda_kernel_object {
-		CUmodule* module = nullptr;
-		CUfunction* function = nullptr;
-		const cudacl_kernel_info info;
-		
-		// <arg#, <arg size, arg ptr>>
-		struct kernel_arg {
-			size_t size = 0;
-			void* ptr = nullptr;
-			bool free_ptr = true;
-		};
-		unordered_map<cl_uint, kernel_arg> arguments;
-		
-		cuda_kernel_object(const cudacl_kernel_info& info_) : info(info_) {}
-		~cuda_kernel_object() {
-			for(const auto& arg : arguments) {
-				if(arg.second.free_ptr &&
-				   arg.second.ptr != nullptr) {
-					free(arg.second.ptr);
-				}
-			}
-			arguments.clear();
-			
-			if(function != nullptr) {
-				delete function;
-			}
-			if(module != nullptr) {
-				// no CU, since we shouldn't throw here and it doesn't really matter if the unload fails
-				cuModuleUnload(*module);
-				delete module;
-			}
-		}
-	};
-	unordered_map<opencl::kernel_object*, cuda_kernel_object*> kernels;
-	
 };
 
 //
@@ -166,7 +110,7 @@ F(CUDA_ERROR_UNKNOWN)
 
 #define __DECLARE_ERROR_CODE_TO_STRING(code) case code: return #code;
 
-const char* opencl::error_code_to_string(cl_int error_code) {
+const char* cudacl::error_code_to_string(cl_int error_code) {
 	switch(error_code) {
 		__ERROR_CODE_INFO(__DECLARE_ERROR_CODE_TO_STRING);
 		default:
@@ -214,10 +158,11 @@ catch(cudacl_exception err) {													\
 	}																			\
 }
 
-opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache) {
-	opencl::sdl_wnd = wnd;
-	opencl::kernel_path_str = kernel_path;
-	
+cudacl::cudacl(const char* kernel_path_, SDL_Window* wnd_, const bool clear_cache_) :
+opencl_base(), cc_target(CU_TARGET_COMPUTE_10) {
+	opencl_base::sdl_wnd = wnd_;
+	opencl_base::kernel_path_str = kernel_path_;
+
 	context = nullptr;
 	cur_kernel = nullptr;
 	active_device = nullptr;
@@ -228,20 +173,44 @@ opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache)
 	build_options = "-I " + kernel_path_str;
 	
 	// clear cuda cache
-	if(clear_cache) {
+	if(clear_cache_) {
 		// TODO (ignore this for now)
 	}
 	
+	// init cuda
+	CUresult cu_err = CUDA_SUCCESS;
+	cu_err = cuInit(0);
+	if(cu_err != CUDA_SUCCESS) {
+		a2e_error("failed to initialize CUDA: %i", cu_err);
+		valid = false;
+	}
+	
 	//
-	ccl = new cudacl();
-	if(!ccl->valid) {
+	int driver_version = 0;
+	cuDriverGetVersion(&driver_version);
+	if((driver_version/1000) < 5) {
+		a2e_error("A2E requires at least CUDA 5.0!");
+		valid = false;
+	}
+	
+	//
+	int device_count = 0;
+	if(cuDeviceGetCount(&device_count) != CUDA_SUCCESS) {
+		a2e_error("cuDeviceGetCount failed!");
+		valid = false;
+	}
+	if(device_count == 0) {
+		a2e_error("there is no device that supports CUDA!");
+		valid = false;
+	}
+	if(!valid) {
 		supported = false;
 	}
 	
 	// check if the cache can be used
-	ccl->cache_path = kernel_path_str.substr(0, kernel_path_str.rfind('/', kernel_path_str.length()-2)) + "/cache/";
-	if(file_io::is_file(ccl->cache_path+"CACHECRC")) {
-		file_io crc_file(ccl->cache_path+"CACHECRC", file_io::OPEN_TYPE::READ);
+	cache_path = kernel_path_str.substr(0, kernel_path_str.rfind('/', kernel_path_str.length()-2)) + "/cache/";
+	if(file_io::is_file(cache_path+"CACHECRC")) {
+		file_io crc_file(cache_path+"CACHECRC", file_io::OPEN_TYPE::READ);
 		if(crc_file.is_open()) {
 			use_ptx_cache = true;
 			
@@ -260,8 +229,8 @@ opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache)
 			for(const auto& kfile : kernel_files) {
 				if(kfile.first[0] == '.') continue;
 				stringstream buffer(stringstream::in | stringstream::out);
-				if(!file_io::file_to_buffer(kernel_path+kfile.first, buffer)) {
-					a2e_error("failed to read kernel source for \"%s\"!", kernel_path+kfile.first);
+				if(!file_io::file_to_buffer(kernel_path_+kfile.first, buffer)) {
+					a2e_error("failed to read kernel source for \"%s\"!", kernel_path_+kfile.first);
 					return;
 				}
 				const string src(buffer.str());
@@ -289,8 +258,8 @@ opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache)
 	}
 }
 
-opencl::~opencl() {
-	a2e_debug("deleting opencl object");
+cudacl::~cudacl() {
+	a2e_debug("deleting cudacl object");
 	
 	// delete cl/cuda buffers
 	while(!buffers.empty()) {
@@ -298,17 +267,17 @@ opencl::~opencl() {
 	}
 	
 	// delete kernels
-	while(!ccl->kernels.empty()) {
-		const auto iter = ccl->kernels.begin();
+	while(!cuda_kernels.empty()) {
+		const auto iter = cuda_kernels.begin();
 		delete iter->second;
-		ccl->kernels.erase(iter);
+		cuda_kernels.erase(iter);
 	}
 	destroy_kernels();
 	
 	// delete the rest (devices, contexts, streams)
-	for(const auto& device : ccl->devices) {
-		CUcontext* ctx = ccl->contexts[device];
-		CUstream* stream = ccl->queues[device];
+	for(const auto& device : cuda_devices) {
+		CUcontext* ctx = cuda_contexts[device];
+		CUstream* stream = cuda_queues[device];
 		CU(cuCtxSetCurrent(*ctx));
 		CU(cuStreamDestroy(*stream));
 		CU(cuCtxDestroy(*ctx));
@@ -316,21 +285,19 @@ opencl::~opencl() {
 		delete device;
 		delete ctx;
 	}
-	ccl->contexts.clear();
-	ccl->queues.clear();
-	ccl->devices.clear();
+	cuda_contexts.clear();
+	cuda_queues.clear();
+	cuda_devices.clear();
 	
 	for(const auto& cl_device : devices) {
 		delete cl_device;
 	}
 	devices.clear();
 	
-	delete ccl;
-	
-	a2e_debug("opencl object deleted");
+	a2e_debug("cudacl object deleted");
 }
 
-void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_index a2e_unused, const set<string> device_restriction a2e_unused) {
+void cudacl::init(bool use_platform_devices a2e_unused, const size_t platform_index a2e_unused, const set<string> device_restriction a2e_unused) {
 	//
 	if(!supported) return;
 	
@@ -346,7 +313,7 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 			// get and create device
 			CUdevice* cuda_dev = new CUdevice();
 			CUresult cu_err = cuDeviceGet(cuda_dev, cur_device);
-			ccl->devices.emplace_back(cuda_dev);
+			cuda_devices.emplace_back(cuda_dev);
 			if(cu_err != CUDA_SUCCESS) {
 				a2e_error("failed to get device #%i: %i", cur_device, cu_err);
 				continue;
@@ -368,34 +335,34 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 				case 1:
 					switch(cc.second) {
 						case 0:
-							ccl->cc_target_str = "10";
-							ccl->cc_target = CU_TARGET_COMPUTE_10;
+							cc_target_str = "10";
+							cc_target = CU_TARGET_COMPUTE_10;
 							break;
 						case 1:
-							ccl->cc_target_str = "11";
-							ccl->cc_target = CU_TARGET_COMPUTE_11;
+							cc_target_str = "11";
+							cc_target = CU_TARGET_COMPUTE_11;
 							break;
 						case 2:
-							ccl->cc_target_str = "12";
-							ccl->cc_target = CU_TARGET_COMPUTE_12;
+							cc_target_str = "12";
+							cc_target = CU_TARGET_COMPUTE_12;
 							break;
 						case 3:
 						default: // ignore invalid ones ...
-							ccl->cc_target_str = "13";
-							ccl->cc_target = CU_TARGET_COMPUTE_13;
+							cc_target_str = "13";
+							cc_target = CU_TARGET_COMPUTE_13;
 							break;
 					}
 					break;
 				case 2:
 					switch(cc.second) {
 						case 0:
-							ccl->cc_target_str = "20";
-							ccl->cc_target = CU_TARGET_COMPUTE_20;
+							cc_target_str = "20";
+							cc_target = CU_TARGET_COMPUTE_20;
 							break;
 						case 1:
 						default: // ignore invalid ones ...
-							ccl->cc_target_str = "21";
-							ccl->cc_target = CU_TARGET_COMPUTE_21;
+							cc_target_str = "21";
+							cc_target = CU_TARGET_COMPUTE_21;
 							break;
 					}
 					break;
@@ -403,18 +370,18 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 				default: // default higher ones to highest 3.x (drivers already mention sm_40 and sm_50)
 					switch(cc.second) {
 						case 0:
-							ccl->cc_target_str = "30";
-							ccl->cc_target = CU_TARGET_COMPUTE_30;
+							cc_target_str = "30";
+							cc_target = CU_TARGET_COMPUTE_30;
 							break;
 						case 2:
 							// this is inofficial, but support it anyways ...
-							ccl->cc_target_str = "30";
-							ccl->cc_target = CU_TARGET_COMPUTE_30;
+							cc_target_str = "30";
+							cc_target = CU_TARGET_COMPUTE_30;
 							break;
 						case 5:
 						default: // ignore invalid ones ...
-							ccl->cc_target_str = "35";
-							ccl->cc_target = CU_TARGET_COMPUTE_35;
+							cc_target_str = "35";
+							cc_target = CU_TARGET_COMPUTE_35;
 							break;
 					}
 					break;
@@ -476,8 +443,8 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 			CU(cuDeviceGetAttribute(&unified_memory, CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, cuda_device));
 			
 			//
-			opencl::device_object* device = new opencl::device_object();
-			ccl->device_map[device] = cuda_dev;
+			opencl_base::device_object* device = new opencl_base::device_object();
+			device_map[device] = cuda_dev;
 			device->device = nullptr;
 			device->internal_type = CL_DEVICE_TYPE_GPU;
 			device->units = proc_count;
@@ -489,7 +456,7 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 			device->driver_version = "CLH 1.0";
 			device->extensions = extensions;
 			device->vendor_type = VENDOR::NVIDIA;
-			device->type = (opencl::DEVICE_TYPE)cur_device;
+			device->type = (opencl_base::DEVICE_TYPE)cur_device;
 			device->max_alloc = global_mem;
 			device->max_wg_size = max_work_group_size;
 			device->img_support = true;
@@ -530,16 +497,16 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 		}
 		
 		// create a (single) command queue (-> cuda context and stream) for each device
-		for(const auto& device : ccl->devices) {
+		for(const auto& device : cuda_devices) {
 			CUcontext* ctx = new CUcontext();
-			ccl->contexts[device] = ctx;
+			cuda_contexts[device] = ctx;
 			CU(cuCtxCreate(ctx, CU_CTX_SCHED_AUTO, *device));
 			
 			CUstream* cuda_stream = new CUstream();
 			CU(cuStreamCreate(cuda_stream, 0));
-			ccl->queues[device] = cuda_stream;
+			cuda_queues[device] = cuda_stream;
 		}
-		CU(cuCtxSetCurrent(*ccl->contexts[ccl->devices[0]]));
+		CU(cuCtxSetCurrent(*cuda_contexts[cuda_devices[0]]));
 		
 		if(fastest_gpu != nullptr) a2e_debug("fastest GPU device: %s %s (score: %u)", fastest_gpu->vendor.c_str(), fastest_gpu->name.c_str(), fastest_gpu_score);
 		
@@ -573,11 +540,11 @@ void opencl::init(bool use_platform_devices a2e_unused, const size_t platform_in
 	catch(cudacl_exception& exc) {
 		a2e_error("failed to initialize cuda: %X: %s!", exc.code(), exc.what());
 		supported = false;
-		ccl->valid = false;
+		valid = false;
 	}
 }
 
-opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options) {
+opencl_base::kernel_object* cudacl::add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options) {
 	a2e_debug("compiling \"%s\" kernel!", identifier);
 	string options = build_options;
 	string nvcc_log = "";
@@ -590,7 +557,7 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 		}
 		
 		// add kernel
-		opencl::kernel_object* kernel = new opencl::kernel_object();
+		opencl_base::kernel_object* kernel = new opencl_base::kernel_object();
 		kernels[identifier] = kernel;
 		kernel->kernel_name = identifier;
 		kernel->kernel = nullptr;
@@ -616,7 +583,7 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 			cu_file.close();
 			
 			// nvcc compile
-			build_cmd = "/usr/local/cuda/bin/nvcc --ptx --machine 64 -arch sm_" + ccl->cc_target_str + " -O3";
+			build_cmd = "/usr/local/cuda/bin/nvcc --ptx --machine 64 -arch sm_" + cc_target_str + " -O3";
 			build_cmd += " " + options;
 			build_cmd += " -D NVIDIA";
 			build_cmd += " -D GPU";
@@ -644,13 +611,13 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 		}
 		else {
 			// read cached ptx
-			if(!file_io::file_to_buffer(ccl->cache_path+identifier+"_"+ccl->cc_target_str+".ptx", ptx_buffer)) {
+			if(!file_io::file_to_buffer(cache_path+identifier+"_"+cc_target_str+".ptx", ptx_buffer)) {
 				throw cudacl_exception("ptx file doesn't exist!");
 			}
 			
 			// read cached kernel info
 			stringstream info_buffer(stringstream::in | stringstream::out);
-			if(!file_io::file_to_buffer(ccl->cache_path+identifier+"_info_"+ccl->cc_target_str+".txt", info_buffer)) {
+			if(!file_io::file_to_buffer(cache_path+identifier+"_info_"+cc_target_str+".txt", info_buffer)) {
 				throw cudacl_exception("info file doesn't exist!");
 			}
 			
@@ -684,7 +651,7 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 		array<CUjit_option, 1> jit_options { { CU_JIT_TARGET } };
 		size_t* jit_option_values = new size_t[1]; // size_t for correct alignment ...
 		jit_option_values[0] = 0;
-		*((unsigned int*)jit_option_values) = ccl->cc_target;
+		*((unsigned int*)jit_option_values) = cc_target;
 		
 		// use the binary/ptx of the first device for now
 		CUmodule* module = new CUmodule();
@@ -700,10 +667,10 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 		CUfunction* cuda_func = new CUfunction();
 		CU(cuModuleGetFunction(cuda_func, *module, func_name.c_str()));
 		
-		cudacl::cuda_kernel_object* cuda_kernel = new cudacl::cuda_kernel_object(*kernel_info);
+		cuda_kernel_object* cuda_kernel = new cuda_kernel_object(*kernel_info);
 		cuda_kernel->module = module;
 		cuda_kernel->function = cuda_func;
-		ccl->kernels.insert(make_pair(kernel, cuda_kernel));
+		cuda_kernels.insert(make_pair(kernel, cuda_kernel));
 	}
 	__HANDLE_CL_EXCEPTION_START("add_kernel")
 		// print out build log and build options
@@ -721,45 +688,45 @@ opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const st
 	return kernels[identifier];
 }
 
-void opencl::log_program_binary(const kernel_object* kernel) {
+void cudacl::log_program_binary(const kernel_object* kernel) {
 	if(kernel == nullptr) return;
 }
 
-opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, void* data) {
+opencl_base::buffer_object* cudacl::create_buffer_object(opencl_base::BUFFER_TYPE type, void* data) {
 	try {
-		opencl::buffer_object* buffer = new opencl::buffer_object();
+		opencl_base::buffer_object* buffer = new opencl_base::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
-		if(type & opencl::BT_USE_HOST_MEMORY) vtype |= opencl::BT_USE_HOST_MEMORY;
-		if(type & opencl::BT_DELETE_AFTER_USE) vtype |= opencl::BT_DELETE_AFTER_USE;
-		if(type & opencl::BT_BLOCK_ON_READ) vtype |= opencl::BT_BLOCK_ON_READ;
-		if(type & opencl::BT_BLOCK_ON_WRITE) vtype |= opencl::BT_BLOCK_ON_WRITE;
-		if(data != nullptr && (type & opencl::BT_INITIAL_COPY) && !(vtype & opencl::BT_USE_HOST_MEMORY)) vtype |= opencl::BT_INITIAL_COPY;
-		if(data != nullptr && (type & opencl::BT_COPY_ON_USE)) vtype |= opencl::BT_COPY_ON_USE;
-		if(data != nullptr && (type & opencl::BT_READ_BACK_RESULT)) vtype |= opencl::BT_READ_BACK_RESULT;
+		if(type & opencl_base::BT_USE_HOST_MEMORY) vtype |= opencl_base::BT_USE_HOST_MEMORY;
+		if(type & opencl_base::BT_DELETE_AFTER_USE) vtype |= opencl_base::BT_DELETE_AFTER_USE;
+		if(type & opencl_base::BT_BLOCK_ON_READ) vtype |= opencl_base::BT_BLOCK_ON_READ;
+		if(type & opencl_base::BT_BLOCK_ON_WRITE) vtype |= opencl_base::BT_BLOCK_ON_WRITE;
+		if(data != nullptr && (type & opencl_base::BT_INITIAL_COPY) && !(vtype & opencl_base::BT_USE_HOST_MEMORY)) vtype |= opencl_base::BT_INITIAL_COPY;
+		if(data != nullptr && (type & opencl_base::BT_COPY_ON_USE)) vtype |= opencl_base::BT_COPY_ON_USE;
+		if(data != nullptr && (type & opencl_base::BT_READ_BACK_RESULT)) vtype |= opencl_base::BT_READ_BACK_RESULT;
 		
 		cl_mem_flags flags = 0;
 		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl::BT_READ_WRITE:
+			case opencl_base::BT_READ_WRITE:
 				vtype |= BT_READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl::BT_READ:
+			case opencl_base::BT_READ:
 				vtype |= BT_READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl::BT_WRITE:
+			case opencl_base::BT_WRITE:
 				vtype |= BT_WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
 			default:
 				break;
 		}
-		if((vtype & opencl::BT_INITIAL_COPY) && !(vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_COPY_HOST_PTR;
-		if(data != nullptr && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_USE_HOST_PTR;
-		if(data == nullptr && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_ALLOC_HOST_PTR;
+		if((vtype & opencl_base::BT_INITIAL_COPY) && !(vtype & opencl_base::BT_USE_HOST_MEMORY)) flags |= CL_MEM_COPY_HOST_PTR;
+		if(data != nullptr && (vtype & opencl_base::BT_USE_HOST_MEMORY)) flags |= CL_MEM_USE_HOST_PTR;
+		if(data == nullptr && (vtype & opencl_base::BT_USE_HOST_MEMORY)) flags |= CL_MEM_ALLOC_HOST_PTR;
 		
 		buffer->type = vtype;
 		buffer->flags = flags;
@@ -770,7 +737,7 @@ opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, vo
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_buffer(opencl::BUFFER_TYPE type, size_t size, void* data) {
+opencl_base::buffer_object* cudacl::create_buffer(opencl_base::BUFFER_TYPE type, size_t size, void* data) {
 	if(size == 0) {
 		return nullptr;
 	}
@@ -803,14 +770,14 @@ opencl::buffer_object* opencl::create_buffer(opencl::BUFFER_TYPE type, size_t si
 		else {
 			CU(cuMemAlloc(cuda_mem, size));
 		}
-		ccl->buffers[buffer_obj] = cuda_mem;
+		cuda_buffers[buffer_obj] = cuda_mem;
 		return buffer_obj;
 	}
 	__HANDLE_CL_EXCEPTION("create_buffer")
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_image2d_buffer(opencl::BUFFER_TYPE type a2e_unused, cl_channel_order channel_order a2e_unused, cl_channel_type channel_type a2e_unused, size_t width a2e_unused, size_t height a2e_unused, void* data a2e_unused) {
+opencl_base::buffer_object* cudacl::create_image2d_buffer(opencl_base::BUFFER_TYPE type a2e_unused, cl_channel_order channel_order a2e_unused, cl_channel_type channel_type a2e_unused, size_t width a2e_unused, size_t height a2e_unused, void* data a2e_unused) {
 	// TODO
 	/*try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
@@ -827,7 +794,7 @@ opencl::buffer_object* opencl::create_image2d_buffer(opencl::BUFFER_TYPE type a2
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_image3d_buffer(opencl::BUFFER_TYPE type a2e_unused, cl_channel_order channel_order a2e_unused, cl_channel_type channel_type a2e_unused, size_t width a2e_unused, size_t height a2e_unused, size_t depth a2e_unused, void* data a2e_unused) {
+opencl_base::buffer_object* cudacl::create_image3d_buffer(opencl_base::BUFFER_TYPE type a2e_unused, cl_channel_order channel_order a2e_unused, cl_channel_type channel_type a2e_unused, size_t width a2e_unused, size_t height a2e_unused, size_t depth a2e_unused, void* data a2e_unused) {
 	// TODO
 	/*try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
@@ -844,28 +811,28 @@ opencl::buffer_object* opencl::create_image3d_buffer(opencl::BUFFER_TYPE type a2
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuint ogl_buffer) {
+opencl_base::buffer_object* cudacl::create_ogl_buffer(opencl_base::BUFFER_TYPE type, GLuint ogl_buffer) {
 	try {
-		opencl::buffer_object* buffer = new opencl::buffer_object();
+		opencl_base::buffer_object* buffer = new opencl_base::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
-		if((type & opencl::BT_DELETE_AFTER_USE) != 0) vtype |= opencl::BT_DELETE_AFTER_USE;
-		if((type & opencl::BT_BLOCK_ON_READ) != 0) vtype |= opencl::BT_BLOCK_ON_READ;
-		if((type & opencl::BT_BLOCK_ON_WRITE) != 0) vtype |= opencl::BT_BLOCK_ON_WRITE;
+		if((type & opencl_base::BT_DELETE_AFTER_USE) != 0) vtype |= opencl_base::BT_DELETE_AFTER_USE;
+		if((type & opencl_base::BT_BLOCK_ON_READ) != 0) vtype |= opencl_base::BT_BLOCK_ON_READ;
+		if((type & opencl_base::BT_BLOCK_ON_WRITE) != 0) vtype |= opencl_base::BT_BLOCK_ON_WRITE;
 		
 		unsigned int cuda_flags = 0;
 		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl::BT_READ_WRITE:
+			case opencl_base::BT_READ_WRITE:
 				vtype |= BT_READ_WRITE;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_NONE;
 				break;
-			case opencl::BT_READ:
+			case opencl_base::BT_READ:
 				vtype |= BT_READ;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_READ_ONLY;
 				break;
-			case opencl::BT_WRITE:
+			case opencl_base::BT_WRITE:
 				vtype |= BT_WRITE;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_WRITE_DISCARD;
 				break;
@@ -883,7 +850,7 @@ opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuin
 		
 		CUgraphicsResource* cuda_gl_buffer = new CUgraphicsResource();
 		CU(cuGraphicsGLRegisterBuffer(cuda_gl_buffer, ogl_buffer, cuda_flags));
-		ccl->gl_buffers[buffer] = cuda_gl_buffer;
+		cuda_gl_buffers[buffer] = cuda_gl_buffer;
 		
 		return buffer;
 	}
@@ -891,29 +858,29 @@ opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuin
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type a2e_unused, GLuint texture a2e_unused, GLenum target a2e_unused) {
+opencl_base::buffer_object* cudacl::create_ogl_image2d_buffer(BUFFER_TYPE type a2e_unused, GLuint texture a2e_unused, GLenum target a2e_unused) {
 	// TODO
 	/*try {
-		opencl::buffer_object* buffer = new opencl::buffer_object();
+		opencl_base::buffer_object* buffer = new opencl_base::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
-		if(type & opencl::BT_DELETE_AFTER_USE) vtype |= opencl::BT_DELETE_AFTER_USE;
-		if(type & opencl::BT_BLOCK_ON_READ) vtype |= opencl::BT_BLOCK_ON_READ;
-		if(type & opencl::BT_BLOCK_ON_WRITE) vtype |= opencl::BT_BLOCK_ON_WRITE;
+		if(type & opencl_base::BT_DELETE_AFTER_USE) vtype |= opencl_base::BT_DELETE_AFTER_USE;
+		if(type & opencl_base::BT_BLOCK_ON_READ) vtype |= opencl_base::BT_BLOCK_ON_READ;
+		if(type & opencl_base::BT_BLOCK_ON_WRITE) vtype |= opencl_base::BT_BLOCK_ON_WRITE;
 		
 		cl_mem_flags flags = 0;
 		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl::BT_READ_WRITE:
+			case opencl_base::BT_READ_WRITE:
 				vtype |= BT_READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl::BT_READ:
+			case opencl_base::BT_READ:
 				vtype |= BT_READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl::BT_WRITE:
+			case opencl_base::BT_WRITE:
 				vtype |= BT_WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
@@ -934,29 +901,29 @@ opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type a2e_un
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type a2e_unused, GLuint renderbuffer a2e_unused) {
+opencl_base::buffer_object* cudacl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type a2e_unused, GLuint renderbuffer a2e_unused) {
 	// TODO
 	/*try {
-		opencl::buffer_object* buffer = new opencl::buffer_object();
+		opencl_base::buffer_object* buffer = new opencl_base::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
-		if(type & opencl::BT_DELETE_AFTER_USE) vtype |= opencl::BT_DELETE_AFTER_USE;
-		if(type & opencl::BT_BLOCK_ON_READ) vtype |= opencl::BT_BLOCK_ON_READ;
-		if(type & opencl::BT_BLOCK_ON_WRITE) vtype |= opencl::BT_BLOCK_ON_WRITE;
+		if(type & opencl_base::BT_DELETE_AFTER_USE) vtype |= opencl_base::BT_DELETE_AFTER_USE;
+		if(type & opencl_base::BT_BLOCK_ON_READ) vtype |= opencl_base::BT_BLOCK_ON_READ;
+		if(type & opencl_base::BT_BLOCK_ON_WRITE) vtype |= opencl_base::BT_BLOCK_ON_WRITE;
 		
 		cl_mem_flags flags = 0;
 		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl::BT_READ_WRITE:
+			case opencl_base::BT_READ_WRITE:
 				vtype |= BT_READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl::BT_READ:
+			case opencl_base::BT_READ:
 				vtype |= BT_READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl::BT_WRITE:
+			case opencl_base::BT_WRITE:
 				vtype |= BT_WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
@@ -977,7 +944,7 @@ opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type 
 	return nullptr;
 }
 
-void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
+void cudacl::delete_buffer(opencl_base::buffer_object* buffer_obj) {
 	// remove buffer from each associated kernel (and unset the kernel argument)
 	for(const auto& associated_kernel : buffer_obj->associated_kernels) {
 		for(const auto& arg_num : associated_kernel.second) {
@@ -988,8 +955,8 @@ void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
 	buffer_obj->associated_kernels.clear();
 	
 	// normal buffer
-	const auto buffer_iter = ccl->buffers.find(buffer_obj);
-	if(buffer_iter != ccl->buffers.end()) {
+	const auto buffer_iter = cuda_buffers.find(buffer_obj);
+	if(buffer_iter != cuda_buffers.end()) {
 		CUdeviceptr* cuda_mem = buffer_iter->second;
 		if(cuda_mem != nullptr && *cuda_mem != 0) {
 			if(buffer_obj->flags & CL_MEM_USE_HOST_PTR) {
@@ -1003,22 +970,22 @@ void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
 			}
 			delete cuda_mem;
 		}
-		ccl->buffers.erase(buffer_iter);
+		cuda_buffers.erase(buffer_iter);
 	}
 	
 	// unregister resource (+potential unmap)
-	const auto gl_buffer_iter = ccl->gl_buffers.find(buffer_obj);
-	if(gl_buffer_iter != ccl->gl_buffers.end()) {
+	const auto gl_buffer_iter = cuda_gl_buffers.find(buffer_obj);
+	if(gl_buffer_iter != cuda_gl_buffers.end()) {
 		CUgraphicsResource* res = gl_buffer_iter->second;
 		if(buffer_obj->ogl_buffer != 0) {
-			if(ccl->mapped_gl_buffers.count(res) > 0) {
+			if(cuda_mapped_gl_buffers.count(res) > 0) {
 				// resource is still mapped -> unmap
 				release_gl_object(buffer_obj);
 			}
 			CU(cuGraphicsUnregisterResource(*res));
 			delete res;
 		}
-		ccl->gl_buffers.erase(gl_buffer_iter);
+		cuda_gl_buffers.erase(gl_buffer_iter);
 	}
 	
 	// TODO: image buffers
@@ -1028,7 +995,7 @@ void opencl::delete_buffer(opencl::buffer_object* buffer_obj) {
 	delete buffer_obj;
 }
 
-void opencl::write_buffer(opencl::buffer_object* buffer_obj, const void* src, const size_t offset, const size_t size) {
+void cudacl::write_buffer(opencl_base::buffer_object* buffer_obj, const void* src, const size_t offset, const size_t size) {
 	size_t write_size = size;
 	if(write_size == 0) {
 		if(buffer_obj->size == 0) {
@@ -1051,9 +1018,9 @@ void opencl::write_buffer(opencl::buffer_object* buffer_obj, const void* src, co
 	}
 	
 	//
-	CUdeviceptr* cuda_mem = ccl->buffers[buffer_obj];
-	CUstream stream = *ccl->queues[ccl->device_map[active_device]];
-	if((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0) {
+	CUdeviceptr* cuda_mem = cuda_buffers[buffer_obj];
+	CUstream stream = *cuda_queues[device_map[active_device]];
+	if((buffer_obj->type & opencl_base::BT_BLOCK_ON_WRITE) > 0) {
 		// blocking write: wait until everything has completed in the cmdqueue
 		finish();
 		
@@ -1082,36 +1049,36 @@ void opencl::write_buffer(opencl::buffer_object* buffer_obj, const void* src, co
 	}
 }
 
-void opencl::write_image2d(opencl::buffer_object* buffer_obj a2e_unused, const void* src a2e_unused, size2 origin a2e_unused, size2 region a2e_unused) {
+void cudacl::write_image2d(opencl_base::buffer_object* buffer_obj a2e_unused, const void* src a2e_unused, size2 origin a2e_unused, size2 region a2e_unused) {
 	// TODO
 	/*try {
 		size3 origin3(origin.x, origin.y, 0); // origin z must be 0 for 2d images
 		size3 region3(region.x, region.y, 1); // depth must be 1 for 2d images
-		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0),
+		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl_base::BT_BLOCK_ON_WRITE) > 0),
 														 (cl::size_t<3>&)origin3, (cl::size_t<3>&)region3, 0, 0, (void*)src);
 	}
 	__HANDLE_CL_EXCEPTION("write_image2d")*/
 }
 
-void opencl::write_image3d(opencl::buffer_object* buffer_obj a2e_unused, const void* src a2e_unused, size3 origin a2e_unused, size3 region a2e_unused) {
+void cudacl::write_image3d(opencl_base::buffer_object* buffer_obj a2e_unused, const void* src a2e_unused, size3 origin a2e_unused, size3 region a2e_unused) {
 	// TODO
 	/*try {
-		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0),
+		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl_base::BT_BLOCK_ON_WRITE) > 0),
 														 (cl::size_t<3>&)origin, (cl::size_t<3>&)region, 0, 0, (void*)src);
 	}
 	__HANDLE_CL_EXCEPTION("write_buffer")*/
 }
 
-void opencl::read_buffer(void* dst a2e_unused, opencl::buffer_object* buffer_obj a2e_unused) {
+void cudacl::read_buffer(void* dst a2e_unused, opencl_base::buffer_object* buffer_obj a2e_unused) {
 	// TODO
 	/*try {
-		queues[active_device->device]->enqueueReadBuffer(*buffer_obj->buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_READ) > 0),
+		queues[active_device->device]->enqueueReadBuffer(*buffer_obj->buffer, ((buffer_obj->type & opencl_base::BT_BLOCK_ON_READ) > 0),
 														 0, buffer_obj->size, dst);
 	}
 	__HANDLE_CL_EXCEPTION("read_buffer")*/
 }
 
-void opencl::run_kernel(kernel_object* kernel_obj) {
+void cudacl::run_kernel(kernel_object* kernel_obj) {
 	try {
 		bool all_set = true;
 		for(unsigned int i = 0; i < kernel_obj->args_passed.size(); i++) {
@@ -1123,9 +1090,9 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 		if(!all_set) return;
 		
 		//
-		cudacl::cuda_kernel_object* kernel = ccl->kernels[kernel_obj];
+		cuda_kernel_object* kernel = cuda_kernels[kernel_obj];
 		CUfunction* cuda_function = kernel->function;
-		CUstream* stream = ccl->queues[ccl->device_map[active_device]];
+		CUstream* stream = cuda_queues[device_map[active_device]];
 		
 		// check if all arguments have been set
 		if(kernel->arguments.size() != kernel->info.parameters.size()) {
@@ -1133,12 +1100,12 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 		}
 		
 		// pre kernel-launch stuff:
-		vector<opencl::buffer_object*> gl_objects;
+		vector<opencl_base::buffer_object*> gl_objects;
 		for(const auto& buffer_arg : kernel_obj->buffer_args) {
-			if((buffer_arg.second->type & opencl::BT_COPY_ON_USE) != 0) {
+			if((buffer_arg.second->type & opencl_base::BT_COPY_ON_USE) != 0) {
 				write_buffer(buffer_arg.second, buffer_arg.second->data);
 			}
-			if((buffer_arg.second->type & opencl::BT_OPENGL_BUFFER) != 0 &&
+			if((buffer_arg.second->type & opencl_base::BT_OPENGL_BUFFER) != 0 &&
 			   !buffer_arg.second->manual_gl_sharing) {
 				gl_objects.push_back(buffer_arg.second);
 				kernel_obj->has_ogl_buffers = true;
@@ -1180,14 +1147,14 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 		
 		// post kernel-run stuff:
 		for(const auto& buffer_arg : kernel_obj->buffer_args) {
-			if((buffer_arg.second->type & opencl::BT_READ_BACK_RESULT) != 0) {
+			if((buffer_arg.second->type & opencl_base::BT_READ_BACK_RESULT) != 0) {
 				read_buffer(buffer_arg.second->data, buffer_arg.second);
 			}
 		}
 		
 		for_each(begin(kernel_obj->buffer_args), end(kernel_obj->buffer_args),
 				 [this](const pair<const unsigned int, buffer_object*>& buffer_arg) {
-					 if((buffer_arg.second->type & opencl::BT_DELETE_AFTER_USE) != 0) {
+					 if((buffer_arg.second->type & opencl_base::BT_DELETE_AFTER_USE) != 0) {
 						 this->delete_buffer(buffer_arg.second);
 					 }
 				 });
@@ -1201,39 +1168,39 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 	__HANDLE_CL_EXCEPTION_EXT("run_kernel", (" - in kernel: "+kernel_obj->kernel_name).c_str())
 }
 
-void opencl::finish() {
+void cudacl::finish() {
 	if(active_device == nullptr) return;
-	CU(cuStreamSynchronize(*ccl->queues[ccl->device_map[active_device]]));
+	CU(cuStreamSynchronize(*cuda_queues[device_map[active_device]]));
 }
 
-void opencl::flush() {
+void cudacl::flush() {
 	return; // nothing?
 }
 
-void opencl::activate_context() {
+void cudacl::activate_context() {
 	if(active_device == nullptr) return;
-	CU(cuCtxSetCurrent(*ccl->contexts.at(ccl->device_map.at(active_device))));
+	CU(cuCtxSetCurrent(*cuda_contexts.at(device_map.at(active_device))));
 }
 
-void opencl::deactivate_context() {
+void cudacl::deactivate_context() {
 	CU(cuCtxSetCurrent(nullptr));
 }
 
-bool opencl::set_kernel_argument(const unsigned int& index, opencl::buffer_object* arg) {
+bool cudacl::set_kernel_argument(const unsigned int& index, opencl_base::buffer_object* arg) {
 	if(!set_kernel_argument(index, 0, (void*)arg)) return false;
 	cur_kernel->buffer_args[index] = arg;
 	arg->associated_kernels[cur_kernel].push_back(index);
 	return true;
 }
 
-bool opencl::set_kernel_argument(const unsigned int& index, const opencl::buffer_object* arg) {
-	return set_kernel_argument(index, (opencl::buffer_object*)arg);
+bool cudacl::set_kernel_argument(const unsigned int& index, const opencl_base::buffer_object* arg) {
+	return set_kernel_argument(index, (opencl_base::buffer_object*)arg);
 }
 
-bool opencl::set_kernel_argument(const unsigned int& index, size_t size, void* arg) {
+bool cudacl::set_kernel_argument(const unsigned int& index, size_t size, void* arg) {
 	try {
 		// alloc memory for new argument and copy data
-		cudacl::cuda_kernel_object* kernel = ccl->kernels[cur_kernel];
+		cuda_kernel_object* kernel = cuda_kernels[cur_kernel];
 		auto& kernel_arg = kernel->arguments[index];
 		
 		// delete old arg data (if there is any)
@@ -1251,22 +1218,22 @@ bool opencl::set_kernel_argument(const unsigned int& index, size_t size, void* a
 				kernel_arg.size = sizeof(void*);
 				if(arg != NULL) {
 					kernel_arg.free_ptr = false;
-					opencl::buffer_object* buffer = (opencl::buffer_object*)arg;
+					opencl_base::buffer_object* buffer = (opencl_base::buffer_object*)arg;
 					if(buffer->ogl_buffer == 0) {
-						kernel_arg.ptr = (void*)ccl->buffers[buffer];
+						kernel_arg.ptr = (void*)cuda_buffers[buffer];
 					}
 					else {
-						CUgraphicsResource* res = ccl->gl_buffers[buffer];
-						const auto iter = ccl->mapped_gl_buffers.find(res);
+						CUgraphicsResource* res = cuda_gl_buffers[buffer];
+						const auto iter = cuda_mapped_gl_buffers.find(res);
 						CUdeviceptr* dev_ptr = nullptr;
-						if(iter != ccl->mapped_gl_buffers.end()) {
+						if(iter != cuda_mapped_gl_buffers.end()) {
 							dev_ptr = iter->second;
 						}
 						else {
 							dev_ptr = new CUdeviceptr();
 							size_t size_ret = 0;
 							CU(cuGraphicsResourceGetMappedPointer(dev_ptr, &size_ret, *res));
-							ccl->mapped_gl_buffers.insert({res, dev_ptr});
+							cuda_mapped_gl_buffers.insert({res, dev_ptr});
 						}
 						kernel_arg.ptr = (void*)dev_ptr;
 					}
@@ -1296,14 +1263,14 @@ bool opencl::set_kernel_argument(const unsigned int& index, size_t size, void* a
 	return false;
 }
 
-void* opencl::map_buffer(opencl::buffer_object* buffer_obj a2e_unused, EBUFFER_TYPE access_type a2e_unused, bool blocking a2e_unused) {
+void* cudacl::map_buffer(opencl_base::buffer_object* buffer_obj a2e_unused, EBUFFER_TYPE access_type a2e_unused, bool blocking a2e_unused) {
 	// TODO
 	/*try {
 		cl_map_flags map_flags = CL_MAP_READ;
 		switch((EBUFFER_TYPE)(access_type & 0x03)) {
-			case opencl::BT_READ_WRITE: map_flags = CL_MAP_READ | CL_MAP_WRITE; break;
-			case opencl::BT_READ: map_flags = CL_MAP_READ; break;
-			case opencl::BT_WRITE: map_flags = CL_MAP_WRITE; break;
+			case opencl_base::BT_READ_WRITE: map_flags = CL_MAP_READ | CL_MAP_WRITE; break;
+			case opencl_base::BT_READ: map_flags = CL_MAP_READ; break;
+			case opencl_base::BT_WRITE: map_flags = CL_MAP_WRITE; break;
 			default: break;
 		}
 		
@@ -1328,7 +1295,7 @@ void* opencl::map_buffer(opencl::buffer_object* buffer_obj a2e_unused, EBUFFER_T
 	return nullptr;
 }
 
-void opencl::unmap_buffer(opencl::buffer_object* buffer_obj a2e_unused, void* map_ptr a2e_unused) {
+void cudacl::unmap_buffer(opencl_base::buffer_object* buffer_obj a2e_unused, void* map_ptr a2e_unused) {
 	// TODO
 	/*try {
 		void* buffer_ptr = nullptr;
@@ -1343,11 +1310,11 @@ void opencl::unmap_buffer(opencl::buffer_object* buffer_obj a2e_unused, void* ma
 	__HANDLE_CL_EXCEPTION("unmap_buffer")*/
 }
 
-size_t opencl::get_kernel_work_group_size() {
+size_t cudacl::get_kernel_work_group_size() {
 	if(cur_kernel == nullptr || active_device == nullptr) return 0;
 	
 	try {
-		CUfunction* cuda_function = ccl->kernels[cur_kernel]->function;
+		CUfunction* cuda_function = cuda_kernels[cur_kernel]->function;
 		int ret = 0;
 		CU(cuFuncGetAttribute(&ret, CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, *cuda_function));
 		return ret;
@@ -1356,21 +1323,26 @@ size_t opencl::get_kernel_work_group_size() {
 	return 0;
 }
 
-void opencl::acquire_gl_object(buffer_object* gl_buffer_obj) {
-	CUstream stream = *ccl->queues[ccl->device_map[active_device]];
-	CUgraphicsResource* cuda_gl_buffer = ccl->gl_buffers[gl_buffer_obj];
+void cudacl::acquire_gl_object(buffer_object* gl_buffer_obj) {
+	CUstream stream = *cuda_queues[device_map[active_device]];
+	CUgraphicsResource* cuda_gl_buffer = cuda_gl_buffers[gl_buffer_obj];
 	CU(cuGraphicsMapResources(1, cuda_gl_buffer, stream));
 }
 
-void opencl::release_gl_object(buffer_object* gl_buffer_obj) {
-	CUstream stream = *ccl->queues[ccl->device_map[active_device]];
-	CUgraphicsResource* cuda_gl_buffer = ccl->gl_buffers[gl_buffer_obj];
-	const auto iter = ccl->mapped_gl_buffers.find(cuda_gl_buffer);
-	if(iter != ccl->mapped_gl_buffers.end()) {
+void cudacl::release_gl_object(buffer_object* gl_buffer_obj) {
+	CUstream stream = *cuda_queues[device_map[active_device]];
+	CUgraphicsResource* cuda_gl_buffer = cuda_gl_buffers[gl_buffer_obj];
+	const auto iter = cuda_mapped_gl_buffers.find(cuda_gl_buffer);
+	if(iter != cuda_mapped_gl_buffers.end()) {
 		delete iter->second;
-		ccl->mapped_gl_buffers.erase(iter);
+		cuda_mapped_gl_buffers.erase(iter);
 	}
 	CU(cuGraphicsUnmapResources(1, cuda_gl_buffer, stream));
+}
+
+void cudacl::set_active_device(const opencl_base::DEVICE_TYPE& dev a2e_unused) {
+	// TODO: select corresponding cuda device
+	active_device = fastest_gpu;
 }
 
 #endif
