@@ -119,7 +119,9 @@ engine::~engine() {
 	// delete this at the end, b/c other classes will remove event handlers
 	if(e != nullptr) delete e;
 	
+#if defined(A2E_DEBUG)
 	gl_timer::destroy();
+#endif
 	release_gl_context();
 
 	a2e_debug("engine object deleted");
@@ -470,7 +472,9 @@ void engine::init(const char* ico) {
 #endif
 	
 	//
+#if defined(A2E_DEBUG)
 	gl_timer::init();
+#endif
 	
 	int tmp = 0;
 	SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &tmp);
@@ -1441,7 +1445,6 @@ void engine::release_gl_context() {
 	// only call SDL_GL_MakeCurrent with nullptr, when this is the last lock
 	const int cur_active_locks = AtomicFetchThenDecrement(&config.ctx_active_locks);
 	if(cur_active_locks == 1) {
-		glFinish();
 		if(ocl != nullptr && ocl->is_supported()) {
 			ocl->finish();
 			ocl->deactivate_context();

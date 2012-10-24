@@ -131,7 +131,6 @@
 		5CB985E415DE879D00654729 /* gui_window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB985E015DE879D00654729 /* gui_window.cpp */; };
 		5CB985E515DE879D00654729 /* gui_window.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CB985E115DE879D00654729 /* gui_window.h */; };
 		5CBD7DA915FC571700FB3954 /* cudacl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CBD7DA815FC571700FB3954 /* cudacl.cpp */; };
-		5CBD7DAB15FC5B1400FB3954 /* CUDA.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CBD7DAA15FC5B1400FB3954 /* CUDA.framework */; };
 		5CBF520B123458FD00971741 /* texture_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CBF520A123458FD00971741 /* texture_object.h */; };
 		5CC74A3415C192B5003A602B /* gl_timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CC74A3215C192B5003A602B /* gl_timer.cpp */; };
 		5CC74A3515C192B5003A602B /* gl_timer.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CC74A3315C192B5003A602B /* gl_timer.h */; };
@@ -313,7 +312,6 @@
 				5CC97E3F1501677200AB0D95 /* SDL2_image.framework in Frameworks */,
 				5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */,
 				5CD83A3E1540FB4F002E5954 /* libfreetype.6.dylib in Frameworks */,
-				5CBD7DAB15FC5B1400FB3954 /* CUDA.framework in Frameworks */,
 				5C053F90160CB31400540A7B /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -848,7 +846,6 @@
 				HEADER_SEARCH_PATHS = .;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "-stdlib=libc++";
 				SDKROOT = macosx;
 				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 				WARNING_CFLAGS = (
@@ -899,7 +896,6 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = .;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
-				OTHER_LDFLAGS = "-stdlib=libc++";
 				SDKROOT = macosx;
 				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 				WARNING_CFLAGS = (
@@ -993,7 +989,10 @@
 					"-fno-elide-type",
 					"-fdiagnostics-show-template-tree",
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-weak_framework",
+					CUDA,
+				);
 				PRODUCT_NAME = liba2elightd;
 				SDKROOT = macosx;
 			};
@@ -1051,7 +1050,10 @@
 					"-fno-elide-type",
 					"-fdiagnostics-show-template-tree",
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-weak_framework",
+					CUDA,
+				);
 				PRODUCT_NAME = liba2elight;
 				SDKROOT = macosx;
 			};

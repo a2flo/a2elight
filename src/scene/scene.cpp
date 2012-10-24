@@ -864,11 +864,15 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	else r->clear();
 	
 	// render models (opaque)
+	size_t model_counter = 0;
+	gl_timer::mark("MAT_PASS_OPAQUE_START");
 	for(const auto& iter : models) {
 		if(iter->get_visible()) {
 			iter->set_ir_buffers(buffers.g_buffer[0], buffers.l_buffer[0],
 								 buffers.g_buffer[1], buffers.l_buffer[1]);
 			iter->draw(mat_pass_masked);
+			gl_timer::mark("MDL #"+size_t2string(model_counter));
+			model_counter++;
 		}
 	}
 	gl_timer::mark("MAT_PASS_OPAQUE");

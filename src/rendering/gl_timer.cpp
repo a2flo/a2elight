@@ -78,6 +78,8 @@ void gl_timer::start_frame() {
 
 void gl_timer::mark(const string& identifier) {
 	if(!enabled) return;
+	//glFlush();
+	//glFinish();
 	
 	// random color through dumb string hash
 	unsigned int dumb_hash = accumulate(cbegin(identifier), cend(identifier), 0x41324554,
@@ -95,6 +97,8 @@ void gl_timer::mark(const string& identifier) {
 	query_store.pop_back();
 	glQueryCounter(gl_query, GL_TIMESTAMP);
 	frames[cur_frame].queries.emplace_back(frame_info::query_object { identifier, gl_query, color, 0 });
+	//glFlush();
+	//glFinish();
 }
 
 void gl_timer::stop_frame() {
