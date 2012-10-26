@@ -714,13 +714,13 @@ void opencl::init(bool use_platform_devices, const size_t platform_index, const 
 		};
 		
 		// TODO: make tile size dependent on #cores
-		string ir_lighting_flags = (" -DA2E_IR_TILE_SIZE_X="+uint2string(A2E_IR_TILE_SIZE_X) +
+		/*string ir_lighting_flags = (" -DA2E_IR_TILE_SIZE_X="+uint2string(A2E_IR_TILE_SIZE_X) +
 									" -DA2E_IR_TILE_SIZE_Y="+uint2string(A2E_IR_TILE_SIZE_Y) +
 									" -DA2E_LOCAL_ATOMICS");
 		// only add the inferred lighting kernel if there is support for local memory atomics
 		if(local_atomics_support) {
 			internal_kernels.emplace_back("INFERRED_LIGHTING", "ir_lighting.cl", "ir_lighting", ir_lighting_flags);
-		}
+		}*/
 		
 		load_internal_kernels();
 	}
