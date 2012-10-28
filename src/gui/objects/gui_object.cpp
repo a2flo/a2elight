@@ -207,7 +207,7 @@ void gui_object::handle(const GUI_EVENT gui_evt) {
 		// we need a ref to the actual object, since we can't capture an iterator that
 		// will be invalid/different after the next iteration
 		const auto& hndlr = *iter;
-		task::spawn([&hndlr, &gui_evt, this]() {
+		task::spawn([hndlr, gui_evt, this]() {
 			hndlr.second(gui_evt, *this);
 		});
 	}
