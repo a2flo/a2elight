@@ -690,18 +690,17 @@ void opencl::init(bool use_platform_devices, const size_t platform_index, const 
 		//for(const auto& device : devices) cout << "max wg size: " << device->max_wg_size << endl;
 		
 		size_t local_size_limit = std::max((size_t)512, devices[0]->max_wg_size); // default to 512
-		bool local_atomics_support = true;
+		//bool local_atomics_support = true;
 		for(const auto& device : devices) {
 			if(device->max_wg_size < local_size_limit) {
 				local_size_limit = device->max_wg_size;
 			}
-			if(device->extensions.find("cl_khr_local_int32_base_atomics") == string::npos ||
+			/*if(device->extensions.find("cl_khr_local_int32_base_atomics") == string::npos ||
 			   device->extensions.find("cl_khr_local_int32_extended_atomics") == string::npos) {
 				local_atomics_support = false;
-			}
+			}*/
 		}
 		const string lsl_str = " -DLOCAL_SIZE_LIMIT="+size_t2string(local_size_limit);
-		
 		
 		internal_kernels = { // first time init:
 			make_tuple("PARTICLE_INIT", "particle_spawn.cl", "particle_init", " -DA2E_PARTICLE_INIT"),
