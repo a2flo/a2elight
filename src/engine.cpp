@@ -203,9 +203,6 @@ void engine::create() {
 	window_handler = new event::handler(this, &engine::window_event_handler);
 	e->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
-	AtomicSet(&reload_shaders_flag, 0);
-	AtomicSet(&reload_kernels_flag, 0);
-	
 	// print out engine info
 	a2e_debug("%s", (A2E_VERSION_STRING).c_str());
 	
@@ -765,14 +762,14 @@ void engine::stop_draw() {
 	frame_time_counter = SDL_GetTicks();
 	
 	// check for shader/kernel reload (this is safe to do here)
-	if(AtomicGet(&reload_shaders_flag) == 1) {
-		AtomicSet(&reload_shaders_flag, 0);
+	if(reload_shaders_flag) {
+		reload_shaders_flag = false;
 		glFlush();
 		glFinish();
 		shd->reload_shaders();
 	}
-	if(AtomicGet(&reload_kernels_flag) == 1) {
-		AtomicSet(&reload_kernels_flag, 0);
+	if(reload_kernels_flag) {
+		reload_kernels_flag = false;
 		glFlush();
 		glFinish();
 #if !defined(A2E_NO_OPENCL)
@@ -1381,11 +1378,11 @@ void engine::pop_modelview_matrix() {
 }
 
 void engine::reload_shaders() {
-	AtomicSet(&reload_shaders_flag, 1);
+	reload_shaders_flag = true;
 }
 
 void engine::reload_kernels() {
-	AtomicSet(&reload_kernels_flag, 1);
+	reload_kernels_flag = true;
 }
 
 const float& engine::get_fov() const {
@@ -1426,7 +1423,7 @@ void engine::acquire_gl_context() {
 	// be called once (this is the purpose of ctx_active_locks).
 	config.ctx_lock.lock();
 	// note: not a race, since there can only be one active gl thread
-	const int cur_active_locks = AtomicFetchThenIncrement(&config.ctx_active_locks);
+	const unsigned int cur_active_locks = config.ctx_active_locks++;
 	if(cur_active_locks == 0) {
 		if(SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
 			a2e_error("couldn't make gl context current: %s!", SDL_GetError());
@@ -1443,8 +1440,8 @@ void engine::acquire_gl_context() {
 
 void engine::release_gl_context() {
 	// only call SDL_GL_MakeCurrent with nullptr, when this is the last lock
-	const int cur_active_locks = AtomicFetchThenDecrement(&config.ctx_active_locks);
-	if(cur_active_locks == 1) {
+	const unsigned int cur_active_locks = --config.ctx_active_locks;
+	if(cur_active_locks == 0) {
 		if(ocl != nullptr && ocl->is_supported()) {
 			ocl->finish();
 			ocl->deactivate_context();

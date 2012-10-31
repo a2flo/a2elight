@@ -20,7 +20,6 @@
 #define __A2E_LOGGER_H__
 
 #include "cpp_headers.h"
-#include "threading/atomics.h"
 using namespace std;
 
 //! a2e logging functions, use appropriately

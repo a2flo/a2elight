@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-
 #include "logger.h"
+#include <thread>
 
 #if !defined(A2E_IOS)
 #define A2E_LOG_FILENAME "log.txt"
@@ -27,7 +27,7 @@
 
 static ofstream* log_file = new ofstream(A2E_LOG_FILENAME);
 static atomic<unsigned int> err_counter { 0 };
-static SDL_SpinLock slock;
+static atomic<unsigned int> slock { 0 };
 
 void logger::init() {
 	if(!log_file->is_open()) {
@@ -87,7 +87,10 @@ void logger::_log(stringstream& buffer, const char* str) {
 	buffer << endl;
 	
 	// finally: output
-	SDL_AtomicLock(&slock);
+	unsigned int cas_zero = 0;
+	while(!slock.compare_exchange_strong(cas_zero, 1)) {
+		this_thread::yield();
+	}
 	string bstr(buffer.str());
 	cout << bstr;
 	if(bstr[0] != 0x1B) {
@@ -99,6 +102,6 @@ void logger::_log(stringstream& buffer, const char* str) {
 		*log_file << bstr;
 	}
 	log_file->flush();
-	SDL_AtomicUnlock(&slock);
+	slock = 0;
 }
 

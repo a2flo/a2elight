@@ -20,7 +20,6 @@
 #define __A2E_THREAD_BASE_H__
 
 #include "global.h"
-#include "atomics.h"
 
 #include <thread>
 #include <mutex>
@@ -59,7 +58,7 @@ protected:
 	thread* thread_obj;
 	recursive_mutex thread_lock;
 	THREAD_STATUS thread_status;
-	atomic_t thread_should_finish_flag;
+	atomic<bool> thread_should_finish_flag { false };
 	size_t thread_delay;
 	
 	void start();

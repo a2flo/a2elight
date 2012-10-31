@@ -22,8 +22,6 @@
 constexpr int event::handlers_locked;
 
 event::event(engine* e_) : thread_base("event"), e(e_) {
-	AtomicSet(&handlers_lock, 0);
-	
 	mouse_down_state[0] = mouse_down_state[1] = mouse_down_state[2] =
 	mouse_up_state[0] = mouse_up_state[1] = mouse_up_state[2] =
 		ipnt(-1, -1);
@@ -284,19 +282,21 @@ void event::set_mdouble_click_time(unsigned int dctime) {
 }
 
 void event::add_event_handler(handler& handler_, EVENT_TYPE type) {
-	while(!AtomicCAS(&handlers_lock, 0, handlers_locked)) {
+	int cas_zero = 0;
+	while(!handlers_lock.compare_exchange_strong(cas_zero, handlers_locked)) {
 		this_thread::yield();
 	}
 	handlers.insert(pair<EVENT_TYPE, handler&>(type, handler_));
-	AtomicSet(&handlers_lock, 0);
+	handlers_lock = 0;
 }
 
 void event::add_internal_event_handler(handler& handler_, EVENT_TYPE type) {
-	while(!AtomicCAS(&handlers_lock, 0, handlers_locked)) {
+	int cas_zero = 0;
+	while(!handlers_lock.compare_exchange_strong(cas_zero, handlers_locked)) {
 		this_thread::yield();
 	}
 	internal_handlers.insert(pair<EVENT_TYPE, handler&>(type, handler_));
-	AtomicSet(&handlers_lock, 0);
+	handlers_lock = 0;
 }
 
 void event::add_event(const EVENT_TYPE type, shared_ptr<event_object> obj) {
@@ -309,11 +309,11 @@ void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 	prev_events[type] = obj;
 	
 	// call internal event handlers directly
-	int cur_hl = AtomicGet(&handlers_lock);
+	int cur_hl = handlers_lock;
 	while(cur_hl == handlers_locked ||
-		  !AtomicCAS(&handlers_lock, cur_hl, cur_hl+1)) {
+		  !handlers_lock.compare_exchange_strong(cur_hl, cur_hl+1)) {
 		this_thread::yield();
-		cur_hl = AtomicGet(&handlers_lock);
+		cur_hl = handlers_lock;
 	}
 	
 	const auto range = internal_handlers.equal_range(type);
@@ -322,7 +322,7 @@ void event::handle_event(const EVENT_TYPE& type, shared_ptr<event_object> obj) {
 		iter->second(type, obj);
 	}
 	
-	AtomicFetchThenDecrement(&handlers_lock);
+	handlers_lock--;
 	
 	// push to user event queue (these will be handled later on)
 	user_queue_lock.lock();
@@ -337,11 +337,11 @@ void event::handle_user_events() {
 		user_event_queue_processing.pop();
 		
 		// call user event handlers
-		int cur_hl = AtomicGet(&handlers_lock);
+		int cur_hl = handlers_lock;
 		while(cur_hl == handlers_locked ||
-			  !AtomicCAS(&handlers_lock, cur_hl, cur_hl+1)) {
+			  !handlers_lock.compare_exchange_strong(cur_hl, cur_hl+1)) {
 			this_thread::yield();
-			cur_hl = AtomicGet(&handlers_lock);
+			cur_hl = handlers_lock;
 		}
 		
 		const auto range = handlers.equal_range(evt.first);
@@ -349,12 +349,13 @@ void event::handle_user_events() {
 			iter->second(evt.first, evt.second);
 		}
 		
-		AtomicFetchThenDecrement(&handlers_lock);
+		handlers_lock--;
 	}
 }
 
 void event::remove_event_handler(const handler& handler_) {
-	while(!AtomicCAS(&handlers_lock, 0, handlers_locked)) {
+	int cas_zero = 0;
+	while(!handlers_lock.compare_exchange_strong(cas_zero, handlers_locked)) {
 		this_thread::yield();
 	}
 	
@@ -372,11 +373,12 @@ void event::remove_event_handler(const handler& handler_) {
 		else ++handler_iter;
 	}
 	
-	AtomicSet(&handlers_lock, 0);
+	handlers_lock = 0;
 }
 
 void event::remove_event_types_from_handler(const handler& handler_, const set<EVENT_TYPE>& types) {
-	while(!AtomicCAS(&handlers_lock, 0, handlers_locked)) {
+	int cas_zero = 0;
+	while(!handlers_lock.compare_exchange_strong(cas_zero, handlers_locked)) {
 		this_thread::yield();
 	}
 	
@@ -398,5 +400,5 @@ void event::remove_event_types_from_handler(const handler& handler_, const set<E
 		}
 	}
 	
-	AtomicSet(&handlers_lock, 0);
+	handlers_lock = 0;
 }

@@ -21,8 +21,6 @@
 
 #include "global.h"
 
-#include "gui/unicode.h"
-
 /*! @class file_io
  *  @brief file input/output
  */

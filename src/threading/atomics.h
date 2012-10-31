@@ -19,33 +19,6 @@
 #ifndef __A2E_ATOMICS_H__
 #define __A2E_ATOMICS_H__
 
-#include "core/cpp_headers.h"
-using namespace std;
-
-// TODO: use C++11 atomics when supported by clang/gcc
-
-////////////////////////////////////////////////////////////////////////////////
-// SDL 2.0+ atomic functions
-#include <SDL2/SDL_atomic.h>
-#include <SDL2/SDL_version.h>
-
-// check if atomics and sdl 2.0 are available
-#if !defined(_SDL_atomic_h_ ) || (SDL_MAJOR_VERSION == 1)
-#error "A2E requires SDL 2.0 with support for atomics"
-#endif
-
-#define AtomicFetchThenIncrement(a) SDL_AtomicAdd(a, 1)
-#define AtomicFetchThenDecrement(a) SDL_AtomicAdd(a, -1)
-#define AtomicFetchThenAdd(a, val) SDL_AtomicAdd(a, val)
-#define AtomicGet(a) SDL_AtomicGet(a)
-#define AtomicClear(a) SDL_AtomicSet(a, 0)
-#define AtomicTestThenSet(a) SDL_AtomicCAS(a, 0, 1)
-#define AtomicCAS(a, old, new) SDL_AtomicCAS(a, old, new)
-#define AtomicSet(a, val) SDL_AtomicSet(a, val)
-#define AtomicOR(a, val) __sync_fetch_and_or(&(a)->value, val)
-#define AtomicAND(a, val) __sync_fetch_and_and(&(a)->value, val)
-#define AtomicNAND(a, val) __sync_fetch_and_nand(&(a)->value, val)
-#define AtomicXOR(a, val) __sync_fetch_and_xor(&(a)->value, val)
-#define atomic_t SDL_atomic_t
+// nothing to see here any more (rather include <atomic>)
 
 #endif

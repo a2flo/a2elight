@@ -19,7 +19,6 @@
 #include "thread_base.h"
 
 thread_base::thread_base(const string name) : thread_name(name), thread_obj(nullptr), thread_lock(), thread_status(THREAD_STATUS::INIT), thread_delay(50) {
-	thread_should_finish_flag.value = 0;
 	this->lock(); // lock thread, so start (or unlock) must be called before the thread starts running
 	thread_obj = new std::thread(&thread_base::_thread_run, this);
 }
@@ -40,7 +39,7 @@ void thread_base::start() {
 }
 
 void thread_base::restart() {
-	AtomicClear(&thread_should_finish_flag);
+	thread_should_finish_flag = false;
 	this->lock();
 	thread_status = THREAD_STATUS::INIT;
 	thread_obj = new thread(_thread_run, this);
@@ -144,11 +143,11 @@ bool thread_base::is_running() const {
 }
 
 void thread_base::set_thread_should_finish() {
-	AtomicTestThenSet(&thread_should_finish_flag);
+	thread_should_finish_flag = true;
 }
 
 bool thread_base::thread_should_finish() {
-	return AtomicGet(&thread_should_finish_flag) == 0 ? false : true;
+	return thread_should_finish_flag;
 }
 
 void thread_base::set_thread_delay(const unsigned int delay) {

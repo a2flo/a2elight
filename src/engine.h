@@ -276,15 +276,10 @@ protected:
 		SDL_Window* wnd = nullptr;
 		SDL_GLContext ctx = nullptr;
 		recursive_mutex ctx_lock;
-		atomic_t ctx_active_locks;
+		atomic<unsigned int> ctx_active_locks { 0 };
 		unsigned int flags = 0;
 		
-		engine_config() :
-		server(), client(),
-		ctx_lock(), ctx_active_locks()
-		{
-			AtomicSet(&ctx_active_locks, 0);
-		}
+		engine_config() : server(), client() {}
 	} config;
 	xml::xml_doc config_doc;
 	
@@ -342,8 +337,8 @@ protected:
 	bool window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	
 	// misc
-	atomic_t reload_shaders_flag;
-	atomic_t reload_kernels_flag;
+	atomic<bool> reload_shaders_flag { false };
+	atomic<bool> reload_kernels_flag { false };
 	GLuint global_vao;
 
 };
