@@ -51,11 +51,9 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	
 	blend_mode = gfx2d::BLEND_MODE::ADD;
 	
-	// init data	
-#if !defined(A2E_NO_OPENCL)
+	// init data
 	// for opencl computed particle systems
 	data.ocl_range_global.set(0);
-#endif
 }
 
 /*! there is no function currently
@@ -63,8 +61,6 @@ particle_system::particle_system(engine* e_) : e(e_) {
 particle_system::~particle_system() {
 	if(glIsBuffer(lights_ubo)) glDeleteBuffers(1, &lights_ubo);
 	
-
-#if !defined(A2E_NO_OPENCL)
 	if(data.ocl_pos_time_buffer != nullptr) e->get_opencl()->delete_buffer(data.ocl_pos_time_buffer);
 	if(data.ocl_dir_buffer != nullptr) e->get_opencl()->delete_buffer(data.ocl_dir_buffer);
 	if(data.ocl_distances != nullptr) e->get_opencl()->delete_buffer(data.ocl_distances);
@@ -72,7 +68,6 @@ particle_system::~particle_system() {
 	if(data.ocl_indices[1] != nullptr) e->get_opencl()->delete_buffer(data.ocl_indices[1]);
 	if(glIsBuffer(data.ocl_gl_pos_time_vbo)) glDeleteBuffers(1, &data.ocl_gl_pos_time_vbo);
 	if(glIsBuffer(data.ocl_gl_dir_vbo)) glDeleteBuffers(1, &data.ocl_gl_dir_vbo);
-#endif
 	
 	if(glIsBuffer(data.particle_indices_vbo[0])) glDeleteBuffers(1, &data.particle_indices_vbo[0]);
 	if(glIsBuffer(data.particle_indices_vbo[1])) glDeleteBuffers(1, &data.particle_indices_vbo[1]);

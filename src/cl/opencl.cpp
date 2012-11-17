@@ -18,8 +18,6 @@
 
 #include "opencl.h"
 
-#if !defined(A2E_NO_OPENCL)
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // common in all opencl implementations:
 
@@ -284,7 +282,7 @@ cl::NDRange opencl_base::compute_local_kernel_range(const unsigned int dimension
 }
 
 void opencl_base::set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool state) {
-	if((gl_buffer_obj->type & opencl_base::BT_OPENGL_BUFFER) == 0 ||
+	if((gl_buffer_obj->type & BUFFER_FLAG::OPENGL_BUFFER) == BUFFER_FLAG::NONE ||
 	   gl_buffer_obj->ogl_buffer == 0) {
 		a2e_error("this is not a gl object!");
 		return;
@@ -398,14 +396,17 @@ opencl::opencl(const char* kernel_path, SDL_Window* wnd, const bool clear_cache)
 	// TODO: this currently doesn't work if there are spaces inside the path and surrounding
 	// the path by "" doesn't work either, probably a bug in the apple implementation -- or clang?
 	build_options = "-I" + kernel_path_str.substr(0, kernel_path_str.length()-1);
-	build_options += " -cl-std=CL1.0";
+	build_options += " -cl-std=CL1.1";
 	build_options += " -cl-strict-aliasing";
 	build_options += " -cl-mad-enable";
 	build_options += " -cl-no-signed-zeros";
 	build_options += " -cl-fast-relaxed-math";
 	build_options += " -cl-single-precision-constant";
 	build_options += " -cl-denorms-are-zero";
+	
+#if !defined(A2E_DEBUG)
 	build_options += " -w";
+#endif
 	
 #if !defined(__APPLE__)
 	//nv_build_options = " -cl-nv-verbose";
@@ -745,8 +746,9 @@ void opencl::init(bool use_platform_devices, const size_t platform_index, const 
 		return;
 	}
 	
-	if(ro_formats.empty() && wo_formats.empty() && rw_formats.empty()) {
+	// un-#if-0 for debug output
 #if 0
+	if(ro_formats.empty() && wo_formats.empty() && rw_formats.empty()) {
 		// context has been created, query image format information
 		context->getSupportedImageFormats(CL_MEM_READ_ONLY, CL_MEM_OBJECT_IMAGE2D, &ro_formats);
 		context->getSupportedImageFormats(CL_MEM_WRITE_ONLY, CL_MEM_OBJECT_IMAGE2D, &wo_formats);
@@ -806,8 +808,8 @@ void opencl::init(bool use_platform_devices, const size_t platform_index, const 
 				cout << endl;
 			}
 		}
-#endif
 	}
+#endif
 }
 
 opencl::kernel_object* opencl::add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options) {
@@ -975,41 +977,60 @@ void opencl::log_program_binary(const kernel_object* kernel) {
 	__HANDLE_CL_EXCEPTION("log_program_binary")
 }
 
-opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, void* data) {
+opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_FLAG type, void* data) {
 	try {
 		opencl::buffer_object* buffer = new opencl::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
-		unsigned int vtype = 0;
-		if(type & opencl::BT_USE_HOST_MEMORY) vtype |= opencl::BT_USE_HOST_MEMORY;
-		if(type & opencl::BT_DELETE_AFTER_USE) vtype |= opencl::BT_DELETE_AFTER_USE;
-		if(type & opencl::BT_BLOCK_ON_READ) vtype |= opencl::BT_BLOCK_ON_READ;
-		if(type & opencl::BT_BLOCK_ON_WRITE) vtype |= opencl::BT_BLOCK_ON_WRITE;
-		if(data != nullptr && (type & opencl::BT_INITIAL_COPY) && !(vtype & opencl::BT_USE_HOST_MEMORY)) vtype |= opencl::BT_INITIAL_COPY;
-		if(data != nullptr && (type & opencl::BT_COPY_ON_USE)) vtype |= opencl::BT_COPY_ON_USE;
-		if(data != nullptr && (type & opencl::BT_READ_BACK_RESULT)) vtype |= opencl::BT_READ_BACK_RESULT;
+		BUFFER_FLAG vtype = BUFFER_FLAG::NONE;
+		if((type & BUFFER_FLAG::USE_HOST_MEMORY) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::USE_HOST_MEMORY;
+		if((type & BUFFER_FLAG::DELETE_AFTER_USE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::DELETE_AFTER_USE;
+		if((type & BUFFER_FLAG::BLOCK_ON_READ) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_READ;
+		if((type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_WRITE;
+		if(data != nullptr &&
+		   (type & BUFFER_FLAG::INITIAL_COPY) != BUFFER_FLAG::NONE &&
+		   (type & BUFFER_FLAG::USE_HOST_MEMORY) == BUFFER_FLAG::NONE) {
+			vtype |= BUFFER_FLAG::INITIAL_COPY;
+		}
+		if(data != nullptr &&
+		   (type & BUFFER_FLAG::COPY_ON_USE) != BUFFER_FLAG::NONE) {
+			vtype |= BUFFER_FLAG::COPY_ON_USE;
+		}
+		if(data != nullptr &&
+		   (type & BUFFER_FLAG::READ_BACK_RESULT) != BUFFER_FLAG::NONE) {
+			vtype |= BUFFER_FLAG::READ_BACK_RESULT;
+		}
 		
 		cl_mem_flags flags = 0;
-		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl::BT_READ_WRITE:
-				vtype |= BT_READ_WRITE;
+		switch(type & BUFFER_FLAG::READ_WRITE) {
+			case BUFFER_FLAG::READ_WRITE:
+				vtype |= BUFFER_FLAG::READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl::BT_READ:
-				vtype |= BT_READ;
+			case BUFFER_FLAG::READ:
+				vtype |= BUFFER_FLAG::READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl::BT_WRITE:
-				vtype |= BT_WRITE;
+			case BUFFER_FLAG::WRITE:
+				vtype |= BUFFER_FLAG::WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
 			default:
 				break;
 		}
-		if((vtype & opencl::BT_INITIAL_COPY) && !(vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_COPY_HOST_PTR;
-		if(data != nullptr && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_USE_HOST_PTR;
-		if(data == nullptr && (vtype & opencl::BT_USE_HOST_MEMORY)) flags |= CL_MEM_ALLOC_HOST_PTR;
+		if((vtype & BUFFER_FLAG::INITIAL_COPY) != BUFFER_FLAG::NONE &&
+		   (vtype & BUFFER_FLAG::USE_HOST_MEMORY) == BUFFER_FLAG::NONE) {
+			flags |= CL_MEM_COPY_HOST_PTR;
+		}
+		if(data != nullptr &&
+		   (vtype & BUFFER_FLAG::USE_HOST_MEMORY) != BUFFER_FLAG::NONE) {
+			flags |= CL_MEM_USE_HOST_PTR;
+		}
+		if(data == nullptr &&
+		   (vtype & BUFFER_FLAG::USE_HOST_MEMORY) != BUFFER_FLAG::NONE) {
+			flags |= CL_MEM_ALLOC_HOST_PTR;
+		}
 		
 		buffer->type = vtype;
 		buffer->flags = flags;
@@ -1020,7 +1041,7 @@ opencl::buffer_object* opencl::create_buffer_object(opencl::BUFFER_TYPE type, vo
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_buffer(opencl::BUFFER_TYPE type, size_t size, void* data) {
+opencl::buffer_object* opencl::create_buffer(opencl::BUFFER_FLAG type, size_t size, void* data) {
 	if(size == 0) {
 		return nullptr;
 	}
@@ -1031,7 +1052,8 @@ opencl::buffer_object* opencl::create_buffer(opencl::BUFFER_TYPE type, size_t si
 		
 		buffer_obj->size = size;
 		buffer_obj->buffer = new cl::Buffer(*context, buffer_obj->flags, size,
-											((buffer_obj->type & opencl::BT_INITIAL_COPY) || (buffer_obj->type & opencl::BT_USE_HOST_MEMORY) ? data : nullptr),
+											((buffer_obj->type & BUFFER_FLAG::INITIAL_COPY) != BUFFER_FLAG::NONE ||
+											 (buffer_obj->type & BUFFER_FLAG::USE_HOST_MEMORY) != BUFFER_FLAG::NONE ? data : nullptr),
 											&ierr);
 		return buffer_obj;
 	}
@@ -1039,7 +1061,7 @@ opencl::buffer_object* opencl::create_buffer(opencl::BUFFER_TYPE type, size_t si
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_image2d_buffer(opencl::BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data) {
+opencl::buffer_object* opencl::create_image2d_buffer(opencl::BUFFER_FLAG type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data) {
 	try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
 		if(buffer_obj == nullptr) return nullptr;
@@ -1055,7 +1077,7 @@ opencl::buffer_object* opencl::create_image2d_buffer(opencl::BUFFER_TYPE type, c
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_image3d_buffer(opencl::BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data) {
+opencl::buffer_object* opencl::create_image3d_buffer(opencl::BUFFER_FLAG type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data) {
 	try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
 		if(buffer_obj == nullptr) return nullptr;
@@ -1071,36 +1093,36 @@ opencl::buffer_object* opencl::create_image3d_buffer(opencl::BUFFER_TYPE type, c
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuint ogl_buffer) {
+opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_FLAG type, GLuint ogl_buffer) {
 	try {
 		opencl::buffer_object* buffer = new opencl::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
-		unsigned int vtype = 0;
-		if((type & opencl::BT_DELETE_AFTER_USE) != 0) vtype |= opencl::BT_DELETE_AFTER_USE;
-		if((type & opencl::BT_BLOCK_ON_READ) != 0) vtype |= opencl::BT_BLOCK_ON_READ;
-		if((type & opencl::BT_BLOCK_ON_WRITE) != 0) vtype |= opencl::BT_BLOCK_ON_WRITE;
+		BUFFER_FLAG vtype = BUFFER_FLAG::NONE;
+		if((type & BUFFER_FLAG::DELETE_AFTER_USE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::DELETE_AFTER_USE;
+		if((type & BUFFER_FLAG::BLOCK_ON_READ) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_READ;
+		if((type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_WRITE;
 		
 		cl_mem_flags flags = 0;
-		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl::BT_READ_WRITE:
-				vtype |= BT_READ_WRITE;
+		switch(type & BUFFER_FLAG::READ_WRITE) {
+			case BUFFER_FLAG::READ_WRITE:
+				vtype |= BUFFER_FLAG::READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl::BT_READ:
-				vtype |= BT_READ;
+			case BUFFER_FLAG::READ:
+				vtype |= BUFFER_FLAG::READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl::BT_WRITE:
-				vtype |= BT_WRITE;
+			case BUFFER_FLAG::WRITE:
+				vtype |= BUFFER_FLAG::WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
 			default:
 				break;
 		}
 		
-		vtype |= BT_OPENGL_BUFFER;
+		vtype |= BUFFER_FLAG::OPENGL_BUFFER;
 		
 		buffer->type = vtype;
 		buffer->ogl_buffer = ogl_buffer;
@@ -1113,36 +1135,36 @@ opencl::buffer_object* opencl::create_ogl_buffer(opencl::BUFFER_TYPE type, GLuin
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target) {
+opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_FLAG type, GLuint texture, GLenum target) {
 	try {
 		opencl::buffer_object* buffer = new opencl::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
-		unsigned int vtype = 0;
-		if(type & opencl::BT_DELETE_AFTER_USE) vtype |= opencl::BT_DELETE_AFTER_USE;
-		if(type & opencl::BT_BLOCK_ON_READ) vtype |= opencl::BT_BLOCK_ON_READ;
-		if(type & opencl::BT_BLOCK_ON_WRITE) vtype |= opencl::BT_BLOCK_ON_WRITE;
+		BUFFER_FLAG vtype = BUFFER_FLAG::NONE;
+		if((type & BUFFER_FLAG::DELETE_AFTER_USE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::DELETE_AFTER_USE;
+		if((type & BUFFER_FLAG::BLOCK_ON_READ) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_READ;
+		if((type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_WRITE;
 		
 		cl_mem_flags flags = 0;
-		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl::BT_READ_WRITE:
-				vtype |= BT_READ_WRITE;
+		switch(type & BUFFER_FLAG::READ_WRITE) {
+			case BUFFER_FLAG::READ_WRITE:
+				vtype |= BUFFER_FLAG::READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl::BT_READ:
-				vtype |= BT_READ;
+			case BUFFER_FLAG::READ:
+				vtype |= BUFFER_FLAG::READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl::BT_WRITE:
-				vtype |= BT_WRITE;
+			case BUFFER_FLAG::WRITE:
+				vtype |= BUFFER_FLAG::WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
 			default:
 				break;
 		}
 		
-		vtype |= BT_OPENGL_BUFFER;
+		vtype |= BUFFER_FLAG::OPENGL_BUFFER;
 		
 		buffer->type = vtype;
 		buffer->ogl_buffer = texture;
@@ -1155,36 +1177,36 @@ opencl::buffer_object* opencl::create_ogl_image2d_buffer(BUFFER_TYPE type, GLuin
 	return nullptr;
 }
 
-opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer) {
+opencl::buffer_object* opencl::create_ogl_image2d_renderbuffer(BUFFER_FLAG type, GLuint renderbuffer) {
 	try {
 		opencl::buffer_object* buffer = new opencl::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
-		unsigned int vtype = 0;
-		if(type & opencl::BT_DELETE_AFTER_USE) vtype |= opencl::BT_DELETE_AFTER_USE;
-		if(type & opencl::BT_BLOCK_ON_READ) vtype |= opencl::BT_BLOCK_ON_READ;
-		if(type & opencl::BT_BLOCK_ON_WRITE) vtype |= opencl::BT_BLOCK_ON_WRITE;
+		BUFFER_FLAG vtype = BUFFER_FLAG::NONE;
+		if((type & BUFFER_FLAG::DELETE_AFTER_USE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::DELETE_AFTER_USE;
+		if((type & BUFFER_FLAG::BLOCK_ON_READ) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_READ;
+		if((type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_WRITE;
 		
 		cl_mem_flags flags = 0;
-		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl::BT_READ_WRITE:
-				vtype |= BT_READ_WRITE;
+		switch(type & BUFFER_FLAG::READ_WRITE) {
+			case BUFFER_FLAG::READ_WRITE:
+				vtype |= BUFFER_FLAG::READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl::BT_READ:
-				vtype |= BT_READ;
+			case BUFFER_FLAG::READ:
+				vtype |= BUFFER_FLAG::READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl::BT_WRITE:
-				vtype |= BT_WRITE;
+			case BUFFER_FLAG::WRITE:
+				vtype |= BUFFER_FLAG::WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
 			default:
 				break;
 		}
 		
-		vtype |= BT_OPENGL_BUFFER;
+		vtype |= BUFFER_FLAG::OPENGL_BUFFER;
 		
 		buffer->type = vtype;
 		buffer->ogl_buffer = renderbuffer;
@@ -1235,7 +1257,8 @@ void opencl::write_buffer(opencl::buffer_object* buffer_obj, const void* src, co
 	}
 	
 	try {
-		queues[active_device->device]->enqueueWriteBuffer(*buffer_obj->buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0),
+		queues[active_device->device]->enqueueWriteBuffer(*buffer_obj->buffer,
+														  ((buffer_obj->type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE),
 														  write_offset, write_size, src);
 	}
 	__HANDLE_CL_EXCEPTION("write_buffer")
@@ -1245,7 +1268,8 @@ void opencl::write_image2d(opencl::buffer_object* buffer_obj, const void* src, s
 	try {
 		size3 origin3(origin.x, origin.y, 0); // origin z must be 0 for 2d images
 		size3 region3(region.x, region.y, 1); // depth must be 1 for 2d images
-		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0),
+		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer,
+														 ((buffer_obj->type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE),
 														 (cl::size_t<3>&)origin3, (cl::size_t<3>&)region3, 0, 0, (void*)src);
 	}
 	__HANDLE_CL_EXCEPTION("write_image2d")
@@ -1253,7 +1277,8 @@ void opencl::write_image2d(opencl::buffer_object* buffer_obj, const void* src, s
 
 void opencl::write_image3d(opencl::buffer_object* buffer_obj, const void* src, size3 origin, size3 region) {
 	try {
-		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_WRITE) > 0),
+		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer,
+														 ((buffer_obj->type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE),
 														 (cl::size_t<3>&)origin, (cl::size_t<3>&)region, 0, 0, (void*)src);
 	}
 	__HANDLE_CL_EXCEPTION("write_buffer")
@@ -1261,7 +1286,8 @@ void opencl::write_image3d(opencl::buffer_object* buffer_obj, const void* src, s
 
 void opencl::read_buffer(void* dst, opencl::buffer_object* buffer_obj) {
 	try {
-		queues[active_device->device]->enqueueReadBuffer(*buffer_obj->buffer, ((buffer_obj->type & opencl::BT_BLOCK_ON_READ) > 0),
+		queues[active_device->device]->enqueueReadBuffer(*buffer_obj->buffer,
+														 ((buffer_obj->type & BUFFER_FLAG::BLOCK_ON_READ) != BUFFER_FLAG::NONE),
 														 0, buffer_obj->size, dst);
 	}
 	__HANDLE_CL_EXCEPTION("read_buffer")
@@ -1280,8 +1306,10 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 		
 		vector<cl::Memory> gl_objects;
 		for(const auto& buffer_arg : kernel_obj->buffer_args) {
-			if((buffer_arg.second->type & opencl::BT_COPY_ON_USE) != 0) write_buffer(buffer_arg.second, buffer_arg.second->data);
-			if((buffer_arg.second->type & opencl::BT_OPENGL_BUFFER) != 0 &&
+			if((buffer_arg.second->type & BUFFER_FLAG::COPY_ON_USE) != BUFFER_FLAG::NONE) {
+				write_buffer(buffer_arg.second, buffer_arg.second->data);
+			}
+			if((buffer_arg.second->type & BUFFER_FLAG::OPENGL_BUFFER) != BUFFER_FLAG::NONE &&
 			   !buffer_arg.second->manual_gl_sharing) {
 				gl_objects.push_back(*(buffer_arg.second->buffer != nullptr ?
 									   (cl::Memory*)buffer_arg.second->buffer :
@@ -1298,12 +1326,14 @@ void opencl::run_kernel(kernel_object* kernel_obj) {
 		func();
 		
 		for(const auto& buffer_arg : kernel_obj->buffer_args) {
-			if((buffer_arg.second->type & opencl::BT_READ_BACK_RESULT) != 0) read_buffer(buffer_arg.second->data, buffer_arg.second);
+			if((buffer_arg.second->type & BUFFER_FLAG::READ_BACK_RESULT) != BUFFER_FLAG::NONE) {
+				read_buffer(buffer_arg.second->data, buffer_arg.second);
+			}
 		}
 		
 		for_each(begin(kernel_obj->buffer_args), end(kernel_obj->buffer_args),
 				 [this](const pair<const unsigned int, buffer_object*>& buffer_arg) {
-					 if((buffer_arg.second->type & opencl::BT_DELETE_AFTER_USE) != 0) {
+					 if((buffer_arg.second->type & BUFFER_FLAG::DELETE_AFTER_USE) != BUFFER_FLAG::NONE) {
 						 this->delete_buffer(buffer_arg.second);
 					 }
 				 });
@@ -1357,13 +1387,13 @@ bool opencl::set_kernel_argument(const unsigned int& index, size_t size, void* a
 	return false;
 }
 
-void* opencl::map_buffer(opencl::buffer_object* buffer_obj, EBUFFER_TYPE access_type, bool blocking) {
+void* opencl::map_buffer(opencl::buffer_object* buffer_obj, BUFFER_FLAG access_type, bool blocking) {
 	try {
 		cl_map_flags map_flags = CL_MAP_READ;
-		switch((EBUFFER_TYPE)(access_type & 0x03)) {
-			case opencl::BT_READ_WRITE: map_flags = CL_MAP_READ | CL_MAP_WRITE; break;
-			case opencl::BT_READ: map_flags = CL_MAP_READ; break;
-			case opencl::BT_WRITE: map_flags = CL_MAP_WRITE; break;
+		switch(access_type & BUFFER_FLAG::READ_WRITE) {
+			case BUFFER_FLAG::READ_WRITE: map_flags = CL_MAP_READ | CL_MAP_WRITE; break;
+			case BUFFER_FLAG::READ: map_flags = CL_MAP_READ; break;
+			case BUFFER_FLAG::WRITE: map_flags = CL_MAP_WRITE; break;
 			default: break;
 		}
 		
@@ -1474,5 +1504,3 @@ void opencl::set_active_device(const opencl_base::DEVICE_TYPE& dev) {
 		a2e_error("can't use device %u and no other device is currently active!", dev);
 	}
 }
-
-#endif

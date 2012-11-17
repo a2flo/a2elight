@@ -692,41 +692,60 @@ void cudacl::log_program_binary(const kernel_object* kernel) {
 	if(kernel == nullptr) return;
 }
 
-opencl_base::buffer_object* cudacl::create_buffer_object(opencl_base::BUFFER_TYPE type, void* data) {
+opencl_base::buffer_object* cudacl::create_buffer_object(opencl_base::BUFFER_FLAG type, void* data) {
 	try {
 		opencl_base::buffer_object* buffer = new opencl_base::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
-		unsigned int vtype = 0;
-		if(type & opencl_base::BT_USE_HOST_MEMORY) vtype |= opencl_base::BT_USE_HOST_MEMORY;
-		if(type & opencl_base::BT_DELETE_AFTER_USE) vtype |= opencl_base::BT_DELETE_AFTER_USE;
-		if(type & opencl_base::BT_BLOCK_ON_READ) vtype |= opencl_base::BT_BLOCK_ON_READ;
-		if(type & opencl_base::BT_BLOCK_ON_WRITE) vtype |= opencl_base::BT_BLOCK_ON_WRITE;
-		if(data != nullptr && (type & opencl_base::BT_INITIAL_COPY) && !(vtype & opencl_base::BT_USE_HOST_MEMORY)) vtype |= opencl_base::BT_INITIAL_COPY;
-		if(data != nullptr && (type & opencl_base::BT_COPY_ON_USE)) vtype |= opencl_base::BT_COPY_ON_USE;
-		if(data != nullptr && (type & opencl_base::BT_READ_BACK_RESULT)) vtype |= opencl_base::BT_READ_BACK_RESULT;
+		BUFFER_FLAG vtype = BUFFER_FLAG::NONE;
+		if((type & BUFFER_FLAG::USE_HOST_MEMORY) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::USE_HOST_MEMORY;
+		if((type & BUFFER_FLAG::DELETE_AFTER_USE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::DELETE_AFTER_USE;
+		if((type & BUFFER_FLAG::BLOCK_ON_READ) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_READ;
+		if((type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_WRITE;
+		if(data != nullptr &&
+		   (type & BUFFER_FLAG::INITIAL_COPY) != BUFFER_FLAG::NONE &&
+		   (type & BUFFER_FLAG::USE_HOST_MEMORY) == BUFFER_FLAG::NONE) {
+			vtype |= BUFFER_FLAG::INITIAL_COPY;
+		}
+		if(data != nullptr &&
+		   (type & BUFFER_FLAG::COPY_ON_USE) != BUFFER_FLAG::NONE) {
+			vtype |= BUFFER_FLAG::COPY_ON_USE;
+		}
+		if(data != nullptr &&
+		   (type & BUFFER_FLAG::READ_BACK_RESULT) != BUFFER_FLAG::NONE) {
+			vtype |= BUFFER_FLAG::READ_BACK_RESULT;
+		}
 		
 		cl_mem_flags flags = 0;
-		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl_base::BT_READ_WRITE:
-				vtype |= BT_READ_WRITE;
+		switch(type & BUFFER_FLAG::READ_WRITE) {
+			case BUFFER_FLAG::READ_WRITE:
+				vtype |= BUFFER_FLAG::READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl_base::BT_READ:
-				vtype |= BT_READ;
+			case BUFFER_FLAG::READ:
+				vtype |= BUFFER_FLAG::READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl_base::BT_WRITE:
-				vtype |= BT_WRITE;
+			case BUFFER_FLAG::WRITE:
+				vtype |= BUFFER_FLAG::WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
 			default:
 				break;
 		}
-		if((vtype & opencl_base::BT_INITIAL_COPY) && !(vtype & opencl_base::BT_USE_HOST_MEMORY)) flags |= CL_MEM_COPY_HOST_PTR;
-		if(data != nullptr && (vtype & opencl_base::BT_USE_HOST_MEMORY)) flags |= CL_MEM_USE_HOST_PTR;
-		if(data == nullptr && (vtype & opencl_base::BT_USE_HOST_MEMORY)) flags |= CL_MEM_ALLOC_HOST_PTR;
+		if((vtype & BUFFER_FLAG::INITIAL_COPY) != BUFFER_FLAG::NONE &&
+		   (vtype & BUFFER_FLAG::USE_HOST_MEMORY) == BUFFER_FLAG::NONE) {
+			flags |= CL_MEM_COPY_HOST_PTR;
+		}
+		if(data != nullptr &&
+		   (vtype & BUFFER_FLAG::USE_HOST_MEMORY) != BUFFER_FLAG::NONE) {
+			flags |= CL_MEM_USE_HOST_PTR;
+		}
+		if(data == nullptr &&
+		   (vtype & BUFFER_FLAG::USE_HOST_MEMORY) != BUFFER_FLAG::NONE) {
+			flags |= CL_MEM_ALLOC_HOST_PTR;
+		}
 		
 		buffer->type = vtype;
 		buffer->flags = flags;
@@ -737,7 +756,7 @@ opencl_base::buffer_object* cudacl::create_buffer_object(opencl_base::BUFFER_TYP
 	return nullptr;
 }
 
-opencl_base::buffer_object* cudacl::create_buffer(opencl_base::BUFFER_TYPE type, size_t size, void* data) {
+opencl_base::buffer_object* cudacl::create_buffer(opencl_base::BUFFER_FLAG type, size_t size, void* data) {
 	if(size == 0) {
 		return nullptr;
 	}
@@ -777,7 +796,7 @@ opencl_base::buffer_object* cudacl::create_buffer(opencl_base::BUFFER_TYPE type,
 	return nullptr;
 }
 
-opencl_base::buffer_object* cudacl::create_image2d_buffer(opencl_base::BUFFER_TYPE type a2e_unused, cl_channel_order channel_order a2e_unused, cl_channel_type channel_type a2e_unused, size_t width a2e_unused, size_t height a2e_unused, void* data a2e_unused) {
+opencl_base::buffer_object* cudacl::create_image2d_buffer(opencl_base::BUFFER_FLAG type a2e_unused, cl_channel_order channel_order a2e_unused, cl_channel_type channel_type a2e_unused, size_t width a2e_unused, size_t height a2e_unused, void* data a2e_unused) {
 	// TODO
 	/*try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
@@ -794,7 +813,7 @@ opencl_base::buffer_object* cudacl::create_image2d_buffer(opencl_base::BUFFER_TY
 	return nullptr;
 }
 
-opencl_base::buffer_object* cudacl::create_image3d_buffer(opencl_base::BUFFER_TYPE type a2e_unused, cl_channel_order channel_order a2e_unused, cl_channel_type channel_type a2e_unused, size_t width a2e_unused, size_t height a2e_unused, size_t depth a2e_unused, void* data a2e_unused) {
+opencl_base::buffer_object* cudacl::create_image3d_buffer(opencl_base::BUFFER_FLAG type a2e_unused, cl_channel_order channel_order a2e_unused, cl_channel_type channel_type a2e_unused, size_t width a2e_unused, size_t height a2e_unused, size_t depth a2e_unused, void* data a2e_unused) {
 	// TODO
 	/*try {
 		buffer_object* buffer_obj = create_buffer_object(type, data);
@@ -811,36 +830,36 @@ opencl_base::buffer_object* cudacl::create_image3d_buffer(opencl_base::BUFFER_TY
 	return nullptr;
 }
 
-opencl_base::buffer_object* cudacl::create_ogl_buffer(opencl_base::BUFFER_TYPE type, GLuint ogl_buffer) {
+opencl_base::buffer_object* cudacl::create_ogl_buffer(opencl_base::BUFFER_FLAG type, GLuint ogl_buffer) {
 	try {
 		opencl_base::buffer_object* buffer = new opencl_base::buffer_object();
 		buffers.push_back(buffer);
 		
 		// type/flag validity check
-		unsigned int vtype = 0;
-		if((type & opencl_base::BT_DELETE_AFTER_USE) != 0) vtype |= opencl_base::BT_DELETE_AFTER_USE;
-		if((type & opencl_base::BT_BLOCK_ON_READ) != 0) vtype |= opencl_base::BT_BLOCK_ON_READ;
-		if((type & opencl_base::BT_BLOCK_ON_WRITE) != 0) vtype |= opencl_base::BT_BLOCK_ON_WRITE;
+		BUFFER_FLAG vtype = BUFFER_FLAG::NONE;
+		if((type & BUFFER_FLAG::DELETE_AFTER_USE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::DELETE_AFTER_USE;
+		if((type & BUFFER_FLAG::BLOCK_ON_READ) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_READ;
+		if((type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE) vtype |= BUFFER_FLAG::BLOCK_ON_WRITE;
 		
 		unsigned int cuda_flags = 0;
-		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl_base::BT_READ_WRITE:
-				vtype |= BT_READ_WRITE;
+		switch(type & BUFFER_FLAG::READ_WRITE) {
+			case BUFFER_FLAG::READ_WRITE:
+				vtype |= BUFFER_FLAG::READ_WRITE;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_NONE;
 				break;
-			case opencl_base::BT_READ:
-				vtype |= BT_READ;
+			case BUFFER_FLAG::READ:
+				vtype |= BUFFER_FLAG::READ;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_READ_ONLY;
 				break;
-			case opencl_base::BT_WRITE:
-				vtype |= BT_WRITE;
+			case BUFFER_FLAG::WRITE:
+				vtype |= BUFFER_FLAG::WRITE;
 				cuda_flags = CU_GRAPHICS_REGISTER_FLAGS_WRITE_DISCARD;
 				break;
 			default:
 				break;
 		}
 		
-		vtype |= BT_OPENGL_BUFFER;
+		vtype |= BUFFER_FLAG::OPENGL_BUFFER;
 		
 		buffer->type = vtype;
 		buffer->ogl_buffer = ogl_buffer;
@@ -858,7 +877,7 @@ opencl_base::buffer_object* cudacl::create_ogl_buffer(opencl_base::BUFFER_TYPE t
 	return nullptr;
 }
 
-opencl_base::buffer_object* cudacl::create_ogl_image2d_buffer(BUFFER_TYPE type a2e_unused, GLuint texture a2e_unused, GLenum target a2e_unused) {
+opencl_base::buffer_object* cudacl::create_ogl_image2d_buffer(BUFFER_FLAG type a2e_unused, GLuint texture a2e_unused, GLenum target a2e_unused) {
 	// TODO
 	/*try {
 		opencl_base::buffer_object* buffer = new opencl_base::buffer_object();
@@ -866,21 +885,21 @@ opencl_base::buffer_object* cudacl::create_ogl_image2d_buffer(BUFFER_TYPE type a
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
-		if(type & opencl_base::BT_DELETE_AFTER_USE) vtype |= opencl_base::BT_DELETE_AFTER_USE;
-		if(type & opencl_base::BT_BLOCK_ON_READ) vtype |= opencl_base::BT_BLOCK_ON_READ;
-		if(type & opencl_base::BT_BLOCK_ON_WRITE) vtype |= opencl_base::BT_BLOCK_ON_WRITE;
+		if(type & BUFFER_FLAG::DELETE_AFTER_USE) vtype |= BUFFER_FLAG::DELETE_AFTER_USE;
+		if(type & BUFFER_FLAG::BLOCK_ON_READ) vtype |= BUFFER_FLAG::BLOCK_ON_READ;
+		if(type & BUFFER_FLAG::BLOCK_ON_WRITE) vtype |= BUFFER_FLAG::BLOCK_ON_WRITE;
 		
 		cl_mem_flags flags = 0;
-		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl_base::BT_READ_WRITE:
+		switch((BUFFER_FLAG)(type & 0x03)) {
+			case BUFFER_FLAG::READ_WRITE:
 				vtype |= BT_READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl_base::BT_READ:
+			case BUFFER_FLAG::READ:
 				vtype |= BT_READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl_base::BT_WRITE:
+			case BUFFER_FLAG::WRITE:
 				vtype |= BT_WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
@@ -901,7 +920,7 @@ opencl_base::buffer_object* cudacl::create_ogl_image2d_buffer(BUFFER_TYPE type a
 	return nullptr;
 }
 
-opencl_base::buffer_object* cudacl::create_ogl_image2d_renderbuffer(BUFFER_TYPE type a2e_unused, GLuint renderbuffer a2e_unused) {
+opencl_base::buffer_object* cudacl::create_ogl_image2d_renderbuffer(BUFFER_FLAG type a2e_unused, GLuint renderbuffer a2e_unused) {
 	// TODO
 	/*try {
 		opencl_base::buffer_object* buffer = new opencl_base::buffer_object();
@@ -909,21 +928,21 @@ opencl_base::buffer_object* cudacl::create_ogl_image2d_renderbuffer(BUFFER_TYPE 
 		
 		// type/flag validity check
 		unsigned int vtype = 0;
-		if(type & opencl_base::BT_DELETE_AFTER_USE) vtype |= opencl_base::BT_DELETE_AFTER_USE;
-		if(type & opencl_base::BT_BLOCK_ON_READ) vtype |= opencl_base::BT_BLOCK_ON_READ;
-		if(type & opencl_base::BT_BLOCK_ON_WRITE) vtype |= opencl_base::BT_BLOCK_ON_WRITE;
+		if(type & BUFFER_FLAG::DELETE_AFTER_USE) vtype |= BUFFER_FLAG::DELETE_AFTER_USE;
+		if(type & BUFFER_FLAG::BLOCK_ON_READ) vtype |= BUFFER_FLAG::BLOCK_ON_READ;
+		if(type & BUFFER_FLAG::BLOCK_ON_WRITE) vtype |= BUFFER_FLAG::BLOCK_ON_WRITE;
 		
 		cl_mem_flags flags = 0;
-		switch((EBUFFER_TYPE)(type & 0x03)) {
-			case opencl_base::BT_READ_WRITE:
+		switch((BUFFER_FLAG)(type & 0x03)) {
+			case BUFFER_FLAG::READ_WRITE:
 				vtype |= BT_READ_WRITE;
 				flags |= CL_MEM_READ_WRITE;
 				break;
-			case opencl_base::BT_READ:
+			case BUFFER_FLAG::READ:
 				vtype |= BT_READ;
 				flags |= CL_MEM_READ_ONLY;
 				break;
-			case opencl_base::BT_WRITE:
+			case BUFFER_FLAG::WRITE:
 				vtype |= BT_WRITE;
 				flags |= CL_MEM_WRITE_ONLY;
 				break;
@@ -1020,7 +1039,7 @@ void cudacl::write_buffer(opencl_base::buffer_object* buffer_obj, const void* sr
 	//
 	CUdeviceptr* cuda_mem = cuda_buffers[buffer_obj];
 	CUstream stream = *cuda_queues[device_map[active_device]];
-	if((buffer_obj->type & opencl_base::BT_BLOCK_ON_WRITE) > 0) {
+	if((buffer_obj->type & BUFFER_FLAG::BLOCK_ON_WRITE) != BUFFER_FLAG::NONE) {
 		// blocking write: wait until everything has completed in the cmdqueue
 		finish();
 		
@@ -1054,7 +1073,7 @@ void cudacl::write_image2d(opencl_base::buffer_object* buffer_obj a2e_unused, co
 	/*try {
 		size3 origin3(origin.x, origin.y, 0); // origin z must be 0 for 2d images
 		size3 region3(region.x, region.y, 1); // depth must be 1 for 2d images
-		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl_base::BT_BLOCK_ON_WRITE) > 0),
+		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & BUFFER_FLAG::BLOCK_ON_WRITE) > 0),
 														 (cl::size_t<3>&)origin3, (cl::size_t<3>&)region3, 0, 0, (void*)src);
 	}
 	__HANDLE_CL_EXCEPTION("write_image2d")*/
@@ -1063,7 +1082,7 @@ void cudacl::write_image2d(opencl_base::buffer_object* buffer_obj a2e_unused, co
 void cudacl::write_image3d(opencl_base::buffer_object* buffer_obj a2e_unused, const void* src a2e_unused, size3 origin a2e_unused, size3 region a2e_unused) {
 	// TODO
 	/*try {
-		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & opencl_base::BT_BLOCK_ON_WRITE) > 0),
+		queues[active_device->device]->enqueueWriteImage(*buffer_obj->image_buffer, ((buffer_obj->type & BUFFER_FLAG::BLOCK_ON_WRITE) > 0),
 														 (cl::size_t<3>&)origin, (cl::size_t<3>&)region, 0, 0, (void*)src);
 	}
 	__HANDLE_CL_EXCEPTION("write_buffer")*/
@@ -1072,7 +1091,7 @@ void cudacl::write_image3d(opencl_base::buffer_object* buffer_obj a2e_unused, co
 void cudacl::read_buffer(void* dst a2e_unused, opencl_base::buffer_object* buffer_obj a2e_unused) {
 	// TODO
 	/*try {
-		queues[active_device->device]->enqueueReadBuffer(*buffer_obj->buffer, ((buffer_obj->type & opencl_base::BT_BLOCK_ON_READ) > 0),
+		queues[active_device->device]->enqueueReadBuffer(*buffer_obj->buffer, ((buffer_obj->type & BUFFER_FLAG::BLOCK_ON_READ) > 0),
 														 0, buffer_obj->size, dst);
 	}
 	__HANDLE_CL_EXCEPTION("read_buffer")*/
@@ -1102,10 +1121,10 @@ void cudacl::run_kernel(kernel_object* kernel_obj) {
 		// pre kernel-launch stuff:
 		vector<opencl_base::buffer_object*> gl_objects;
 		for(const auto& buffer_arg : kernel_obj->buffer_args) {
-			if((buffer_arg.second->type & opencl_base::BT_COPY_ON_USE) != 0) {
+			if((buffer_arg.second->type & BUFFER_FLAG::COPY_ON_USE) != BUFFER_FLAG::NONE) {
 				write_buffer(buffer_arg.second, buffer_arg.second->data);
 			}
-			if((buffer_arg.second->type & opencl_base::BT_OPENGL_BUFFER) != 0 &&
+			if((buffer_arg.second->type & BUFFER_FLAG::OPENGL_BUFFER) != BUFFER_FLAG::NONE &&
 			   !buffer_arg.second->manual_gl_sharing) {
 				gl_objects.push_back(buffer_arg.second);
 				kernel_obj->has_ogl_buffers = true;
@@ -1132,8 +1151,6 @@ void cudacl::run_kernel(kernel_object* kernel_obj) {
 		global_dim.max(uint3(1)); // dimensions must at least be 1 in cuda (== 0 in opencl)
 		local_dim.max(uint3(1));
 		
-		//cout << "launching kernel " << kernel_obj->kernel_name  << ": " << global_dim << ", " << local_dim << endl;
-		
 		CU(cuLaunchKernel(*cuda_function,
 						  global_dim.x, global_dim.y, global_dim.z,
 						  local_dim.x, local_dim.y, local_dim.z,
@@ -1147,14 +1164,14 @@ void cudacl::run_kernel(kernel_object* kernel_obj) {
 		
 		// post kernel-run stuff:
 		for(const auto& buffer_arg : kernel_obj->buffer_args) {
-			if((buffer_arg.second->type & opencl_base::BT_READ_BACK_RESULT) != 0) {
+			if((buffer_arg.second->type & BUFFER_FLAG::READ_BACK_RESULT) != BUFFER_FLAG::NONE) {
 				read_buffer(buffer_arg.second->data, buffer_arg.second);
 			}
 		}
 		
 		for_each(begin(kernel_obj->buffer_args), end(kernel_obj->buffer_args),
 				 [this](const pair<const unsigned int, buffer_object*>& buffer_arg) {
-					 if((buffer_arg.second->type & opencl_base::BT_DELETE_AFTER_USE) != 0) {
+					 if((buffer_arg.second->type & BUFFER_FLAG::DELETE_AFTER_USE) != BUFFER_FLAG::NONE) {
 						 this->delete_buffer(buffer_arg.second);
 					 }
 				 });
@@ -1263,14 +1280,14 @@ bool cudacl::set_kernel_argument(const unsigned int& index, size_t size, void* a
 	return false;
 }
 
-void* cudacl::map_buffer(opencl_base::buffer_object* buffer_obj a2e_unused, EBUFFER_TYPE access_type a2e_unused, bool blocking a2e_unused) {
+void* cudacl::map_buffer(opencl_base::buffer_object* buffer_obj a2e_unused, BUFFER_FLAG access_type a2e_unused, bool blocking a2e_unused) {
 	// TODO
 	/*try {
 		cl_map_flags map_flags = CL_MAP_READ;
-		switch((EBUFFER_TYPE)(access_type & 0x03)) {
-			case opencl_base::BT_READ_WRITE: map_flags = CL_MAP_READ | CL_MAP_WRITE; break;
-			case opencl_base::BT_READ: map_flags = CL_MAP_READ; break;
-			case opencl_base::BT_WRITE: map_flags = CL_MAP_WRITE; break;
+		switch((BUFFER_FLAG)(access_type & 0x03)) {
+			case BUFFER_FLAG::READ_WRITE: map_flags = CL_MAP_READ | CL_MAP_WRITE; break;
+			case BUFFER_FLAG::READ: map_flags = CL_MAP_READ; break;
+			case BUFFER_FLAG::WRITE: map_flags = CL_MAP_WRITE; break;
 			default: break;
 		}
 		

@@ -19,8 +19,6 @@
 #include "particle_cl.h"
 #include "scene/light.h"
 
-#if !defined(A2E_NO_OPENCL)
-
 #include "cl/opencl.h"
 
 /*! there is no function currently
@@ -159,8 +157,8 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	delete [] pos_time_data;
 	delete [] dir_data;
 	
-	pdata->ocl_pos_time_buffer = cl->create_ogl_buffer(opencl_base::BT_READ_WRITE, pdata->ocl_gl_pos_time_vbo);
-	pdata->ocl_dir_buffer = cl->create_ogl_buffer(opencl_base::BT_READ_WRITE, pdata->ocl_gl_dir_vbo);
+	pdata->ocl_pos_time_buffer = cl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->ocl_gl_pos_time_vbo);
+	pdata->ocl_dir_buffer = cl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->ocl_gl_dir_vbo);
 	pdata->ocl_range_global = pdata->particle_count;
 	
 	cl->set_manual_gl_sharing(pdata->ocl_pos_time_buffer, true);
@@ -178,14 +176,14 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_count * sizeof(unsigned int), particle_indices, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		
-		pdata->ocl_indices[i] = cl->create_ogl_buffer(opencl_base::BT_READ_WRITE, pdata->particle_indices_vbo[i]);
+		pdata->ocl_indices[i] = cl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->particle_indices_vbo[i]);
 		cl->set_manual_gl_sharing(pdata->ocl_indices[i], true);
 	}
 	
 	delete [] particle_indices;
 	
 	// create distances buffer for sorting
-	pdata->ocl_distances = cl->create_buffer(opencl_base::BT_READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
+	pdata->ocl_distances = cl->create_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
 	
 	a2e_debug("particle count: %u", pdata->particle_count);
 }
@@ -554,5 +552,3 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::DEFAULT);
 	glDisable(GL_BLEND);
 }
-
-#endif

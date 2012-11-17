@@ -427,7 +427,6 @@ void engine::init(const char* ico) {
 	
 	// check if a cudacl or pure opencl context should be created
 	// use absolute path
-#if !defined(A2E_NO_OPENCL)
 #if defined(A2E_CUDA_CL)
 	if(config.opencl_platform == "cuda") {
 		ocl = new cudacl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache);
@@ -441,7 +440,6 @@ void engine::init(const char* ico) {
 		ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache);
 #if defined(A2E_CUDA_CL)
 	}
-#endif
 #endif
 	
 	// make an early clear
@@ -582,12 +580,10 @@ void engine::init(const char* ico) {
 #endif
 	}
 	
-#if !defined(A2E_NO_OPENCL)
 	// init opencl
 	ocl->init(false,
 			  config.opencl_platform == "cuda" ? 0 : string2size_t(config.opencl_platform),
 			  config.cl_device_restriction);
-#endif
 	
 	// create scene
 	sce = new scene(this);
@@ -772,11 +768,9 @@ void engine::stop_draw() {
 		reload_kernels_flag = false;
 		glFlush();
 		glFinish();
-#if !defined(A2E_NO_OPENCL)
 		ocl->flush();
 		ocl->finish();
 		ocl->reload_kernels();
-#endif
 	}
 	
 	gl_timer::mark("FRAME_END");

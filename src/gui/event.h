@@ -96,10 +96,6 @@ protected:
 	unsigned int rdouble_click_time;
 	unsigned int mdouble_click_time;
 	
-	// key states
-	bool shift;
-	bool alt;
-	
 	//
 	void unwind_add_event_handler(handler& handler_, EVENT_TYPE type) {
 		add_event_handler(handler_, type);

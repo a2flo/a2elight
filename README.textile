@@ -3,38 +3,45 @@ Build Instructions:
 Linux:
 * install gcc 4.7+ (with libstdc++) or clang 3.1+ (with libc++)
 * install the opengl and opencl headers and libraries (you need a gl3.h with support for OpenGL 3.2+ and OpenCL headers with support for OpenCL 1.1+)
+* install zlib, libpng, libxml2, freetype2
 * clone the SDL2 and SDL2_image repositories: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
 * build both of them and install them to /usr
-* install libxml2
-* install freetype2
 * install premake4 (if your distribution has no package for this, download it manually and copy premake4 to /usr/bin - http://industriousone.com/premake/download)
 * depending on whether you're using gcc or clang do a "./premake.sh gcc" or "./premake.sh clang" (if you did all prior steps correctly, this shouldn't print any error)
 * "make" (again, this shouldn't print any errors if you followed all previous steps correctly)
 * run "./install.sh" (this will install a2elight to /usr/local/) or copy/link all files manually (*.so to /usr/local/lib and a2elight/src to /usr/local/include/a2elight)
-* you're done and can now build freealbion (https://github.com/freealbion/freealbion)
 
 OS X:
-* install Xcode 4.3+ and a custom build clang 3.1+
-* copy SDL2.framework and SDL2_image.framework from your Albion.app to /Library/Frameworks
-* alternatively: clone SDL2 and SDL2_image repositories and build it yourself: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
+* install Xcode 4.4+ (note: if you're using clang 3.2, you'll also need a corresponding libc++)
+* if you haven't done so already: "sudo ln -sf /Library /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/Library" (this will allow all frameworks in /Library to be used in Xcode projects)
+* install XQuartz http://xquartz.macosforge.org (needed for zlib, libxml2, freetype2)
+* clone the SDL2 and SDL2_image repositories: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
+* build both of them and install them to /Library/Frameworks
+* alternatively: copy both frameworks from within an .app that uses a2elight to /Library/Frameworks
 * open src/a2elight.xcodeproj and build it
 * in Terminal do (but change /path/to/a2elight!):
 ** sudo ln -sf /path/to/a2elight/src /usr/local/include/a2elight
 ** sudo ln -sf /path/to/a2elight/lib/liba2elight.dylib /usr/local/lib/liba2elight.dylib
 ** sudo ln -sf /path/to/a2elight/lib/liba2elightd.dylib /usr/local/lib/liba2elightd.dylib
-* you're done and can now build freealbion (https://github.com/freealbion/freealbion)
 
 Windows:
-* TODO/WIP
-* (install mingw+msys in C:/MinGW, install/build SDL2, SDL2_image, libxml2, freetype2, premake4)
-* (run ./premake.sh gcc and hope for the best)
+* install an x64 MinGW-w64 distribution with gcc 4.7 and full std::thread support (http://mingw-w64.sourceforge.net)
+* install MSYS (http://sourceforge.net/apps/trac/mingw-w64/wiki/MSYS) to /path/to/mingw/msys
+* build and install zlib, libpng, libxml2, freetype2, SDL2, SDL2_image
+* install the opengl 3.2+ and opencl 1.1+ headers and libraries (renaming might be necessary depending on your distribution and version)
+* install premake4 (http://industriousone.com/premake/download)
+* set the MINGW64_ROOT environment variable to your specific mingw64 root folder (default is "/c/mingw64/")
+* run "./premake.sh gcc" and hope for the best
+* binaries (the dll) will be copied/installed to $MINGW64_ROOT/export and all include files will be copied to $MINGW64_ROOT/msys/include
 
 
 Credits:
-* http://www.libsdl.org / SDL and SDL_image
+* http://www.libsdl.org / SDL2 and SDL2_image
 * http://www.libpng.org / libpng, http://zlib.net / zlib
 * http://www.xmlsoft.org / libxml2
 * http://industriousone.com/premake / premake4
-* http://www.mingw.org / mingw/msys environment
+* http://mingw-w64.sourceforge.net / MinGW-w64/MSYS environment
+* http://www.freetype.org / FreeType2
 * clang/libc++ (http://llvm.org) and gcc/libstdc++ (http://gcc.gnu.org)
-* Khronos (http://www.khronos.org) / Nvidia / AMD / Apple (OpenGL/OpenCL)
+* Khronos (http://www.khronos.org) / Nvidia / AMD / Apple / Intel (OpenGL/OpenCL)
+* CUDA (http://www.nvidia.com)

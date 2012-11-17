@@ -24,8 +24,6 @@
 #include "core/core.h"
 #include "core/vector2.h"
 
-#if !defined(A2E_NO_OPENCL)
-
 // necessary for now (when compiling with opencl 1.2+ headers)
 #define CL_USE_DEPRECATED_OPENCL_1_1_APIS 1
 
@@ -133,22 +131,24 @@ public:
 		UNKNOWN
 	};
 	
-	//! buffer types/flags (associated kernel => buffer has been set as a kernel argument, at least once and the latest one for an index)
-	enum EBUFFER_TYPE {
-		BT_READ_WRITE		= 1,	//!< enum read and write buffer (kernel POV)
-		BT_READ				= 2,	//!< enum read only buffer (kernel POV)
-		BT_WRITE			= 3,	//!< enum write only buffer (kernel POV)
-		BT_INITIAL_COPY		= 4,	//!< enum the specified data will be copied to the buffer at creation time
-		BT_COPY_ON_USE		= 8,	//!< enum the specified data will be copied to the buffer each time an associated kernel is being used (that is right before kernel execution)
-		BT_USE_HOST_MEMORY	= 16,	//!< enum buffer memory will be allocated in host memory
-		BT_READ_BACK_RESULT	= 32,	//!< enum every time an associated kernel has been executed, the result buffer data will be read back/copied to the specified pointer location
-		BT_DELETE_AFTER_USE	= 64,	//!< enum the buffer will be deleted after its first use (after an associated kernel has been executed)
-		BT_BLOCK_ON_READ	= 128,	//!< enum the read command is blocking, all data will be read/copied before program continuation
-		BT_BLOCK_ON_WRITE	= 256,	//!< enum the write command is blocking, all data will be written before program continuation
-		BT_OPENGL_BUFFER	= 512	//!< enum determines if a buffer is a shared opengl buffer/image/memory object
+	//! buffer flags (associated kernel => buffer has been set as a kernel argument, at least once and the latest one for an index)
+	enum class BUFFER_FLAG : unsigned int {
+		NONE				= (0),
+		READ				= (1 << 0),			//!< enum read only buffer (kernel POV)
+		WRITE				= (1 << 1),			//!< enum write only buffer (kernel POV)
+		READ_WRITE			= (READ | WRITE),	//!< enum read and write buffer (kernel POV)
+		INITIAL_COPY		= (1 << 2),			//!< enum the specified data will be copied to the buffer at creation time
+		COPY_ON_USE			= (1 << 3),			//!< enum the specified data will be copied to the buffer each time an associated kernel is being used (that is right before kernel execution)
+		USE_HOST_MEMORY		= (1 << 4),			//!< enum buffer memory will be allocated in host memory
+		READ_BACK_RESULT	= (1 << 5),			//!< enum every time an associated kernel has been executed, the result buffer data will be read back/copied to the specified pointer location
+		DELETE_AFTER_USE	= (1 << 6),			//!< enum the buffer will be deleted after its first use (after an associated kernel has been executed)
+		BLOCK_ON_READ		= (1 << 7),			//!< enum the read command is blocking, all data will be read/copied before program continuation
+		BLOCK_ON_WRITE		= (1 << 8),			//!< enum the write command is blocking, all data will be written before program continuation
+		OPENGL_BUFFER		= (1 << 9),			//!< enum determines if a buffer is a shared opengl buffer/image/memory object
 	};
-	typedef unsigned int BUFFER_TYPE;
-	
+	enum_class_bitwise_or(BUFFER_FLAG)
+	enum_class_bitwise_and(BUFFER_FLAG)
+
 	virtual void init(bool use_platform_devices = false, const size_t platform_index = 0,
 					  const set<string> device_restriction = set<string> {}) = 0;
 	void reload_kernels();
@@ -166,18 +166,18 @@ public:
 	kernel_object* add_kernel_file(const string& identifier, const string& file_name, const string& func_name, const string additional_options = "");
 	virtual kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "") = 0;
 	
-	virtual buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr) = 0;
-	virtual buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr) = 0;
-	virtual buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr) = 0;
-	virtual buffer_object* create_ogl_buffer(BUFFER_TYPE type, GLuint ogl_buffer) = 0;
-	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target = GL_TEXTURE_2D) = 0;
-	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer) = 0;
+	virtual buffer_object* create_buffer(BUFFER_FLAG type, size_t size, void* data = nullptr) = 0;
+	virtual buffer_object* create_image2d_buffer(BUFFER_FLAG type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr) = 0;
+	virtual buffer_object* create_image3d_buffer(BUFFER_FLAG type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr) = 0;
+	virtual buffer_object* create_ogl_buffer(BUFFER_FLAG type, GLuint ogl_buffer) = 0;
+	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_FLAG type, GLuint texture, GLenum target = GL_TEXTURE_2D) = 0;
+	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_FLAG type, GLuint renderbuffer) = 0;
 	virtual void delete_buffer(buffer_object* buffer_obj) = 0;
 	virtual void write_buffer(buffer_object* buffer_obj, const void* src, const size_t offset = 0, const size_t size = 0) = 0;
 	virtual void write_image2d(buffer_object* buffer_obj, const void* src, size2 origin, size2 region) = 0;
 	virtual void write_image3d(buffer_object* buffer_obj, const void* src, size3 origin, size3 region) = 0;
 	virtual void read_buffer(void* dst, buffer_object* buffer_obj) = 0;
-	virtual void* map_buffer(buffer_object* buffer_obj, EBUFFER_TYPE access_type, bool blocking = true) = 0;
+	virtual void* map_buffer(buffer_object* buffer_obj, BUFFER_FLAG access_type, bool blocking = true) = 0;
 	virtual void unmap_buffer(buffer_object* buffer_obj, void* map_ptr) = 0;
 	void set_manual_gl_sharing(buffer_object* gl_buffer_obj, const bool state);
 	
@@ -224,7 +224,7 @@ public:
 		bool manual_gl_sharing = false;
 		void* data = nullptr;
 		size_t size = 0;
-		unsigned int type = 0;
+		BUFFER_FLAG type = BUFFER_FLAG::NONE;
 		cl_mem_flags flags = 0;
 		cl::ImageFormat format = cl::ImageFormat(0, 0);
 		size3 origin = size3(size_t(0));
@@ -271,7 +271,7 @@ protected:
 	string nv_build_options;
 	string kernel_path_str;
 	
-	virtual buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr) = 0;
+	virtual buffer_object* create_buffer_object(BUFFER_FLAG type, void* data = nullptr) = 0;
 	void load_internal_kernels();
 	void destroy_kernels();
 	void check_compilation(const bool ret, const string& filename);
@@ -351,18 +351,18 @@ public:
 	
 	virtual kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "");
 	
-	virtual buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr);
-	virtual buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
-	virtual buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr);
-	virtual buffer_object* create_ogl_buffer(BUFFER_TYPE type, GLuint ogl_buffer);
-	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target = GL_TEXTURE_2D);
-	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer);
+	virtual buffer_object* create_buffer(BUFFER_FLAG type, size_t size, void* data = nullptr);
+	virtual buffer_object* create_image2d_buffer(BUFFER_FLAG type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
+	virtual buffer_object* create_image3d_buffer(BUFFER_FLAG type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr);
+	virtual buffer_object* create_ogl_buffer(BUFFER_FLAG type, GLuint ogl_buffer);
+	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_FLAG type, GLuint texture, GLenum target = GL_TEXTURE_2D);
+	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_FLAG type, GLuint renderbuffer);
 	virtual void delete_buffer(buffer_object* buffer_obj);
 	virtual void write_buffer(buffer_object* buffer_obj, const void* src, const size_t offset = 0, const size_t size = 0);
 	virtual void write_image2d(buffer_object* buffer_obj, const void* src, size2 origin, size2 region);
 	virtual void write_image3d(buffer_object* buffer_obj, const void* src, size3 origin, size3 region);
 	virtual void read_buffer(void* dst, buffer_object* buffer_obj);
-	virtual void* map_buffer(buffer_object* buffer_obj, EBUFFER_TYPE access_type, bool blocking = true);
+	virtual void* map_buffer(buffer_object* buffer_obj, BUFFER_FLAG access_type, bool blocking = true);
 	virtual void unmap_buffer(buffer_object* buffer_obj, void* map_ptr);
 	
 	virtual void set_active_device(const DEVICE_TYPE& dev);
@@ -375,7 +375,7 @@ public:
 	virtual void release_gl_object(buffer_object* gl_buffer_obj);
 	
 protected:
-	virtual buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr);
+	virtual buffer_object* create_buffer_object(BUFFER_FLAG type, void* data = nullptr);
 	virtual void log_program_binary(const kernel_object* kernel);
 	virtual const char* error_code_to_string(cl_int error_code);
 	
@@ -404,18 +404,18 @@ public:
 	
 	virtual kernel_object* add_kernel_src(const string& identifier, const string& src, const string& func_name, const string additional_options = "");
 	
-	virtual buffer_object* create_buffer(BUFFER_TYPE type, size_t size, void* data = nullptr);
-	virtual buffer_object* create_image2d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
-	virtual buffer_object* create_image3d_buffer(BUFFER_TYPE type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr);
-	virtual buffer_object* create_ogl_buffer(BUFFER_TYPE type, GLuint ogl_buffer);
-	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_TYPE type, GLuint texture, GLenum target = GL_TEXTURE_2D);
-	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_TYPE type, GLuint renderbuffer);
+	virtual buffer_object* create_buffer(BUFFER_FLAG type, size_t size, void* data = nullptr);
+	virtual buffer_object* create_image2d_buffer(BUFFER_FLAG type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, void* data = nullptr);
+	virtual buffer_object* create_image3d_buffer(BUFFER_FLAG type, cl_channel_order channel_order, cl_channel_type channel_type, size_t width, size_t height, size_t depth, void* data = nullptr);
+	virtual buffer_object* create_ogl_buffer(BUFFER_FLAG type, GLuint ogl_buffer);
+	virtual buffer_object* create_ogl_image2d_buffer(BUFFER_FLAG type, GLuint texture, GLenum target = GL_TEXTURE_2D);
+	virtual buffer_object* create_ogl_image2d_renderbuffer(BUFFER_FLAG type, GLuint renderbuffer);
 	virtual void delete_buffer(buffer_object* buffer_obj);
 	virtual void write_buffer(buffer_object* buffer_obj, const void* src, const size_t offset = 0, const size_t size = 0);
 	virtual void write_image2d(buffer_object* buffer_obj, const void* src, size2 origin, size2 region);
 	virtual void write_image3d(buffer_object* buffer_obj, const void* src, size3 origin, size3 region);
 	virtual void read_buffer(void* dst, buffer_object* buffer_obj);
-	virtual void* map_buffer(buffer_object* buffer_obj, EBUFFER_TYPE access_type, bool blocking = true);
+	virtual void* map_buffer(buffer_object* buffer_obj, BUFFER_FLAG access_type, bool blocking = true);
 	virtual void unmap_buffer(buffer_object* buffer_obj, void* map_ptr);
 	
 	virtual void set_active_device(const DEVICE_TYPE& dev);
@@ -443,28 +443,11 @@ protected:
 	unordered_map<opencl_base::kernel_object*, cuda_kernel_object*> cuda_kernels;
 	
 	//
-	virtual buffer_object* create_buffer_object(BUFFER_TYPE type, void* data = nullptr);
+	virtual buffer_object* create_buffer_object(BUFFER_FLAG type, void* data = nullptr);
 	virtual void log_program_binary(const kernel_object* kernel);
 	virtual const char* error_code_to_string(cl_int error_code);
 	
 };
 #endif
-
-#else
-
-class opencl_base {
-public:
-	opencl_base& operator=(const opencl_base&) = delete;
-	opencl_base(const opencl_base&) = delete;
-	opencl_base(const char* kernel_path, file_io* f_, SDL_Window* wnd, const bool clear_cache) {}
-	~opencl_base() {}
-	
-	bool is_supported() { return false; }
-	bool is_cpu_support() { return false; }
-	bool is_gpu_support() { return false; }
-	
-};
-
-#endif // A2E_NO_OPENCL
 
 #endif // __OPENCL_H__

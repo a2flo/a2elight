@@ -91,7 +91,6 @@ public:
 	void seek_write(size_t offset);
 	streampos get_current_write_offset();
 
-
 	//
 	static bool is_file(const string& filename);
 	bool eof() const;

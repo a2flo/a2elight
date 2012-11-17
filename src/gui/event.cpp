@@ -33,9 +33,6 @@ event::event(engine* e_) : thread_base("event"), e(e_) {
 	ldouble_click_time = 200;
 	rdouble_click_time = 200;
 	mdouble_click_time = 200;
-
-	shift = false;
-	alt = false;
 	
 	this->start();
 }
