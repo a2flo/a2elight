@@ -436,6 +436,9 @@ void a2estatic::reorganize_model_data() {
 		}
 	}
 	
+	for(unsigned int i = 0; i < object_count; i++) {
+		delete [] indices[i];
+	}
 	delete [] indices;
 	indices = tex_indices;
 }
