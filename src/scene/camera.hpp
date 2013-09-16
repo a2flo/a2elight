@@ -19,10 +19,10 @@
 #ifndef __A2E_CAMERA_H__
 #define __A2E_CAMERA_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "gui/event.h"
+#include "core/core.hpp"
+#include "core/event.hpp"
 
 /*! @class camera
  *  @brief a2e camera functions

@@ -19,8 +19,8 @@
 #ifndef __A2E_FONT_H__
 #define __A2E_FONT_H__
 
-#include "global.h"
-#include "gui/event.h"
+#include "global.hpp"
+#include "core/event.hpp"
 
 /*! @class font
  *  @brief stores a font and can be used for drawing

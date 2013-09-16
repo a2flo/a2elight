@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "shader_gl3.h"
+#include "shader_gl3.hpp"
 
 #if defined(A2E_DEBUG) // type checking in debug mode
 

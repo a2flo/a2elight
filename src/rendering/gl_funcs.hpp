@@ -19,7 +19,7 @@
 #ifndef __A2E_GL_FUNCS_H__
 #define __A2E_GL_FUNCS_H__
 
-#include "global.h"
+#include "global.hpp"
 
 #if !defined(__APPLE__)
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE

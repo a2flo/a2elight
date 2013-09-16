@@ -19,11 +19,11 @@
 #ifndef __A2E_GFX2D_H__
 #define __A2E_GFX2D_H__
 
-#include "global.h"
-#include "core/core.h"
+#include "global.hpp"
+#include "core/core.hpp"
 
-#include "rendering/shader.h"
-#include "rendering/extensions.h"
+#include "rendering/shader.hpp"
+#include "rendering/extensions.hpp"
 
 /*! @class gfx2d
  *  @brief graphical functions

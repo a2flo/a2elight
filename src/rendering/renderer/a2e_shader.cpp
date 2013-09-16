@@ -17,9 +17,9 @@
  */
 
 
-#include "a2e_shader.h"
-#include "rendering/shader.h"
-#include "core/xml.h"
+#include "a2e_shader.hpp"
+#include "rendering/shader.hpp"
+#include "core/xml.hpp"
 #include <regex>
 
 a2e_shader::a2e_shader(engine* eng) :

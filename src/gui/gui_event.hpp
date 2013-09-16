@@ -19,7 +19,7 @@
 #ifndef __A2E_GUI_EVENT_H__
 #define __A2E_GUI_EVENT_H__
 
-#include "gui/event_objects.h"
+#include "core/event_objects.hpp"
 
 // gui event types (addition to EVENT_TYPE)
 enum class GUI_EVENT : unsigned int {

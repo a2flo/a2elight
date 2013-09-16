@@ -19,7 +19,7 @@
 #ifndef __A2E_GUI_INPUT_BOX_H__
 #define __A2E_GUI_INPUT_BOX_H__
 
-#include "gui/objects/gui_object.h"
+#include "gui/objects/gui_object.hpp"
 
 class A2E_API gui_input_box : public gui_object {
 public:

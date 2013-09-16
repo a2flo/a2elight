@@ -19,10 +19,10 @@
 #ifndef __A2E_GUI_THEME_H__
 #define __A2E_GUI_THEME_H__
 
-#include "global.h"
-#include "core/xml.h"
-#include "gui_color_scheme.h"
-#include "rendering/gfx2d.h"
+#include "global.hpp"
+#include "core/xml.hpp"
+#include "gui_color_scheme.hpp"
+#include "rendering/gfx2d.hpp"
 
 class engine;
 class xml;

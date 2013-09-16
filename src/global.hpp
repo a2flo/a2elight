@@ -19,6 +19,6 @@
 #ifndef __A2E_GLOBAL_H__
 #define __A2E_GLOBAL_H__
 
-#include "core/platform.h"
+#include "core/platform.hpp"
 
 #endif

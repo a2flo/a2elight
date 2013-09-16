@@ -16,10 +16,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_theme.h"
-#include "engine.h"
-#include "font_manager.h"
-#include "font.h"
+#include "gui_theme.hpp"
+#include "engine.hpp"
+#include "font_manager.hpp"
+#include "font.hpp"
 
 #define A2E_THEME_VERSION 1
 #define A2E_UI_OBJECT_VERSION 1

@@ -19,20 +19,20 @@
 #ifndef __A2E_SHADER_H__
 #define __A2E_SHADER_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "engine.h"
-#include "rendering/extensions.h"
-#include "rendering/rtt.h"
-#include "core/xml.h"
-#include "core/type_list.h"
-#include "rendering/renderer/a2e_shader.h"
-#include "rendering/renderer/shader_object.h"
-#include "rendering/renderer/shader_base.h"
+#include "engine.hpp"
+#include "rendering/extensions.hpp"
+#include "rendering/rtt.hpp"
+#include "core/xml.hpp"
+#include "core/type_list.hpp"
+#include "rendering/renderer/a2e_shader.hpp"
+#include "rendering/renderer/shader_object.hpp"
+#include "rendering/renderer/shader_base.hpp"
 #if !defined(A2E_IOS)
-#include "rendering/renderer/gl3/shader_gl3.h"
+#include "rendering/renderer/gl3/shader_gl3.hpp"
 #else
-#include "rendering/renderer/gles2/shader_gles2.h"
+#include "rendering/renderer/gles2/shader_gles2.hpp"
 #endif
 
 /*! @class shader

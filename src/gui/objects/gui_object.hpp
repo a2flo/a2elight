@@ -19,12 +19,12 @@
 #ifndef __A2E_GUI_OBJECT_H__
 #define __A2E_GUI_OBJECT_H__
 
-#include "global.h"
-#include "core/vector2.h"
+#include "global.hpp"
+#include "core/vector2.hpp"
 
 // since all inheriting classes will need this, include it here:
-#include "gui/style/gui_theme.h"
-#include "gui/gui_event.h"
+#include "gui/style/gui_theme.hpp"
+#include "gui/gui_event.hpp"
 
 /*! @class gui_object
  *  @brief gui object element functions

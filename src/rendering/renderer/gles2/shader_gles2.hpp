@@ -21,12 +21,12 @@
 
 #if defined(A2E_IOS)
 
-#include "global.h"
-#include "core/matrix4.h"
-#include "engine.h"
-#include "rendering/extensions.h"
-#include "rendering/rtt.h"
-#include "rendering/renderer/shader_base.h"
+#include "global.hpp"
+#include "core/matrix4.hpp"
+#include "engine.hpp"
+#include "rendering/extensions.hpp"
+#include "rendering/rtt.hpp"
+#include "rendering/renderer/shader_base.hpp"
 
 class A2E_API shader_gles2 : public shader_base<shader_gles2> {
 public:

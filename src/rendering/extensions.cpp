@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "extensions.h"
-#include "engine.h"
+#include "extensions.hpp"
+#include "engine.hpp"
 
 // i won't add quadro or firegl cards here, since their naming scheme is inscrutable.
 // users will have to use the "force profile" option in the config.xml (set to the

@@ -19,19 +19,19 @@
 #ifndef __A2E_A2EMODEL_H__
 #define __A2E_A2EMODEL_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "core/vector3.h"
-#include "core/bbox.h"
-#include "core/file_io.h"
-#include "engine.h"
-#include "scene/model/a2ematerial.h"
-#include "rendering/shader.h"
-#include "core/matrix4.h"
-#include "scene/light.h"
-#include "cl/opencl.h"
-#include "rendering/extensions.h"
+#include "core/core.hpp"
+#include "core/vector3.hpp"
+#include "core/bbox.hpp"
+#include "core/file_io.hpp"
+#include "engine.hpp"
+#include "scene/model/a2ematerial.hpp"
+#include "rendering/shader.hpp"
+#include "core/matrix4.hpp"
+#include "scene/light.hpp"
+#include "cl/opencl.hpp"
+#include "rendering/extensions.hpp"
 
 #define A2E_MAX_MASK_ID 3
 

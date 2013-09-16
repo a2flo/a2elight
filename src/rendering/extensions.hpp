@@ -19,15 +19,15 @@
 #ifndef __A2E_EXTENSIONS_H__
 #define __A2E_EXTENSIONS_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
+#include "core/core.hpp"
 #if !(defined(A2E_EXTENSIONS_DONT_INCLUDE_GL_FUNCS) || defined(A2E_IOS))
-#include "rendering/gl_funcs.h"
+#include "rendering/gl_funcs.hpp"
 #endif
 
 #if defined(A2E_IOS)
-#include "rendering/gles_compat.h"
+#include "rendering/gles_compat.hpp"
 #endif
 
 #if !defined(__APPLE__)

@@ -16,9 +16,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_toggle_button.h"
-#include "engine.h"
-#include "gui.h"
+#include "gui_toggle_button.hpp"
+#include "engine.hpp"
+#include "gui.hpp"
 
 gui_toggle_button::gui_toggle_button(engine* e_, const float2& size_, const float2& position_) :
 gui_object(e_, size_, position_) {

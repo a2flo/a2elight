@@ -16,11 +16,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_surface.h"
-#include "gui.h"
-#include "engine.h"
-#include "rendering/gfx2d.h"
-#include "rendering/shader.h"
+#include "gui_surface.hpp"
+#include "gui.hpp"
+#include "engine.hpp"
+#include "rendering/gfx2d.hpp"
+#include "rendering/shader.hpp"
 
 gui_surface::gui_surface(engine* e_, const float2& buffer_size_, const float2& offset_, const SURFACE_FLAGS flags_) :
 e(e_), r(e->get_rtt()), flags(flags_), buffer_size(buffer_size_), offset(offset_) {

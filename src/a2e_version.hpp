@@ -20,8 +20,8 @@
 #define __A2E_VERSION__
 
 // engine version and build/compiler info
-#include "build_version.h"
-#include "core/util.h"
+#include "build_version.hpp"
+#include "core/util.hpp"
 #define A2E_MAJOR_VERSION "0"
 #define A2E_MINOR_VERSION "3"
 #define A2E_REVISION_VERSION "0"

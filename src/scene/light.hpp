@@ -19,8 +19,8 @@
 #ifndef __A2E_LIGHT_H__
 #define __A2E_LIGHT_H__
 
-#include "global.h"
-#include "core/core.h"
+#include "global.hpp"
+#include "core/core.hpp"
 
 /*! @class light
  *  @brief lighting routines

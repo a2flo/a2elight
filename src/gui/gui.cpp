@@ -16,15 +16,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui.h"
-#include "engine.h"
-#include "rendering/shader.h"
-#include "rendering/gfx2d.h"
-#include "scene/scene.h"
-#include "rendering/gl_timer.h"
-#include "gui/font_manager.h"
-#include "gui/style/gui_theme.h"
-#include "gui/objects/gui_window.h"
+#include "gui.hpp"
+#include "engine.hpp"
+#include "rendering/shader.hpp"
+#include "rendering/gfx2d.hpp"
+#include "scene/scene.hpp"
+#include "rendering/gl_timer.hpp"
+#include "gui/font_manager.hpp"
+#include "gui/style/gui_theme.hpp"
+#include "gui/objects/gui_window.hpp"
 
 gui::gui(engine* e_, const string& theme_name) :
 thread_base("gui"),

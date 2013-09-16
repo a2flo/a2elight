@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "texman.h"
+#include "texman.hpp"
 
 #if !defined(GL_BGRA8)
 #define GL_BGRA8 GL_BGRA

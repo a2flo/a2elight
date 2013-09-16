@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "a2eui.h"
-#include "engine.h"
+#include "a2eui.hpp"
+#include "engine.hpp"
 
 #define A2E_UI_VERSION 3
 

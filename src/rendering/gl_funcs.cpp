@@ -16,11 +16,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "global.h"
-#include "gl_funcs.h"
+#include "global.hpp"
+#include "gl_funcs.hpp"
  
 #define A2E_EXTENSIONS_DONT_INCLUDE_GL_FUNCS
-#include "rendering/extensions.h"
+#include "rendering/extensions.hpp"
  
 #if defined(__WINDOWS__) || defined(WIN_UNIXENV)
 #define glGetProcAddress(x) wglGetProcAddress(x)

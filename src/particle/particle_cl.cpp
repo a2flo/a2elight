@@ -16,10 +16,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "particle_cl.h"
-#include "scene/light.h"
+#include "particle_cl.hpp"
+#include "scene/light.hpp"
 
-#include "cl/opencl.h"
+#include "cl/opencl.hpp"
 
 /*! there is no function currently
  */

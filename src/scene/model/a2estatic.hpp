@@ -19,18 +19,18 @@
 #ifndef __A2E_A2ESTATIC_H__
 #define __A2E_A2ESTATIC_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "core/vector3.h"
-#include "core/bbox.h"
-#include "core/file_io.h"
-#include "engine.h"
-#include "scene/model/a2ematerial.h"
-#include "rendering/shader.h"
-#include "core/matrix4.h"
-#include "scene/light.h"
-#include "scene/model/a2emodel.h"
+#include "core/core.hpp"
+#include "core/vector3.hpp"
+#include "core/bbox.hpp"
+#include "core/file_io.hpp"
+#include "engine.hpp"
+#include "scene/model/a2ematerial.hpp"
+#include "rendering/shader.hpp"
+#include "core/matrix4.hpp"
+#include "scene/light.hpp"
+#include "scene/model/a2emodel.hpp"
 
 /*! @class a2estatic
  *  @brief class for loading and displaying an a2e static model

@@ -22,18 +22,18 @@
 #define A2E_CONCURRENT_FRAMES 1
 //#define A2E_INFERRED_RENDERING_CL 1
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "engine.h"
-#include "scene/model/a2estatic.h"
-#include "scene/model/a2emodel.h"
-#include "scene/light.h"
-#include "rendering/shader.h"
-#include "core/matrix4.h"
-#include "core/bbox.h"
-#include "rendering/rtt.h"
-#include "cl/opencl.h"
+#include "core/core.hpp"
+#include "engine.hpp"
+#include "scene/model/a2estatic.hpp"
+#include "scene/model/a2emodel.hpp"
+#include "scene/light.hpp"
+#include "rendering/shader.hpp"
+#include "core/matrix4.hpp"
+#include "core/bbox.hpp"
+#include "rendering/rtt.hpp"
+#include "cl/opencl.hpp"
 
 /*! @class scene
  *  @brief a2e scene manager

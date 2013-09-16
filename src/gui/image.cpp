@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "image.h"
-#include "rendering/gfx2d.h"
+#include "image.hpp"
+#include "rendering/gfx2d.hpp"
 
 /*! there is no function currently
  *  @param e pointer to the engine class

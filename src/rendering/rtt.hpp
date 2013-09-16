@@ -19,11 +19,11 @@
 #ifndef __A2E_RENDER_TO_TEXTURE_H__
 #define __A2E_RENDER_TO_TEXTURE_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "rendering/extensions.h"
-#include "rendering/texture_object.h"
+#include "core/core.hpp"
+#include "rendering/extensions.hpp"
+#include "rendering/texture_object.hpp"
 
 /*! @class rtt
  *  @brief render to texture class

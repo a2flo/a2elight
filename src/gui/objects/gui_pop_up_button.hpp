@@ -19,8 +19,8 @@
 #ifndef __A2E_GUI_POP_UP_BUTTON_H__
 #define __A2E_GUI_POP_UP_BUTTON_H__
 
-#include "gui/objects/gui_text.h"
-#include "gui/objects/gui_item_container.h"
+#include "gui/objects/gui_text.hpp"
+#include "gui/objects/gui_item_container.hpp"
 
 class gui_pop_up_window;
 class A2E_API gui_pop_up_button : public gui_item_container {

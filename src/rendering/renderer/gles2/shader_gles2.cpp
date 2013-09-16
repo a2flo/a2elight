@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "shader_gles2.h"
+#include "shader_gles2.hpp"
 
 #if defined(A2E_IOS)
 

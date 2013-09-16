@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "light.h"
-#include "engine.h"
+#include "light.hpp"
+#include "engine.hpp"
 
 /*! creates a new light object
  *  @param e pointer to the engine class

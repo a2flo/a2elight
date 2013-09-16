@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "shader.h"
+#include "shader.hpp"
 #include <regex>
 
 #define A2E_SHADER_LOG_SIZE 16384

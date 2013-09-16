@@ -19,14 +19,14 @@
 #ifndef __A2E_PARTICLE_H__
 #define __A2E_PARTICLE_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "engine.h"
-#include "rendering/rtt.h"
-#include "rendering/shader.h"
-#include "rendering/texman.h"
-#include "particle/particle_system.h"
+#include "core/core.hpp"
+#include "engine.hpp"
+#include "rendering/rtt.hpp"
+#include "rendering/shader.hpp"
+#include "rendering/texman.hpp"
+#include "particle/particle_system.hpp"
 
 /*! @class particle_manager
  *  @brief a2e particle manager

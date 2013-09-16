@@ -19,7 +19,7 @@
 #ifndef __A2E_GUI_SLIDER_H__
 #define __A2E_GUI_SLIDER_H__
 
-#include "gui/objects/gui_object.h"
+#include "gui/objects/gui_object.hpp"
 
 class A2E_API gui_slider : public gui_object {
 public:

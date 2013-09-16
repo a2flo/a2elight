@@ -19,7 +19,7 @@
 #ifndef __A2E_GUI_LIST_BOX_H__
 #define __A2E_GUI_LIST_BOX_H__
 
-#include "gui/objects/gui_item_container.h"
+#include "gui/objects/gui_item_container.hpp"
 
 class A2E_API gui_list_box : public gui_item_container {
 public:

@@ -19,7 +19,7 @@
 #ifndef __A2E_TEXTURE_H__
 #define __A2E_TEXTURE_H__
 
-#include "global.h"
+#include "global.hpp"
 
 enum class TEXTURE_FILTERING : unsigned int {
 	POINT,

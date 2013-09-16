@@ -19,12 +19,12 @@
 #ifndef __A2E_A2E_SHADER_H__
 #define __A2E_A2E_SHADER_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "engine.h"
-#include "rendering/extensions.h"
-#include "rendering/rtt.h"
-#include "core/xml.h"
+#include "engine.hpp"
+#include "rendering/extensions.hpp"
+#include "rendering/rtt.hpp"
+#include "core/xml.hpp"
 
 #define A2E_SHADER_VERSION 2
 

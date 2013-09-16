@@ -19,8 +19,8 @@
 #ifndef __A2E_GUI_COLOR_SCHEME_H__
 #define __A2E_GUI_COLOR_SCHEME_H__
 
-#include "global.h"
-#include "core/xml.h"
+#include "global.hpp"
+#include "core/xml.hpp"
 
 class engine;
 class xml;

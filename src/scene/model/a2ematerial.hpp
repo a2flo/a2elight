@@ -19,14 +19,14 @@
 #ifndef __A2E_A2EMATERIAL_H__
 #define __A2E_A2EMATERIAL_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "core/file_io.h"
-#include "core/xml.h"
-#include "engine.h"
-#include "rendering/extensions.h"
-#include "rendering/shader.h"
+#include "core/core.hpp"
+#include "core/file_io.hpp"
+#include "core/xml.hpp"
+#include "engine.hpp"
+#include "rendering/extensions.hpp"
+#include "rendering/shader.hpp"
 
 #define A2E_MATERIAL_VERSION 2
 

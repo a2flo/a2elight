@@ -19,7 +19,7 @@
 #ifndef __A2E_GUI_BUTTON_H__
 #define __A2E_GUI_BUTTON_H__
 
-#include "gui/objects/gui_text.h"
+#include "gui/objects/gui_text.hpp"
 
 class A2E_API gui_button : public gui_text {
 public:

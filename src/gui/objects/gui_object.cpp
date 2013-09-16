@@ -16,11 +16,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_object.h"
-#include "engine.h"
-#include "gui/gui.h"
-#include "threading/task.h"
-#include "font_manager.h"
+#include "gui_object.hpp"
+#include "engine.hpp"
+#include "gui/gui.hpp"
+#include "threading/task.hpp"
+#include "font_manager.hpp"
 
 gui_object::gui_object(engine* e_, const float2& size_, const float2& position_) :
 e(e_), ui(e->get_gui()), theme(ui->get_theme()), evt(e->get_event()), fm(ui->get_font_manager()), fnt(fm->get_font("SYSTEM_SANS_SERIF")), size(size_), position(position_) {

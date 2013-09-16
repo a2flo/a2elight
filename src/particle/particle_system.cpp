@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "particle_system.h"
+#include "particle_system.hpp"
 
 /*! there is no function currently
  */

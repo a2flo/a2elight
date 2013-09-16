@@ -19,12 +19,12 @@
 #ifndef __A2E_GUI_H__
 #define __A2E_GUI_H__
 
-#include "global.h"
-#include "threading/thread_base.h"
-#include "rendering/rtt.h"
-#include "gui/event.h"
-#include "gui/objects/gui_object.h"
-#include "gui/style/gui_surface.h"
+#include "global.hpp"
+#include "threading/thread_base.hpp"
+#include "rendering/rtt.hpp"
+#include "core/event.hpp"
+#include "gui/objects/gui_object.hpp"
+#include "gui/style/gui_surface.hpp"
 
 /*! @class gui
  *  @brief graphical user interface functions

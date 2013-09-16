@@ -19,18 +19,18 @@
 #ifndef __A2E_ENGINE_H__
 #define __A2E_ENGINE_H__
 
-#include "global.h"
-#include "core/core.h"
-#include "core/file_io.h"
-#include "gui/event.h"
-#include "rendering/texman.h"
-#include "rendering/extensions.h"
-#include "core/xml.h"
-#include "rendering/rtt.h"
-#include "core/vector3.h"
-#include "core/matrix4.h"
-#include "gui/unicode.h"
-#include "threading/atomics.h"
+#include "global.hpp"
+#include "core/core.hpp"
+#include "core/file_io.hpp"
+#include "core/event.hpp"
+#include "rendering/texman.hpp"
+#include "rendering/extensions.hpp"
+#include "core/xml.hpp"
+#include "rendering/rtt.hpp"
+#include "core/vector3.hpp"
+#include "core/matrix4.hpp"
+#include "gui/unicode.hpp"
+#include "threading/atomics.hpp"
 
 #define A2M_VERSION 2
 

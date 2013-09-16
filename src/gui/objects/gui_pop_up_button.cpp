@@ -16,13 +16,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_pop_up_button.h"
-#include "gui_window.h"
-#include "engine.h"
-#include "event.h"
-#include "gui.h"
-#include "task.h"
-#include "font.h"
+#include "gui_pop_up_button.hpp"
+#include "gui_window.hpp"
+#include "engine.hpp"
+#include "event.hpp"
+#include "gui.hpp"
+#include "task.hpp"
+#include "font.hpp"
 
 ////
 class gui_pop_up_window : public gui_window {

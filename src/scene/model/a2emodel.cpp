@@ -16,9 +16,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "a2emodel.h"
-#include "scene/scene.h"
-#include "core/quaternion.h"
+#include "a2emodel.hpp"
+#include "scene/scene.hpp"
+#include "core/quaternion.hpp"
 
 static size_t _initial_model_id = 0;
 static size_t _create_model_id() {

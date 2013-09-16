@@ -16,9 +16,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_text.h"
-#include "engine.h"
-#include "core/core.h"
+#include "gui_text.hpp"
+#include "engine.hpp"
+#include "core/core.hpp"
 
 gui_text::gui_text(engine* e_, const float2& size_, const float2& position_) :
 gui_object(e_, size_, position_) {

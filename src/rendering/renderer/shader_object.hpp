@@ -19,7 +19,7 @@
 #ifndef __A2E_SHADER_OBJECT_H__
 #define __A2E_SHADER_OBJECT_H__
 
-#include "global.h"
+#include "global.hpp"
 
 struct shader_object {
 	struct internal_shader_object {

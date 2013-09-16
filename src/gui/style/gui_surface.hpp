@@ -19,9 +19,9 @@
 #ifndef __A2E_GUI_SURFACE_H__
 #define __A2E_GUI_SURFACE_H__
 
-#include "global.h"
-#include "core/vector2.h"
-#include "rendering/rtt.h"
+#include "global.hpp"
+#include "core/vector2.hpp"
+#include "rendering/rtt.hpp"
 
 class engine;
 class shader_gl3;

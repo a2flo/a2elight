@@ -19,15 +19,15 @@
 #ifndef __A2E_PARTICLE_CL_H__
 #define __A2E_PARTICLE_CL_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "engine.h"
-#include "rendering/rtt.h"
-#include "rendering/shader.h"
-#include "rendering/texman.h"
-#include "particle/particle_base.h"
-#include "cl/opencl.h"
+#include "core/core.hpp"
+#include "engine.hpp"
+#include "rendering/rtt.hpp"
+#include "rendering/shader.hpp"
+#include "rendering/texman.hpp"
+#include "particle/particle_base.hpp"
+#include "cl/opencl.hpp"
 
 /*! @class particle_manager opencl class
  *  @brief a2e particle manager opencl class

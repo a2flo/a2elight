@@ -16,9 +16,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gl_timer.h"
-#include "rendering/extensions.h"
-#include "core/core.h"
+#include "gl_timer.hpp"
+#include "rendering/extensions.hpp"
+#include "core/core.hpp"
 
 constexpr size_t gl_timer::stored_frames;
 array<gl_timer::frame_info, gl_timer::stored_frames> gl_timer::frames;

@@ -16,11 +16,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_input_box.h"
-#include "engine.h"
-#include "font.h"
-#include "gui.h"
-#include "threading/task.h"
+#include "gui_input_box.hpp"
+#include "engine.hpp"
+#include "font.hpp"
+#include "gui.hpp"
+#include "threading/task.hpp"
 
 gui_input_box::gui_input_box(engine* e_, const float2& size_, const float2& position_) :
 gui_object(e_, size_, position_) {

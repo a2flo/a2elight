@@ -19,9 +19,9 @@
 #ifndef __A2E_FONT_MANAGER_H__
 #define __A2E_FONT_MANAGER_H__
 
-#include "global.h"
-#include "threading/thread_base.h"
-#include "gui/font.h"
+#include "global.hpp"
+#include "threading/thread_base.hpp"
+#include "gui/font.hpp"
 
 /*! @class font_manager
  *  @brief loads and caches fonts

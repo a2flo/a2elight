@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "font_manager.h"
-#include "engine.h"
+#include "font_manager.hpp"
+#include "engine.hpp"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

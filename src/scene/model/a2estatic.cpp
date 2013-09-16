@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "a2estatic.h"
+#include "a2estatic.hpp"
 
 /*! a2estatic constructor
  */

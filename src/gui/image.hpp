@@ -19,9 +19,9 @@
 #ifndef __A2E_IMAGE_H__
 #define __A2E_IMAGE_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "engine.h"
+#include "engine.hpp"
 
 /*! @class image
  *  @brief functions to display an image

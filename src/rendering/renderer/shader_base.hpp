@@ -19,12 +19,12 @@
 #ifndef __A2E_SHADER_BASE_H__
 #define __A2E_SHADER_BASE_H__
 
-#include "global.h"
-#include "engine.h"
-#include "rendering/extensions.h"
-#include "rendering/rtt.h"
-#include "rendering/texture_object.h"
-#include "rendering/renderer/shader_object.h"
+#include "global.hpp"
+#include "engine.hpp"
+#include "rendering/extensions.hpp"
+#include "rendering/rtt.hpp"
+#include "rendering/texture_object.hpp"
+#include "rendering/renderer/shader_object.hpp"
 
 #if !defined(A2E_IOS)
 

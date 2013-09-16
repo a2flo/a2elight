@@ -16,9 +16,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "rtt.h"
-#include "scene.h" // TODO: remove this again when cl inferred rendering is std
-#include "engine.h"
+#include "rtt.hpp"
+#include "scene.hpp" // TODO: remove this again when cl inferred rendering is std
+#include "engine.hpp"
 
 const char* rtt::TEXTURE_ANTI_ALIASING_STR[] = {
 	"NONE",

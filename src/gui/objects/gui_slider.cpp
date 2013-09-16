@@ -16,9 +16,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_slider.h"
-#include "engine.h"
-#include "gui.h"
+#include "gui_slider.hpp"
+#include "engine.hpp"
+#include "gui.hpp"
 
 gui_slider::gui_slider(engine* e_, const float2& size_, const float2& position_) :
 gui_object(e_, size_, position_) {

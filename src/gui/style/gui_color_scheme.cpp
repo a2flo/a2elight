@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_color_scheme.h"
-#include "engine.h"
+#include "gui_color_scheme.hpp"
+#include "engine.hpp"
 
 #define A2E_COLOR_SCHEME_VERSION 1
 

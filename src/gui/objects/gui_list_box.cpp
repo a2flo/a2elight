@@ -16,10 +16,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui_list_box.h"
-#include "engine.h"
-#include "gui.h"
-#include "font.h"
+#include "gui_list_box.hpp"
+#include "engine.hpp"
+#include "gui.hpp"
+#include "font.hpp"
 
 gui_list_box::gui_list_box(engine* e_, const float2& size_, const float2& position_) :
 gui_item_container(e_, size_, position_, GUI_EVENT::LIST_BOX_SELECT) {

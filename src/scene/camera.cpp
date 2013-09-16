@@ -16,9 +16,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "camera.h"
-#include "engine.h"
-#include "gui/event.h"
+#include "camera.hpp"
+#include "engine.hpp"
+#include "core/event.hpp"
 
 /*! there is no function currently
  */

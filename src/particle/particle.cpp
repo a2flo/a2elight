@@ -16,10 +16,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 	
-#include "particle.h"
-#include "particle/particle_base.h"
-#include "particle/particle_cl.h"
-#include "cl/opencl.h"
+#include "particle.hpp"
+#include "particle/particle_base.hpp"
+#include "particle/particle_cl.hpp"
+#include "cl/opencl.hpp"
 
 /*! there is no function currently
  */

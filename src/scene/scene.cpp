@@ -16,9 +16,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "scene.h"
-#include "particle/particle.h"
-#include "rendering/gl_timer.h"
+#include "scene.hpp"
+#include "particle/particle.hpp"
+#include "rendering/gl_timer.hpp"
 
 #if defined(A2E_INFERRED_RENDERING_CL)
 constexpr size_t scene::frame_buffers::cl_frame_buffers::max_ir_lights;

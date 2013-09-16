@@ -16,15 +16,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "font.h"
-#include "font_manager.h"
-#include "core/vector2.h"
-#include "core/vector3.h"
-#include "gui/unicode.h"
-#include "gui/event_objects.h"
-#include "engine.h"
-#include "rendering/shader.h"
-#include "rendering/renderer/gl3/shader_gl3.h"
+#include "font.hpp"
+#include "font_manager.hpp"
+#include "core/vector2.hpp"
+#include "core/vector3.hpp"
+#include "gui/unicode.hpp"
+#include "core/event_objects.hpp"
+#include "engine.hpp"
+#include "rendering/shader.hpp"
+#include "rendering/renderer/gl3/shader_gl3.hpp"
 #include <numeric>
 
 #include <ft2build.h>

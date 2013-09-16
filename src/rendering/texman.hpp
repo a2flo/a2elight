@@ -19,13 +19,13 @@
 #ifndef __A2E_TEXMAN_H__
 #define __A2E_TEXMAN_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/file_io.h"
-#include "core/vector3.h"
-#include "rendering/extensions.h"
-#include "rendering/texture_object.h"
-#include "gui/unicode.h"
+#include "core/file_io.hpp"
+#include "core/vector3.hpp"
+#include "rendering/extensions.hpp"
+#include "rendering/texture_object.hpp"
+#include "gui/unicode.hpp"
 
 /*! @class texman
  *  @brief texture management routines

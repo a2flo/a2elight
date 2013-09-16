@@ -19,8 +19,8 @@
 #ifndef __A2E_GUI_WINDOW_H__
 #define __A2E_GUI_WINDOW_H__
 
-#include "gui/objects/gui_object.h"
-#include "gui/style/gui_surface.h"
+#include "gui/objects/gui_object.hpp"
+#include "gui/style/gui_surface.hpp"
 
 class A2E_API gui_window : public gui_object, public gui_surface {
 public:

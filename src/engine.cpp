@@ -15,17 +15,17 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "engine.h"
-#include "a2e_version.h"
-#include "rendering/shader.h"
-#include "cl/opencl.h"
-#include "gui/gui.h"
-#include "rendering/gfx2d.h"
-#include "scene/scene.h"
-#include "rendering/gl_timer.h"
+#include "engine.hpp"
+#include "a2e_version.hpp"
+#include "rendering/shader.hpp"
+#include "cl/opencl.hpp"
+#include "gui/gui.hpp"
+#include "rendering/gfx2d.hpp"
+#include "scene/scene.hpp"
+#include "rendering/gl_timer.hpp"
 
 #if defined(__APPLE__)
-#include "osx/osx_helper.h"
+#include "osx/osx_helper.hpp"
 #endif
 
 // dll main for windows dll export

@@ -19,7 +19,7 @@
 #ifndef __A2E_GUI_ITEM_CONTAINER_H__
 #define __A2E_GUI_ITEM_CONTAINER_H__
 
-#include "gui/objects/gui_object.h"
+#include "gui/objects/gui_object.hpp"
 
 // use this as the base class for all objects that need to store items (don't instantiate directly!)
 class A2E_API gui_item_container : public gui_object {

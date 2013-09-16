@@ -16,12 +16,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gfx2d.h"
-#include "engine.h"
-#include "rendering/shader.h"
-#include "gui/event.h"
-#include "gui/event_objects.h"
-#include "rendering/extensions.h"
+#include "gfx2d.hpp"
+#include "engine.hpp"
+#include "rendering/shader.hpp"
+#include "core/event.hpp"
+#include "core/event_objects.hpp"
+#include "rendering/extensions.hpp"
 
 gl3shader gfx2d::simple_shd = nullptr;
 gl3shader gfx2d::gradient_shd = nullptr;

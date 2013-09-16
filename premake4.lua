@@ -79,7 +79,7 @@ project "a2elight"
 	kind "SharedLib"
 	language "C++"
 
-	files { "src/**.h", "src/**.hpp", "src/**.cpp" }
+	files { "src/**.hpp", "src/**.cpp" }
 	defines { "A2E_NET_PROTOCOL=TCP_protocol" }
 
 	basedir "src"

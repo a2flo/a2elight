@@ -19,8 +19,8 @@
 #ifndef __A2E_GL_TIMER_H__
 #define __A2E_GL_TIMER_H__
 
-#include "global.h"
-#include "core/vector3.h"
+#include "global.hpp"
+#include "core/vector3.hpp"
 
 /*! @class gl_timer
  *  @brief arb_timer_query wrapper + additional functionality

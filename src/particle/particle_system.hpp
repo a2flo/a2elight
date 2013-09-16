@@ -19,13 +19,13 @@
 #ifndef __A2E_PARTICLE_SYSTEM_H__
 #define __A2E_PARTICLE_SYSTEM_H__
 
-#include "global.h"
+#include "global.hpp"
 
-#include "core/core.h"
-#include "engine.h"
-#include "core/bbox.h"
-#include "rendering/gfx2d.h"
-#include "cl/opencl.h"
+#include "core/core.hpp"
+#include "engine.hpp"
+#include "core/bbox.hpp"
+#include "rendering/gfx2d.hpp"
+#include "cl/opencl.hpp"
 
 /*! @class particle_system class
  *  @brief a2e particle system class
