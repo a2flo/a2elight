@@ -34,8 +34,6 @@
 #include "rendering/renderer/gles2/shader_gles2.hpp"
 #endif
 
-typedef event_object_base<EVENT_TYPE::SHADER_RELOAD> shader_reload_event;
-
 /*! @class shader
  *  @brief shader class
  */
