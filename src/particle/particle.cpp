@@ -23,9 +23,9 @@
 
 /*! there is no function currently
  */
-particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), cl(e_->get_opencl()), r(e_->get_rtt()), exts(e_->get_ext()), t(e_->get_texman()) {
+particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), r(e_->get_rtt()), exts(e_->get_ext()), t(e_->get_texman()) {
 	//
-	if(cl->is_supported()) {
+	if(ocl->is_supported()) {
 		log_debug("using OpenCL render path!");
 		pm = new particle_manager_cl(e);
 	}

@@ -48,7 +48,7 @@ void gui_surface::delete_buffer() {
 void gui_surface::resize(const float2& buffer_size_) {
 	uint2 buffer_size_abs_ = ((flags & SURFACE_FLAGS::ABSOLUTE_SIZE) == SURFACE_FLAGS::ABSOLUTE_SIZE ?
 							  buffer_size_.rounded() :
-							  buffer_size_ * float2(e->get_width(), e->get_height()));
+							  buffer_size_ * float2(floor::get_width(), floor::get_height()));
 	if(buffer != nullptr &&
 	   buffer_size_abs.x == buffer_size_abs_.x && buffer_size_abs.y == buffer_size_abs_.y) {
 		// same size, nothing to do here
@@ -130,7 +130,7 @@ void gui_surface::set_offset(const float2& offset_) {
 	
 	// set blit vbo rectangle data
 	offset = offset_;
-	uint2 offset_abs = offset * float2(e->get_width(), e->get_height());
+	uint2 offset_abs = offset * float2(floor::get_width(), floor::get_height());
 	extent.set(offset_abs.x, offset_abs.y, offset_abs.x + buffer->width, offset_abs.y + buffer->height);
 	const array<float2, 4> points {
 		{

@@ -377,7 +377,7 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 		shd->uniform("mvm", mvm);
 		
 		// compute projection constants (necessary to reconstruct world pos)
-		const float2 near_far_plane = e->get_near_far_plane();
+		const float2 near_far_plane = floor::get_near_far_plane();
 		const float2 projection_ab = float2(near_far_plane.y / (near_far_plane.y - near_far_plane.x),
 											(-near_far_plane.y * near_far_plane.x) / (near_far_plane.y - near_far_plane.x));
 		shd->uniform("projection_ab", projection_ab);

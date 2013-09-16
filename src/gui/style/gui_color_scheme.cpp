@@ -21,7 +21,7 @@
 
 #define A2E_COLOR_SCHEME_VERSION 1
 
-gui_color_scheme::gui_color_scheme(engine* e_) : e(e_), x(e->get_xml()) {
+gui_color_scheme::gui_color_scheme(engine* e_) : e(e_), x(floor::get_xml()) {
 }
 
 gui_color_scheme::~gui_color_scheme() {
@@ -32,7 +32,7 @@ bool gui_color_scheme::load(const string& filename) {
 	colors.clear();
 	
 	//
-	xml::xml_doc ui_doc = x->process_file(e->data_path(filename), false); // TODO: DTD!
+	xml::xml_doc ui_doc = x->process_file(floor::data_path(filename), false); // TODO: DTD!
 	if(!ui_doc.valid) {
 		log_error("couldn't process color scheme file %s!", filename);
 		return false;

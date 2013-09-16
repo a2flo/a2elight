@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_SCENE_H__
-#define __A2E_SCENE_H__
+#ifndef __A2E_SCENE_HPP__
+#define __A2E_SCENE_HPP__
 
 #define A2E_CONCURRENT_FRAMES 1
 //#define A2E_INFERRED_RENDERING_CL 1
@@ -165,7 +165,6 @@ protected:
 	shader* s;
 	ext* exts;
 	rtt* r;
-	opencl_base* cl;
 	
 	void setup_scene();
 	void geometry_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_mask = DRAW_MODE::NONE);

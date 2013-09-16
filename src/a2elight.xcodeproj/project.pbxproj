@@ -667,7 +667,8 @@
 				INSTALL_PATH = "@rpath";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(PRODUCT_NAME).dylib";
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
+					/usr/lib,
+					/usr/local/lib,
 					/usr/X11/lib,
 				);
 				LLVM_VECTORIZE_LOOPS = YES;
@@ -686,6 +687,11 @@
 					"-fno-elide-type",
 					"-fdiagnostics-show-template-tree",
 				);
+				OTHER_LDFLAGS = (
+					"-lfloord",
+					"-weak_framework",
+					CUDA,
+				);
 				PRODUCT_NAME = liba2elightd;
 				SDKROOT = macosx;
 				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
@@ -695,6 +701,7 @@
 					"-Weverything",
 					"-Wno-c++98-compat",
 					"-Wno-c++98-compat-pedantic",
+					"-Wno-c99-extensions",
 					"-Wno-header-hygiene",
 					"-Wno-gnu",
 					"-Wno-float-equal",
@@ -723,6 +730,7 @@
 					"-Wshorten-64-to-32",
 					"-Wnewline-eof",
 					"-Wnon-virtual-dtor",
+					"-Wno-nested-anon-types",
 				);
 			};
 			name = Debug;
@@ -771,7 +779,8 @@
 				INSTALL_PATH = "@rpath";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(PRODUCT_NAME).dylib";
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
+					/usr/lib,
+					/usr/local/lib,
 					/usr/X11/lib,
 				);
 				LLVM_VECTORIZE_LOOPS = YES;
@@ -789,6 +798,11 @@
 					"-fno-elide-type",
 					"-fdiagnostics-show-template-tree",
 				);
+				OTHER_LDFLAGS = (
+					"-lfloor",
+					"-weak_framework",
+					CUDA,
+				);
 				PRODUCT_NAME = liba2elight;
 				SDKROOT = macosx;
 				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
@@ -798,6 +812,7 @@
 					"-Weverything",
 					"-Wno-c++98-compat",
 					"-Wno-c++98-compat-pedantic",
+					"-Wno-c99-extensions",
 					"-Wno-header-hygiene",
 					"-Wno-gnu",
 					"-Wno-float-equal",
@@ -826,6 +841,7 @@
 					"-Wshorten-64-to-32",
 					"-Wnewline-eof",
 					"-Wnon-virtual-dtor",
+					"-Wno-nested-anon-types",
 				);
 			};
 			name = Release;

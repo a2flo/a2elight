@@ -22,7 +22,7 @@
 
 /*! there is no function currently
  */
-camera::camera(engine* e_) : e(e_), evt(e_->get_event()),
+camera::camera(engine* e_) : e(e_), evt(floor::get_event()),
 keyboard_handler(this, &camera::key_handler) {
 	evt->add_event_handler(keyboard_handler, EVENT_TYPE::KEY_DOWN, EVENT_TYPE::KEY_UP);
 }
@@ -68,21 +68,21 @@ void camera::run() {
 #if !defined(__APPLE__)
 		SDL_GetMouseState(&cursor_pos_x, &cursor_pos_y);
 
-		double xpos = (1.0 / (double)e->get_width()) * (double)cursor_pos_x;
-		double ypos = (1.0 / (double)e->get_height()) * (double)cursor_pos_y;
+		double xpos = (1.0 / (double)floor::get_width()) * (double)cursor_pos_x;
+		double ypos = (1.0 / (double)floor::get_height()) * (double)cursor_pos_y;
 		
 		if(xpos != 0.5 || ypos != 0.5) {
 			rotation.x -= (0.5 - ypos) * (double)rotation_speed;
 			rotation.y -= (0.5 - xpos) * (double)rotation_speed;
-			SDL_WarpMouseInWindow(e->get_window(), e->get_width()/2, e->get_height()/2);
+			SDL_WarpMouseInWindow(floor::get_window(), floor::get_width()/2, floor::get_height()/2);
 		}
 ////////////////////////////////
 // os x version
 #else
 		SDL_GetRelativeMouseState(&cursor_pos_x, &cursor_pos_y);
 		
-		double xpos = (1.0 / (double)e->get_width()) * (double)-cursor_pos_x;
-		double ypos = (1.0 / (double)e->get_height()) * (double)-cursor_pos_y;
+		double xpos = (1.0 / (double)floor::get_width()) * (double)-cursor_pos_x;
+		double ypos = (1.0 / (double)floor::get_height()) * (double)-cursor_pos_y;
 		
 		if(xpos != 0.0 || ypos != 0.0) {
 			if(!ignore_next_rotation) {
@@ -91,8 +91,8 @@ void camera::run() {
 			}
 			else ignore_next_rotation--;
 			
-			const float2 center_point(float2(e->get_width(), e->get_height()) * 0.5f);
-			SDL_WarpMouseInWindow(e->get_window(), roundf(center_point.x), roundf(center_point.y));
+			const float2 center_point(float2(floor::get_width(), floor::get_height()) * 0.5f);
+			SDL_WarpMouseInWindow(floor::get_window(), roundf(center_point.x), roundf(center_point.y));
 		}
 #endif
 ////////////////////////////////
@@ -168,7 +168,7 @@ void camera::set_keyboard_input(const bool& state) {
  */
 void camera::set_mouse_input(const bool& state) {
 	// grab input
-	SDL_SetWindowGrab(e->get_window(), (state ? SDL_TRUE : SDL_FALSE));
+	SDL_SetWindowGrab(floor::get_window(), (state ? SDL_TRUE : SDL_FALSE));
 	
 #if defined(__APPLE__)
 	// this effictively calls CGAssociateMouseAndMouseCursorPosition (which will lock the cursor to the window)
@@ -177,8 +177,8 @@ void camera::set_mouse_input(const bool& state) {
 	
 	// this fixes some weird mouse positioning when switching from grab to non-grab mode
 	if(mouse_input && !state) {
-		const float2 center_point(float2(e->get_width(), e->get_height()) * 0.5f);
-		SDL_WarpMouseInWindow(e->get_window(), roundf(center_point.x), roundf(center_point.y));
+		const float2 center_point(float2(floor::get_width(), floor::get_height()) * 0.5f);
+		SDL_WarpMouseInWindow(floor::get_window(), roundf(center_point.x), roundf(center_point.y));
 	}
 #endif
 	

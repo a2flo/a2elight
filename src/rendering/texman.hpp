@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_TEXMAN_H__
-#define __A2E_TEXMAN_H__
+#ifndef __A2E_TEXMAN_HPP__
+#define __A2E_TEXMAN_HPP__
 
 #include "global.hpp"
 
@@ -25,7 +25,7 @@
 #include "core/vector3.hpp"
 #include "rendering/extensions.hpp"
 #include "rendering/texture_object.hpp"
-#include "gui/unicode.hpp"
+#include "core/unicode.hpp"
 
 /*! @class texman
  *  @brief texture management routines
@@ -34,7 +34,7 @@
 struct texture;
 class A2E_API texman {
 public:
-	texman(file_io* f, unicode* u, ext* exts, const string& datapath, const size_t& standard_anisotropic);
+	texman(ext* exts, const string& datapath, const size_t& standard_anisotropic);
 	~texman();
 	
 	
@@ -62,8 +62,6 @@ public:
 	static GLenum select_filter(const TEXTURE_FILTERING& filter);
 
 protected:
-	file_io* f;
-	unicode* u;
 	ext* exts;
 
 	a2e_texture dummy_texture;

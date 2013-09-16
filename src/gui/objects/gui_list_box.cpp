@@ -58,7 +58,7 @@ void gui_list_box::draw() {
 					[&item](const string&) -> string { return item->second; });
 	}
 	
-	glScissor(0, 0, e->get_width(), e->get_height());
+	glScissor(0, 0, floor::get_width(), floor::get_height());
 }
 
 bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const ipnt& point) {

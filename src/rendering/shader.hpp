@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_SHADER_H__
-#define __A2E_SHADER_H__
+#ifndef __A2E_SHADER_HPP__
+#define __A2E_SHADER_HPP__
 
 #include "global.hpp"
 
@@ -25,7 +25,6 @@
 #include "rendering/extensions.hpp"
 #include "rendering/rtt.hpp"
 #include "core/xml.hpp"
-#include "core/type_list.hpp"
 #include "rendering/renderer/a2e_shader.hpp"
 #include "rendering/renderer/shader_object.hpp"
 #include "rendering/renderer/shader_base.hpp"
@@ -34,6 +33,8 @@
 #else
 #include "rendering/renderer/gles2/shader_gles2.hpp"
 #endif
+
+typedef event_object_base<EVENT_TYPE::SHADER_RELOAD> shader_reload_event;
 
 /*! @class shader
  *  @brief shader class
@@ -72,7 +73,6 @@ public:
 
 protected:
 	engine* e;
-	file_io* f;
 	ext* exts;
 	rtt* r;
 	xml* x;

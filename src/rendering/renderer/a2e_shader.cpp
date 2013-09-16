@@ -23,7 +23,7 @@
 #include <regex>
 
 a2e_shader::a2e_shader(engine* eng) :
-e(eng), exts(e->get_ext()), x(e->get_xml()),
+e(eng), exts(e->get_ext()), x(floor::get_xml()),
 conditions({
 	// add graphic card specific conditions
 	{ ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[(unsigned int)exts->get_vendor()], true },

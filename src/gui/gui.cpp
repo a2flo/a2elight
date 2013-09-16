@@ -28,7 +28,7 @@
 
 gui::gui(engine* e_, const string& theme_name) :
 thread_base("gui"),
-e(e_), evt(e_->get_event()), r(e_->get_rtt()), s(e_->get_shader()), sce(e_->get_scene()),
+e(e_), evt(floor::get_event()), r(e_->get_rtt()), s(e_->get_shader()), sce(e_->get_scene()),
 fm(new font_manager(e)),
 theme(new gui_theme(e, fm)),
 main_fbo(1),
@@ -71,7 +71,7 @@ window_handler_fnctr(this, &gui::window_handler) {
 									EVENT_TYPE::MOUSE_WHEEL_UP,
 									EVENT_TYPE::MOUSE_WHEEL_DOWN);
 	
-	recreate_buffers(size2(e->get_width(), e->get_height()));
+	recreate_buffers(size2(floor::get_width(), floor::get_height()));
 	
 	// load theme
 	theme->load("gui/"+theme_name+"/"+theme_name+".a2etheme");

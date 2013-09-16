@@ -16,10 +16,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_ENGINE_H__
-#define __A2E_ENGINE_H__
+#ifndef __A2E_ENGINE_HPP__
+#define __A2E_ENGINE_HPP__
 
 #include "global.hpp"
+#include "floor/floor.hpp"
 #include "core/core.hpp"
 #include "core/file_io.hpp"
 #include "core/event.hpp"
@@ -29,8 +30,7 @@
 #include "rendering/rtt.hpp"
 #include "core/vector3.hpp"
 #include "core/matrix4.hpp"
-#include "gui/unicode.hpp"
-#include "threading/atomics.hpp"
+#include "core/unicode.hpp"
 
 #define A2M_VERSION 2
 
@@ -51,13 +51,16 @@ class gui;
 class scene;
 class A2E_API engine {
 public:
-	engine(const char* callpath_, const char* datapath_);
-	~engine();
+	engine() = delete;
+	~engine() = delete;
 	
 	// graphic control functions
-	void init(const char* ico = nullptr);
-	void init(bool console, unsigned int width = 640, unsigned int height = 480,
-			  bool fullscreen = false, bool vsync = false, const char* ico = nullptr);
+	void init(const char* callpath, const char* datapath,
+			  const bool console_only = false, const string config_name = "config.xml",
+			  const unsigned int width = 640, const unsigned int height = 480, const bool fullscreen = false,
+			  const bool vsync = false, const char* ico = nullptr);
+	void destroy();
+	
 	void start_draw();
 	void stop_draw();
 	void start_2d_draw();
@@ -71,14 +74,9 @@ public:
 	const string get_version() const;
 	
 	// class return functions
-	file_io* get_file_io();
-	event* get_event();
 	texman* get_texman();
 	ext* get_ext();
-	xml* get_xml();
 	rtt* get_rtt();
-	unicode* get_unicode();
-	opencl_base* get_opencl();
 	shader* get_shader();
 	gui* get_gui();
 	scene* get_scene();
@@ -96,24 +94,12 @@ public:
 	};
 
 	// miscellaneous control functions
-	void set_caption(const char* caption);
-	const char* get_caption();
-
-	void set_cursor_visible(bool state);
-	bool get_cursor_visible();
 	SDL_Cursor* add_cursor(const char* name, const char** raw_data, unsigned int xsize, unsigned int ysize, unsigned int hotx, unsigned int hoty);
 	void set_cursor(SDL_Cursor* cursor);
 	SDL_Cursor* get_cursor(const char* name);
 	
-	void set_data_path(const char* data_path = "../data/");
-	string get_data_path() const;
-	string get_call_path() const;
 	string get_shader_path() const;
-	string get_kernel_path() const;
-	string data_path(const string& str) const;
 	string shader_path(const string& str) const;
-	string kernel_path(const string& str) const;
-	string strip_data_path(const string& str) const;
 	
 	void reload_shaders();
 	void reload_kernels();
@@ -136,40 +122,9 @@ public:
 	void set_rotation(float xrot, float yrot);
 	float3* get_rotation(); //! shouldn't be used outside of the engine, use camera class function instead
 	
-	// fps functions
-	unsigned int get_fps();
-	float get_frame_time();
-	bool is_new_fps_count();
-	
 	const INIT_MODE& get_init_mode();
-
-	// config functions
-	const xml::xml_doc& get_config_doc() const;
-	xml::xml_doc& get_config_doc();
-	
-	// screen/window
-	SDL_Window* get_window() const;
-	unsigned int get_width() const;
-	unsigned int get_height() const;
-	uint2 get_screen_size() const;
-	bool get_fullscreen() const;
-	bool get_vsync() const;
-	bool get_stereo() const;
-	
-	void set_width(const unsigned int& width);
-	void set_height(const unsigned int& height);
-	void set_screen_size(const uint2& screen_size);
-	void set_fullscreen(const bool& state);
-	void set_vsync(const bool& state);
-	
-	// projection
-	const float& get_fov() const;
-	const float2& get_near_far_plane() const;
-	
-	void set_fov(const float& fov);
 	
 	// gui
-	const size_t& get_dpi() const;
 	const rtt::TEXTURE_ANTI_ALIASING& get_ui_anti_aliasing() const;
 	
 	// input
@@ -208,17 +163,13 @@ public:
 	void set_geometry_light_scaling(const float& factor);
 
 protected:
-	file_io* f = nullptr;
-	event* e = nullptr;
 	texman* t = nullptr;
 	ext* exts = nullptr;
-	xml* x = nullptr;
 	rtt* r = nullptr;
-	unicode* u = nullptr;
-	opencl_base* ocl = nullptr;
 	shader* shd = nullptr;
 	gui* ui = nullptr;
 	scene* sce = nullptr;
+	event* evt = nullptr;
 	
 	// actual engine constructor
 	void create();

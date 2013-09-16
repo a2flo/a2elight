@@ -20,9 +20,9 @@
 
 /*! a2ematerial constructor
  */
-a2ematerial::a2ematerial(engine* eng) : e(eng), t(eng->get_texman()), exts(eng->get_ext()), x(eng->get_xml()) {
-	dummy_texture = t->add_texture(e->data_path("none.png"), TEXTURE_FILTERING::LINEAR, e->get_anisotropic(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-	default_specular = t->add_texture(e->data_path("white.png"), TEXTURE_FILTERING::LINEAR, e->get_anisotropic(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+a2ematerial::a2ematerial(engine* e_) : e(e_), t(e_->get_texman()), exts(e_->get_ext()), x(floor::get_xml()) {
+	dummy_texture = t->add_texture(floor::data_path("none.png"), TEXTURE_FILTERING::LINEAR, e->get_anisotropic(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	default_specular = t->add_texture(floor::data_path("white.png"), TEXTURE_FILTERING::LINEAR, e->get_anisotropic(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 }
 
 /*! a2ematerial destructor
@@ -236,7 +236,7 @@ void a2ematerial::load_material(const string& filename_) {
 							}
 						}
 						
-						a2e_texture tex = t->add_texture(e->data_path(texture_filename.c_str()), filtering, e->get_anisotropic(), wrap_s, wrap_t);
+						a2e_texture tex = t->add_texture(floor::data_path(texture_filename.c_str()), filtering, e->get_anisotropic(), wrap_s, wrap_t);
 						switch(texture_type) {
 							case TEXTURE_TYPE::DIFFUSE: ((diffuse_material*)cur_material->mat)->diffuse_texture = tex; break;
 							case TEXTURE_TYPE::SPECULAR: ((diffuse_material*)cur_material->mat)->specular_texture = tex; break;
@@ -347,7 +347,7 @@ const a2ematerial::material& a2ematerial::get_material(const size_t& material_id
 		}
 	}
 	log_error("no material with an id #%d exists!", material_id);
-	throw a2e_exception("material doesn't exist!");
+	throw floor_exception("material doesn't exist!");
 }
 
 a2ematerial::material& a2ematerial::get_material(const size_t& material_id) {
@@ -357,7 +357,7 @@ a2ematerial::material& a2ematerial::get_material(const size_t& material_id) {
 		}
 	}
 	log_error("no material with an id #%d exists!", material_id);
-	throw a2e_exception("material doesn't exist!");
+	throw floor_exception("material doesn't exist!");
 }
 
 float4 a2ematerial::get_color(const string& color_str) {

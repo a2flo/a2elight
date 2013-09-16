@@ -26,20 +26,7 @@
 particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
 	max_particle_count = 16*1024*1024; // limit to 16 million+
 	
-	cl->use_kernel("PARTICLE_INIT");
-	init_range_local = cl->compute_local_kernel_range(1);
-	cl->use_kernel("PARTICLE_RESPAWN");
-	respawn_range_local = cl->compute_local_kernel_range(1);
-	cl->use_kernel("PARTICLE_COMPUTE");
-	compute_range_local = cl->compute_local_kernel_range(1);
-	cl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
-	sort_range_local = cl->compute_local_kernel_range(1);
-	cl->use_kernel("PARTICLE_COMPUTE_DISTANCES");
-	compute_distances_local = cl->compute_local_kernel_range(1);
-	
-	// find least common multiple of all local kernel sizes (will then be used for making sure that particle count is always a multiple of this)
-	local_lcm = core::lcm(core::lcm(init_range_local[0], respawn_range_local[0]), compute_range_local[0]);
-	cl->use_kernel("PARTICLE_INIT");
+	ocl->use_kernel("PARTICLE_INIT");
 	
 	kernel_seed = (unsigned int)time(nullptr);
 }
@@ -103,23 +90,23 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	
 	// delete old data, if there is some ...
 	if(pdata->ocl_pos_time_buffer != nullptr) {
-		cl->delete_buffer(pdata->ocl_pos_time_buffer);
+		ocl->delete_buffer(pdata->ocl_pos_time_buffer);
 		pdata->ocl_pos_time_buffer = nullptr;
 	}
 	if(pdata->ocl_dir_buffer != nullptr) {
-		cl->delete_buffer(pdata->ocl_dir_buffer);
+		ocl->delete_buffer(pdata->ocl_dir_buffer);
 		pdata->ocl_dir_buffer = nullptr;
 	}
 	if(pdata->ocl_distances != nullptr) {
-		cl->delete_buffer(pdata->ocl_distances);
+		ocl->delete_buffer(pdata->ocl_distances);
 		pdata->ocl_distances = nullptr;
 	}
 	if(pdata->ocl_indices[0] != nullptr) {
-		cl->delete_buffer(pdata->ocl_indices[0]);
+		ocl->delete_buffer(pdata->ocl_indices[0]);
 		pdata->ocl_indices[0] = nullptr;
 	}
 	if(pdata->ocl_indices[1] != nullptr) {
-		cl->delete_buffer(pdata->ocl_indices[1]);
+		ocl->delete_buffer(pdata->ocl_indices[1]);
 		pdata->ocl_indices[1] = nullptr;
 	}
 	if(glIsBuffer(pdata->ocl_gl_pos_time_vbo)) {
@@ -157,12 +144,12 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	delete [] pos_time_data;
 	delete [] dir_data;
 	
-	pdata->ocl_pos_time_buffer = cl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->ocl_gl_pos_time_vbo);
-	pdata->ocl_dir_buffer = cl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->ocl_gl_dir_vbo);
+	pdata->ocl_pos_time_buffer = ocl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->ocl_gl_pos_time_vbo);
+	pdata->ocl_dir_buffer = ocl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->ocl_gl_dir_vbo);
 	pdata->ocl_range_global = pdata->particle_count;
 	
-	cl->set_manual_gl_sharing(pdata->ocl_pos_time_buffer, true);
-	cl->set_manual_gl_sharing(pdata->ocl_dir_buffer, true);
+	ocl->set_manual_gl_sharing(pdata->ocl_pos_time_buffer, true);
+	ocl->set_manual_gl_sharing(pdata->ocl_dir_buffer, true);
 	
 	// create/init particle indices
 	unsigned int* particle_indices = new unsigned int[pdata->particle_count];
@@ -176,14 +163,14 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_count * sizeof(unsigned int), particle_indices, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		
-		pdata->ocl_indices[i] = cl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->particle_indices_vbo[i]);
-		cl->set_manual_gl_sharing(pdata->ocl_indices[i], true);
+		pdata->ocl_indices[i] = ocl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->particle_indices_vbo[i]);
+		ocl->set_manual_gl_sharing(pdata->ocl_indices[i], true);
 	}
 	
 	delete [] particle_indices;
 	
 	// create distances buffer for sorting
-	pdata->ocl_distances = cl->create_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
+	pdata->ocl_distances = ocl->create_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
 	
 	log_debug("particle count: %u", pdata->particle_count);
 }
@@ -192,30 +179,28 @@ void particle_manager_cl::reset_particle_system(particle_system* ps) {
 	particle_system::internal_particle_data* pdata = ps->get_internal_particle_data();
 	reset_particle_count(ps);
 	
-	cl->acquire_gl_object(pdata->ocl_pos_time_buffer);
-	cl->acquire_gl_object(pdata->ocl_dir_buffer);
+	ocl->acquire_gl_object(pdata->ocl_pos_time_buffer);
+	ocl->acquire_gl_object(pdata->ocl_dir_buffer);
 	
-	cl->use_kernel("PARTICLE_INIT");
-	cl->set_kernel_argument(0, (unsigned int)ps->get_type());
-	cl->set_kernel_argument(1, (float)ps->get_living_time());
-	cl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
-	cl->set_kernel_argument(3, (float)ps->get_energy());
-	cl->set_kernel_argument(4, (float4)ps->get_angle());
-	cl->set_kernel_argument(5, (float4)ps->get_extents());
-	cl->set_kernel_argument(6, (float4)ps->get_direction());
-	cl->set_kernel_argument(7, (float4)ps->get_position_offset());
-	cl->set_kernel_argument(8, kernel_seed);
-	cl->set_kernel_argument(9, (float)pdata->spawn_rate_ts);
-	cl->set_kernel_argument(10, pdata->ocl_pos_time_buffer);
-	cl->set_kernel_argument(11, pdata->ocl_dir_buffer);
-	//cl->set_kernel_range(pdata->ocl_range_global, init_range_local);
-	cl->set_kernel_range(pdata->ocl_range_global,
-						 cl::NDRange(std::min((unsigned long long int)std::min((size_t)256, init_range_local[0]),
-											  pdata->particle_count))); // TODO: compute local ws size
-	cl->run_kernel();
+	ocl->use_kernel("PARTICLE_INIT");
+	ocl->set_kernel_argument(0, (unsigned int)ps->get_type());
+	ocl->set_kernel_argument(1, (float)ps->get_living_time());
+	ocl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
+	ocl->set_kernel_argument(3, (float)ps->get_energy());
+	ocl->set_kernel_argument(4, (float4)ps->get_angle());
+	ocl->set_kernel_argument(5, (float4)ps->get_extents());
+	ocl->set_kernel_argument(6, (float4)ps->get_direction());
+	ocl->set_kernel_argument(7, (float4)ps->get_position_offset());
+	ocl->set_kernel_argument(8, kernel_seed);
+	ocl->set_kernel_argument(9, (float)pdata->spawn_rate_ts);
+	ocl->set_kernel_argument(10, pdata->ocl_pos_time_buffer);
+	ocl->set_kernel_argument(11, pdata->ocl_dir_buffer);
+	//ocl->set_kernel_range(pdata->ocl_range_global, init_range_local);
+	ocl->set_kernel_range(ocl->compute_kernel_ranges(pdata->ocl_range_global[0]));
+	ocl->run_kernel();
 	
-	cl->release_gl_object(pdata->ocl_pos_time_buffer);
-	cl->release_gl_object(pdata->ocl_dir_buffer);
+	ocl->release_gl_object(pdata->ocl_pos_time_buffer);
+	ocl->release_gl_object(pdata->ocl_dir_buffer);
 	
 	pdata->step_timer = SDL_GetTicks() - 1000;
 	pdata->reinit_timer = SDL_GetTicks();
@@ -236,26 +221,25 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 		// update seed
 		kernel_seed = (unsigned int)time(nullptr);
 		
-		cl->acquire_gl_object(pdata->ocl_pos_time_buffer);
-		cl->acquire_gl_object(pdata->ocl_dir_buffer);
+		ocl->acquire_gl_object(pdata->ocl_pos_time_buffer);
+		ocl->acquire_gl_object(pdata->ocl_dir_buffer);
 		
-		cl->use_kernel("PARTICLE_RESPAWN");
-		cl->set_kernel_argument(0, ps->get_type());
-		cl->set_kernel_argument(1, (float)ps->get_living_time());
-		cl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
-		cl->set_kernel_argument(3, ps->get_energy());
-		cl->set_kernel_argument(4, (float4)ps->get_angle());
-		cl->set_kernel_argument(5, (float4)ps->get_extents());
-		cl->set_kernel_argument(6, (float4)ps->get_direction());
-		cl->set_kernel_argument(7, (float4)ps->get_position_offset());
-		cl->set_kernel_argument(8, kernel_seed);
-		cl->set_kernel_argument(9, (float4)ps->get_gravity());
-		cl->set_kernel_argument(10, pdata->ocl_pos_time_buffer);
-		cl->set_kernel_argument(11, pdata->ocl_dir_buffer);
-		//cl->set_kernel_range(pdata->ocl_range_global, respawn_range_local);
-		cl->set_kernel_range(pdata->ocl_range_global,
-							 cl::NDRange(std::min((unsigned long long int)std::min((size_t)256, respawn_range_local[0]), pdata->particle_count))); // TODO: compute local ws size
-		cl->run_kernel();
+		ocl->use_kernel("PARTICLE_RESPAWN");
+		ocl->set_kernel_argument(0, ps->get_type());
+		ocl->set_kernel_argument(1, (float)ps->get_living_time());
+		ocl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
+		ocl->set_kernel_argument(3, ps->get_energy());
+		ocl->set_kernel_argument(4, (float4)ps->get_angle());
+		ocl->set_kernel_argument(5, (float4)ps->get_extents());
+		ocl->set_kernel_argument(6, (float4)ps->get_direction());
+		ocl->set_kernel_argument(7, (float4)ps->get_position_offset());
+		ocl->set_kernel_argument(8, kernel_seed);
+		ocl->set_kernel_argument(9, (float4)ps->get_gravity());
+		ocl->set_kernel_argument(10, pdata->ocl_pos_time_buffer);
+		ocl->set_kernel_argument(11, pdata->ocl_dir_buffer);
+		//ocl->set_kernel_range(pdata->ocl_range_global, respawn_range_local);
+		ocl->set_kernel_range(ocl->compute_kernel_ranges(pdata->ocl_range_global[0]));
+		ocl->run_kernel();
 		
 		pdata->reinit_timer = SDL_GetTicks();
 		updated = true;
@@ -263,21 +247,20 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 	if(SDL_GetTicks() - pdata->step_timer > 10) {
 		if(!updated) {
 			// only acquire gl objects if the respawn kernel hasn't acquired them already
-			cl->acquire_gl_object(pdata->ocl_pos_time_buffer);
-			cl->acquire_gl_object(pdata->ocl_dir_buffer);
+			ocl->acquire_gl_object(pdata->ocl_pos_time_buffer);
+			ocl->acquire_gl_object(pdata->ocl_dir_buffer);
 		}
 		
 		// update positions
-		cl->use_kernel("PARTICLE_COMPUTE");
-		cl->set_kernel_argument(0, (float)(SDL_GetTicks() - pdata->step_timer));
-		cl->set_kernel_argument(1, (float)ps->get_living_time());
-		cl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
-		cl->set_kernel_argument(3, (float4)ps->get_gravity());
-		cl->set_kernel_argument(4, pdata->ocl_pos_time_buffer);
-		cl->set_kernel_argument(5, pdata->ocl_dir_buffer);
-		cl->set_kernel_range(pdata->ocl_range_global,
-							 cl::NDRange(std::min((unsigned long long int)compute_range_local[0], pdata->particle_count)));
-		cl->run_kernel();
+		ocl->use_kernel("PARTICLE_COMPUTE");
+		ocl->set_kernel_argument(0, (float)(SDL_GetTicks() - pdata->step_timer));
+		ocl->set_kernel_argument(1, (float)ps->get_living_time());
+		ocl->set_kernel_argument(2, (unsigned int)pdata->particle_count);
+		ocl->set_kernel_argument(3, (float4)ps->get_gravity());
+		ocl->set_kernel_argument(4, pdata->ocl_pos_time_buffer);
+		ocl->set_kernel_argument(5, pdata->ocl_dir_buffer);
+		ocl->set_kernel_range(ocl->compute_kernel_ranges(pdata->ocl_range_global[0]));
+		ocl->run_kernel();
 
 		pdata->step_timer = SDL_GetTicks();
 		updated = true;
@@ -297,8 +280,8 @@ void particle_manager_cl::run_particle_system(particle_system* ps) {
 		}
 		
 		// release everything that has been acquired before
-		cl->release_gl_object(pdata->ocl_pos_time_buffer);
-		cl->release_gl_object(pdata->ocl_dir_buffer);
+		ocl->release_gl_object(pdata->ocl_pos_time_buffer);
+		ocl->release_gl_object(pdata->ocl_dir_buffer);
 	}
 }
 
@@ -309,19 +292,19 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 	static bool debug_lsize = false;
 	if(!debug_lsize) {
 		debug_lsize = true;
-		cl->use_kernel("PARTICLE_SORT_LOCAL");
-		size_t wgs = cl->get_kernel_work_group_size();
+		ocl->use_kernel("PARTICLE_SORT_LOCAL");
+		size_t wgs = ocl->get_kernel_work_group_size();
 		log_debug("PARTICLE_SORT_LOCAL wgs: %u", wgs);
-		cl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
-		wgs = cl->get_kernel_work_group_size();
+		ocl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
+		wgs = ocl->get_kernel_work_group_size();
 		log_debug("PARTICLE_SORT_MERGE_GLOBAL wgs: %u", wgs);
-		cl->use_kernel("PARTICLE_SORT_MERGE_LOCAL");
-		wgs = cl->get_kernel_work_group_size();
+		ocl->use_kernel("PARTICLE_SORT_MERGE_LOCAL");
+		wgs = ocl->get_kernel_work_group_size();
 		log_debug("PARTICLE_SORT_MERGE_LOCAL wgs: %u", wgs);
-		log_debug("PARTICLE_SORT local_size_limit: %u", cl->get_active_device()->max_wg_size);
+		log_debug("PARTICLE_SORT local_size_limit: %u", ocl->get_active_device()->max_wg_size);
 	}
 	
-	const unsigned int local_size_limit = (unsigned int)cl->get_active_device()->max_wg_size; // TODO: actually use the compiled/build value
+	const unsigned int local_size_limit = (unsigned int)ocl->get_active_device()->max_wg_size; // TODO: actually use the compiled/build value
 	const bool reentrant_sorting = ps->is_reentrant_sorting();
 	const size_t reentrant_sorting_size = ps->get_reentrant_sorting_size();
 	unsigned int arg_num = 0;
@@ -332,37 +315,35 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		reentry_counter = 0;
 		// note: at this point, we have already acquired ocl_pos_time_buffer and ocl_dir_buffer,
 		// so only both indicies buffers must be acquired
-		cl->acquire_gl_object(pdata->ocl_indices[0]);
-		cl->acquire_gl_object(pdata->ocl_indices[1]);
+		ocl->acquire_gl_object(pdata->ocl_indices[0]);
+		ocl->acquire_gl_object(pdata->ocl_indices[1]);
 		
 		//
 		float4 camera_pos(-*e->get_position(), 1.0f);
 		pdata->particle_indices_swap = 1 - pdata->particle_indices_swap; // swap
 		
 		// compute particle distances
-		cl->use_kernel("PARTICLE_COMPUTE_DISTANCES");
-		cl->set_kernel_argument(arg_num++, pdata->ocl_pos_time_buffer);
-		cl->set_kernel_argument(arg_num++, camera_pos);
-		cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
+		ocl->use_kernel("PARTICLE_COMPUTE_DISTANCES");
+		ocl->set_kernel_argument(arg_num++, pdata->ocl_pos_time_buffer);
+		ocl->set_kernel_argument(arg_num++, camera_pos);
+		ocl->set_kernel_argument(arg_num++, pdata->ocl_distances);
 		cl::NDRange compute_distances_global(pdata->particle_count);
-		cl->set_kernel_range(compute_distances_global,
-							 cl::NDRange(std::min((unsigned long long int)compute_distances_local[0], pdata->particle_count)));
-		cl->run_kernel();
+		ocl->set_kernel_range(ocl->compute_kernel_ranges(compute_distances_global[0]));
+		ocl->run_kernel();
 		
 		// first sorting step
 		arg_num = 0;
-		cl->use_kernel("PARTICLE_SORT_LOCAL");
-		cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
-		cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
-		cl->set_kernel_argument(arg_num++, pdata->ocl_indices[1 - pdata->particle_indices_swap]);
+		ocl->use_kernel("PARTICLE_SORT_LOCAL");
+		ocl->set_kernel_argument(arg_num++, pdata->ocl_distances);
+		ocl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
+		ocl->set_kernel_argument(arg_num++, pdata->ocl_indices[1 - pdata->particle_indices_swap]);
 		cl::NDRange sort_local1_local(local_size_limit / 2);
 		cl::NDRange sort_local1_global(pdata->particle_count / 2);
-		cl->set_kernel_range(sort_local1_global,
-							 cl::NDRange(std::min((unsigned long long int)sort_local1_local[0], pdata->particle_count)));
-		cl->run_kernel();
+		ocl->set_kernel_range(ocl->compute_kernel_ranges(sort_local1_global[0]));
+		ocl->run_kernel();
 		
 		// this is not needed any more, release it
-		cl->release_gl_object(pdata->ocl_indices[1 - pdata->particle_indices_swap]);
+		ocl->release_gl_object(pdata->ocl_indices[1 - pdata->particle_indices_swap]);
 		
 		// set loop vars
 		pdata->reentrant_complete = false;
@@ -374,7 +355,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		if(reentrant_sorting &&
 		   overall_global_size > reentrant_sorting_size) {
 			if(ps->is_render_intermediate_sorted_buffer()) {
-				cl->release_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
+				ocl->release_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
 			}
 			return;
 		}
@@ -383,7 +364,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		reentry_counter++;
 		// new sorting step, acquire indices buffer again
 		if(ps->is_render_intermediate_sorted_buffer()) { // this is still acquired when we're not rendering the buffer
-			cl->acquire_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
+			ocl->acquire_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
 		}
 	}
 	
@@ -399,44 +380,42 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 			if(reentrant_sorting &&
 			   overall_global_size > reentrant_sorting_size) {
 				if(ps->is_render_intermediate_sorted_buffer()) {
-					cl->release_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
+					ocl->release_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
 				}
 				return;
 			}
 			
 			if(stride >= local_size_limit) {
-				cl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
+				ocl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
 				arg_num = 0;
-				cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
-				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
-				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
-				cl->set_kernel_argument(arg_num++, (unsigned int)pdata->particle_count);
-				cl->set_kernel_argument(arg_num++, size);
-				cl->set_kernel_argument(arg_num++, stride);
+				ocl->set_kernel_argument(arg_num++, pdata->ocl_distances);
+				ocl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
+				ocl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
+				ocl->set_kernel_argument(arg_num++, (unsigned int)pdata->particle_count);
+				ocl->set_kernel_argument(arg_num++, size);
+				ocl->set_kernel_argument(arg_num++, stride);
 				
 				cl::NDRange merge_global_global(pdata->particle_count / 2);
 				//cl::NDRange merge_global_local(256); // TODO: compute this
 				cl::NDRange merge_global_local(local_size_limit / 2);
-				cl->set_kernel_range(merge_global_global,
-									 cl::NDRange(std::min((unsigned long long int)merge_global_local[0], pdata->particle_count)));
-				cl->run_kernel();
+				ocl->set_kernel_range(ocl->compute_kernel_ranges(merge_global_global[0]));
+				ocl->run_kernel();
 				overall_global_size += merge_global_global[0];
 			}
 			else {
-				cl->use_kernel("PARTICLE_SORT_MERGE_LOCAL");
+				ocl->use_kernel("PARTICLE_SORT_MERGE_LOCAL");
 				arg_num = 0;
-				cl->set_kernel_argument(arg_num++, pdata->ocl_distances);
-				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
-				cl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
-				cl->set_kernel_argument(arg_num++, (unsigned int)pdata->particle_count);
-				cl->set_kernel_argument(arg_num++, size);
-				cl->set_kernel_argument(arg_num++, stride);
+				ocl->set_kernel_argument(arg_num++, pdata->ocl_distances);
+				ocl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
+				ocl->set_kernel_argument(arg_num++, pdata->ocl_indices[pdata->particle_indices_swap]);
+				ocl->set_kernel_argument(arg_num++, (unsigned int)pdata->particle_count);
+				ocl->set_kernel_argument(arg_num++, size);
+				ocl->set_kernel_argument(arg_num++, stride);
 				
 				cl::NDRange merge_local_local(local_size_limit / 2);
 				cl::NDRange merge_local_global(pdata->particle_count / 2);
-				cl->set_kernel_range(merge_local_global,
-									 cl::NDRange(std::min((unsigned long long int)merge_local_local[0], pdata->particle_count)));
-				cl->run_kernel();
+				ocl->set_kernel_range(ocl->compute_kernel_ranges(merge_local_global[0]));
+				ocl->run_kernel();
 				overall_global_size += merge_local_global[0];
 				break;
 			}
@@ -450,7 +429,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 	}
 	
 	// and release again
-	cl->release_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
+	ocl->release_gl_object(pdata->ocl_indices[pdata->particle_indices_swap]);
 }
 
 void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::fbo* frame_buffer) {
@@ -487,7 +466,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_draw->uniform("mvpm", mvpm);
 	particle_draw->uniform("position", ps->get_position());
 	
-	const float2 near_far_plane = e->get_near_far_plane();
+	const float2 near_far_plane = floor::get_near_far_plane();
 	const float2 projection_ab = float2(near_far_plane.y / (near_far_plane.y - near_far_plane.x),
 										(-near_far_plane.y * near_far_plane.x) / (near_far_plane.y - near_far_plane.x));
 	particle_draw->uniform("projection_ab", projection_ab);

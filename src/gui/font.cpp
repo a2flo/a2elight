@@ -20,7 +20,7 @@
 #include "font_manager.hpp"
 #include "core/vector2.hpp"
 #include "core/vector3.hpp"
-#include "gui/unicode.hpp"
+#include "core/unicode.hpp"
 #include "core/event_objects.hpp"
 #include "engine.hpp"
 #include "rendering/shader.hpp"
@@ -75,7 +75,7 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 			}
 			
 			if(face != nullptr) {
-				if(FT_Set_Char_Size(face, 0, font_size * 64, 0, (FT_UInt)e->get_dpi()) != 0) {
+				if(FT_Set_Char_Size(face, 0, font_size * 64, 0, (FT_UInt)floor::get_dpi()) != 0) {
 					log_error("couldn't set char size for face #%u in font %s!", face_index, filename);
 					return;
 				}
@@ -139,7 +139,7 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	
 	//
-	e->get_event()->add_internal_event_handler(shader_reload_fnctr, EVENT_TYPE::SHADER_RELOAD);
+	floor::get_event()->add_internal_event_handler(shader_reload_fnctr, EVENT_TYPE::SHADER_RELOAD);
 	reload_shaders();
 }
 
@@ -160,7 +160,7 @@ font::~font() {
 	if(glIsBuffer(text_ubo)) glDeleteBuffers(1, &text_ubo);
 	if(glIsTexture(tex_array)) glDeleteTextures(1, &tex_array);
 	
-	e->get_event()->remove_event_handler(shader_reload_fnctr);
+	floor::get_event()->remove_event_handler(shader_reload_fnctr);
 }
 
 bool font::add_face(const string& style, FT_Face face) {
@@ -667,7 +667,7 @@ void font::draw_cached(const GLuint& ubo, const size_t& character_count, const f
 void font::set_size(const unsigned int& size) {
 	font_size = size;
 	// slightly weird, but it seems to work for misc dpi sizes
-	display_font_size = (unsigned int)ceilf((float(font_size * e->get_dpi()) / 64.0f) * (72.0f / 64.0f));
+	display_font_size = (unsigned int)ceilf((float(font_size * floor::get_dpi()) / 64.0f) * (72.0f / 64.0f));
 	glyphs_per_line = font_texture_size / display_font_size;
 	glyphs_per_layer = glyphs_per_line * glyphs_per_line;
 }

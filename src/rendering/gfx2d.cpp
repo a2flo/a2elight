@@ -44,7 +44,7 @@ void gfx2d::init(engine* e_) {
 	eshd = e->get_shader();
 	
 	//
-	e->get_event()->add_internal_event_handler(evt_handler, EVENT_TYPE::SHADER_RELOAD);
+	floor::get_event()->add_internal_event_handler(evt_handler, EVENT_TYPE::SHADER_RELOAD);
 	
 	// create fullscreen triangle/quad vbo
 	glGenBuffers(1, &vbo_fullscreen_triangle);
@@ -69,7 +69,7 @@ void gfx2d::destroy() {
 	if(glIsBuffer(vbo_fullscreen_quad)) glDeleteBuffers(1, &vbo_fullscreen_quad);
 	if(glIsBuffer(vbo_primitive)) glDeleteBuffers(1, &vbo_primitive);
 	
-	e->get_event()->remove_event_handler(evt_handler);
+	floor::get_event()->remove_event_handler(evt_handler);
 }
 
 void gfx2d::reload_shaders() {

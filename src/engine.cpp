@@ -43,171 +43,34 @@ BOOL APIENTRY DllMain(HANDLE hModule floor_unused, DWORD ul_reason_for_call, LPV
 }
 #endif // __WINDOWS__
 
-/*! this is used to set an absolute data path depending on call path (path from where the binary is called/started),
- *! which is mostly needed when the binary is opened via finder under os x or any file manager under linux
- */
-engine::engine(const char* callpath_, const char* datapath_) {
-	logger::init();
+void engine::init(const char* callpath_, const char* datapath_,
+				  const bool console_only_, const string config_name_,
+				  const unsigned int width_, const unsigned int height_, const bool fullscreen_,
+				  const bool vsync_, const char* ico_) {
+	floor::init(callpath_, datapath_, console_only_, config_name_);
+	floor::set_caption("A2E");
 	
-	engine::callpath = callpath_;
-	engine::datapath = callpath_;
-	engine::rel_datapath = datapath_;
+	// print out a2elight info
+	log_debug("%s", (A2E_VERSION_STRING).c_str());
 	
-#if !defined(__WINDOWS__)
-	const char dir_slash = '/';
-#else
-	const char dir_slash = '\\';
-#endif
-	
-#if defined(A2E_IOS)
-	// strip one "../"
-	const size_t cdup_pos = rel_datapath.find("../");
-	if(cdup_pos != string::npos) {
-		rel_datapath = (rel_datapath.substr(0, cdup_pos) +
-						rel_datapath.substr(cdup_pos+3, rel_datapath.length()-cdup_pos-3));
-	}
-#endif
-	
-	// no '/' -> relative path
-	if(rel_datapath[0] != '/') {
-		engine::datapath = datapath.substr(0, datapath.rfind(dir_slash)+1) + rel_datapath;
-	}
-	// absolute path
-	else engine::datapath = rel_datapath;
-	
-#if defined(CYGWIN)
-	engine::callpath = "./";
-	engine::datapath = callpath_;
-	engine::datapath = datapath.substr(0, datapath.rfind("/")+1) + rel_datapath;
-#endif
-	
-	create();
-}
-
-/*! there is no function currently
- */
-engine::~engine() {
-	log_debug("deleting engine object");
-	
-	acquire_gl_context();
-
-	for(const auto& cursor : cursors) {
-		if(cursor.first != "STANDARD") {
-			SDL_FreeCursor(cursor.second);
-		}
-	}
-	cursors.clear();
-	
-	e->remove_event_handler(*window_handler);
-	delete window_handler;
-	
-	gfx2d::destroy();
-
-	if(f != nullptr) delete f;
-	if(t != nullptr) delete t;
-	if(exts != nullptr) delete exts;
-	if(x != nullptr) delete x;
-	if(u != nullptr) delete u;
-	if(shd != nullptr) delete shd;
-	if(ui != nullptr) delete ui;
-	if(sce != nullptr) delete sce;
-	if(ocl != nullptr) {
-		delete ocl;
-		ocl = nullptr;
-	}
-	
-	// delete this at the end, b/c other classes will remove event handlers
-	if(e != nullptr) delete e;
-	
-#if defined(A2E_DEBUG)
-	gl_timer::destroy();
-#endif
-	release_gl_context();
-
-	log_debug("engine object deleted");
-	
-	SDL_GL_DeleteContext(config.ctx);
-	SDL_DestroyWindow(config.wnd);
-	SDL_Quit();
-	
-	logger::destroy();
-}
-
-void engine::create() {
-#if !defined(__WINDOWS__) && !defined(CYGWIN)
-	if(datapath.size() > 0 && datapath[0] == '.') {
-		// strip leading '.' from datapath if there is one
-		datapath.erase(0, 1);
-		
-		char working_dir[8192];
-		memset(working_dir, 0, 8192);
-		getcwd(working_dir, 8192);
-		
-		datapath = working_dir + datapath;
-	}
-#elif defined(CYGWIN)
-	// do nothing
-#else
-	char working_dir[8192];
-	memset(working_dir, 0, 8192);
-	getcwd(working_dir, 8192);
-
-	size_t strip_pos = datapath.find("\\.\\");
-	if(strip_pos != string::npos) {
-		datapath.erase(strip_pos, 3);
-	}
-	
-	bool add_bin_path = (working_dir == datapath.substr(0, datapath.length()-1)) ? false : true;
-	if(!add_bin_path) datapath = working_dir + string("\\") + (add_bin_path ? datapath : "");
-	else {
-		if(datapath[datapath.length()-1] == '/') {
-			datapath = datapath.substr(0, datapath.length()-1);
-		}
-		datapath += string("\\");
-	}
-
-#endif
-	
-#if defined(__APPLE__)
-	// check if datapath contains a 'MacOS' string (indicates that the binary is called from within an OS X .app or via complete path from the shell)
-	if(datapath.find("MacOS") != string::npos) {
-		// if so, add "../../../" to the datapath, since we have to relocate the datapath if the binary is inside an .app
-		datapath.insert(datapath.find("MacOS")+6, "../../../");
-	}
-#endif
-	
-	// condense datapath
-	datapath = core::strip_path(datapath);
+	// TODO: kernels?
 	
 	shaderpath = "shader/";
-	kernelpath = "kernels/";
-	cursor_visible = true;
-	
-	fps = 0;
-	fps_counter = 0;
-	fps_time = 0;
-	frame_time = 0.0f;
-	frame_time_sum = 0;
-	frame_time_counter = 0;
-	new_fps_count = false;
 	standard_cursor = nullptr;
 	cursor_data = nullptr;
 	cursor_mask = nullptr;
 	global_vao = 0;
 	
-	u = new unicode();
-	f = new file_io();
-	x = new xml(this);
-	e = new event(this);
-	
+	evt = floor::get_event();
 	window_handler = new event::handler(this, &engine::window_event_handler);
-	e->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
+	evt->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
 	// print out engine info
 	log_debug("%s", (A2E_VERSION_STRING).c_str());
 	
 	// load config
-	const string config_filename(string("config.xml") +
+	// TODO: check which config settings already exist in floor
+	/*const string config_filename(string("config.xml") +
 								 (file_io::is_file(data_path("config.xml.local")) ? ".local" : ""));
 	config_doc = x->process_file(data_path(config_filename));
 	if(config_doc.valid) {
@@ -273,180 +136,34 @@ void engine::create() {
 			if(dev_token == "") continue;
 			config.cl_device_restriction.insert(dev_token);
 		}
-	}
-}
-
-/*! initializes the engine in console + graphical or console only mode
- *  @param console the initialization mode (false = gfx/console, true = console only)
- */
-void engine::init(bool console, unsigned int width, unsigned int height,
-				  bool fullscreen, bool vsync, const char* ico) {
-	if(console == true) {
+	}*/
+	
+	if(console_only_) {
 		mode = INIT_MODE::CONSOLE;
 		// create extension class object
 		exts = new ext(mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
 		log_debug("initializing albion 2 engine in console only mode");
 	}
 	else {
-		config.width = width;
-		config.height = height;
-		config.fullscreen = fullscreen;
-		config.vsync = vsync;
-
-		engine::init(ico);
+		config.width = width_;
+		config.height = height_;
+		config.fullscreen = fullscreen_;
+		config.vsync = vsync_;
+		log_debug("initializing albion 2 engine in console + graphical mode");
 	}
-}
-
-/*! initializes the engine in console + graphical mode
- */
-void engine::init(const char* ico) {
+	
 	mode = INIT_MODE::GRAPHICAL;
-	log_debug("initializing albion 2 engine in console + graphical mode");
-
-	// in order to use multi-threaded opengl with x11/xlib, we have to tell it to actually be thread safe
-#if !defined(__APPLE__) && !defined(__WINDOWS__)
-	if(XInitThreads() == 0) {
-		log_error("XInitThreads failed!");
-		exit(1);
-	}
-#endif
-
-	// initialize sdl
-	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
-		log_error("can't init SDL: %s", SDL_GetError());
-		exit(1);
-	}
-	else {
-		log_debug("sdl initialized");
-	}
-	atexit(SDL_Quit);
-
-	// set some flags
-	config.flags |= SDL_WINDOW_OPENGL;
-	config.flags |= SDL_WINDOW_SHOWN;
-	
-#if !defined(A2E_IOS)
-	config.flags |= SDL_WINDOW_INPUT_FOCUS;
-	config.flags |= SDL_WINDOW_MOUSE_FOCUS;
-	config.flags |= SDL_WINDOW_RESIZABLE;
-
-	int2 windows_pos(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-	if(config.fullscreen) {
-		config.flags |= SDL_WINDOW_FULLSCREEN;
-		config.flags |= SDL_WINDOW_BORDERLESS;
-		windows_pos.set(0, 0);
-		log_debug("fullscreen enabled");
-	}
-	else {
-		log_debug("fullscreen disabled");
-	}
-#else
-	config.flags |= SDL_WINDOW_FULLSCREEN;
-	config.flags |= SDL_WINDOW_RESIZABLE;
-	config.flags |= SDL_WINDOW_BORDERLESS;
-#endif
-
-	log_debug("vsync %s", config.vsync ? "enabled" : "disabled");
-	
-	// gl attributes
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	
-#if !defined(A2E_IOS)
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-#else
-	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-	
-	//
-	SDL_DisplayMode fullscreen_mode;
-	SDL_zero(fullscreen_mode);
-	fullscreen_mode.format = SDL_PIXELFORMAT_RGBA8888;
-	fullscreen_mode.w = config.width;
-	fullscreen_mode.h = config.height;
-#endif
-
-	// create screen
-#if !defined(A2E_IOS)
-	config.wnd = SDL_CreateWindow("A2E", windows_pos.x, windows_pos.y, (unsigned int)config.width, (unsigned int)config.height, config.flags);
-#else
-	config.wnd = SDL_CreateWindow("A2E", 0, 0, (unsigned int)config.width, (unsigned int)config.height, config.flags);
-#endif
-	if(config.wnd == nullptr) {
-		log_error("can't create window: %s", SDL_GetError());
-		exit(1);
-	}
-	else {
-		SDL_GetWindowSize(config.wnd, (int*)&config.width, (int*)&config.height);
-		log_debug("video mode set: w%u h%u", config.width, config.height);
-	}
-	
-#if defined(A2E_IOS)
-	if(SDL_SetWindowDisplayMode(config.wnd, &fullscreen_mode) < 0) {
-		log_error("can't set up fullscreen display mode: %s", SDL_GetError());
-		exit(1);
-	}
-	SDL_GetWindowSize(config.wnd, (int*)&config.width, (int*)&config.height);
-	log_debug("fullscreen mode set: w%u h%u", config.width, config.height);
-	SDL_ShowWindow(config.wnd);
-#endif
-	
+		
 	// load icon
-	if(ico != nullptr) load_ico(ico);
-	
-	config.ctx = SDL_GL_CreateContext(config.wnd);
-	if(config.ctx == nullptr) {
-		log_error("can't create opengl context: %s", SDL_GetError());
-		exit(1);
-	}
-#if !defined(A2E_IOS)
-	SDL_GL_SetSwapInterval(config.vsync ? 1 : 0); // has to be set after context creation
-	
-	// enable multi-threaded opengl context when on os x
-#if defined(__APPLE__) && 0
-	CGLContextObj cgl_ctx = CGLGetCurrentContext();
-	CGLError cgl_err = CGLEnable(cgl_ctx, kCGLCEMPEngine);
-	if(cgl_err != kCGLNoError) {
-		log_error("unable to set multi-threaded opengl context (%X: %X): %s!",
-				  (size_t)cgl_ctx, cgl_err, CGLErrorString(cgl_err));
-	}
-	else {
-		log_debug("multi-threaded opengl context enabled!");
-	}
-#endif
-#endif
+	if(ico_ != nullptr) load_ico(ico_);
 	
 	acquire_gl_context();
-	
-	// check if a cudacl or pure opencl context should be created
-	// use absolute path
-#if defined(A2E_CUDA_CL)
-	if(config.opencl_platform == "cuda") {
-		ocl = new cudacl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache);
-	}
-	else {
-#else
-		if(config.opencl_platform == "cuda") {
-			log_error("CUDA support is not enabled!");
-		}
-#endif
-		ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache);
-#if defined(A2E_CUDA_CL)
-	}
-#endif
 	
 	// make an early clear
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	swap();
-	e->handle_events(); // this will effectively create/open the window on some platforms
+	evt->handle_events(); // this will effectively create/open the window on some platforms
 
 	// create extension class object
 	exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
@@ -492,9 +209,9 @@ void engine::init(const char* ico) {
 	}
 	else log_debug("video driver: %s", SDL_GetCurrentVideoDriver());
 	
-	e->set_ldouble_click_time((unsigned int)config.ldouble_click_time);
-	e->set_rdouble_click_time((unsigned int)config.rdouble_click_time);
-	e->set_mdouble_click_time((unsigned int)config.mdouble_click_time);
+	evt->set_ldouble_click_time((unsigned int)config.ldouble_click_time);
+	evt->set_rdouble_click_time((unsigned int)config.rdouble_click_time);
+	evt->set_mdouble_click_time((unsigned int)config.mdouble_click_time);
 	
 	// initialize ogl
 	init_gl();
@@ -516,7 +233,7 @@ void engine::init(const char* ico) {
 	set_anisotropic(config.anisotropic);
 	
 	// create texture manager and render to texture object
-	t = new texman(f, u, exts, datapath, config.anisotropic);
+	t = new texman(exts, datapath, config.anisotropic);
 	r = new rtt(this, exts);
 	
 	// set standard texture filtering + anisotropic filtering
@@ -525,10 +242,6 @@ void engine::init(const char* ico) {
 	// get standard (sdl internal) cursor and create cursor data
 	standard_cursor = SDL_GetCursor();
 	cursors["STANDARD"] = standard_cursor;
-
-	// seed
-	const unsigned int rseed = ((unsigned int)time(nullptr)/SDL_GetTicks())*((unsigned int)time(nullptr)%SDL_GetTicks());
-	srand(rseed >> 1);
 	
 	// init/create shaders, init gfx
 	shd = new shader(this);
@@ -537,7 +250,7 @@ void engine::init(const char* ico) {
 	// draw the loading screen/image
 	start_draw();
 	start_2d_draw();
-	a2e_texture load_tex = t->add_texture(data_path("loading.png"), TEXTURE_FILTERING::LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	a2e_texture load_tex = t->add_texture(floor::data_path("loading.png"), TEXTURE_FILTERING::LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	const uint2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
 	const uint2 img_offset((unsigned int)config.width/2 - load_tex_draw_size.x/2,
 						   (unsigned int)config.height/2 - load_tex_draw_size.y/2);
@@ -550,46 +263,8 @@ void engine::init(const char* ico) {
 	stop_2d_draw();
 	stop_draw();
 	
-	// retrieve dpi info
-	if(config.dpi == 0) {
-#if defined(__APPLE__)
-#if !defined(A2E_IOS)
-		config.dpi = osx_helper::get_dpi(config.wnd);
-#else
-		// TODO: iOS
-		config.dpi = 326;
-#endif
-#elif defined(__WINDOWS__)
-		HDC hdc = wglGetCurrentDC();
-		const size2 display_res(GetDeviceCaps(hdc, HORZRES), GetDeviceCaps(hdc, VERTRES));
-		const float2 display_phys_size(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
-		const float2 display_dpi((float(display_res.x) / display_phys_size.x) * 25.4f,
-								 (float(display_res.y) / display_phys_size.y) * 25.4f);
-		config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
-#else // x11
-		SDL_SysWMinfo wm_info;
-		SDL_VERSION(&wm_info.version);
-		if(SDL_GetWindowWMInfo(config.wnd, &wm_info) == 1) {
-			Display* display = wm_info.info.x11.display;
-			const size2 display_res(DisplayWidth(display, 0), DisplayHeight(display, 0));
-			const float2 display_phys_size(DisplayWidthMM(display, 0), DisplayHeightMM(display, 0));
-			const float2 display_dpi((float(display_res.x) / display_phys_size.x) * 25.4f,
-									 (float(display_res.y) / display_phys_size.y) * 25.4f);
-			config.dpi = floorf(std::max(display_dpi.x, display_dpi.y));
-		}
-#endif
-	}
-	
-	// init opencl
-	ocl->init(false,
-			  config.opencl_platform == "cuda" ? 0 : string2size_t(config.opencl_platform),
-			  config.cl_device_restriction);
-	
 	// create scene
 	sce = new scene(this);
-	
-	// set dpi lower bound to 72
-	if(config.dpi < 72) config.dpi = 72;
 	
 	// create gui
 	if(config.ui_anti_aliasing > 2) config.ui_anti_aliasing = core::next_pot((unsigned int)config.ui_anti_aliasing);
@@ -615,68 +290,40 @@ void engine::init(const char* ico) {
 	release_gl_context();
 }
 
-/*! sets the windows width
- *  @param width the window width
- */
-void engine::set_width(const unsigned int& width) {
-	if(width == config.width) return;
-	config.width = width;
-	SDL_SetWindowSize(config.wnd, (int)config.width, (int)config.height);
-	// TODO: make this work:
-	/*SDL_SetWindowPosition(config.wnd,
-						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED,
-						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED);*/
-}
-
-/*! sets the window height
- *  @param height the window height
- */
-void engine::set_height(const unsigned int& height) {
-	if(height == config.height) return;
-	config.height = height;
-	SDL_SetWindowSize(config.wnd, (int)config.width, (int)config.height);
-	// TODO: make this work:
-	/*SDL_SetWindowPosition(config.wnd,
-						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED,
-						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED);*/
-}
-
-void engine::set_screen_size(const uint2& screen_size) {
-	if(screen_size.x == config.width && screen_size.y == config.height) return;
-	config.width = screen_size.x;
-	config.height = screen_size.y;
-	SDL_SetWindowSize(config.wnd, (int)config.width, (int)config.height);
+void engine::destroy() {
+	log_debug("deleting engine object");
 	
-	SDL_Rect bounds;
-	SDL_GetDisplayBounds(0, &bounds);
-	SDL_SetWindowPosition(config.wnd,
-						  bounds.x + (bounds.w - int(config.width)) / 2,
-						  bounds.y + (bounds.h - int(config.height)) / 2);
-	// TODO: make this work:
-	/*SDL_SetWindowPosition(config.wnd,
-						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED,
-						  config.fullscreen ? 0 : SDL_WINDOWPOS_CENTERED);*/
-}
-
-void engine::set_fullscreen(const bool& state) {
-	if(state == config.fullscreen) return;
-	config.fullscreen = state;
-	if(SDL_SetWindowFullscreen(config.wnd, (SDL_bool)state) != 0) {
-		log_error("failed to %s fullscreen: %s!",
-				  (state ? "enable" : "disable"), SDL_GetError());
+	acquire_gl_context();
+	
+	for(const auto& cursor : cursors) {
+		if(cursor.first != "STANDARD") {
+			SDL_FreeCursor(cursor.second);
+		}
 	}
-	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
-				 make_shared<window_resize_event>(SDL_GetTicks(),
-												  size2(config.width, config.height)));
-	// TODO: border?
-}
-
-void engine::set_vsync(const bool& state) {
-	if(state == config.vsync) return;
-	config.vsync = state;
-#if !defined(A2E_IOS)
-	SDL_GL_SetSwapInterval(config.vsync ? 1 : 0);
+	cursors.clear();
+	
+	evt->remove_event_handler(*window_handler);
+	delete window_handler;
+	
+	gfx2d::destroy();
+	
+	if(t != nullptr) delete t;
+	if(exts != nullptr) delete exts;
+	if(shd != nullptr) delete shd;
+	if(ui != nullptr) delete ui;
+	if(sce != nullptr) delete sce;
+	if(ocl != nullptr) {
+		delete ocl;
+		ocl = nullptr;
+	}
+	
+#if defined(A2E_DEBUG)
+	gl_timer::destroy();
 #endif
+	release_gl_context();
+	
+	log_debug("engine object deleted");
+	floor::destroy();
 }
 
 /*! starts drawing the window
@@ -795,19 +442,6 @@ void engine::pop_ogl_state() {
 	glBlendFunc(pushed_blend_src, pushed_blend_dst);
 	glBlendFuncSeparate(pushed_blend_src_rgb, pushed_blend_dst_rgb,
 						pushed_blend_src_alpha, pushed_blend_dst_alpha);
-}
-
-/*! sets the window caption
- *  @param caption the window caption
- */
-void engine::set_caption(const char* caption) {
-	SDL_SetWindowTitle(config.wnd, caption);
-}
-
-/*! returns the window caption
- */
-const char* engine::get_caption() {
-	return SDL_GetWindowTitle(config.wnd);
 }
 
 /*! opengl initialization function
@@ -930,50 +564,10 @@ void engine::stop_2d_draw() {
 	glEnable(GL_CULL_FACE); // TODO: GL3, remove again
 }
 
-/*! sets the cursors visibility to state
- *  @param state the cursor visibility state
- */
-void engine::set_cursor_visible(bool state) {
-	engine::cursor_visible = state;
-	SDL_ShowCursor(engine::cursor_visible);
-}
-
-/*! returns the cursor visibility stateo
- */
-bool engine::get_cursor_visible() {
-	return engine::cursor_visible;
-}
-
-/*! sets the fps limit (max. fps = 1000 / ms)
- *! note that a value of 0 increases the cpu usage to 100%
- *  @param ms how many milliseconds the engine should "sleep" after a frame is rendered
- */
-void engine::set_fps_limit(unsigned int ms) {
-	config.fps_limit = ms;
-}
-
-/*! returns how many milliseconds the engine is "sleeping" after a frame is rendered
- */
-unsigned int engine::get_fps_limit() const {
-	return (unsigned int)config.fps_limit;
-}
-
 /*! returns the type of the initialization (0 = GRAPHICAL, 1 = CONSOLE)
  */
 const INIT_MODE& engine::get_init_mode() {
 	return engine::mode;
-}
-
-/*! returns a pointer to the file_io class
- */
-file_io* engine::get_file_io() {
-	return engine::f;
-}
-
-/*! returns a pointer to the file_io class
- */
-event* engine::get_event() {
-	return engine::e;
 }
 
 /*! returns the texman class
@@ -988,28 +582,10 @@ ext* engine::get_ext() {
 	return engine::exts;
 }
 
-/*! returns the xml class
- */
-xml* engine::get_xml() {
-	return engine::x;
-}
-
 /*! returns the rtt class
  */
 rtt* engine::get_rtt() {
 	return engine::r;
-}
-
-/*! returns the unicode class
- */
-unicode* engine::get_unicode() {
-	return engine::u;
-}
-
-/*! returns the opencl class
- */
-opencl_base* engine::get_opencl() {
-	return engine::ocl;
 }
 
 /*! returns the shader class
@@ -1030,45 +606,6 @@ scene* engine::get_scene() {
 	return engine::sce;
 }
 
-/*! sets the data path
- *  @param data_path the data path
- */
-void engine::set_data_path(const char* data_path) {
-	engine::datapath = data_path;
-}
-
-/*! returns the data path
- */
-string engine::get_data_path() const {
-	return datapath;
-}
-
-/*! returns the call path
- */
-string engine::get_call_path() const {
-	return callpath;
-}
-
-/*! returns the shader path
- */
-string engine::get_shader_path() const {
-	return shaderpath;
-}
-
-/*! returns the kernel path
- */
-string engine::get_kernel_path() const {
-	return kernelpath;
-}
-
-/*! returns data path + str
- *  @param str str we want to "add" to the data path
- */
-string engine::data_path(const string& str) const {
-	if(str.length() == 0) return datapath;
-	return datapath + str;
-}
-
 /*! returns data path + shader path + str
  *  @param str str we want to "add" to the data + shader path
  */
@@ -1077,32 +614,8 @@ string engine::shader_path(const string& str) const {
 	return datapath + shaderpath + str;
 }
 
-/*! returns data path + kernel path + str
- *  @param str str we want to "add" to the data + kernel path
- */
-string engine::kernel_path(const string& str) const {
-	if(str.length() == 0) return datapath + kernelpath;
-	return datapath + kernelpath + str;
-}
-
-/*! strips the data path from a string
- *  @param str str we want strip the data path from
- */
-string engine::strip_data_path(const string& str) const {
-	if(str.length() == 0) return "";
-	return core::find_and_replace(str, datapath, "");
-}
-
-/*engine::server_data* engine::get_server_data() {
-	return &config.server;
-}
-
-engine::client_data* engine::get_client_data() {
-	return &config.client;
-}*/
-
 void engine::load_ico(const char* ico) {
-	SDL_SetWindowIcon(config.wnd, IMG_Load(data_path(ico).c_str()));
+	SDL_SetWindowIcon(config.wnd, IMG_Load(floor::data_path(ico).c_str()));
 }
 
 TEXTURE_FILTERING engine::get_filtering() const {
@@ -1154,9 +667,9 @@ void engine::set_anti_aliasing(const rtt::TEXTURE_ANTI_ALIASING& anti_aliasing) 
 	}
 	
 	if(recreate_buffers) {
-		e->add_event(EVENT_TYPE::WINDOW_RESIZE,
-					 make_shared<window_resize_event>(SDL_GetTicks(),
-													  size2(config.width, config.height)));
+		evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
+					   make_shared<window_resize_event>(SDL_GetTicks(),
+														size2(config.width, config.height)));
 	}
 }
 
@@ -1178,19 +691,6 @@ matrix4f* engine::get_translation_matrix() {
 
 matrix4f* engine::get_rotation_matrix() {
 	return &(engine::rotation_matrix);
-}
-
-unsigned int engine::get_fps() {
-	new_fps_count = false;
-	return engine::fps;
-}
-
-float engine::get_frame_time() {
-	return engine::frame_time;
-}
-
-bool engine::is_new_fps_count() {
-	return engine::new_fps_count;
 }
 
 SDL_Cursor* engine::add_cursor(const char* name, const char** raw_data, unsigned int xsize, unsigned int ysize, unsigned int hotx, unsigned int hoty) {
@@ -1258,30 +758,6 @@ SDL_Cursor* engine::get_cursor(const char* name) {
 	return cursors[name];
 }
 
-bool engine::get_fullscreen() const {
-	return config.fullscreen;
-}
-
-bool engine::get_vsync() const {
-	return config.vsync;
-}
-
-bool engine::get_stereo() const {
-	return config.stereo;
-}
-
-unsigned int engine::get_width() const {
-	return (unsigned int)config.width;
-}
-
-unsigned int engine::get_height() const {
-	return (unsigned int)config.height;
-}
-
-uint2 engine::get_screen_size() const {
-	return uint2((unsigned int)config.width, (unsigned int)config.height);
-}
-
 unsigned int engine::get_key_repeat() const {
 	return (unsigned int)config.key_repeat;
 }
@@ -1310,10 +786,6 @@ const string& engine::get_force_vendor() const {
 	return config.force_vendor;
 }
 
-SDL_Window* engine::get_window() const {
-	return config.wnd;
-}
-
 float engine::get_upscaling() const {
 	return config.upscaling;
 }
@@ -1321,9 +793,9 @@ float engine::get_upscaling() const {
 void engine::set_upscaling(const float& factor) {
 	if(factor == config.upscaling) return;
 	config.upscaling = factor;
-	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
-				 make_shared<window_resize_event>(SDL_GetTicks(),
-												  size2(config.width, config.height)));
+	evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
+				   make_shared<window_resize_event>(SDL_GetTicks(),
+													size2(config.width, config.height)));
 }
 
 float engine::get_geometry_light_scaling() const {
@@ -1333,9 +805,9 @@ float engine::get_geometry_light_scaling() const {
 void engine::set_geometry_light_scaling(const float& factor) {
 	if(factor == config.geometry_light_scaling) return;
 	config.geometry_light_scaling = factor;
-	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
-				 make_shared<window_resize_event>(SDL_GetTicks(),
-												  size2(config.width, config.height)));
+	evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
+				   make_shared<window_resize_event>(SDL_GetTicks(),
+													size2(config.width, config.height)));
 }
 
 const string engine::get_version() const {
@@ -1379,36 +851,8 @@ void engine::reload_kernels() {
 	reload_kernels_flag = true;
 }
 
-const float& engine::get_fov() const {
-	return config.fov;
-}
-
-void engine::set_fov(const float& fov) {
-	if(config.fov == fov) return;
-	config.fov = fov;
-	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
-				 make_shared<window_resize_event>(SDL_GetTicks(),
-												  size2(config.width, config.height)));
-}
-
-const float2& engine::get_near_far_plane() const {
-	return config.near_far_plane;
-}
-
-const size_t& engine::get_dpi() const {
-	return config.dpi;
-}
-
 const rtt::TEXTURE_ANTI_ALIASING& engine::get_ui_anti_aliasing() const {
 	return config.ui_anti_aliasing_enum;
-}
-
-const xml::xml_doc& engine::get_config_doc() const {
-	return config_doc;
-}
-
-xml::xml_doc& engine::get_config_doc() {
-	return config_doc;
 }
 
 void engine::acquire_gl_context() {
@@ -1450,10 +894,30 @@ void engine::release_gl_context() {
 
 bool engine::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 	if(type == EVENT_TYPE::WINDOW_RESIZE) {
-		const window_resize_event& evt = (const window_resize_event&)*obj;
-		config.width = evt.size.x;
-		config.height = evt.size.y;
+		const window_resize_event& evt_obj = (const window_resize_event&)*obj;
+		config.width = evt_obj.size.x;
+		config.height = evt_obj.size.y;
 		resize_window();
 	}
 	return true;
+}
+
+// TODO: better location!
+// from global.hpp:
+DRAW_MODE operator|(const DRAW_MODE& e0, const DRAW_MODE& e1) {
+	return (DRAW_MODE)((typename underlying_type<DRAW_MODE>::type)e0 |
+					   (typename underlying_type<DRAW_MODE>::type)e1);
+}
+DRAW_MODE& operator|=(DRAW_MODE& e0, const DRAW_MODE& e1) {
+	e0 = e0 | e1;
+	return e0;
+}
+
+DRAW_MODE operator&(const DRAW_MODE& e0, const DRAW_MODE& e1) {
+	return (DRAW_MODE)((typename underlying_type<DRAW_MODE>::type)e0 &
+					   (typename underlying_type<DRAW_MODE>::type)e1);
+}
+DRAW_MODE& operator&=(DRAW_MODE& e0, const DRAW_MODE& e1) {
+	e0 = e0 & e1;
+	return e0;
 }

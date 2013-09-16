@@ -23,7 +23,7 @@
 #include "font_manager.hpp"
 
 gui_object::gui_object(engine* e_, const float2& size_, const float2& position_) :
-e(e_), ui(e->get_gui()), theme(ui->get_theme()), evt(e->get_event()), fm(ui->get_font_manager()), fnt(fm->get_font("SYSTEM_SANS_SERIF")), size(size_), position(position_) {
+e(e_), ui(e->get_gui()), theme(ui->get_theme()), evt(floor::get_event()), fm(ui->get_font_manager()), fnt(fm->get_font("SYSTEM_SANS_SERIF")), size(size_), position(position_) {
 	compute_abs_values();
 }
 
@@ -88,7 +88,7 @@ bool gui_object::is_active() const {
 void gui_object::compute_abs_values() {
 	const float2 parent_size(parent != nullptr ?
 							 parent->get_size_abs() :
-							 float2(e->get_width(), e->get_height()));
+							 float2(floor::get_width(), floor::get_height()));
 	position_abs = position * parent_size;
 	size_abs = size * parent_size;
 	rectangle_abs.set(position_abs.x, position_abs.y,

@@ -32,22 +32,22 @@ e(e_), r(e_->get_rtt()), fonts(), ft_library(nullptr) {
 	
 	// these should always exist
 	add_font_family("DEJAVU_SANS_SERIF", vector<string> {
-		e->data_path("fonts/DejaVuSans.ttf"),
-		e->data_path("fonts/DejaVuSans-Oblique.ttf"),
-		e->data_path("fonts/DejaVuSans-Bold.ttf"),
-		e->data_path("fonts/DejaVuSans-BoldOblique.ttf")
+		floor::data_path("fonts/DejaVuSans.ttf"),
+		floor::data_path("fonts/DejaVuSans-Oblique.ttf"),
+		floor::data_path("fonts/DejaVuSans-Bold.ttf"),
+		floor::data_path("fonts/DejaVuSans-BoldOblique.ttf")
 	});
 	add_font_family("DEJAVU_SERIF", vector<string> {
-		e->data_path("fonts/DejaVuSerif.ttf"),
-		e->data_path("fonts/DejaVuSerif-Italic.ttf"),
-		e->data_path("fonts/DejaVuSerif-Bold.ttf"),
-		e->data_path("fonts/DejaVuSerif-BoldItalic.ttf")
+		floor::data_path("fonts/DejaVuSerif.ttf"),
+		floor::data_path("fonts/DejaVuSerif-Italic.ttf"),
+		floor::data_path("fonts/DejaVuSerif-Bold.ttf"),
+		floor::data_path("fonts/DejaVuSerif-BoldItalic.ttf")
 	});
 	add_font_family("DEJAVU_MONOSPACE", vector<string> {
-		e->data_path("fonts/DejaVuSansMono.ttf"),
-		e->data_path("fonts/DejaVuSansMono-Oblique.ttf"),
-		e->data_path("fonts/DejaVuSansMono-Bold.ttf"),
-		e->data_path("fonts/DejaVuSansMono-BoldOblique.ttf")
+		floor::data_path("fonts/DejaVuSansMono.ttf"),
+		floor::data_path("fonts/DejaVuSansMono-Oblique.ttf"),
+		floor::data_path("fonts/DejaVuSansMono-Bold.ttf"),
+		floor::data_path("fonts/DejaVuSansMono-BoldOblique.ttf")
 	});
 	
 	// TODO: add system font overrides to config
@@ -78,22 +78,22 @@ e(e_), r(e_->get_rtt()), fonts(), ft_library(nullptr) {
 #else // linux/*bsd/x11
 	// there isn't much choice here ...
 	add_font_family("SYSTEM_SANS_SERIF", vector<string> {
-		e->data_path("fonts/DejaVuSans.ttf"),
-		e->data_path("fonts/DejaVuSans-Oblique.ttf"),
-		e->data_path("fonts/DejaVuSans-Bold.ttf"),
-		e->data_path("fonts/DejaVuSans-BoldOblique.ttf")
+		floor::data_path("fonts/DejaVuSans.ttf"),
+		floor::data_path("fonts/DejaVuSans-Oblique.ttf"),
+		floor::data_path("fonts/DejaVuSans-Bold.ttf"),
+		floor::data_path("fonts/DejaVuSans-BoldOblique.ttf")
 	});
 	add_font_family("SYSTEM_SERIF", vector<string> {
-		e->data_path("fonts/DejaVuSerif.ttf"),
-		e->data_path("fonts/DejaVuSerif-Italic.ttf"),
-		e->data_path("fonts/DejaVuSerif-Bold.ttf"),
-		e->data_path("fonts/DejaVuSerif-BoldItalic.ttf")
+		floor::data_path("fonts/DejaVuSerif.ttf"),
+		floor::data_path("fonts/DejaVuSerif-Italic.ttf"),
+		floor::data_path("fonts/DejaVuSerif-Bold.ttf"),
+		floor::data_path("fonts/DejaVuSerif-BoldItalic.ttf")
 	});
 	add_font_family("SYSTEM_MONOSPACE", vector<string> {
-		e->data_path("fonts/DejaVuSansMono.ttf"),
-		e->data_path("fonts/DejaVuSansMono-Oblique.ttf"),
-		e->data_path("fonts/DejaVuSansMono-Bold.ttf"),
-		e->data_path("fonts/DejaVuSansMono-BoldOblique.ttf")
+		floor::data_path("fonts/DejaVuSansMono.ttf"),
+		floor::data_path("fonts/DejaVuSansMono-Oblique.ttf"),
+		floor::data_path("fonts/DejaVuSansMono-Bold.ttf"),
+		floor::data_path("fonts/DejaVuSansMono-BoldOblique.ttf")
 	});
 #endif
 	

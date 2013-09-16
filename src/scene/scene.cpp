@@ -29,19 +29,19 @@ constexpr size_t scene::frame_buffers::cl_frame_buffers::max_ir_lights;
 /*! scene constructor
  */
 scene::scene(engine* e_) :
-e(e_), s(e_->get_shader()), exts(e_->get_ext()), r(e_->get_rtt()), cl(e_->get_opencl()),
+e(e_), s(e_->get_shader()), exts(e_->get_ext()), r(e_->get_rtt()),
 window_handler(this, &scene::window_event_handler)
 {
 	//
-	stereo = e->get_stereo();
+	stereo = floor::get_stereo();
 	
-	recreate_buffers(frames[0], size2(e->get_width(), e->get_height()));
+	recreate_buffers(frames[0], size2(floor::get_width(), floor::get_height()));
 	
-	e->get_event()->add_internal_event_handler(window_handler, EVENT_TYPE::WINDOW_RESIZE);
+	floor::get_event()->add_internal_event_handler(window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
 	// load light objects/models
 	light_sphere = (a2estatic*)create_a2emodel<a2estatic>();
-	light_sphere->load_model(e->data_path("light_sphere.a2m"));
+	light_sphere->load_model(floor::data_path("light_sphere.a2m"));
 	light_sphere->set_hard_scale(1.07f, 1.07f, 1.07f);
 }
 
@@ -50,7 +50,7 @@ window_handler(this, &scene::window_event_handler)
 scene::~scene() {
 	log_debug("deleting scene object");
 	
-	e->get_event()->remove_event_handler(window_handler);
+	floor::get_event()->remove_event_handler(window_handler);
 
 	log_debug("deleting models and lights");
 	models.clear();
@@ -381,7 +381,7 @@ void scene::sort_alpha_objects() {
 	
 	// third, project corners onto current near plane
 	ipnt (*bbox_proj)[8] = new ipnt[obj_count][8];
-	int4 viewport(0, 0, (int)e->get_width(), (int)e->get_height());
+	int4 viewport(0, 0, (int)floor::get_width(), (int)floor::get_height());
 	matrix4f mviewt = e->get_modelview_matrix();
 	matrix4f mprojt = e->get_projection_matrix();
 	for(size_t i = 0; i < obj_count; i++) {
@@ -393,7 +393,7 @@ void scene::sort_alpha_objects() {
 	// fourth, check projected bbox overlap, TODO: use polygon/polygon intersection/overlap test
 	// TODO: http://stackoverflow.com/questions/115426/algorithm-to-detect-intersection-of-two-rectangles
 	// for the moment, do a simple rectangle/rectangle overlap test
-	ipnt screen_dim(e->get_width(), e->get_height());
+	ipnt screen_dim(floor::get_width(), floor::get_height());
 	ipnt (*bbox_rects)[2] = new ipnt[obj_count][2];
 	for(size_t i = 0; i < obj_count; i++) {
 		// compute rectangle
@@ -563,7 +563,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	
 	// some parameters required both by the shader and the opencl version
 	// compute projection constants (necessary to reconstruct world pos)
-	const float2 near_far_plane = e->get_near_far_plane();
+	const float2 near_far_plane = floor::get_near_far_plane();
 	const float2 projection_ab = float2(near_far_plane.y / (near_far_plane.y - near_far_plane.x),
 										(-near_far_plane.y * near_far_plane.x) / (near_far_plane.y - near_far_plane.x));
 	const float3 cam_position = -float3(*e->get_position());
@@ -631,7 +631,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 					if(li->get_type() != light::LIGHT_TYPE::POINT) continue;
 					
 					//
-					const float light_dist = (cam_position - li->get_position()).length() - e->get_near_far_plane().x;
+					const float light_dist = (cam_position - li->get_position()).length() - floor::get_near_far_plane().x;
 					if(light_dist <= li->get_radius()) continue; // if the camera is within a light, skip it for now
 					
 					//
@@ -708,7 +708,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 					if(li->get_type() != light::LIGHT_TYPE::POINT) continue;
 					
 					//
-					const float light_dist = (cam_position - li->get_position()).length() - e->get_near_far_plane().x;
+					const float light_dist = (cam_position - li->get_position()).length() - floor::get_near_far_plane().x;
 					if(light_dist > li->get_radius()) continue; // skip all outer lights
 					
 					ir_lighting->uniform("light_position", float4(li->get_position(), li->get_radius()));

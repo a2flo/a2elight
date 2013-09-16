@@ -72,9 +72,9 @@ static gui_theme::ui_float2 str_to_ui_float2(const string& str) {
 };
 
 //
-gui_theme::gui_theme(engine* e_, font_manager* fm_) : e(e_), fm(fm_), x(e->get_xml()), r(e->get_rtt()), scheme(e_) {
+gui_theme::gui_theme(engine* e_, font_manager* fm_) : e(e_), fm(fm_), x(floor::get_xml()), r(e->get_rtt()), scheme(e_) {
 	fnt = fm->get_font("SYSTEM_SANS_SERIF");
-	screen_dpi = e->get_dpi();
+	screen_dpi = floor::get_dpi();
 }
 
 gui_theme::~gui_theme() {
@@ -96,7 +96,7 @@ void gui_theme::reload() {
 }
 
 bool gui_theme::load(const string& filename_) {
-	xml::xml_doc ui_doc = x->process_file(e->data_path(filename_), false); // TODO: DTD!
+	xml::xml_doc ui_doc = x->process_file(floor::data_path(filename_), false); // TODO: DTD!
 	if(!ui_doc.valid || filename_.rfind("/") == string::npos) {
 		log_error("couldn't process theme file %s!", filename_);
 		return false;
@@ -154,7 +154,7 @@ bool gui_theme::load(const string& filename_) {
 }
 
 bool gui_theme::load_ui_object(const string& type, const string& obj_filename) {
-	xml::xml_doc ui_object_doc = x->process_file(e->data_path(obj_filename), false); // TODO: DTD!
+	xml::xml_doc ui_object_doc = x->process_file(floor::data_path(obj_filename), false); // TODO: DTD!
 	if(!ui_object_doc.valid) {
 		log_error("couldn't process ui object file %s!", obj_filename);
 		return false;
@@ -319,7 +319,7 @@ unique_ptr<gui_theme::point_compute_data> gui_theme::process_point_compute_data(
 			return make_unique<pc_text>(str_to_ui_float2((*node)["position"]),
 										string((*node)["id"]));
 	}
-	a2e_unreachable();
+	floor_unreachable();
 }
 
 unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const gui_theme::DRAW_STYLE style, const xml::xml_node* node) {
@@ -423,7 +423,7 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 			unsigned int tex_num = 0;
 			if(tex_name.find(".png") != string::npos) {
 				// TODO: stores textures; add/allow internal engine image names?
-				auto tex = e->get_texman()->add_texture(e->data_path(tex_name));
+				auto tex = e->get_texman()->add_texture(floor::data_path(tex_name));
 				tex_num = tex->tex();
 				tex_name = "";
 			}
@@ -483,7 +483,7 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 		case DRAW_STYLE::TEXT:
 			return make_unique<ds_text>(str_to_ui_color((*node)["color"]));
 	}
-	a2e_unreachable();
+	floor_unreachable();
 }
 
 //
@@ -793,7 +793,7 @@ void gui_theme::draw(const string& type, const string& state,
 	
 	// reset scissor rect
 	if(scissor) {
-		glScissor(0, 0, e->get_width(), e->get_height());
+		glScissor(0, 0, floor::get_width(), floor::get_height());
 	}
 }
 

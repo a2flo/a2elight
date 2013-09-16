@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __A2E_GUI_THEME_H__
-#define __A2E_GUI_THEME_H__
+#ifndef __A2E_GUI_THEME_HPP__
+#define __A2E_GUI_THEME_HPP__
 
 #include "global.hpp"
 #include "core/xml.hpp"

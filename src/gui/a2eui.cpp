@@ -21,14 +21,14 @@
 
 #define A2E_UI_VERSION 3
 
-a2eui::a2eui(engine* e_) : e(e_), x(e->get_xml()) {
+a2eui::a2eui(engine* e_) : e(e_), x(floor::get_xml()) {
 }
 
 a2eui::~a2eui() {
 }
 
 void a2eui::load(const string& filename) {
-	xml::xml_doc ui_doc = x->process_file(e->data_path(filename), false); // TODO: DTD!
+	xml::xml_doc ui_doc = x->process_file(floor::data_path(filename), false); // TODO: DTD!
 	if(!ui_doc.valid) {
 		log_error("couldn't process ui file %s!", filename);
 		return;

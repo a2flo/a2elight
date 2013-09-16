@@ -26,10 +26,9 @@
 shader::shader(engine* e_) {
 	// get classes
 	shader::e = e_;
-	shader::f = e->get_file_io();
 	shader::exts = e->get_ext();
 	shader::r = e->get_rtt();
-	shader::x = e->get_xml();
+	shader::x = floor::get_xml();
 	
 	a2e_shd = new a2e_shader(e);
 	a2e_shd->set_shader_class(this);
@@ -94,7 +93,7 @@ void shader::reload_shaders() {
 	else log_debug("failed to compile %u external!", err_shd_cnt);
 	
 	// emit shader reload event
-	e->get_event()->add_event(EVENT_TYPE::SHADER_RELOAD, make_shared<shader_reload_event>(SDL_GetTicks()));
+	floor::get_event()->add_event(EVENT_TYPE::SHADER_RELOAD, make_shared<shader_reload_event>(SDL_GetTicks()));
 }
 
 void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned int src_attachment, unsigned int dest_attachment) {
@@ -127,45 +126,13 @@ void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned i
 /*! adds a shader object
  */
 shader_object* shader::add_shader_file(const string& identifier, ext::GLSL_VERSION glsl_version, const char* vname, const char* gname, const char* fname) {
-	size_t size;
-	shader_object* ret;
-	char* vs_text = nullptr;
-	char* gs_text = nullptr;
-	char* fs_text = nullptr;
-	
 	// load shaders
-	f->open(vname, file_io::OPEN_TYPE::READ_BINARY);
-	size = (size_t)f->get_filesize();
-	vs_text = new char[size+1];
-	f->get_block(vs_text, size);
-	vs_text[size] = 0;
-	f->close();
-	
-	// optionally load geometry shader ...
-	if(gname != nullptr) {
-		f->open(gname, file_io::OPEN_TYPE::READ_BINARY);
-		size = (size_t)f->get_filesize();
-		gs_text = new char[size+1];
-		f->get_block(gs_text, size);
-		gs_text[size] = 0;
-		f->close();
-	}
-	
-	f->open(fname, file_io::OPEN_TYPE::READ_BINARY);
-	size = (size_t)f->get_filesize();
-	fs_text = new char[size+1];
-	f->get_block(fs_text, size);
-	fs_text[size] = 0;
-	f->close();
+	const auto vs_code = file_io::file_to_string(vname);
+	const auto gs_code = (gname != nullptr ? file_io::file_to_string(gname) : "");
+	const auto fs_code = file_io::file_to_string(fname);
 	
 	// add shader
-	ret = add_shader_src(identifier, glsl_version, vs_text, gs_text, fs_text);
-	
-	delete [] vs_text;
-	delete [] gs_text;
-	delete [] fs_text;
-	
-	return ret;
+	return add_shader_src(identifier, glsl_version, vs_code.c_str(), gs_code.c_str(), fs_code.c_str());
 }
 
 shader_object* shader::add_shader_src(const string& identifier, ext::GLSL_VERSION glsl_version, const char* vs_text, const char* gs_text, const char* fs_text) {

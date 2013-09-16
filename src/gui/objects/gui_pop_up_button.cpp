@@ -19,9 +19,9 @@
 #include "gui_pop_up_button.hpp"
 #include "gui_window.hpp"
 #include "engine.hpp"
-#include "event.hpp"
+#include "core/event.hpp"
 #include "gui.hpp"
-#include "task.hpp"
+#include "threading/task.hpp"
 #include "font.hpp"
 
 ////
@@ -109,7 +109,7 @@ void gui_pop_up_window::draw() {
 				false);
 	
 	// draw items
-	const pnt mouse_pos(gui_object::e->get_event()->get_mouse_pos());
+	const pnt mouse_pos { floor::get_event()->get_mouse_pos() };
 	float y_offset = margin + overlay_position.y;
 	const float4 font_color(theme->get_color_scheme().get("TEXT_INVERSE"));
 	const float4 font_color_active(theme->get_color_scheme().get("TEXT"));
