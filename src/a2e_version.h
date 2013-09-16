@@ -72,20 +72,20 @@
 // compiler checks:
 // msvc check
 #if defined(_MSC_VER)
-#if (_MSC_VER <= 1700)
-#error "Sorry, but you need MSVC 12.0+ to compile A2E"
+#if (_MSC_VER <= 1800)
+#error "Sorry, but you need MSVC 13.0+ (VS 2014+) to compile A2E"
 #endif
 
 // clang check
 #elif defined(__clang__)
-#if !defined(__clang_major__) || !defined(__clang_minor__) || (__clang_major__ < 3) || (__clang_major__ == 3 && __clang_minor__ < 1)
-#error "Sorry, but you need Clang 3.1+ to compile A2E"
+#if !defined(__clang_major__) || !defined(__clang_minor__) || (__clang_major__ < 3) || (__clang_major__ == 3 && __clang_minor__ < 2)
+#error "Sorry, but you need Clang 3.2+ to compile A2E"
 #endif
 
 // gcc check
 #elif defined(__GNUC__)
-#if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 7)
-#error "Sorry, but you need GCC 4.7+ to compile A2E"
+#if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+#error "Sorry, but you need GCC 4.9+ to compile A2E"
 #endif
 
 // just fall through ...

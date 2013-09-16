@@ -65,7 +65,7 @@ public:
 		version(ext::GLSL_VERSION::GLSL_ES_100)
 #endif
 		{}
-		a2e_shader_code(a2e_shader_code&& obj) :
+		a2e_shader_code(a2e_shader_code&& obj) noexcept :
 		header(obj.header), program(obj.program), version(obj.version) {}
 		a2e_shader_code& operator=(const a2e_shader_code& shd_code) {
 			this->header = shd_code.header;

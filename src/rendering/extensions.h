@@ -82,6 +82,7 @@ public:
 		RADEON_HD5,
 		RADEON_HD6,
 		RADEON_HD7,
+		RADEON_HD8,
 		SGX_535,
 		SGX_543,
 		IVY_BRIDGE,
@@ -91,7 +92,7 @@ public:
 	static const GRAPHICS_CARD min_nvidia_card = GRAPHICS_CARD::GEFORCE_8;
 	static const GRAPHICS_CARD max_nvidia_card = GRAPHICS_CARD::GEFORCE_GK100;
 	static const GRAPHICS_CARD min_ati_card = GRAPHICS_CARD::RADEON_HD2;
-	static const GRAPHICS_CARD max_ati_card = GRAPHICS_CARD::RADEON_HD7;
+	static const GRAPHICS_CARD max_ati_card = GRAPHICS_CARD::RADEON_HD8;
 	static const GRAPHICS_CARD min_powervr_card = GRAPHICS_CARD::SGX_535;
 	static const GRAPHICS_CARD max_powervr_card = GRAPHICS_CARD::SGX_543;
 	static const GRAPHICS_CARD min_intel_card = GRAPHICS_CARD::IVY_BRIDGE;

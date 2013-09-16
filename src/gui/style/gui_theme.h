@@ -140,42 +140,42 @@ public:
 	};
 	struct pc_point : public point_compute_data {
 		ui_float2 point;
-		pc_point(ui_float2&& p) : point(p) {}
+		pc_point(ui_float2&& p) noexcept : point(p) {}
 	};
 	struct pc_line : public point_compute_data {
 		ui_float2 start_point, end_point;
 		ui_float thickness;
-		pc_line(ui_float2&& sp, ui_float2&& ep, ui_float&& thck) : start_point(sp), end_point(ep), thickness(thck) {}
+		pc_line(ui_float2&& sp, ui_float2&& ep, ui_float&& thck) noexcept : start_point(sp), end_point(ep), thickness(thck) {}
 	};
 	struct pc_triangle : public point_compute_data {
 		ui_float2 point_0, point_1, point_2;
-		pc_triangle(ui_float2&& p0, ui_float2&& p1, ui_float2&& p2) : point_0(p0), point_1(p1), point_2(p2) {}
+		pc_triangle(ui_float2&& p0, ui_float2&& p1, ui_float2&& p2) noexcept : point_0(p0), point_1(p1), point_2(p2) {}
 	};
 	struct pc_rectangle : public point_compute_data {
 		ui_float2 start_point, end_point;
-		pc_rectangle(ui_float2&& sp, ui_float2&& ep) : start_point(sp), end_point(ep) {}
+		pc_rectangle(ui_float2&& sp, ui_float2&& ep) noexcept : start_point(sp), end_point(ep) {}
 	};
 	struct pc_rounded_rectangle : public point_compute_data {
 		ui_float2 start_point, end_point;
 		ui_float radius;
 		gfx2d::CORNER corners;
-		pc_rounded_rectangle(ui_float2&& sp, ui_float2&& ep, ui_float&& rd, gfx2d::CORNER&& crnrs) : start_point(sp), end_point(ep), radius(rd), corners(crnrs) {}
+		pc_rounded_rectangle(ui_float2&& sp, ui_float2&& ep, ui_float&& rd, gfx2d::CORNER&& crnrs) noexcept : start_point(sp), end_point(ep), radius(rd), corners(crnrs) {}
 	};
 	struct pc_circle : public point_compute_data {
 		ui_float2 point;
 		ui_float radius;
-		pc_circle(ui_float2&& p, ui_float&& rd) : point(p), radius(rd) {}
+		pc_circle(ui_float2&& p, ui_float&& rd) noexcept : point(p), radius(rd) {}
 	};
 	struct pc_circle_sector : public point_compute_data {
 		ui_float2 point;
 		ui_float radius;
 		ui_float start_angle, end_angle;
-		pc_circle_sector(ui_float2&& p, ui_float&& rd, ui_float&& sangle, ui_float&& eangle) : point(p), radius(rd), start_angle(sangle), end_angle(eangle) {}
+		pc_circle_sector(ui_float2&& p, ui_float&& rd, ui_float&& sangle, ui_float&& eangle) noexcept : point(p), radius(rd), start_angle(sangle), end_angle(eangle) {}
 	};
 	struct pc_ellipsoid : public point_compute_data {
 		ui_float2 point;
 		ui_float radius_lr, radius_tb;
-		pc_ellipsoid(ui_float2&& p, ui_float2&& r_lr_tb) : point(p),
+		pc_ellipsoid(ui_float2&& p, ui_float2&& r_lr_tb) noexcept : point(p),
 		radius_lr(ui_float(r_lr_tb.ui_value[0].ui_value, r_lr_tb.ui_value[0].type)),
 		radius_tb(ui_float(r_lr_tb.ui_value[1].ui_value, r_lr_tb.ui_value[1].type)) {}
 	};
@@ -183,7 +183,7 @@ public:
 		ui_float2 point;
 		ui_float radius_lr, radius_tb;
 		ui_float start_angle, end_angle;
-		pc_ellipsoid_sector(ui_float2&& p, ui_float2&& r_lr_tb, ui_float&& sangle, ui_float&& eangle) : point(p),
+		pc_ellipsoid_sector(ui_float2&& p, ui_float2&& r_lr_tb, ui_float&& sangle, ui_float&& eangle) noexcept : point(p),
 		radius_lr(ui_float(r_lr_tb.ui_value[0].ui_value, r_lr_tb.ui_value[0].type)),
 		radius_tb(ui_float(r_lr_tb.ui_value[1].ui_value, r_lr_tb.ui_value[1].type)),
 		start_angle(sangle), end_angle(eangle) {}
@@ -191,7 +191,7 @@ public:
 	struct pc_text : public point_compute_data {
 		ui_float2 position;
 		const string identifier;
-		pc_text(ui_float2&& p, string&& identifier_) : position(p), identifier(identifier_) {}
+		pc_text(ui_float2&& p, string&& identifier_) noexcept : position(p), identifier(identifier_) {}
 	};
 	
 	//
@@ -200,7 +200,7 @@ public:
 	};
 	struct ds_fill : public draw_style_data {
 		ui_color color;
-		ds_fill(ui_color&& col) : color(col) {}
+		ds_fill(ui_color&& col) noexcept : color(col) {}
 	};
 	struct ds_gradient : public draw_style_data {
 		gfx2d::GRADIENT_TYPE type;
@@ -208,7 +208,7 @@ public:
 		vector<ui_color> colors;
 		
 		ds_gradient() : type(gfx2d::GRADIENT_TYPE::HORIZONTAL), stops(float4(0.0f)), colors(vector<ui_color> {}) {}
-		ds_gradient(gfx2d::GRADIENT_TYPE&& type_, float4&& stops_, vector<ui_color>&& colors_) :
+		ds_gradient(gfx2d::GRADIENT_TYPE&& type_, float4&& stops_, vector<ui_color>&& colors_) noexcept :
 		type(type_), stops(stops_), colors(colors_) {}
 	};
 	struct ds_texture : public draw_style_data {
@@ -226,29 +226,29 @@ public:
 		float4 gradient_add_interpolator;
 		ds_gradient gradient;
 		
-		ds_texture(unsigned int&& texture_, string&& texture_name_, float2&& bottom_left_, float2&& top_right_, float&& depth_, bool&& passthrough_, ui_color&& mul_color_, ui_color&& add_color_, bool&& is_gradient_, float4&& gradient_mul_interpolator_, float4&& gradient_add_interpolator_, ds_gradient&& gradient_) :
+		ds_texture(unsigned int&& texture_, string&& texture_name_, float2&& bottom_left_, float2&& top_right_, float&& depth_, bool&& passthrough_, ui_color&& mul_color_, ui_color&& add_color_, bool&& is_gradient_, float4&& gradient_mul_interpolator_, float4&& gradient_add_interpolator_, ds_gradient&& gradient_) noexcept :
 		texture(texture_), texture_name(texture_name_), bottom_left(bottom_left_), top_right(top_right_), depth(depth_), passthrough(passthrough_), mul_color(mul_color_), add_color(add_color_), is_gradient(is_gradient_), gradient_mul_interpolator(gradient_mul_interpolator_), gradient_add_interpolator(gradient_add_interpolator_), gradient(gradient_)
 		{}
 	};
 	struct ds_border_fill : public ds_fill {
 		ui_float thickness;
-		ds_border_fill(ui_float&& thickness_, ui_color&& col) :
+		ds_border_fill(ui_float&& thickness_, ui_color&& col) noexcept :
 		ds_fill { std::move(col) }, thickness(thickness_) {}
 	};
 	struct ds_border_gradient : public ds_gradient {
 		ui_float thickness;
-		ds_border_gradient(ui_float&& thickness_, gfx2d::GRADIENT_TYPE&& type_, float4&& stops_, vector<ui_color>&& colors_) :
+		ds_border_gradient(ui_float&& thickness_, gfx2d::GRADIENT_TYPE&& type_, float4&& stops_, vector<ui_color>&& colors_) noexcept :
 		ds_gradient { std::move(type_), std::move(stops_), std::move(colors_) }, thickness(thickness_) {}
 	};
 	struct ds_border_texture : public ds_texture {
 		ui_float thickness;
-		ds_border_texture(ui_float&& thickness_, unsigned int&& texture_, string&& texture_name_, float2&& bottom_left_, float2&& top_right_, float&& depth_, bool&& passthrough_, ui_color&& mul_color_, ui_color&& add_color_, bool&& is_gradient_, float4&& gradient_mul_interpolator_, float4&& gradient_add_interpolator_, ds_gradient&& gradient_) :
+		ds_border_texture(ui_float&& thickness_, unsigned int&& texture_, string&& texture_name_, float2&& bottom_left_, float2&& top_right_, float&& depth_, bool&& passthrough_, ui_color&& mul_color_, ui_color&& add_color_, bool&& is_gradient_, float4&& gradient_mul_interpolator_, float4&& gradient_add_interpolator_, ds_gradient&& gradient_) noexcept :
 		ds_texture { std::move(texture_), std::move(texture_name_), std::move(bottom_left_), std::move(top_right_), std::move(depth_), std::move(passthrough_), std::move(mul_color_), std::move(add_color_), std::move(is_gradient_), std::move(gradient_mul_interpolator_), std::move(gradient_add_interpolator_), std::move(gradient_) },
 		thickness(thickness_) {}
 	};
 	struct ds_text : public draw_style_data {
 		ui_color color;
-		ds_text(ui_color&& col) : color(col) {}
+		ds_text(ui_color&& col) noexcept : color(col) {}
 	};
 	
 	struct primitive_data {

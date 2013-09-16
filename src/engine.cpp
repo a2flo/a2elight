@@ -1428,7 +1428,7 @@ void engine::acquire_gl_context() {
 		}
 	}
 #if defined(A2E_IOS)
-	glBindFramebuffer(GL_FRAMEBUFFER, 1);
+	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 #endif
 }
 

@@ -22,7 +22,6 @@
 #include "global.h"
 #include "core/core.h"
 
-#include "engine.h"
 #include "rendering/shader.h"
 #include "rendering/extensions.h"
 
@@ -52,6 +51,7 @@ template<typename... Args> static void draw_ ##pc_name ##_ ##ds_name(const Args&
 	draw<pc_func<ds_func>>(args...); \
 }
 
+class engine;
 class A2E_API gfx2d {
 public:
 	//
@@ -129,7 +129,7 @@ public:
 		points(), extent(), primitive_type(primitive_type_) {}
 		primitive_properties() :
 		points(), extent(), primitive_type(GL_TRIANGLES) {}
-		primitive_properties& operator=(primitive_properties&& props) {
+		primitive_properties& operator=(primitive_properties&& props) noexcept {
 			points.swap(props.points);
 			extent = props.extent;
 			primitive_type = props.primitive_type;

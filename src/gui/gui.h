@@ -148,7 +148,7 @@ template <class gui_class, typename... Args> gui_class* gui::add(Args&&... args)
 				  "can't add an object that doesn't inherit from gui_object!");
 	
 	lock();
-	gui_class* obj = new gui_class(e, args...);
+	gui_class* obj = new gui_class(e, forward<Args>(args)...);
 	
 	// "specialize" for gui_window, since we'll need to keep track of them:
 	// (also: i wish there'd be a static if ...)

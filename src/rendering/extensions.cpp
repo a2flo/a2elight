@@ -42,6 +42,7 @@ const char* ext::GRAPHICS_CARD_STR[] = {
 	"Radeon HD5",
 	"Radeon HD6",
 	"Radeon HD7",
+	"Radeon HD8",
 	"PowerVR SGX535",
 	"PowerVR SGX543",
 	"Ivy Bridge",
@@ -70,6 +71,7 @@ const char* ext::GRAPHICS_CARD_DEFINE_STR[] = {
 	"RADEON_HD5",
 	"RADEON_HD6",
 	"RADEON_HD7",
+	"RADEON_HD8",
 	"SGX_535",
 	"SGX_543",
 	"IVY_BRIDGE",
@@ -383,7 +385,10 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 			}
 			else if(renderer_str.find("geforce gtx 6") != string::npos ||	// GTX 6xx
 					renderer_str.find("geforce gts 6") != string::npos ||	// GTS 6xx
-					renderer_str.find("geforce gt 6") != string::npos) {	// GT 6xx
+					renderer_str.find("geforce gt 6") != string::npos ||	// GT 6xx
+					renderer_str.find("geforce gtx 7") != string::npos ||	// GTX 7xx
+					renderer_str.find("geforce gts 7") != string::npos ||	// GTS 7xx
+					renderer_str.find("geforce gt 7") != string::npos) {	// GT 7xx
 				graphics_card = ext::GRAPHICS_CARD::GEFORCE_GK100;
 			}
 		}
@@ -405,6 +410,9 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 			}
 			else if(renderer_str.find("radeon hd 7") != string::npos) {
 				graphics_card = ext::GRAPHICS_CARD::RADEON_HD7;
+			}
+			else if(renderer_str.find("radeon hd 8") != string::npos) {
+				graphics_card = ext::GRAPHICS_CARD::RADEON_HD8;
 			}
 		}
 		else if(vendor == ext::GRAPHICS_CARD_VENDOR::POWERVR) {
