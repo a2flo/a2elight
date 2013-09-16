@@ -1,5 +1,5 @@
 /*  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,8 +30,8 @@
 
 // dll main for windows dll export
 #if defined(__WINDOWS__)
-BOOL APIENTRY DllMain(HANDLE hModule a2e_unused, DWORD ul_reason_for_call, LPVOID lpReserved a2e_unused);
-BOOL APIENTRY DllMain(HANDLE hModule a2e_unused, DWORD ul_reason_for_call, LPVOID lpReserved a2e_unused) {
+BOOL APIENTRY DllMain(HANDLE hModule floor_unused, DWORD ul_reason_for_call, LPVOID lpReserved floor_unused);
+BOOL APIENTRY DllMain(HANDLE hModule floor_unused, DWORD ul_reason_for_call, LPVOID lpReserved floor_unused) {
 	switch(ul_reason_for_call) {
 		case DLL_PROCESS_ATTACH:
 		case DLL_THREAD_ATTACH:
@@ -87,7 +87,7 @@ engine::engine(const char* callpath_, const char* datapath_) {
 /*! there is no function currently
  */
 engine::~engine() {
-	a2e_debug("deleting engine object");
+	log_debug("deleting engine object");
 	
 	acquire_gl_context();
 
@@ -124,7 +124,7 @@ engine::~engine() {
 #endif
 	release_gl_context();
 
-	a2e_debug("engine object deleted");
+	log_debug("engine object deleted");
 	
 	SDL_GL_DeleteContext(config.ctx);
 	SDL_DestroyWindow(config.wnd);
@@ -204,7 +204,7 @@ void engine::create() {
 	e->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
 	// print out engine info
-	a2e_debug("%s", (A2E_VERSION_STRING).c_str());
+	log_debug("%s", (A2E_VERSION_STRING).c_str());
 	
 	// load config
 	const string config_filename(string("config.xml") +
@@ -285,7 +285,7 @@ void engine::init(bool console, unsigned int width, unsigned int height,
 		mode = INIT_MODE::CONSOLE;
 		// create extension class object
 		exts = new ext(mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
-		a2e_debug("initializing albion 2 engine in console only mode");
+		log_debug("initializing albion 2 engine in console only mode");
 	}
 	else {
 		config.width = width;
@@ -301,23 +301,23 @@ void engine::init(bool console, unsigned int width, unsigned int height,
  */
 void engine::init(const char* ico) {
 	mode = INIT_MODE::GRAPHICAL;
-	a2e_debug("initializing albion 2 engine in console + graphical mode");
+	log_debug("initializing albion 2 engine in console + graphical mode");
 
 	// in order to use multi-threaded opengl with x11/xlib, we have to tell it to actually be thread safe
 #if !defined(__APPLE__) && !defined(__WINDOWS__)
 	if(XInitThreads() == 0) {
-		a2e_error("XInitThreads failed!");
+		log_error("XInitThreads failed!");
 		exit(1);
 	}
 #endif
 
 	// initialize sdl
 	if(SDL_Init(SDL_INIT_VIDEO) == -1) {
-		a2e_error("can't init SDL: %s", SDL_GetError());
+		log_error("can't init SDL: %s", SDL_GetError());
 		exit(1);
 	}
 	else {
-		a2e_debug("sdl initialized");
+		log_debug("sdl initialized");
 	}
 	atexit(SDL_Quit);
 
@@ -335,10 +335,10 @@ void engine::init(const char* ico) {
 		config.flags |= SDL_WINDOW_FULLSCREEN;
 		config.flags |= SDL_WINDOW_BORDERLESS;
 		windows_pos.set(0, 0);
-		a2e_debug("fullscreen enabled");
+		log_debug("fullscreen enabled");
 	}
 	else {
-		a2e_debug("fullscreen disabled");
+		log_debug("fullscreen disabled");
 	}
 #else
 	config.flags |= SDL_WINDOW_FULLSCREEN;
@@ -346,7 +346,7 @@ void engine::init(const char* ico) {
 	config.flags |= SDL_WINDOW_BORDERLESS;
 #endif
 
-	a2e_debug("vsync %s", config.vsync ? "enabled" : "disabled");
+	log_debug("vsync %s", config.vsync ? "enabled" : "disabled");
 	
 	// gl attributes
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -380,21 +380,21 @@ void engine::init(const char* ico) {
 	config.wnd = SDL_CreateWindow("A2E", 0, 0, (unsigned int)config.width, (unsigned int)config.height, config.flags);
 #endif
 	if(config.wnd == nullptr) {
-		a2e_error("can't create window: %s", SDL_GetError());
+		log_error("can't create window: %s", SDL_GetError());
 		exit(1);
 	}
 	else {
 		SDL_GetWindowSize(config.wnd, (int*)&config.width, (int*)&config.height);
-		a2e_debug("video mode set: w%u h%u", config.width, config.height);
+		log_debug("video mode set: w%u h%u", config.width, config.height);
 	}
 	
 #if defined(A2E_IOS)
 	if(SDL_SetWindowDisplayMode(config.wnd, &fullscreen_mode) < 0) {
-		a2e_error("can't set up fullscreen display mode: %s", SDL_GetError());
+		log_error("can't set up fullscreen display mode: %s", SDL_GetError());
 		exit(1);
 	}
 	SDL_GetWindowSize(config.wnd, (int*)&config.width, (int*)&config.height);
-	a2e_debug("fullscreen mode set: w%u h%u", config.width, config.height);
+	log_debug("fullscreen mode set: w%u h%u", config.width, config.height);
 	SDL_ShowWindow(config.wnd);
 #endif
 	
@@ -403,7 +403,7 @@ void engine::init(const char* ico) {
 	
 	config.ctx = SDL_GL_CreateContext(config.wnd);
 	if(config.ctx == nullptr) {
-		a2e_error("can't create opengl context: %s", SDL_GetError());
+		log_error("can't create opengl context: %s", SDL_GetError());
 		exit(1);
 	}
 #if !defined(A2E_IOS)
@@ -414,11 +414,11 @@ void engine::init(const char* ico) {
 	CGLContextObj cgl_ctx = CGLGetCurrentContext();
 	CGLError cgl_err = CGLEnable(cgl_ctx, kCGLCEMPEngine);
 	if(cgl_err != kCGLNoError) {
-		a2e_error("unable to set multi-threaded opengl context (%X: %X): %s!",
+		log_error("unable to set multi-threaded opengl context (%X: %X): %s!",
 				  (size_t)cgl_ctx, cgl_err, CGLErrorString(cgl_err));
 	}
 	else {
-		a2e_debug("multi-threaded opengl context enabled!");
+		log_debug("multi-threaded opengl context enabled!");
 	}
 #endif
 #endif
@@ -434,7 +434,7 @@ void engine::init(const char* ico) {
 	else {
 #else
 		if(config.opencl_platform == "cuda") {
-			a2e_error("CUDA support is not enabled!");
+			log_error("CUDA support is not enabled!");
 		}
 #endif
 		ocl = new opencl(core::strip_path(string(datapath + kernelpath)).c_str(), config.wnd, config.clear_cache);
@@ -454,13 +454,13 @@ void engine::init(const char* ico) {
 	// capability test
 #if !defined(A2E_IOS)
 	if(!exts->is_gl_version(3, 2)) { // TODO: check for shader support! (use recognized gl version)
-		a2e_error("A2E doesn't support your graphic device! OpenGL 3.2 is the minimum requirement.");
+		log_error("A2E doesn't support your graphic device! OpenGL 3.2 is the minimum requirement.");
 		SDL_Delay(10000);
 		exit(1);
 	}
 #else
 	if(!exts->is_gl_version(2, 0)) {
-		a2e_error("A2E doesn't support your graphic device! OpenGL ES 2.0 is the minimum requirement.");
+		log_error("A2E doesn't support your graphic device! OpenGL ES 2.0 is the minimum requirement.");
 		SDL_Delay(10000);
 		exit(1);
 	}
@@ -473,24 +473,24 @@ void engine::init(const char* ico) {
 	
 	int tmp = 0;
 	SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &tmp);
-	a2e_debug("double buffering %s", tmp == 1 ? "enabled" : "disabled");
+	log_debug("double buffering %s", tmp == 1 ? "enabled" : "disabled");
 
 	// print out some opengl informations
-	a2e_debug("vendor: %s", glGetString(GL_VENDOR));
-	a2e_debug("renderer: %s", glGetString(GL_RENDERER));
-	a2e_debug("version: %s", glGetString(GL_VERSION));
+	log_debug("vendor: %s", glGetString(GL_VENDOR));
+	log_debug("renderer: %s", glGetString(GL_RENDERER));
+	log_debug("version: %s", glGetString(GL_VERSION));
 	
 	// no support for ms gdi driver ...
 	if(strcmp((const char*)glGetString(GL_RENDERER), "GDI Generic") == 0) {
-		a2e_error("A2E doesn't support the MS GDI Generic driver!\nGo and install one of these (that match your graphics card):\nhttp://www.ati.com  http://www.nvidia.com  http://www.intel.com");
+		log_error("A2E doesn't support the MS GDI Generic driver!\nGo and install one of these (that match your graphics card):\nhttp://www.ati.com  http://www.nvidia.com  http://www.intel.com");
 		SDL_Delay(10000);
 		exit(1);
 	}
 	
 	if(SDL_GetCurrentVideoDriver() == nullptr) {
-		a2e_error("couldn't get video driver: %s!", SDL_GetError());
+		log_error("couldn't get video driver: %s!", SDL_GetError());
 	}
-	else a2e_debug("video driver: %s", SDL_GetCurrentVideoDriver());
+	else log_debug("video driver: %s", SDL_GetCurrentVideoDriver());
 	
 	e->set_ldouble_click_time((unsigned int)config.ldouble_click_time);
 	e->set_rdouble_click_time((unsigned int)config.rdouble_click_time);
@@ -498,7 +498,7 @@ void engine::init(const char* ico) {
 	
 	// initialize ogl
 	init_gl();
-	a2e_debug("opengl initialized");
+	log_debug("opengl initialized");
 
 	// resize stuff
 	resize_window();
@@ -595,10 +595,10 @@ void engine::init(const char* ico) {
 	if(config.ui_anti_aliasing > 2) config.ui_anti_aliasing = core::next_pot((unsigned int)config.ui_anti_aliasing);
 	if(exts->get_max_samples() < config.ui_anti_aliasing) {
 		config.ui_anti_aliasing = exts->get_max_samples();
-		a2e_error("your chosen gui anti-aliasing mode isn't supported by your graphic card - using \"%u\" instead!",
+		log_error("your chosen gui anti-aliasing mode isn't supported by your graphic card - using \"%u\" instead!",
 				  config.ui_anti_aliasing);
 	}
-	else a2e_debug("using \"%ux\" gui anti-aliasing", config.ui_anti_aliasing);
+	else log_debug("using \"%ux\" gui anti-aliasing", config.ui_anti_aliasing);
 	
 	switch(config.ui_anti_aliasing) {
 		case 0: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::NONE; break;
@@ -662,7 +662,7 @@ void engine::set_fullscreen(const bool& state) {
 	if(state == config.fullscreen) return;
 	config.fullscreen = state;
 	if(SDL_SetWindowFullscreen(config.wnd, (SDL_bool)state) != 0) {
-		a2e_error("failed to %s fullscreen: %s!",
+		log_error("failed to %s fullscreen: %s!",
 				  (state ? "enable" : "disable"), SDL_GetError());
 	}
 	e->add_event(EVENT_TYPE::WINDOW_RESIZE,
@@ -720,22 +720,22 @@ void engine::stop_draw() {
 		case GL_NO_ERROR:
 			break;
 		case GL_INVALID_ENUM:
-			a2e_error("OpenGL error: invalid enum!");
+			log_error("OpenGL error: invalid enum!");
 			break;
 		case GL_INVALID_VALUE:
-			a2e_error("OpenGL error: invalid value!");
+			log_error("OpenGL error: invalid value!");
 			break;
 		case GL_INVALID_OPERATION:
-			a2e_error("OpenGL error: invalid operation!");
+			log_error("OpenGL error: invalid operation!");
 			break;
 		case GL_OUT_OF_MEMORY:
-			a2e_error("OpenGL error: out of memory!");
+			log_error("OpenGL error: out of memory!");
 			break;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			a2e_error("OpenGL error: invalid framebuffer operation!");
+			log_error("OpenGL error: invalid framebuffer operation!");
 			break;
 		default:
-			a2e_error("unknown OpenGL error: %u!");
+			log_error("unknown OpenGL error: %u!");
 			break;
 	}
 	
@@ -1123,9 +1123,9 @@ void engine::set_anisotropic(const size_t& anisotropic) {
 	config.anisotropic = anisotropic;
 	if(config.anisotropic > exts->get_max_anisotropic_filtering()) {
 		config.anisotropic = exts->get_max_anisotropic_filtering();
-		a2e_error("your chosen anisotropic-filtering value isn't supported by your graphic card - using \"%u\" instead!", config.anisotropic);
+		log_error("your chosen anisotropic-filtering value isn't supported by your graphic card - using \"%u\" instead!", config.anisotropic);
 	}
-	else a2e_debug("using \"%ux\" anisotropic-filtering", config.anisotropic);
+	else log_debug("using \"%ux\" anisotropic-filtering", config.anisotropic);
 }
 
 rtt::TEXTURE_ANTI_ALIASING engine::get_anti_aliasing() const {
@@ -1146,10 +1146,10 @@ void engine::set_anti_aliasing(const rtt::TEXTURE_ANTI_ALIASING& anti_aliasing) 
 	// if the chosen anti-aliasing mode isn't supported, use the next best one
 	if(!chosen_aa_mode_supported) {
 		config.anti_aliasing = supported_aa_modes.back();
-		a2e_error("your chosen anti-aliasing mode isn't supported by your graphic card - using \"%s\" instead!", rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
+		log_error("your chosen anti-aliasing mode isn't supported by your graphic card - using \"%s\" instead!", rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
 	}
 	else {
-		a2e_debug("using \"%s\" anti-aliasing",
+		log_debug("using \"%s\" anti-aliasing",
 				  rtt::TEXTURE_ANTI_ALIASING_STR[(unsigned int)config.anti_aliasing]);
 	}
 	
@@ -1195,12 +1195,12 @@ bool engine::is_new_fps_count() {
 
 SDL_Cursor* engine::add_cursor(const char* name, const char** raw_data, unsigned int xsize, unsigned int ysize, unsigned int hotx, unsigned int hoty) {
 	if(cursors.count(name)) {
-		a2e_error("cursor with such a name (%s) already exists!", name);
+		log_error("cursor with such a name (%s) already exists!", name);
 		return nullptr;
 	}
 
 	if((xsize != 16 || ysize != 16) && (xsize != 32 || ysize != 32)) {
-		a2e_error("invalid cursor size (%ux%u) - must be either 16x16 or 32x32!", xsize, ysize);
+		log_error("invalid cursor size (%ux%u) - must be either 16x16 or 32x32!", xsize, ysize);
 		return nullptr;
 	}
 
@@ -1252,7 +1252,7 @@ void engine::set_cursor(SDL_Cursor* cursor) {
 
 SDL_Cursor* engine::get_cursor(const char* name) {
 	if(!cursors.count(name)) {
-		a2e_error("no cursor with such a name (%s) exists!", name);
+		log_error("no cursor with such a name (%s) exists!", name);
 		return nullptr;
 	}
 	return cursors[name];
@@ -1420,7 +1420,7 @@ void engine::acquire_gl_context() {
 	const unsigned int cur_active_locks = config.ctx_active_locks++;
 	if(cur_active_locks == 0) {
 		if(SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
-			a2e_error("couldn't make gl context current: %s!", SDL_GetError());
+			log_error("couldn't make gl context current: %s!", SDL_GetError());
 			return;
 		}
 		if(ocl != nullptr && ocl->is_supported()) {
@@ -1441,7 +1441,7 @@ void engine::release_gl_context() {
 			ocl->deactivate_context();
 		}
 		if(SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
-			a2e_error("couldn't release current gl context: %s!", SDL_GetError());
+			log_error("couldn't release current gl context: %s!", SDL_GetError());
 			return;
 		}
 	}

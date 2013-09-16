@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -277,7 +277,7 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 			if(!is_ext_supported(ext_str)) {
 				*check.flag = false;
 				if(imode == INIT_MODE::GRAPHICAL) {
-					a2e_msg("your graphic device doesn't support '%s'!", ext_str);
+					log_msg("your graphic device doesn't support '%s'!", ext_str);
 				}
 				// don't break here, but rather print all extensions that aren't supported
 			}
@@ -303,10 +303,10 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 	GLint vtf = 0;
 	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vtf);
 	if(vtf > 0) {
-		a2e_debug("supported vertex textures: %i", vtf);
+		log_debug("supported vertex textures: %i", vtf);
 	}
 	else {
-		if(imode == INIT_MODE::GRAPHICAL) a2e_error("your graphic device doesn't support 'Vertex Texture Fetching'!");
+		if(imode == INIT_MODE::GRAPHICAL) log_error("your graphic device doesn't support 'Vertex Texture Fetching'!");
 	}
 	
 	// get max anisotropic filtering
@@ -334,7 +334,7 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 		// get renderer string and make it lower case
 		const char* gl_renderer_str = (const char*)glGetString(GL_RENDERER);
 		if(gl_renderer_str == nullptr) {
-			a2e_error("gl renderer str is nullptr - invalid opengl context?");
+			log_error("gl renderer str is nullptr - invalid opengl context?");
 		}
 		string renderer_str = (*force_device == "") ? (gl_renderer_str == nullptr ? "" : gl_renderer_str) : force_device->c_str();
 		core::str_to_lower_inplace(renderer_str);
@@ -438,13 +438,13 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 			}
 		}
 
-		a2e_debug("your graphics card has been recognized as \"%s\"!", GRAPHICS_CARD_STR[(unsigned int)graphics_card]);
+		log_debug("your graphics card has been recognized as \"%s\"!", GRAPHICS_CARD_STR[(unsigned int)graphics_card]);
 	}
 	
 	if(imode == INIT_MODE::GRAPHICAL) {
-		a2e_debug("opengl version: %s", cstr_from_gl_version(opengl_version));
-		a2e_debug("glsl version: GLSL %s", cstr_from_glsl_version(glsl_version));
-		a2e_debug("shader model: %s", shader_support ? (shader_model_5_0_support ? "5.0" : "4.0") : "none");
+		log_debug("opengl version: %s", cstr_from_gl_version(opengl_version));
+		log_debug("glsl version: GLSL %s", cstr_from_glsl_version(glsl_version));
+		log_debug("shader model: %s", shader_support ? (shader_model_5_0_support ? "5.0" : "4.0") : "none");
 	}
 	
 	// TODO: abort if no opengl (3.2) or glsl (1.50) support!
@@ -607,7 +607,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& major_version, const size_t
 			break;
 	}
 	
-	a2e_error("invalid glsl version %d.%d!", major_version, minor_version);
+	log_error("invalid glsl version %d.%d!", major_version, minor_version);
 	return GLSL_VERSION::GLSL_NO_VERSION;
 }
 
@@ -622,7 +622,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& version) const {
 		case 430: return GLSL_VERSION::GLSL_430;
 	}
 	
-	a2e_error("invalid glsl version %d!", version);
+	log_error("invalid glsl version %d!", version);
 	return GLSL_VERSION::GLSL_NO_VERSION;
 }
 

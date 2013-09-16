@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #include "build_version.h"
 #include "core/util.h"
 #define A2E_MAJOR_VERSION "0"
-#define A2E_MINOR_VERSION "2"
-#define A2E_REVISION_VERSION "1"
-#define A2E_DEV_STAGE_VERSION "b7"
+#define A2E_MINOR_VERSION "3"
+#define A2E_REVISION_VERSION "0"
+#define A2E_DEV_STAGE_VERSION "d1"
 #define A2E_BUILD_TIME __TIME__
 #define A2E_BUILD_DATE __DATE__
 

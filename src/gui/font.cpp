@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 		// load first face of file
 		FT_Face first_face = nullptr;
 		if(FT_New_Face(fm->get_ft_library(), filename.c_str(), 0, &first_face) != 0) {
-			a2e_error("couldn't load font %s!", filename);
+			log_error("couldn't load font %s!", filename);
 			return;
 		}
 		if(font_name == "NONE") font_name = first_face->family_name;
@@ -62,7 +62,7 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 			FT_Face face = nullptr;
 			if(face_index > 0) {
 				if(FT_New_Face(fm->get_ft_library(), filename.c_str(), face_index, &face) != 0) {
-					a2e_error("couldn't load face #%u for font %s!", face_index, filename);
+					log_error("couldn't load face #%u for font %s!", face_index, filename);
 					return;
 				}
 				// add if style doesn't exist yet
@@ -76,7 +76,7 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 			
 			if(face != nullptr) {
 				if(FT_Set_Char_Size(face, 0, font_size * 64, 0, (FT_UInt)e->get_dpi()) != 0) {
-					a2e_error("couldn't set char size for face #%u in font %s!", face_index, filename);
+					log_error("couldn't set char size for face #%u in font %s!", face_index, filename);
 					return;
 				}
 			}
@@ -85,7 +85,7 @@ shader_reload_fnctr(this, &font::shader_reload_handler)
 	
 	// make sure we have a font for each style (if not, use another one as fallback)
 	if(faces.empty()) {
-		a2e_error("couldn't load any faces for font %s!", font_name);
+		log_error("couldn't load any faces for font %s!", font_name);
 		return;
 	}
 	
@@ -152,7 +152,7 @@ font::~font() {
 	}
 	for(const auto& face : ft_faces) {
 		if(FT_Done_Face(face) != 0) {
-			a2e_error("failed to free face for font %s!", font_name);
+			log_error("failed to free face for font %s!", font_name);
 		}
 	}
 	
@@ -223,11 +223,11 @@ void font::cache(const string& characters) {
 
 void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 	if(start_code > end_code) {
-		a2e_error("start_code(%u) > end_code(%u)", start_code, end_code);
+		log_error("start_code(%u) > end_code(%u)", start_code, end_code);
 		return;
 	}
 	if(start_code > 0x10FFFF || end_code > 0x10FFFF) {
-		a2e_error("invalid start_code(%u) or end_code(%u) - >0x10FFFF!", start_code, end_code);
+		log_error("invalid start_code(%u) or end_code(%u) - >0x10FFFF!", start_code, end_code);
 		return;
 	}
 	
@@ -266,7 +266,7 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 			}
 			
 			if(FT_Load_Char(face.second, code, FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT | FT_LOAD_TARGET_LCD) != 0) {
-				a2e_error("couldn't cache character %X!", code);
+				log_error("couldn't cache character %X!", code);
 				continue;
 			}
 			
@@ -389,7 +389,7 @@ void font::reload_shaders() {
 	font_shd = s->get_gl3shader("FONT");
 }
 
-bool font::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj a2e_unused) {
+bool font::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj floor_unused) {
 	if(type == EVENT_TYPE::SHADER_RELOAD) {
 		reload_shaders();
 	}
@@ -416,9 +416,9 @@ pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
 													   std::function<void(unsigned int)> cache_fnc) const {
 	vector<uint2> ubo_data;
 	const float2 extent = text_stepper(text,
-									   [&ubo_data](unsigned int code a2e_unused,
+									   [&ubo_data](unsigned int code floor_unused,
 												   const glyph_data& glyph,
-												   const float2& origin a2e_unused,
+												   const float2& origin floor_unused,
 												   const float2& fpos) {
 										   const int2 pos(fpos); // round to integer
 										   ubo_data.emplace_back(glyph.tex_index,
@@ -450,10 +450,10 @@ vector<float2> font::compute_advance_map(const vector<unsigned int>& unicode_str
 	int2 line_advance(numeric_limits<int>::max(), 0);
 	text_stepper(unicode_str,
 				 [&advance_map, &total_advance, &line_advance, &component]
-				 (unsigned int code a2e_unused,
+				 (unsigned int code floor_unused,
 				  const glyph_data& glyph,
-				  const float2& origin a2e_unused,
-				  const float2& fpos a2e_unused)
+				  const float2& origin floor_unused,
+				  const float2& fpos floor_unused)
 	{
 		if(component == 0) { //x
 			const float glyph_advance = float(glyph.layout.z >> 6);
@@ -468,8 +468,8 @@ vector<float2> font::compute_advance_map(const vector<unsigned int>& unicode_str
 		}
 	},
 				 [&total_advance, &line_advance, &component]
-				 (unsigned int code a2e_unused,
-				  const float2& origin a2e_unused,
+				 (unsigned int code floor_unused,
+				  const float2& origin floor_unused,
 				  const float& break_size)
 	{
 		if(component == 1) { // y

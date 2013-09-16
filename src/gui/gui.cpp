@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@ window_handler_fnctr(this, &gui::window_handler) {
 }
 
 gui::~gui() {
-	a2e_debug("deleting gui object");
+	log_debug("deleting gui object");
 	
 	set_thread_should_finish();
 	
@@ -111,7 +111,7 @@ gui::~gui() {
 	delete theme;
 	delete fm;
 
-	a2e_debug("gui object deleted");
+	log_debug("gui object deleted");
 }
 
 void gui::reload_shaders() {
@@ -341,7 +341,7 @@ bool gui::mouse_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
 	return true;
 }
 
-bool gui::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj a2e_unused) {
+bool gui::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj floor_unused) {
 	if(type == EVENT_TYPE::SHADER_RELOAD) {
 		reload_shaders();
 	}
@@ -378,7 +378,7 @@ gui_simple_callback* gui::add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_ca
 	auto& callbacks = draw_callbacks[mode == DRAW_MODE_UI::PRE_UI ? 0 : 1];
 	const auto iter = find(begin(callbacks), end(callbacks), &cb);
 	if(iter != end(callbacks)) {
-		a2e_error("this ui draw callback already exists!");
+		log_error("this ui draw callback already exists!");
 		return nullptr;
 	}
 	callbacks.emplace_back(&cb);
@@ -396,7 +396,7 @@ void gui::delete_draw_callback(ui_draw_callback& cb) {
 	const auto iter_1 = find(begin(draw_callbacks[1]), end(draw_callbacks[1]), &cb);
 	
 	if(iter_0 == end(draw_callbacks[0]) && iter_1 == end(draw_callbacks[1])) {
-		a2e_error("no such ui draw callback does exist!");
+		log_error("no such ui draw callback does exist!");
 		return;
 	}
 	
@@ -488,7 +488,7 @@ const rtt::fbo* gui::get_fullscreen_fbo() const {
 
 bool gui::set_clipboard_text(const string& text) {
 	if(SDL_SetClipboardText(text.c_str()) != 0) {
-		a2e_error("couldn't set clipboard text: %s!", SDL_GetError());
+		log_error("couldn't set clipboard text: %s!", SDL_GetError());
 		return false;
 	}
 	clipboard_text = text;

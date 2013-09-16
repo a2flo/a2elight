@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,44 +37,44 @@ const char* gles2_type_to_string(const size_t& type) {
 
 #define A2E_CHECK_UNIFORM_EXISTENCE(name) \
 if(shd_obj.programs.size() <= cur_program) { \
-a2e_error("invalid program #%u for shader \"%s\"!", cur_program, shd_obj.name.c_str()); \
+log_error("invalid program #%u for shader \"%s\"!", cur_program, shd_obj.name.c_str()); \
 return; \
 } \
 if(shd_obj.programs[cur_program]->uniforms.count(name) == 0) { \
-a2e_error("unknown uniform name \"%s\" for shader \"%s\"!", name, shd_obj.name.c_str()); \
+log_error("unknown uniform name \"%s\" for shader \"%s\"!", name, shd_obj.name.c_str()); \
 return; \
 }
 
 #define A2E_CHECK_ATTRIBUTE_EXISTENCE(name) \
 if(shd_obj.programs.size() <= cur_program) { \
-a2e_error("invalid program #%u for shader \"%s\"!", cur_program, shd_obj.name.c_str()); \
+log_error("invalid program #%u for shader \"%s\"!", cur_program, shd_obj.name.c_str()); \
 return; \
 } \
 if(shd_obj.programs[cur_program]->attributes.count(name) == 0) { \
-a2e_error("unknown attribute name \"%s\" for shader \"%s\"!", name, shd_obj.name.c_str()); \
+log_error("unknown attribute name \"%s\" for shader \"%s\"!", name, shd_obj.name.c_str()); \
 return; \
 }
 
 #define A2E_CHECK_BLOCK_EXISTENCE(name) \
 if(shd_obj.programs.size() <= cur_program) { \
-a2e_error("invalid program #%u for shader \"%s\"!", cur_program, shd_obj.name.c_str()); \
+log_error("invalid program #%u for shader \"%s\"!", cur_program, shd_obj.name.c_str()); \
 return; \
 } \
 if(shd_obj.programs[cur_program]->blocks.count(name) == 0) { \
-a2e_error("unknown uniform block name \"%s\" for shader \"%s\"!", name, shd_obj.name.c_str()); \
+log_error("unknown uniform block name \"%s\" for shader \"%s\"!", name, shd_obj.name.c_str()); \
 return; \
 }
 
 #define A2E_CHECK_UNIFORM_TYPE(name, uniform_type) \
 size_t expected_type = shd_obj.programs[cur_program]->uniforms.find(name)->second.type; \
 if(uniform_type != (size_t)expected_type) { \
-a2e_error("unexpected type %s for uniform \"%s\" - expected %s (in shader \"%s\")!", gles2_type_to_string(uniform_type), name, gles2_type_to_string(expected_type), shd_obj.name.c_str()); \
+log_error("unexpected type %s for uniform \"%s\" - expected %s (in shader \"%s\")!", gles2_type_to_string(uniform_type), name, gles2_type_to_string(expected_type), shd_obj.name.c_str()); \
 }
 
 #define A2E_CHECK_ATTRIBUTE_TYPE(name, attribute_type) \
 size_t expected_type = shd_obj.programs[cur_program]->attributes.find(name)->second.type; \
 if(attribute_type != (size_t)expected_type) { \
-a2e_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s\")!", gles2_type_to_string(attribute_type), name, gles2_type_to_string(expected_type), shd_obj.name.c_str()); \
+log_error("unexpected type %s for attribute \"%s\" - expected %s (in shader \"%s\")!", gles2_type_to_string(attribute_type), name, gles2_type_to_string(expected_type), shd_obj.name.c_str()); \
 }
 
 #else // don't check the type in release mode
@@ -91,7 +91,7 @@ shader_gles2::shader_gles2(const shader_object& shd_obj_) : shader_base<shader_g
 	use(0);
 #if defined(A2E_DEBUG)
 	if(shd_obj.programs.size() == 0) {
-		a2e_error("shader \"%s\" has no programs!", shd_obj.name.c_str());
+		log_error("shader \"%s\" has no programs!", shd_obj.name.c_str());
 	}
 #endif
 }
@@ -119,7 +119,7 @@ void shader_gles2::use(const size_t& program, const set<string> combiners = {}) 
 	glUseProgram(shd_obj.programs[cur_program]->program);
 #if defined(A2E_DEBUG)
 	if(shd_obj.programs.size() == 0) {
-		a2e_error("no program #%u exists in shader \"%s\"!", program, shd_obj.name.c_str());
+		log_error("no program #%u exists in shader \"%s\"!", program, shd_obj.name.c_str());
 	}
 #endif
 }
@@ -131,7 +131,7 @@ void shader_gles2::use(const string& option) {
 													 }));
 #if defined(A2E_DEBUG)
 	if(shd_obj.options.count(combined_option) == 0) {
-		a2e_error("no option \"%s\" exists in shader \"%s\"!", combined_option, shd_obj.name);
+		log_error("no option \"%s\" exists in shader \"%s\"!", combined_option, shd_obj.name);
 		return;
 	}
 #endif
@@ -402,23 +402,23 @@ void shader_gles2::set_texture(const char* name, const GLuint& tex, const GLenum
 #if defined(A2E_DEBUG)
 	// check texture number (0 == uninitialized)
 	if(tex == 0) {
-		a2e_error("invalid texture number %u for texture uniform \"%s\" (in shader \"%s\")!", tex, name, shd_obj.name.c_str());
+		log_error("invalid texture number %u for texture uniform \"%s\" (in shader \"%s\")!", tex, name, shd_obj.name.c_str());
 	}
 	// check type
 	const size_t uniform_type = shd_obj.programs[cur_program]->uniforms.find(name)->second.type;
 	if(!is_gl_sampler_type((const GLenum)uniform_type)) {
-		a2e_error("unexpected type %s for texture uniform \"%s\" - expected a sampler type (in shader \"%s\")!", gles2_type_to_string(uniform_type), name, shd_obj.name.c_str());
+		log_error("unexpected type %s for texture uniform \"%s\" - expected a sampler type (in shader \"%s\")!", gles2_type_to_string(uniform_type), name, shd_obj.name.c_str());
 	}
 	// check sampler mapping existence
 	if(shd_obj.programs[cur_program]->samplers.count(name) == 0) {
-		a2e_error("no sampler mapping for texture uniform \"%s\" exists (in shader \"%s\")!", name, shd_obj.name.c_str());
+		log_error("no sampler mapping for texture uniform \"%s\" exists (in shader \"%s\")!", name, shd_obj.name.c_str());
 	}
 #endif
 	
 	const size_t tex_num = shd_obj.programs[cur_program]->samplers.find(name)->second;
 #if defined(A2E_DEBUG)
 	if(tex_num >= 32) {
-		a2e_error("invalid texture number #%u for texture uniform \"%s\" - only 32 textures are allowed (in shader \"%s\")!", tex_num, name, shd_obj.name.c_str());
+		log_error("invalid texture number #%u for texture uniform \"%s\" - only 32 textures are allowed (in shader \"%s\")!", tex_num, name, shd_obj.name.c_str());
 	}
 #endif
 	
@@ -563,7 +563,7 @@ void shader_gles2::attribute_array(const char* name, const GLuint& buffer, const
 // -> uniform buffer
 
 void shader_gles2::block(const char* name, const GLuint& ubo) const {
-	a2e_error("UBOs are not supported in OpenGL ES 2.0!");
+	log_error("UBOs are not supported in OpenGL ES 2.0!");
 }
 
 #endif

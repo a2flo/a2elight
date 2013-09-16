@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,17 +41,17 @@ shader::shader(engine* e_) {
 
 	// load/compile internal shaders
 	if(!load_internal_shaders()) {
-		a2e_error("there were problems loading/compiling the internal shaders!");
+		log_error("there were problems loading/compiling the internal shaders!");
 	}
 	else {
-		a2e_debug("internal shaders compiled successfully!");
+		log_debug("internal shaders compiled successfully!");
 	}
 }
 
 /*! delete everything
  */
 shader::~shader() {
-	a2e_debug("deleting shader object");
+	log_debug("deleting shader object");
 	
 	delete a2e_shd;
 
@@ -60,7 +60,7 @@ shader::~shader() {
 	}
 	shaders.clear();
 
-	a2e_debug("shader object deleted");
+	log_debug("shader object deleted");
 }
 
 void shader::reload_shaders() {
@@ -78,10 +78,10 @@ void shader::reload_shaders() {
 
 	// load/compile internal shaders
 	if(!load_internal_shaders()) {
-		a2e_error("there were problems loading/compiling the internal shaders!");
+		log_error("there were problems loading/compiling the internal shaders!");
 	}
 	else {
-		a2e_debug("internal shaders compiled successfully!");
+		log_debug("internal shaders compiled successfully!");
 	}
 	
 	// load/compile external shaders
@@ -90,8 +90,8 @@ void shader::reload_shaders() {
 	for(const auto& ext_shd : extshaders) {
 		if(!add_a2e_shader(ext_shd.first, ext_shd.second)) err_shd_cnt++;
 	}
-	if(err_shd_cnt == 0) a2e_debug("external shaders compiled successfully!");
-	else a2e_debug("failed to compile %u external!", err_shd_cnt);
+	if(err_shd_cnt == 0) log_debug("external shaders compiled successfully!");
+	else log_debug("failed to compile %u external!", err_shd_cnt);
 	
 	// emit shader reload event
 	e->get_event()->add_event(EVENT_TYPE::SHADER_RELOAD, make_shared<shader_reload_event>(SDL_GetTicks()));
@@ -101,7 +101,7 @@ void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned i
 #if !defined(A2E_IOS)
 	if((src_buffer->target[src_attachment] != GL_TEXTURE_2D && src_buffer->target[src_attachment] != GL_TEXTURE_RECTANGLE) ||
 	   (dest_buffer->target[dest_attachment] != GL_TEXTURE_2D && dest_buffer->target[dest_attachment] != GL_TEXTURE_RECTANGLE)) {
-		a2e_error("non-2D buffers aren't allowed to be copied at the moment!");
+		log_error("non-2D buffers aren't allowed to be copied at the moment!");
 	}
 	
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, src_buffer->fbo_id);
@@ -201,7 +201,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	glGetShaderiv(shd_obj.vertex_shader, GL_COMPILE_STATUS, &success);
 	if(!success) {
 		glGetShaderInfoLog(shd_obj.vertex_shader, A2E_SHADER_LOG_SIZE, nullptr, info_log);
-		a2e_error("Error in vertex shader \"%s/%s\" compilation!", identifier, option);
+		log_error("Error in vertex shader \"%s/%s\" compilation!", identifier, option);
 		log_pretty_print(info_log, vs_text);
 		return 0;
 	}
@@ -215,7 +215,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		glGetShaderiv(shd_obj.geometry_shader, GL_COMPILE_STATUS, &success);
 		if(!success) {
 			glGetShaderInfoLog(shd_obj.geometry_shader, A2E_SHADER_LOG_SIZE, nullptr, info_log);
-			a2e_error("Error in geometry shader \"%s/%s\" compilation!", identifier, option);
+			log_error("Error in geometry shader \"%s/%s\" compilation!", identifier, option);
 			log_pretty_print(info_log, gs_text);
 			return 0;
 		}
@@ -223,7 +223,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	else shd_obj.geometry_shader = 0;
 #else
 	if(gs_text != nullptr && strcmp(gs_text, "") != 0) {
-		a2e_error("geometry shaders are not supported in OpenGL ES 2.0!");
+		log_error("geometry shaders are not supported in OpenGL ES 2.0!");
 	}
 	shd_obj.geometry_shader = 0;
 #endif
@@ -235,7 +235,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	glGetShaderiv(shd_obj.fragment_shader, GL_COMPILE_STATUS, &success);
 	if(!success) {
 		glGetShaderInfoLog(shd_obj.fragment_shader, A2E_SHADER_LOG_SIZE, nullptr, info_log);
-		a2e_error("Error in fragment shader \"%s/%s\" compilation!", identifier, option);
+		log_error("Error in fragment shader \"%s/%s\" compilation!", identifier, option);
 		log_pretty_print(info_log, fs_text);
 		return 0;
 	}
@@ -291,7 +291,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	glGetProgramiv(shd_obj.program, GL_LINK_STATUS, &success);
 	if(!success) {
 		glGetProgramInfoLog(shd_obj.program, A2E_SHADER_LOG_SIZE, nullptr, info_log);
-		a2e_error("Error in program \"%s/%s\" linkage!\nInfo log: %s", identifier, option, info_log);
+		log_error("Error in program \"%s/%s\" linkage!\nInfo log: %s", identifier, option, info_log);
 		return 0;
 	}
 	glUseProgram(shd_obj.program);
@@ -372,17 +372,17 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	}*/
 	
 	GLchar* attr_name = new GLchar[max_attr_len];
-	if(print_debug_info) a2e_log("## shader: %s", identifier);
-	if(print_debug_info) a2e_log("GL_ACTIVE_ATTRIBUTES: %u", attr_count);
+	if(print_debug_info) log_undecorated("## shader: %s", identifier);
+	if(print_debug_info) log_undecorated("GL_ACTIVE_ATTRIBUTES: %u", attr_count);
 	for(GLint attr = 0; attr < attr_count; attr++) {
 		memset(attr_name, 0, max_attr_len);
 		glGetActiveAttrib(shd_obj.program, attr, max_attr_len-1, nullptr, &var_size, &var_type, attr_name);
 		var_location = glGetAttribLocation(shd_obj.program, attr_name);
 		if(var_location < 0) {
-			if(print_debug_info) a2e_error("Warning: could not get location for attribute \"%s\" in shader #%s/%s!", attr_name, identifier, option);
+			if(print_debug_info) log_error("Warning: could not get location for attribute \"%s\" in shader #%s/%s!", attr_name, identifier, option);
 			continue;
 		}
-		if(print_debug_info) a2e_log("attribute #%u: %s", var_location, attr_name);
+		if(print_debug_info) log_undecorated("attribute #%u: %s", var_location, attr_name);
 		
 		string attribute_name = attr_name;
 		if(attribute_name.find("[") != string::npos) attribute_name = attribute_name.substr(0, attribute_name.find("["));
@@ -392,16 +392,16 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	delete [] attr_name;
 	
 	GLchar* uni_name = new GLchar[max_uni_len];
-	if(print_debug_info) a2e_log("GL_ACTIVE_UNIFORMS: %u", uni_count);
+	if(print_debug_info) log_undecorated("GL_ACTIVE_UNIFORMS: %u", uni_count);
 	for(GLint uniform = 0; uniform < uni_count; uniform++) {
 		memset(uni_name, 0, max_uni_len);
 		glGetActiveUniform(shd_obj.program, uniform, max_uni_len-1, nullptr, &var_size, &var_type, uni_name);
 		var_location = glGetUniformLocation(shd_obj.program, uni_name);
 		if(var_location < 0) {
-			if(print_debug_info) a2e_error("Warning: could not get location for uniform \"%s\" in shader #%s/%s!", uni_name, identifier, option);
+			if(print_debug_info) log_error("Warning: could not get location for uniform \"%s\" in shader #%s/%s!", uni_name, identifier, option);
 			continue;
 		}
-		if(print_debug_info) a2e_log("uniform #%u: %s", var_location, uni_name);
+		if(print_debug_info) log_undecorated("uniform #%u: %s", var_location, uni_name);
 		string uniform_name = uni_name;
 		if(uniform_name.find("[") != string::npos) uniform_name = uniform_name.substr(0, uniform_name.find("["));
 		shd_obj.uniforms.insert(make_pair(uniform_name,
@@ -424,20 +424,20 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	
 #if !defined(A2E_IOS)
 	GLchar* uni_block_name = new GLchar[max_uni_block_len];
-	if(print_debug_info) a2e_log("GL_ACTIVE_UNIFORM_BLOCKS: %u", uni_block_count);
+	if(print_debug_info) log_undecorated("GL_ACTIVE_UNIFORM_BLOCKS: %u", uni_block_count);
 	for(GLint block = 0; block < uni_block_count; block++) {
 		memset(uni_block_name, 0, max_uni_block_len);
 		glGetActiveUniformBlockName(shd_obj.program, block, max_uni_block_len-1, nullptr, uni_block_name);
 		
 		GLuint block_index = glGetUniformBlockIndex(shd_obj.program, uni_block_name);
 		if(block_index == GL_INVALID_INDEX) {
-			if(print_debug_info) a2e_error("Warning: could not get index for uniform block \"%s\" in shader #%s/%s!", uni_block_name, identifier, option);
+			if(print_debug_info) log_error("Warning: could not get index for uniform block \"%s\" in shader #%s/%s!", uni_block_name, identifier, option);
 			continue;
 		}
 		
 		GLint data_size = 0;
 		glGetActiveUniformBlockiv(shd_obj.program, block_index, GL_UNIFORM_BLOCK_DATA_SIZE, &data_size);
-		if(print_debug_info) a2e_log("uniform block #%u (size: %u): %s",
+		if(print_debug_info) log_undecorated("uniform block #%u (size: %u): %s",
 									 block_index, data_size, uni_block_name);
 		const string uniform_block_name = uni_block_name;
 		
@@ -454,7 +454,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	glGetProgramiv(shd_obj.program, GL_VALIDATE_STATUS, &success);
 	if(!success) {
 		glGetProgramInfoLog(shd_obj.program, A2E_SHADER_LOG_SIZE, nullptr, info_log);
-		a2e_error("Error in program \"%s/%s\" validation!\nInfo log: %s", identifier, option, info_log);
+		log_error("Error in program \"%s/%s\" validation!\nInfo log: %s", identifier, option, info_log);
 		return 0;
 	}
 	else {
@@ -462,7 +462,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		
 		// check if shader will run in software (if so, print out a debug message)
 		if(strstr((const char*)info_log, (const char*)"software") != nullptr) {
-			a2e_debug("program \"%s/%s\" validation: %s", identifier, option, info_log);
+			log_debug("program \"%s/%s\" validation: %s", identifier, option, info_log);
 		}
 	}
 	
@@ -481,27 +481,27 @@ void shader::log_pretty_print(const char* log, const char* code) const {
 	vector<string> code_lines = core::tokenize(string(code), '\n');
 	for(const string& line : lines) {
 		if(line.size() == 0) continue;
-		a2e_log("## \033[31m%s\033[m", line);
+		log_undecorated("## \033[31m%s\033[m", line);
 		
 		// find code line and print it (+/- 1 line)
 		if(regex_match(line, regex_result, rx_log_line)) {
 			const size_t src_line_num = string2size_t(regex_result[1]) - 1;
 			if(src_line_num < code_lines.size()) {
 				if(src_line_num != 0) {
-					a2e_log("\033[37m%s\033[m", code_lines[src_line_num-1]);
+					log_undecorated("\033[37m%s\033[m", code_lines[src_line_num-1]);
 				}
-				a2e_log("\033[31m%s\033[m", code_lines[src_line_num]);
+				log_undecorated("\033[31m%s\033[m", code_lines[src_line_num]);
 				if(src_line_num+1 < code_lines.size()) {
-					a2e_log("\033[37m%s\033[m", code_lines[src_line_num+1]);
+					log_undecorated("\033[37m%s\033[m", code_lines[src_line_num+1]);
 				}
 			}
-			a2e_log("");
+			log_undecorated("");
 		}
 	}
 }
 #else
-void shader::log_pretty_print(const char* log, const char* code a2e_unused) const {
-	a2e_log("Info Log: %s", log);
+void shader::log_pretty_print(const char* log, const char* code floor_unused) const {
+	log_undecorated("Info Log: %s", log);
 }
 #endif
 
@@ -568,7 +568,7 @@ bool shader::load_internal_shaders() {
 			err_cur_shader = true;
 		}
 		
-		if(err_cur_shader) a2e_error("error loading shader file \"%s\"!", shader_filename.c_str());
+		if(err_cur_shader) log_error("error loading shader file \"%s\"!", shader_filename.c_str());
 	}
 	
 	return ret;
@@ -589,12 +589,12 @@ a2e_shader* shader::get_a2e_shader() {
 bool shader::add_a2e_shader(const string& identifier, const string& filename) {
 	a2e_shd->add_a2e_shader(identifier);
 	if(!a2e_shd->load_a2e_shader(identifier, e->shader_path(filename.c_str()), a2e_shd->get_a2e_shader(identifier))) {
-		a2e_error("couldn't load a2e-shader \"%s\"!", filename);
+		log_error("couldn't load a2e-shader \"%s\"!", filename);
 		return false;
 	}
 	else {
 		if(!a2e_shd->process_and_compile_a2e_shader(a2e_shd->get_a2e_shader(identifier))) {
-			a2e_error("couldn't process and/or compile a2e-shader \"%s\"!", filename);
+			log_error("couldn't process and/or compile a2e-shader \"%s\"!", filename);
 			return false;
 		}
 	}
@@ -610,7 +610,7 @@ template <> ret_type shader::get_shader(const string& identifier) const { \
 	 \
 	const shader_object& shd_obj = *shaders.find(identifier)->second; \
 	if(shd_obj.glsl_version < min_glsl || shd_obj.glsl_version > max_glsl) { \
-		a2e_error("requested gl type \"%s\" doesn't match shader \"%s\" glsl version %s!", \
+		log_error("requested gl type \"%s\" doesn't match shader \"%s\" glsl version %s!", \
 				 A2E_SHADER_IMPL_TO_STR(shader_impl), identifier, exts->cstr_from_glsl_version(shd_obj.glsl_version)); \
 		return nullptr; \
 	} \

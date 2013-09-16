@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -238,11 +238,11 @@ public:
 	size_t get_attribute_position(const char* name) const {
 #if defined(A2E_DEBUG)
 		if(shd_obj.programs.size() <= cur_program) {
-			a2e_error("invalid program #%u!", cur_program);
+			log_error("invalid program #%u!", cur_program);
 			return 0;
 		}
 		if(shd_obj.programs[cur_program]->attributes.count(name) == 0) {
-			a2e_error("unknown attribute name \"%s\"!", name);
+			log_error("unknown attribute name \"%s\"!", name);
 			return 0;
 		}
 #endif
@@ -252,11 +252,11 @@ public:
 	size_t get_uniform_position(const char* name) const {
 #if defined(A2E_DEBUG)
 		if(shd_obj.programs.size() <= cur_program) {
-			a2e_error("invalid program #%u!", cur_program);
+			log_error("invalid program #%u!", cur_program);
 			return 0;
 		}
 		if(shd_obj.programs[cur_program]->uniforms.count(name) == 0) {
-			a2e_error("unknown uniform name \"%s\"!", name);
+			log_error("unknown uniform name \"%s\"!", name);
 			return 0;
 		}
 #endif
@@ -266,11 +266,11 @@ public:
 	size_t get_block_position(const char* name) const {
 #if defined(A2E_DEBUG)
 		if(shd_obj.programs.size() <= cur_program) {
-			a2e_error("invalid program #%u!", cur_program);
+			log_error("invalid program #%u!", cur_program);
 			return 0;
 		}
 		if(shd_obj.programs[cur_program]->blocks.count(name) == 0) {
-			a2e_error("unknown uniform block name \"%s\"!", name);
+			log_error("unknown uniform block name \"%s\"!", name);
 			return 0;
 		}
 #endif

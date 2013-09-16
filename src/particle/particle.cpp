@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,12 +26,12 @@
 particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), cl(e_->get_opencl()), r(e_->get_rtt()), exts(e_->get_ext()), t(e_->get_texman()) {
 	//
 	if(cl->is_supported()) {
-		a2e_debug("using OpenCL render path!");
+		log_debug("using OpenCL render path!");
 		pm = new particle_manager_cl(e);
 	}
 	// no hw/sw support at all
 	else {
-		a2e_error("no hardware or software support (install an opencl gpu or cpu driver)!");
+		log_error("no hardware or software support (install an opencl gpu or cpu driver)!");
 		pm = nullptr;
 	}
 }
@@ -39,11 +39,11 @@ particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), cl(
 /*! there is no function currently
  */
 particle_manager::~particle_manager() {
-	a2e_debug("deleting particle_manager object");
+	log_debug("deleting particle_manager object");
 
 	if(pm != nullptr) delete pm;
 
-	a2e_debug("particle_manager object deleted");
+	log_debug("particle_manager object deleted");
 }
 
 /*! draws all particle systems

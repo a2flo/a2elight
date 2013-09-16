@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ a2e_texture texman::add_texture(const string& filename, TEXTURE_FILTERING filter
 	// create a sdl surface and load the texture
 	SDL_Surface* tex_surface = IMG_Load(filename.c_str());
 	if(tex_surface == nullptr) {
-		a2e_error("error loading texture file \"%s\" - %s!", filename, SDL_GetError());
+		log_error("error loading texture file \"%s\" - %s!", filename, SDL_GetError());
 		return dummy_texture;
 	}
 	
@@ -165,7 +165,7 @@ a2e_texture texman::add_texture(const string& filename, TEXTURE_FILTERING filter
 		
 		SDL_Surface* new_surface = SDL_ConvertSurface(tex_surface, &new_pformat, 0);
 		if(new_surface == nullptr) {
-			a2e_error("BGR(A)->RGB(A) surface conversion failed!");
+			log_error("BGR(A)->RGB(A) surface conversion failed!");
 		}
 		else {
 			SDL_FreeSurface(tex_surface);
@@ -192,7 +192,7 @@ a2e_texture texman::add_texture(const string& filename, GLint internal_format, G
 	// create a sdl surface and load the texture
 	SDL_Surface* tex_surface = IMG_Load(filename.c_str());
 	if(tex_surface == nullptr) {
-		a2e_error("error loading texture file \"%s\" - %s!", filename, SDL_GetError());
+		log_error("error loading texture file \"%s\" - %s!", filename, SDL_GetError());
 		return dummy_texture;
 	}
 	
@@ -280,7 +280,7 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsizei height, GLint internal_format, GLenum format, TEXTURE_FILTERING filtering, size_t anisotropic, GLint wrap_s, GLint wrap_t, GLint wrap_r, GLenum type, a2e_texture& tex) {
 	// check if width and height are equal
 	if(width != height) {
-		a2e_error("cubemap width and height must be equal!");
+		log_error("cubemap width and height must be equal!");
 		return dummy_texture;
 	}
 	
@@ -360,13 +360,13 @@ a2e_texture texman::get_texture(GLuint tex_num) {
 		}
 	}
 	
-	a2e_error("couldn't find texture #%u", tex_num);
+	log_error("couldn't find texture #%u", tex_num);
 	return dummy_texture;
 }
 
 void texman::set_filtering(TEXTURE_FILTERING filtering) {
 	if(filtering > TEXTURE_FILTERING::TRILINEAR) {
-		a2e_error("unknown texture filtering mode (%u)!", filtering);
+		log_error("unknown texture filtering mode (%u)!", filtering);
 		texman::standard_filtering = TEXTURE_FILTERING::POINT;
 		return;
 	}
@@ -423,7 +423,7 @@ unsigned int texman::get_components(GLint format) {
 			ret = 4;
 			break;
 		default:
-			a2e_error("unknown texture format (%u)!", format);
+			log_error("unknown texture format (%u)!", format);
 			ret = 1;
 			break;
 	}
@@ -480,7 +480,7 @@ bool texman::get_alpha(GLint format) {
 			ret = true;
 			break;
 		default:
-			a2e_error("unknown texture format (%u)!", format);
+			log_error("unknown texture format (%u)!", format);
 			ret = 1;
 			break;
 	}

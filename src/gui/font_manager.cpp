@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ thread_base("font_manager"),
 e(e_), r(e_->get_rtt()), fonts(), ft_library(nullptr) {
 	// init freetype
 	if(FT_Init_FreeType(&ft_library) != 0) {
-		a2e_error("failed to initialize freetype library!");
+		log_error("failed to initialize freetype library!");
 	}
 	
 	// these should always exist
@@ -103,7 +103,7 @@ e(e_), r(e_->get_rtt()), fonts(), ft_library(nullptr) {
 }
 
 font_manager::~font_manager() {
-	a2e_debug("deleting font_manager object");
+	log_debug("deleting font_manager object");
 	
 	// delete all fonts
 	for(const auto& fnt : fonts) {
@@ -113,10 +113,10 @@ font_manager::~font_manager() {
 	
 	// free freetype
 	if(FT_Done_FreeType(ft_library) != 0) {
-		a2e_error("failed to free freetype library!");
+		log_error("failed to free freetype library!");
 	}
 
-	a2e_debug("font_manager object deleted");
+	log_debug("font_manager object deleted");
 }
 
 void font_manager::run() {
@@ -144,7 +144,7 @@ font& font_manager::add_font_family(const string& identifier, const vector<strin
 bool font_manager::remove_font(const string& identifier) {
 	const auto iter = fonts.find(identifier);
 	if(iter == fonts.end()) {
-		a2e_error("invalid font %s!", identifier);
+		log_error("invalid font %s!", identifier);
 		return false;
 	}
 	

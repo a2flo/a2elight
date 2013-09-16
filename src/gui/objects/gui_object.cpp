@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -162,11 +162,11 @@ const set<gui_object*>& gui_object::get_children() const {
 	return children;
 }
 
-bool gui_object::handle_mouse_event(const EVENT_TYPE& type a2e_unused, const shared_ptr<event_object>& obj a2e_unused, const ipnt& point a2e_unused) {
+bool gui_object::handle_mouse_event(const EVENT_TYPE& type floor_unused, const shared_ptr<event_object>& obj floor_unused, const ipnt& point floor_unused) {
 	return false;
 }
 
-bool gui_object::handle_key_event(const EVENT_TYPE& type a2e_unused, const shared_ptr<event_object>& obj a2e_unused) {
+bool gui_object::handle_key_event(const EVENT_TYPE& type floor_unused, const shared_ptr<event_object>& obj floor_unused) {
 	return false;
 }
 
@@ -229,6 +229,6 @@ void gui_object::remove_handlers() {
 	unlock();
 }
 
-bool gui_object::should_handle_mouse_event(const EVENT_TYPE& type a2e_unused, const ipnt& point) const {
+bool gui_object::should_handle_mouse_event(const EVENT_TYPE& type floor_unused, const ipnt& point) const {
 	return gfx2d::is_pnt_in_rectangle(get_rectangle_abs(), point);
 }

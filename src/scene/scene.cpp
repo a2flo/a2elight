@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -48,11 +48,11 @@ window_handler(this, &scene::window_event_handler)
 /*! scene destructor
  */
 scene::~scene() {
-	a2e_debug("deleting scene object");
+	log_debug("deleting scene object");
 	
 	e->get_event()->remove_event_handler(window_handler);
 
-	a2e_debug("deleting models and lights");
+	log_debug("deleting models and lights");
 	models.clear();
 	lights.clear();
 
@@ -60,7 +60,7 @@ scene::~scene() {
 	delete_buffers(frames[0]);
 	delete light_sphere;
 
-	a2e_debug("scene object deleted");
+	log_debug("scene object deleted");
 }
 
 void scene::delete_buffers(frame_buffers& buffers) {
@@ -259,9 +259,9 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 #endif
 #endif
 	
-	a2e_debug("g/l-buffer @%v", size2(buffers.g_buffer[0]->width,
+	log_debug("g/l-buffer @%v", size2(buffers.g_buffer[0]->width,
 									  buffers.g_buffer[0]->height));
-	a2e_debug("scene-buffer @%v", size2(buffers.scene_buffer->width,
+	log_debug("scene-buffer @%v", size2(buffers.scene_buffer->width,
 										buffers.scene_buffer->height));
 }
 
@@ -800,10 +800,10 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 		// we have to consider the oversize (and can't simply use l_buffer w/h here)!
 		render_range_global.set(tiles.y * tiles.x * (tile_size.x * tile_size.y));
 		
-		/*a2e_debug("tile_size: %v", tile_size);
-		a2e_debug("oversize: %v", oversize);
-		a2e_debug("render_range_local: %v", render_range_local[0]);
-		a2e_debug("render_range_global: %v", render_range_global[0]);*/
+		/*log_debug("tile_size: %v", tile_size);
+		log_debug("oversize: %v", oversize);
+		log_debug("render_range_local: %v", render_range_local[0]);
+		log_debug("render_range_global: %v", render_range_global[0]);*/
 	}
 	const float16 IMVM = float16(&inv_modelview_matrix.data[0]);
 	
@@ -980,7 +980,7 @@ void scene::add_model(a2emodel* model) {
 void scene::delete_model(a2emodel* model) {
 	const auto iter = find(models.begin(), models.end(), model);
 	if(iter == models.end()) {
-		a2e_error("can't delete model: model doesn't exist!");
+		log_error("can't delete model: model doesn't exist!");
 		return;
 	}
 	models.erase(iter);
@@ -993,7 +993,7 @@ void scene::add_light(light* new_light) {
 	// check if light already exists ...
 	const auto iter = find(lights.begin(), lights.end(), new_light);
 	if(iter != lights.end()) {
-		a2e_error("light already exists in this scene!");
+		log_error("light already exists in this scene!");
 		return;
 	}
 	lights.push_back(new_light);
@@ -1093,7 +1093,7 @@ bool scene::is_enabled() const {
 
 void scene::add_draw_callback(const string& name, draw_callback& cb) {
 	if(draw_callbacks.count(name) > 0) {
-		a2e_error("this scene draw callback already exists!");
+		log_error("this scene draw callback already exists!");
 		return;
 	}
 	//draw_callbacks.emplace(name, &cb); // TODO: use this, when gcc finally decides to correctly implement c++11
@@ -1107,13 +1107,13 @@ void scene::delete_draw_callback(draw_callback& cb) {
 			return;
 		}
 	}
-	a2e_error("no such scene draw callback does exist!");
+	log_error("no such scene draw callback does exist!");
 }
 
 void scene::delete_draw_callback(const string& name) {
 	const auto iter = draw_callbacks.find(name);
 	if(iter == draw_callbacks.end()) {
-		a2e_error("no such scene draw callback does exist!");
+		log_error("no such scene draw callback does exist!");
 		return;
 	}
 	draw_callbacks.erase(iter);

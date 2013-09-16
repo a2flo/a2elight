@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -506,7 +506,7 @@ OGL_API PFNGLDEPTHRANGEINDEXEDPROC _glDepthRangeIndexed_ptr = nullptr; // ARB_vi
 OGL_API PFNGLGETFLOATI_VPROC _glGetFloati_v_ptr = nullptr; // ARB_viewport_array
 OGL_API PFNGLGETDOUBLEI_VPROC _glGetDoublei_v_ptr = nullptr; // ARB_viewport_array
 #elif defined(__APPLE__) // !__APPLE__
-void glRenderbufferStorageMultisampleCoverageNV(GLenum arg1 a2e_unused, GLsizei arg2 a2e_unused, GLsizei arg3 a2e_unused, GLenum arg4 a2e_unused, GLsizei arg5 a2e_unused, GLsizei arg6 a2e_unused) {
+void glRenderbufferStorageMultisampleCoverageNV(GLenum arg1 floor_unused, GLsizei arg2 floor_unused, GLsizei arg3 floor_unused, GLenum arg4 floor_unused, GLsizei arg5 floor_unused, GLsizei arg6 floor_unused) {
 	return;
 }
 #endif

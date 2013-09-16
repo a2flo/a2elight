@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,13 +34,13 @@ bool gui_color_scheme::load(const string& filename) {
 	//
 	xml::xml_doc ui_doc = x->process_file(e->data_path(filename), false); // TODO: DTD!
 	if(!ui_doc.valid) {
-		a2e_error("couldn't process color scheme file %s!", filename);
+		log_error("couldn't process color scheme file %s!", filename);
 		return false;
 	}
 	
 	const size_t doc_version = ui_doc.get<size_t>("a2e_color_scheme.version");
 	if(doc_version != A2E_COLOR_SCHEME_VERSION) {
-		a2e_error("invalid color scheme version: %u (should be %u)!",
+		log_error("invalid color scheme version: %u (should be %u)!",
 				  doc_version, A2E_COLOR_SCHEME_VERSION);
 		return false;
 	}
@@ -56,16 +56,16 @@ bool gui_color_scheme::load(const string& filename) {
 	return true;
 }
 
-void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_node* parent a2e_unused) {
+void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_node* parent floor_unused) {
 	// process node itself
 	const string name = (*node)["name"];
 	const string color = (*node)["value"];
 	if(name == "INVALID" || color == "INVALID") {
-		a2e_error("incomplete color definition");
+		log_error("incomplete color definition");
 		return;
 	}
 	if(colors.count(name) > 0) {
-		a2e_error("a color definition with such a name (%s) already exists!", name);
+		log_error("a color definition with such a name (%s) already exists!", name);
 		return;
 	}
 	
@@ -74,7 +74,7 @@ void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_no
 		// first: a float4 color (RGBA)
 		const vector<string> tokens = core::tokenize(color, ',');
 		if(tokens.size() != 4) {
-			a2e_error("invalid float4 color: %s", color);
+			log_error("invalid float4 color: %s", color);
 			return;
 		}
 		colors.insert(make_pair(name, float4(strtof(tokens[0].c_str(), nullptr),
@@ -101,7 +101,7 @@ const float4 gui_color_scheme::get(const string& name) const {
 	static const float4 invalid_color(0.0f, 1.0f, 0.0f, 1.0f);
 	const auto color = colors.find(name);
 	if(color == colors.cend()) {
-		a2e_error("invalid color name: %s!", name);
+		log_error("invalid color name: %s!", name);
 		return invalid_color;
 	}
 	return color->second;

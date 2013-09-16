@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ void gl_timer::start_frame() {
 	
 	// TODO: correct cleanup (wait for query?)
 	if(frames[cur_frame].done && !frames[cur_frame].available) {
-		a2e_error("overwriting frame query that is done, but not available yet!");
+		log_error("overwriting frame query that is done, but not available yet!");
 		for(const auto& qry : frames[cur_frame].queries) {
 			query_store.emplace_back(qry.query_ref);
 		}

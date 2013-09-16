@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,13 +30,13 @@ a2eui::~a2eui() {
 void a2eui::load(const string& filename) {
 	xml::xml_doc ui_doc = x->process_file(e->data_path(filename), false); // TODO: DTD!
 	if(!ui_doc.valid) {
-		a2e_error("couldn't process ui file %s!", filename);
+		log_error("couldn't process ui file %s!", filename);
 		return;
 	}
 	
 	const size_t doc_version = ui_doc.get<size_t>("a2e_user_interface.version");
 	if(doc_version != A2E_UI_VERSION) {
-		a2e_error("invalid a2eui version: %u (should be %u)!", doc_version, A2E_UI_VERSION);
+		log_error("invalid a2eui version: %u (should be %u)!", doc_version, A2E_UI_VERSION);
 		return;
 	}
 	
@@ -46,7 +46,7 @@ void a2eui::load(const string& filename) {
 	}
 }
 
-void a2eui::process_node(const xml::xml_node* node, const xml::xml_node* parent a2e_unused) {
+void a2eui::process_node(const xml::xml_node* node, const xml::xml_node* parent floor_unused) {
 	// process child nodes
 	for(const auto& child : node->children) {
 		process_node(child.second, node);

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ void gfx2d::reload_shaders() {
 	simple_shd = eshd->get_gl3shader("SIMPLE");
 }
 
-bool gfx2d::event_handler(EVENT_TYPE type, shared_ptr<event_object> obj a2e_unused) {
+bool gfx2d::event_handler(EVENT_TYPE type, shared_ptr<event_object> obj floor_unused) {
 	if(type == EVENT_TYPE::SHADER_RELOAD) {
 		gfx2d::reload_shaders();
 	}

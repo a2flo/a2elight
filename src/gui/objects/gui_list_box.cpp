@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ void gui_list_box::draw() {
 	glScissor(0, 0, e->get_width(), e->get_height());
 }
 
-bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj a2e_unused, const ipnt& point) {
+bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const ipnt& point) {
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
 		case EVENT_TYPE::MOUSE_LEFT_DOWN: {

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ void a2ematerial::load_material(const string& filename_) {
 	
 	// check if we have a xml (mat) file
 	if(mat_data.length() < 5 || mat_data.substr(0, 5) != "<?xml") {
-		a2e_error("invalid a2e-material file %s!", filename);
+		log_error("invalid a2e-material file %s!", filename);
 		return;
 	}
 	
@@ -104,7 +104,7 @@ void a2ematerial::load_material(const string& filename_) {
 			if(node_name == "a2e_material") {
 				size_t version = x->get_attribute<size_t>(cur_elem->attributes, "version");
 				if(version != A2E_MATERIAL_VERSION) {
-					a2e_error("wrong version %u in material %s - should be %u!", version, filename, A2E_MATERIAL_VERSION);
+					log_error("wrong version %u in material %s - should be %u!", version, filename, A2E_MATERIAL_VERSION);
 					return;
 				}
 				
@@ -153,7 +153,7 @@ void a2ematerial::load_material(const string& filename_) {
 						cur_material->model = new ashikhmin_shirley_model();
 						break;
 					case LIGHTING_MODEL::NONE:
-						a2e_error("unknown lighting model type \"%s\" (%d)!",
+						log_error("unknown lighting model type \"%s\" (%d)!",
 								  model, cur_material->lm_type);
 						return;
 				}
@@ -174,7 +174,7 @@ void a2ematerial::load_material(const string& filename_) {
 						else if(texture_type_str == "normal") texture_type = TEXTURE_TYPE::NORMAL;
 						else if(texture_type_str == "anisotropic") texture_type = TEXTURE_TYPE::ANISOTROPIC;
 						else {
-							a2e_error("unknown texture type %s!", texture_type_str.c_str());
+							log_error("unknown texture type %s!", texture_type_str.c_str());
 							return;
 						}
 						
@@ -183,7 +183,7 @@ void a2ematerial::load_material(const string& filename_) {
 							case MATERIAL_TYPE::DIFFUSE:
 								if(texture_type == TEXTURE_TYPE::HEIGHT ||
 								   texture_type == TEXTURE_TYPE::NORMAL) {
-									a2e_error("invalid texture type/tag \"%s\" for diffuse material!",
+									log_error("invalid texture type/tag \"%s\" for diffuse material!",
 											 texture_type_str.c_str());
 									continue;
 								}
@@ -195,7 +195,7 @@ void a2ematerial::load_material(const string& filename_) {
 						switch(cur_material->lm_type) {
 							case LIGHTING_MODEL::PHONG:
 								if(texture_type == TEXTURE_TYPE::ANISOTROPIC) {
-									a2e_error("invalid texture type/tag \"%s\" for phong material (anisotropic type is not allowed)!",
+									log_error("invalid texture type/tag \"%s\" for phong material (anisotropic type is not allowed)!",
 											 texture_type_str.c_str());
 									continue;
 								}
@@ -218,7 +218,7 @@ void a2ematerial::load_material(const string& filename_) {
 								else if(wrap_str == "repeat") wrap_ref = GL_REPEAT;
 								else if(wrap_str == "mirrored_repeat") wrap_ref = GL_MIRRORED_REPEAT;
 								else {
-									a2e_error("unknown wrap mode \"%s\" for %s!", wrap_str.c_str(), wrap_mode);
+									log_error("unknown wrap mode \"%s\" for %s!", wrap_str.c_str(), wrap_mode);
 								}
 							}
 						}
@@ -232,7 +232,7 @@ void a2ematerial::load_material(const string& filename_) {
 							else if(filtering_str == "bilinear") filtering = TEXTURE_FILTERING::BILINEAR;
 							else if(filtering_str == "trilinear") filtering = TEXTURE_FILTERING::TRILINEAR;
 							else {
-								a2e_error("unknown filtering mode \"%s\"!", filtering_str.c_str());
+								log_error("unknown filtering mode \"%s\"!", filtering_str.c_str());
 							}
 						}
 						
@@ -255,7 +255,7 @@ void a2ematerial::load_material(const string& filename_) {
 							material_name == "const_isotropic" ||
 							material_name == "const_anisotropic") {
 						if(cur_material->lm_type != LIGHTING_MODEL::ASHIKHMIN_SHIRLEY) {
-							a2e_error("<%s> is an ashikhmin/shirley lighting-model only tag!", material_name.c_str());
+							log_error("<%s> is an ashikhmin/shirley lighting-model only tag!", material_name.c_str());
 							continue;
 						}
 						
@@ -270,7 +270,7 @@ void a2ematerial::load_material(const string& filename_) {
 							if(roughness_arr.size() < 2 ||
 							   roughness_arr[0].length() == 0 ||
 							   roughness_arr[1].length() == 0) {
-								a2e_error("invalid anisotropic roughness value \"%s\"!", roughness_str.c_str());
+								log_error("invalid anisotropic roughness value \"%s\"!", roughness_str.c_str());
 								return;
 							}
 							
@@ -279,7 +279,7 @@ void a2ematerial::load_material(const string& filename_) {
 								as_model->anisotropic_roughness.set(string2float(roughness_arr[0]), string2float(roughness_arr[1]));
 							}
 							else {
-								a2e_error("invalid lighting model type for \"const_anisotropic\"!");
+								log_error("invalid lighting model type for \"const_anisotropic\"!");
 								return;
 							}
 						}
@@ -287,7 +287,7 @@ void a2ematerial::load_material(const string& filename_) {
 					// parallax mapping only
 					else if(material_name == "pom") {
 						if(cur_material->mat_type != MATERIAL_TYPE::PARALLAX) {
-							a2e_error("<pom> is a parallax-mapping only tag!");
+							log_error("<pom> is a parallax-mapping only tag!");
 							continue;
 						}
 						
@@ -302,7 +302,7 @@ void a2ematerial::load_material(const string& filename_) {
 					mat = &get_material(material_id);
 				}
 				catch(...) {
-					a2e_error("invalid object mapping for object #%d!", object_id);
+					log_error("invalid object mapping for object #%d!", object_id);
 					
 					if(object_id == 0) return; // no default possible, abort
 					
@@ -323,12 +323,12 @@ void a2ematerial::load_material(const string& filename_) {
 	}
 	
 	if(object_id == 0) {
-		a2e_error("at least one object mapping is required!");
+		log_error("at least one object mapping is required!");
 		return;
 	}
 	
 	if(object_count < mapping.size()) {
-		a2e_error("less object mappings specified than required by object count!");
+		log_error("less object mappings specified than required by object count!");
 		return;
 	}
 	
@@ -346,7 +346,7 @@ const a2ematerial::material& a2ematerial::get_material(const size_t& material_id
 			return mat;
 		}
 	}
-	a2e_error("no material with an id #%d exists!", material_id);
+	log_error("no material with an id #%d exists!", material_id);
 	throw a2e_exception("material doesn't exist!");
 }
 
@@ -356,7 +356,7 @@ a2ematerial::material& a2ematerial::get_material(const size_t& material_id) {
 			return mat;
 		}
 	}
-	a2e_error("no material with an id #%d exists!", material_id);
+	log_error("no material with an id #%d exists!", material_id);
 	throw a2e_exception("material doesn't exist!");
 }
 
@@ -368,7 +368,7 @@ float4 a2ematerial::get_color(const string& color_str) {
 	   colors[0].length() == 0 ||
 	   colors[1].length() == 0 ||
 	   colors[2].length() == 0) {
-		a2e_error("invalid color string \"%s\"!", color_str.c_str());
+		log_error("invalid color string \"%s\"!", color_str.c_str());
 		return float4(0.0f);
 	}
 	
@@ -380,7 +380,7 @@ float4 a2ematerial::get_color(const string& color_str) {
 
 const a2ematerial::object_mapping* a2ematerial::get_object_mapping(const size_t& object_id) const {
 	if(mapping.count(object_id) == 0) {
-		a2e_error("no object with an id #%d exists!", object_id);
+		log_error("no object with an id #%d exists!", object_id);
 		return nullptr;
 	}
 	return mapping.find(object_id)->second;
@@ -421,7 +421,7 @@ bool a2ematerial::is_parallax_occlusion(const size_t& object_id) const {
 	if(obj == nullptr) return false;
 	
 	if(obj->mat->mat_type != a2ematerial::MATERIAL_TYPE::PARALLAX) {
-		a2e_error("object #%d is not associated to a parallax-mapping material!", object_id);
+		log_error("object #%d is not associated to a parallax-mapping material!", object_id);
 		return false;
 	}
 	

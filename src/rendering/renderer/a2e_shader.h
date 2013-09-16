@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ protected:
 	
 	void make_glsl_es_compat(a2e_shader_object* shd, const string& option);
 	void process_node(const xml::xml_node* cur_node, const xml::xml_node* parent,
-					  std::function<void(const xml::xml_node* node)> fnc = [](const xml::xml_node* node a2e_unused){});
+					  std::function<void(const xml::xml_node* node)> fnc = [](const xml::xml_node* node floor_unused){});
 	
 };
 

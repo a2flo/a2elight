@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ void a2estatic::load_model(const string& filename_) {
 	file_type[8] = 0;
 
 	if(strcmp(file_type, "A2EMODEL") != 0) {
-		a2e_error("non supported file type for %s: %s!", filename, file_type);
+		log_error("non supported file type for %s: %s!", filename, file_type);
 		delete [] file_type;
 		file.close();
 		return;
@@ -142,7 +142,7 @@ void a2estatic::load_model(const string& filename_) {
 	// get model version
 	unsigned int version = file.get_uint();
 	if(version != A2M_VERSION) {
-		a2e_error("wrong model file version %u - should be %u!", version, A2M_VERSION);
+		log_error("wrong model file version %u - should be %u!", version, A2M_VERSION);
 		file.close();
 		return;
 	}
@@ -150,7 +150,7 @@ void a2estatic::load_model(const string& filename_) {
 	// get model type and abort if it's not 0x00 or 0x02
 	char mtype = file.get_char();
 	if(mtype != 0x00 && mtype != 0x02) {
-		a2e_error("non supported model type: %u!", (unsigned int)(mtype & 0xFF));
+		log_error("non supported model type: %u!", (unsigned int)(mtype & 0xFF));
 		file.close();
 		return;
 	}

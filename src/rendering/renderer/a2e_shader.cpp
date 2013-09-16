@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -197,14 +197,14 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	xml::xml_doc shd_doc = x->process_data(shader_data, false);
 #endif
 	if(!shd_doc.valid) {
-		a2e_error("invalid a2e-shader file %s!", filename.c_str());
+		log_error("invalid a2e-shader file %s!", filename.c_str());
 		return false;
 	}
 	
 	// check version
 	const size_t a2e_shd_version = shd_doc.get<size_t>("a2e_shader.version", 0);
 	if(a2e_shd_version != A2E_SHADER_VERSION) {
-		a2e_error("wrong version %u in shader %s - should be %u!",
+		log_error("wrong version %u in shader %s - should be %u!",
 				  a2e_shd_version, filename.c_str(), A2E_SHADER_VERSION);
 		return false;
 	}
@@ -224,7 +224,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 		for(const auto& include : includes) {
 			if(include.length() == 0) continue;
 			if(a2e_shader_includes.count(include) == 0) {
-				a2e_error("unknown include \"%s\" in shader \"%s\"! - will be ignored!", include, identifier);
+				log_error("unknown include \"%s\" in shader \"%s\"! - will be ignored!", include, identifier);
 			}
 			else {
 				if(find(cbegin(a2e_shd->includes), cend(a2e_shd->includes), include) == cend(a2e_shd->includes)) {
@@ -240,7 +240,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	if(options_str.length() > 0) {
 		const vector<string> options_tokens(core::tokenize(options_str, ' '));
 		if(options_tokens.size() == 0) {
-			a2e_error("options tag found, but empty - defaulting to standard option!");
+			log_error("options tag found, but empty - defaulting to standard option!");
 		}
 		else {
 			// check if options list contains '#'
@@ -326,7 +326,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	
 	//
 	if(options.empty()) {
-		a2e_error("incompatible include options for shader \"%s\" - all options exclude each other!", filename);
+		log_error("incompatible include options for shader \"%s\" - all options exclude each other!", filename);
 		return false;
 	}
 	
@@ -424,8 +424,8 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	
 	xmlError* err = xmlGetLastError(); // get error before cleanup
 	if(err != nullptr) {
-		a2e_error("parsing error in a2e-shader file %s!", filename.c_str());
-		a2e_error("XML-ERROR: %s\n\rDomain: %d\n\rCode: %d\n\rError-Level: %d\n\rFile: %s (line %d)\n\rAdditional Information: %s %s %s %d %d",
+		log_error("parsing error in a2e-shader file %s!", filename.c_str());
+		log_error("XML-ERROR: %s\n\rDomain: %d\n\rCode: %d\n\rError-Level: %d\n\rFile: %s (line %d)\n\rAdditional Information: %s %s %s %d %d",
 				  err->message, err->domain, err->code, err->level, err->file, err->line, err->str1, err->str2, err->str3, err->int1, err->int2);
 		return false;
 	}
@@ -436,7 +436,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	return true;
 }
 
-void a2e_shader::process_node(const xml::xml_node* cur_node, const xml::xml_node* parent a2e_unused, std::function<void(const xml::xml_node* node)> fnc) {
+void a2e_shader::process_node(const xml::xml_node* cur_node, const xml::xml_node* parent floor_unused, std::function<void(const xml::xml_node* node)> fnc) {
 	// process node itself
 	fnc(cur_node);
 	
@@ -483,7 +483,7 @@ void a2e_shader::get_shader_content(a2e_shader_code& shd, xmlNode* node, const s
 				else if(node_name == "condition") {
 					if(!x->is_attribute(((xmlElement*)cur_node)->attributes, "type") ||
 					   !x->is_attribute(((xmlElement*)cur_node)->attributes, "value")) {
-						a2e_error("invalid condition (no type and/or value attribute)!");
+						log_error("invalid condition (no type and/or value attribute)!");
 						traverse_child_node = false;
 					}
 					else {
@@ -502,11 +502,11 @@ void a2e_shader::get_shader_content(a2e_shader_code& shd, xmlNode* node, const s
 					const bool match_attr(x->is_attribute(((xmlElement*)cur_node)->attributes, "match"));
 					const bool nomatch_attr(x->is_attribute(((xmlElement*)cur_node)->attributes, "nomatch"));
 					if(!match_attr && !nomatch_attr) {
-						a2e_error("option tag found, but no match or nomatch attribute!");
+						log_error("option tag found, but no match or nomatch attribute!");
 						traverse_child_node = false;
 					}
 					else if(match_attr && nomatch_attr) {
-						a2e_error("option tag found, but both match and nomatch attribute are specified (only one is allowed)!");
+						log_error("option tag found, but both match and nomatch attribute are specified (only one is allowed)!");
 						traverse_child_node = false;
 					}
 					else {
@@ -623,7 +623,7 @@ bool a2e_shader::check_shader_condition(const CONDITION_TYPE type, const string&
 				max_card = (unsigned int)ext::max_intel_card;
 			}
 			else {
-				a2e_error("unknown card %d!", graphics_card);
+				log_error("unknown card %d!", graphics_card);
 				break;
 			}
 			
@@ -658,7 +658,7 @@ a2e_shader::CONDITION_TYPE a2e_shader::get_condition_type(const string& conditio
 	else if(condition_type == "OR") return a2e_shader::CONDITION_TYPE::OR;
 	else {
 		// invalid type
-		a2e_error("unknown condition type \"%s\"!", condition_type);
+		log_error("unknown condition type \"%s\"!", condition_type);
 		return a2e_shader::CONDITION_TYPE::INVALID;
 	}
 }
@@ -695,7 +695,7 @@ bool a2e_shader::process_and_compile_a2e_shader(a2e_shader_object* shd) {
 				if(combiners.empty()) {
 					// no combiners, no compatible include option -> include must have default option
 					if(include_obj->options.count("#") == 0) {
-						a2e_error("include \"%s\" has no compatible option to \"%s\" in shader \"%s\"!",
+						log_error("include \"%s\" has no compatible option to \"%s\" in shader \"%s\"!",
 								  *include, option, shd->identifier);
 						return false;
 					}
@@ -705,7 +705,7 @@ bool a2e_shader::process_and_compile_a2e_shader(a2e_shader_object* shd) {
 					// create most compatible option*combiners
 					include_option = (include_obj->options.count(non_combiner_option) > 0 ? non_combiner_option : "#");
 					if(include_option == "#" && include_obj->options.count("#") == 0) {
-						a2e_error("include \"%s\" has no compatible option to \"%s\" in shader \"%s\"!",
+						log_error("include \"%s\" has no compatible option to \"%s\" in shader \"%s\"!",
 								  *include, option, shd->identifier);
 						return false;
 					}
@@ -717,7 +717,7 @@ bool a2e_shader::process_and_compile_a2e_shader(a2e_shader_object* shd) {
 					}
 					
 					if(include_obj->options.count(include_option) == 0) {
-						a2e_error("tried to create compatible include option for \"%s\" in include \"%s\", but failed with non-existing \"%s\" in shader \"%s\"!",
+						log_error("tried to create compatible include option for \"%s\" in include \"%s\", but failed with non-existing \"%s\" in shader \"%s\"!",
 								  option, *include, include_option, shd->identifier);
 						return false;
 					}

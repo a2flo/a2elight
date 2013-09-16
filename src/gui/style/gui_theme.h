@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,8 +41,8 @@ public:
 	void draw(const string& type, const string& state,
 			  const float2& offset, const float2& size,
 			  const bool clear = true, const bool scissor = true,
-			  std::function<string(const string&)> text_lookup = [](const string& str a2e_unused){return "";},
-			  std::function<unsigned int(const string&)> texture_lookup = [](const string& tex_name a2e_unused){return 0;});
+			  std::function<string(const string&)> text_lookup = [](const string& str floor_unused){return "";},
+			  std::function<unsigned int(const string&)> texture_lookup = [](const string& tex_name floor_unused){return 0;});
 	
 	const gui_color_scheme& get_color_scheme() const;
 	
@@ -85,10 +85,10 @@ public:
 		float value;
 		VALUE_TYPE type;
 		void compute(const float& size);
-		a2e_constexpr ui_float(const float& ui_value_, const VALUE_TYPE& type_) noexcept :
+		constexpr ui_float(const float& ui_value_, const VALUE_TYPE& type_) noexcept :
 		ui_value(ui_value_), value(0.0f), type(type_) {}
-		a2e_constexpr ui_float(ui_float&& f) noexcept : ui_value(f.ui_value), value(f.value), type(f.type) {}
-		a2e_constexpr ui_float(const ui_float& f) noexcept : ui_value(f.ui_value), value(f.value), type(f.type) {}
+		constexpr ui_float(ui_float&& f) noexcept : ui_value(f.ui_value), value(f.value), type(f.type) {}
+		constexpr ui_float(const ui_float& f) noexcept : ui_value(f.ui_value), value(f.value), type(f.type) {}
 	};
 	struct ui_float2 {
 		array<ui_float, 2> ui_value;
@@ -101,12 +101,12 @@ public:
 			value.y = ui_value[1].value;
 		}
 		
-		a2e_constexpr ui_float2(const float& ui_value_x, const VALUE_TYPE& type_x,
-								const float& ui_value_y, const VALUE_TYPE& type_y) noexcept :
+		constexpr ui_float2(const float& ui_value_x, const VALUE_TYPE& type_x,
+							const float& ui_value_y, const VALUE_TYPE& type_y) noexcept :
 		ui_value { { ui_float(ui_value_x, type_x), ui_float(ui_value_y, type_y) } }, value(0.0f, 0.0f) {}
-		a2e_constexpr ui_float2(ui_float2&& f) noexcept :
+		constexpr ui_float2(ui_float2&& f) noexcept :
 		ui_value { { f.ui_value[0], f.ui_value[1] } }, value(f.value) {}
-		a2e_constexpr ui_float2(const ui_float2& f) noexcept :
+		constexpr ui_float2(const ui_float2& f) noexcept :
 		ui_value { { f.ui_value[0], f.ui_value[1] } }, value(f.value) {}
 	};
 	enum class COLOR_TYPE {

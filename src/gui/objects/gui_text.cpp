@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ void gui_text::draw() {
 	// TODO: handle centering
 	theme->draw("text", shade ? "normal_shade" : "normal",
 				position_abs, size_abs, true, true,
-				[this](const string& str a2e_unused) { return label; });
+				[this](const string& str floor_unused) { return label; });
 }
 
 void gui_text::set_label(const string& label_) {

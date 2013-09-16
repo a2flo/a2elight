@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,9 +47,9 @@ particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
 /*! there is no function currently
  */
 particle_manager_cl::~particle_manager_cl() {
-	a2e_debug("deleting particle_manager_cl object");
+	log_debug("deleting particle_manager_cl object");
 	
-	a2e_debug("particle_manager_cl object deleted");
+	log_debug("particle_manager_cl object deleted");
 }
 
 /*! adds a new particle system (position, color and direction should be created within the function call - they will get deleted in this function)
@@ -185,7 +185,7 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	// create distances buffer for sorting
 	pdata->ocl_distances = cl->create_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->particle_count * sizeof(float), nullptr);
 	
-	a2e_debug("particle count: %u", pdata->particle_count);
+	log_debug("particle count: %u", pdata->particle_count);
 }
 
 void particle_manager_cl::reset_particle_system(particle_system* ps) {
@@ -311,14 +311,14 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		debug_lsize = true;
 		cl->use_kernel("PARTICLE_SORT_LOCAL");
 		size_t wgs = cl->get_kernel_work_group_size();
-		a2e_debug("PARTICLE_SORT_LOCAL wgs: %u", wgs);
+		log_debug("PARTICLE_SORT_LOCAL wgs: %u", wgs);
 		cl->use_kernel("PARTICLE_SORT_MERGE_GLOBAL");
 		wgs = cl->get_kernel_work_group_size();
-		a2e_debug("PARTICLE_SORT_MERGE_GLOBAL wgs: %u", wgs);
+		log_debug("PARTICLE_SORT_MERGE_GLOBAL wgs: %u", wgs);
 		cl->use_kernel("PARTICLE_SORT_MERGE_LOCAL");
 		wgs = cl->get_kernel_work_group_size();
-		a2e_debug("PARTICLE_SORT_MERGE_LOCAL wgs: %u", wgs);
-		a2e_debug("PARTICLE_SORT local_size_limit: %u", cl->get_active_device()->max_wg_size);
+		log_debug("PARTICLE_SORT_MERGE_LOCAL wgs: %u", wgs);
+		log_debug("PARTICLE_SORT local_size_limit: %u", cl->get_active_device()->max_wg_size);
 	}
 	
 	const unsigned int local_size_limit = (unsigned int)cl->get_active_device()->max_wg_size; // TODO: actually use the compiled/build value

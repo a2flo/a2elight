@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,14 +28,14 @@ particle_manager_base::particle_manager_base(engine* e_) : e(e_), s(e->get_shade
 /*! there is no function currently
  */
 particle_manager_base::~particle_manager_base() {
-	a2e_debug("deleting particle_manager_base object");
+	log_debug("deleting particle_manager_base object");
 	
 	for(const auto& psystem : particle_systems) {
 		delete psystem;
 	}
 	particle_systems.clear();
 	
-	a2e_debug("particle_manager_base object deleted");
+	log_debug("particle_manager_base object deleted");
 }
 
 /*! draws all particle systems
@@ -101,7 +101,7 @@ void particle_manager_base::compute_particle_count(particle_system* ps) {
 	
 	pdata->particle_count = (ps->get_living_time() * ps->get_spawn_rate()) / 1000;
 	if(pdata->particle_count > max_particle_count) {
-		a2e_debug("particle_count higher than allowed count of %u! restricting to this size now!", max_particle_count);
+		log_debug("particle_count higher than allowed count of %u! restricting to this size now!", max_particle_count);
 		ps->set_spawn_rate((unsigned long long int)floorf((float)max_particle_count * (1000.0f / (float)ps->get_living_time())));
 		pdata->particle_count = (ps->get_living_time() * ps->get_spawn_rate()) / 1000;
 	}

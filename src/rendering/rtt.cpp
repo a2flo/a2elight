@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ rtt::rtt(engine* e_, ext* exts_) {
 /*! there is no function currently
  */
 rtt::~rtt() {
-	a2e_debug("deleting rtt object");
+	log_debug("deleting rtt object");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 
@@ -64,7 +64,7 @@ rtt::~rtt() {
 	}
 	buffers.clear();
 
-	a2e_debug("rtt object deleted");
+	log_debug("rtt object deleted");
 }
 
 rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target, TEXTURE_FILTERING filtering, TEXTURE_ANTI_ALIASING taa, GLint wrap_s, GLint wrap_t, GLint internal_format, GLenum format, GLenum type, unsigned int attachment_count, DEPTH_TYPE depth_type, STENCIL_TYPE stencil_type) {
@@ -137,12 +137,12 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		}
 		
 		if(cur_ssaa_factor <= 0.0f) {
-			a2e_error("couldn't create a SSAA%u buffer (nor using a smaller SSAA setting)!", ssaa_factor);
+			log_error("couldn't create a SSAA%u buffer (nor using a smaller SSAA setting)!", ssaa_factor);
 			break; // break, since this won't work with any setting
 		}
 		
 		if(cur_ssaa_factor < ssaa_factor) {
-			a2e_error("couldn't create a SSAA%u buffer - using SSAA%u instead!", ssaa_factor, cur_ssaa_factor);
+			log_error("couldn't create a SSAA%u buffer - using SSAA%u instead!", ssaa_factor, cur_ssaa_factor);
 		}
 		
 		ssaa = std::max(ssaa, cur_ssaa_factor);
@@ -167,7 +167,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 	for(unsigned int i = 0; i < buffer->attachment_count; i++) {
 #if defined(A2E_IOS)
 		if(i > 0) {
-			a2e_error("too many FBO attachments - only one is allowed on iOS!");
+			log_error("too many FBO attachments - only one is allowed on iOS!");
 			break;
 		}
 #endif
@@ -218,7 +218,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_INTERNAL_FORMAT, &check_internal_format);
 		glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_TYPE, &check_type);
 		glGetTexLevelParameteriv(buffer->target[i], 0, GL_TEXTURE_RED_SIZE, &check_size);
-		//a2e_debug("FBO: iformat: %X, type: %X, size: %d", check_internal_format, check_type, check_size);
+		//log_debug("FBO: iformat: %X, type: %X, size: %d", check_internal_format, check_type, check_size);
 #endif
 #endif
 	}
@@ -515,7 +515,7 @@ void rtt::clear(const unsigned int and_mask) {
 void rtt::check_fbo(rtt::fbo* buffer) {
 	GLint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE) {
-		a2e_error("framebuffer (size: %u*%upx; depth: %i; stencil: %i; tex id: %u; fbo id: %u) didn't pass status check!",
+		log_error("framebuffer (size: %u*%upx; depth: %i; stencil: %i; tex id: %u; fbo id: %u) didn't pass status check!",
 				  buffer->width, buffer->height, (unsigned int)buffer->depth_type, (unsigned int)buffer->stencil_type, buffer->tex[0], buffer->fbo_id);
 	}
 	
@@ -523,30 +523,30 @@ void rtt::check_fbo(rtt::fbo* buffer) {
 		case GL_FRAMEBUFFER_COMPLETE:
 			break;
 		case GL_FRAMEBUFFER_UNSUPPORTED:
-			a2e_error("unsupported framebuffer (%u)!", status);
+			log_error("unsupported framebuffer (%u)!", status);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			a2e_error("incomplete framebuffer attachement (%u)!", status);
+			log_error("incomplete framebuffer attachement (%u)!", status);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			a2e_error("missing framebuffer attachement (%u)!", status);
+			log_error("missing framebuffer attachement (%u)!", status);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-			a2e_error("incomplete framebuffer multisample (%u)!", status);
+			log_error("incomplete framebuffer multisample (%u)!", status);
 			break;
 #if !defined(A2E_IOS)
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			a2e_error("incomplete framebuffer draw buffer (%u)!", status);
+			log_error("incomplete framebuffer draw buffer (%u)!", status);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			a2e_error("incomplete framebuffer read buffer (%u)!", status);
+			log_error("incomplete framebuffer read buffer (%u)!", status);
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-			a2e_error("incomplete framebuffer layer targets (%u)!", status);
+			log_error("incomplete framebuffer layer targets (%u)!", status);
 			break;
 #endif
 		default:
-			a2e_error("unknown framebuffer error (%u)!", status);
+			log_error("unknown framebuffer error (%u)!", status);
 			break;
 	}
 }

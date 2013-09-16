@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2012 Florian Ziesche
+ *  Copyright (C) 2004 - 2013 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -112,7 +112,7 @@ void gui_input_box::set_active(const bool& active_state) {
 	redraw();
 }
 
-bool gui_input_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj a2e_unused, const ipnt& point) {
+bool gui_input_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const ipnt& point) {
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
 		// left and right mouse button will have the same behavior for now
@@ -154,7 +154,7 @@ bool gui_input_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<
 }
 
 #define invalid_input_cursor_err() \
-{ a2e_error("line #%u: invalid input_cursor \"%u\" (#input: %u)", __LINE__, input_cursor, unicode_input.size()); }
+{ log_error("line #%u: invalid input_cursor \"%u\" (#input: %u)", __LINE__, input_cursor, unicode_input.size()); }
 
 bool gui_input_box::handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj) {
 	if(!state.visible || !state.enabled || !state.active) return false;
