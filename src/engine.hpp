@@ -57,8 +57,7 @@ public:
 	// graphic control functions
 	void init(const char* callpath, const char* datapath,
 			  const bool console_only = false, const string config_name = "config.xml",
-			  const unsigned int width = 640, const unsigned int height = 480, const bool fullscreen = false,
-			  const bool vsync = false, const char* ico = nullptr);
+			  const char* ico = nullptr);
 	void destroy();
 	
 	void start_draw();
@@ -80,18 +79,6 @@ public:
 	shader* get_shader();
 	gui* get_gui();
 	scene* get_scene();
-	
-	struct server_data {
-		unsigned int max_clients;
-		unsigned short int port;
-	};
-	
-	struct client_data {
-		unsigned short int port;
-		unsigned short int lis_port;
-		string server_name;
-		string client_name;
-	};
 
 	// miscellaneous control functions
 	SDL_Cursor* add_cursor(const char* name, const char** raw_data, unsigned int xsize, unsigned int ysize, unsigned int hotx, unsigned int hoty);
@@ -102,10 +89,6 @@ public:
 	string shader_path(const string& str) const;
 	
 	void reload_shaders();
-	void reload_kernels();
-	
-	void acquire_gl_context();
-	void release_gl_context();
 	
 	// misc position/rotation/matrix functions
 	void push_projection_matrix();
@@ -137,10 +120,6 @@ public:
 	void set_fps_limit(unsigned int ms);
 	unsigned int get_fps_limit() const;
 	
-	// server / client (disabled/unused for now)
-	//server_data* get_server_data();
-	//client_data* get_client_data();
-	
 	// graphic
 	TEXTURE_FILTERING get_filtering() const;
 	size_t get_anisotropic() const;
@@ -171,21 +150,10 @@ protected:
 	scene* sce = nullptr;
 	event* evt = nullptr;
 	
-	// actual engine constructor
-	void create();
 	void load_ico(const char* ico);
 	
 	struct engine_config {
-		// screen
-		size_t width = 1280, height = 720;
-		bool fullscreen = false, vsync = false, stereo = false;
-		
-		// projection
-		float fov = 72.0f;
-		float2 near_far_plane = float2(0.1f, 1000.0f);
-		
 		// gui
-		size_t dpi = 0;
 		size_t ui_anti_aliasing = 8;
 		rtt::TEXTURE_ANTI_ALIASING ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_8;
 		
@@ -197,12 +165,6 @@ protected:
 		
 		// sleep / fps limit
 		size_t fps_limit = 0;
-		
-		// server
-		server_data server;
-		
-		// client
-		client_data client;
 		
 		// graphic
 		TEXTURE_FILTERING filtering = TEXTURE_FILTERING::POINT;
@@ -217,29 +179,10 @@ protected:
 		// inferred rendering
 		float upscaling = 1.0f;
 		float geometry_light_scaling = 1.0f;
-		
-		// opencl
-		string opencl_platform = "0";
-		bool clear_cache = false;
-		set<string> cl_device_restriction;
-
-		// sdl
-		SDL_Window* wnd = nullptr;
-		SDL_GLContext ctx = nullptr;
-		recursive_mutex ctx_lock;
-		atomic<unsigned int> ctx_active_locks { 0 };
-		unsigned int flags = 0;
-		
-		engine_config() : server(), client() {}
 	} config;
-	xml::xml_doc config_doc;
 	
 	// path variables
-	string datapath;
-	string rel_datapath;
-	string callpath;
 	string shaderpath;
-	string kernelpath;
 
 	// screen info variables
 	INIT_MODE mode;
@@ -262,18 +205,8 @@ protected:
 	GLint pushed_blend_src_rgb, pushed_blend_src_alpha;
 	GLint pushed_blend_dst_rgb, pushed_blend_dst_alpha;
 	deque<matrix4f*> pushed_matrices;
-
-	// fps counting
-	unsigned int fps;
-	unsigned int fps_counter;
-	unsigned int fps_time;
-	float frame_time;
-	unsigned int frame_time_sum;
-	unsigned int frame_time_counter;
-	bool new_fps_count;
 	
 	// cursor
-	bool cursor_visible;
 	SDL_Cursor* standard_cursor;
 	map<string, SDL_Cursor*> cursors;
 	unsigned char* cursor_data;
@@ -289,7 +222,6 @@ protected:
 	
 	// misc
 	atomic<bool> reload_shaders_flag { false };
-	atomic<bool> reload_kernels_flag { false };
 	GLuint global_vao;
 
 };

@@ -80,10 +80,10 @@ if(src_surface->format->Rshift == rshift && \
 
 /*! creates the texman object
  */
-texman::texman(ext* exts_, const string& datapath, const size_t& standard_anisotropic_) {
+texman::texman(ext* exts_, const size_t& standard_anisotropic_) {
 	texman::exts = exts_;
 	
-	dummy_texture = add_texture(string(datapath+"none.png").c_str(), TEXTURE_FILTERING::POINT, standard_anisotropic, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	dummy_texture = add_texture(floor::data_path("none.png"), TEXTURE_FILTERING::POINT, standard_anisotropic, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
 	standard_filtering = TEXTURE_FILTERING::POINT;
 	texman::standard_anisotropic = standard_anisotropic_;

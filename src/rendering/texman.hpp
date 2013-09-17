@@ -34,7 +34,7 @@
 struct texture;
 class A2E_API texman {
 public:
-	texman(ext* exts, const string& datapath, const size_t& standard_anisotropic);
+	texman(ext* exts, const size_t& standard_anisotropic);
 	~texman();
 	
 	

@@ -45,8 +45,7 @@ BOOL APIENTRY DllMain(HANDLE hModule floor_unused, DWORD ul_reason_for_call, LPV
 
 void engine::init(const char* callpath_, const char* datapath_,
 				  const bool console_only_, const string config_name_,
-				  const unsigned int width_, const unsigned int height_, const bool fullscreen_,
-				  const bool vsync_, const char* ico_) {
+				  const char* ico_) {
 	floor::init(callpath_, datapath_, console_only_, config_name_);
 	floor::set_caption("A2E");
 	
@@ -68,23 +67,9 @@ void engine::init(const char* callpath_, const char* datapath_,
 	// print out engine info
 	log_debug("%s", (A2E_VERSION_STRING).c_str());
 	
-	// load config
-	// TODO: check which config settings already exist in floor
-	/*const string config_filename(string("config.xml") +
-								 (file_io::is_file(data_path("config.xml.local")) ? ".local" : ""));
-	config_doc = x->process_file(data_path(config_filename));
+	// load config (that aren't already part of floor)
+	const auto& config_doc = floor::get_config_doc();
 	if(config_doc.valid) {
-		config.width = config_doc.get<size_t>("config.screen.width", 640);
-		config.height = config_doc.get<size_t>("config.screen.height", 480);
-		config.fullscreen = config_doc.get<bool>("config.screen.fullscreen", false);
-		config.vsync = config_doc.get<bool>("config.screen.vsync", false);
-		config.stereo = config_doc.get<bool>("config.screen.stereo", false);
-		
-		config.fov = config_doc.get<float>("config.projection.fov", 72.0f);
-		config.near_far_plane.x = config_doc.get<float>("config.projection.near", 1.0f);
-		config.near_far_plane.y = config_doc.get<float>("config.projection.far", 1000.0f);
-		
-		config.dpi = config_doc.get<size_t>("config.gui.dpi", 0);
 		// ui anti-aliasing should at least be 2x msaa
 		config.ui_anti_aliasing = std::max(config_doc.get<size_t>("config.gui.anti_aliasing", 8), (size_t)2);
 		
@@ -94,14 +79,6 @@ void engine::init(const char* callpath_, const char* datapath_,
 		config.rdouble_click_time = config_doc.get<size_t>("config.input.rdouble_click_time", 200);
 		
 		config.fps_limit = config_doc.get<size_t>("config.sleep.time", 0);
-		
-		config.server.port = (unsigned short int)config_doc.get<size_t>("config.server.port", 0);
-		config.server.max_clients = (unsigned int)config_doc.get<size_t>("config.server.max_clients", 0);
-		
-		config.client.client_name = config_doc.get<string>("config.client.name", "");
-		config.client.server_name = config_doc.get<string>("config.client.server", "");
-		config.client.port = (unsigned short int)config_doc.get<size_t>("config.client.port", 0);
-		config.client.lis_port = (unsigned short int)config_doc.get<size_t>("config.client.lis_port", 0);
 		
 		string filtering_str = config_doc.get<string>("config.graphic.filtering", "");
 		if(filtering_str == "POINT") config.filtering = TEXTURE_FILTERING::POINT;
@@ -128,15 +105,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 		config.upscaling = config_doc.get<float>("config.inferred.upscaling", 1.0f);
 		config.geometry_light_scaling = config_doc.get<float>("config.inferred.geometry_light_scaling", 1.0f);
 		config.geometry_light_scaling = core::clamp(config.geometry_light_scaling, 0.5f, 1.0f);
-		
-		config.opencl_platform = config_doc.get<string>("config.opencl.platform", "0");
-		config.clear_cache = config_doc.get<bool>("config.opencl.clear_cache", false);
-		const auto cl_dev_tokens(core::tokenize(config_doc.get<string>("config.opencl.restrict", ""), ','));
-		for(const auto& dev_token : cl_dev_tokens) {
-			if(dev_token == "") continue;
-			config.cl_device_restriction.insert(dev_token);
-		}
-	}*/
+	}
 	
 	if(console_only_) {
 		mode = INIT_MODE::CONSOLE;
@@ -145,155 +114,150 @@ void engine::init(const char* callpath_, const char* datapath_,
 		log_debug("initializing albion 2 engine in console only mode");
 	}
 	else {
-		config.width = width_;
-		config.height = height_;
-		config.fullscreen = fullscreen_;
-		config.vsync = vsync_;
+		mode = INIT_MODE::GRAPHICAL;
 		log_debug("initializing albion 2 engine in console + graphical mode");
-	}
-	
-	mode = INIT_MODE::GRAPHICAL;
 		
-	// load icon
-	if(ico_ != nullptr) load_ico(ico_);
-	
-	acquire_gl_context();
-	
-	// make an early clear
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	swap();
-	evt->handle_events(); // this will effectively create/open the window on some platforms
-
-	// create extension class object
-	exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
-	
-	// capability test
+		// load icon
+		if(ico_ != nullptr) load_ico(ico_);
+		
+		floor::acquire_context();
+		
+		// make an early clear
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		swap();
+		evt->handle_events(); // this will effectively create/open the window on some platforms
+		
+		// create extension class object
+		exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
+		
+		// capability test
 #if !defined(A2E_IOS)
-	if(!exts->is_gl_version(3, 2)) { // TODO: check for shader support! (use recognized gl version)
-		log_error("A2E doesn't support your graphic device! OpenGL 3.2 is the minimum requirement.");
-		SDL_Delay(10000);
-		exit(1);
-	}
+		if(!exts->is_gl_version(3, 2)) { // TODO: check for shader support! (use recognized gl version)
+			log_error("A2E doesn't support your graphic device! OpenGL 3.2 is the minimum requirement.");
+			SDL_Delay(10000);
+			exit(1);
+		}
 #else
-	if(!exts->is_gl_version(2, 0)) {
-		log_error("A2E doesn't support your graphic device! OpenGL ES 2.0 is the minimum requirement.");
-		SDL_Delay(10000);
-		exit(1);
-	}
+		if(!exts->is_gl_version(2, 0)) {
+			log_error("A2E doesn't support your graphic device! OpenGL ES 2.0 is the minimum requirement.");
+			SDL_Delay(10000);
+			exit(1);
+		}
 #endif
-	
-	//
+		
+		//
 #if defined(A2E_DEBUG)
-	gl_timer::init();
+		gl_timer::init();
 #endif
-	
-	int tmp = 0;
-	SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &tmp);
-	log_debug("double buffering %s", tmp == 1 ? "enabled" : "disabled");
-
-	// print out some opengl informations
-	log_debug("vendor: %s", glGetString(GL_VENDOR));
-	log_debug("renderer: %s", glGetString(GL_RENDERER));
-	log_debug("version: %s", glGetString(GL_VERSION));
-	
-	// no support for ms gdi driver ...
-	if(strcmp((const char*)glGetString(GL_RENDERER), "GDI Generic") == 0) {
-		log_error("A2E doesn't support the MS GDI Generic driver!\nGo and install one of these (that match your graphics card):\nhttp://www.ati.com  http://www.nvidia.com  http://www.intel.com");
-		SDL_Delay(10000);
-		exit(1);
+		
+		int tmp = 0;
+		SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &tmp);
+		log_debug("double buffering %s", tmp == 1 ? "enabled" : "disabled");
+		
+		// print out some opengl informations
+		log_debug("vendor: %s", glGetString(GL_VENDOR));
+		log_debug("renderer: %s", glGetString(GL_RENDERER));
+		log_debug("version: %s", glGetString(GL_VERSION));
+		
+		// no support for ms gdi driver ...
+		if(strcmp((const char*)glGetString(GL_RENDERER), "GDI Generic") == 0) {
+			log_error("A2E doesn't support the MS GDI Generic driver!\nGo and install one of these (that match your graphics card):\nhttp://www.ati.com  http://www.nvidia.com  http://www.intel.com");
+			SDL_Delay(10000);
+			exit(1);
+		}
+		
+		if(SDL_GetCurrentVideoDriver() == nullptr) {
+			log_error("couldn't get video driver: %s!", SDL_GetError());
+		}
+		else log_debug("video driver: %s", SDL_GetCurrentVideoDriver());
+		
+		evt->set_ldouble_click_time((unsigned int)config.ldouble_click_time);
+		evt->set_rdouble_click_time((unsigned int)config.rdouble_click_time);
+		evt->set_mdouble_click_time((unsigned int)config.mdouble_click_time);
+		
+		// initialize ogl
+		init_gl();
+		log_debug("opengl initialized");
+		
+		// resize stuff
+		resize_window();
+		
+		// set and check which anti-aliasing modes are supported (ranging from worst to best)
+		supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::NONE);
+		supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::FXAA);
+		supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_2);
+		supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_4);
+		supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_4_3_FXAA);
+		supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_2_FXAA);
+		set_anti_aliasing(config.anti_aliasing);
+		
+		// set and check anisotropic
+		set_anisotropic(config.anisotropic);
+		
+		// create texture manager and render to texture object
+		t = new texman(exts, config.anisotropic);
+		r = new rtt(this, exts);
+		
+		// set standard texture filtering + anisotropic filtering
+		t->set_filtering(config.filtering);
+		
+		// get standard (sdl internal) cursor and create cursor data
+		standard_cursor = SDL_GetCursor();
+		cursors["STANDARD"] = standard_cursor;
+		
+		// init/create shaders, init gfx
+		shd = new shader(this);
+		gfx2d::init(this);
+		
+		// draw the loading screen/image
+		start_draw();
+		start_2d_draw();
+		a2e_texture load_tex = t->add_texture(floor::data_path("loading.png"), TEXTURE_FILTERING::LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+		const uint2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
+		const uint2 img_offset((unsigned int)floor::get_width()/2 - load_tex_draw_size.x/2,
+							   (unsigned int)floor::get_height()/2 - load_tex_draw_size.y/2);
+		gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
+		gfx2d::draw_rectangle_texture(rect(img_offset.x, img_offset.y,
+										   img_offset.x + load_tex_draw_size.x,
+										   img_offset.y + load_tex_draw_size.y),
+									  load_tex->tex(),
+									  coord(0.0f, 1.0f), coord(1.0f, 0.0f));
+		stop_2d_draw();
+		stop_draw();
+		
+		// create scene
+		sce = new scene(this);
+		
+		// create gui
+		if(config.ui_anti_aliasing > 2) config.ui_anti_aliasing = core::next_pot((unsigned int)config.ui_anti_aliasing);
+		if(exts->get_max_samples() < config.ui_anti_aliasing) {
+			config.ui_anti_aliasing = exts->get_max_samples();
+			log_error("your chosen gui anti-aliasing mode isn't supported by your graphic card - using \"%u\" instead!",
+					  config.ui_anti_aliasing);
+		}
+		else log_debug("using \"%ux\" gui anti-aliasing", config.ui_anti_aliasing);
+		
+		switch(config.ui_anti_aliasing) {
+			case 0: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::NONE; break;
+			case 2: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_2; break;
+			case 4: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_4; break;
+			case 8: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_8; break;
+			case 16: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_16; break;
+			case 32: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_32; break;
+			case 64: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_64; break;
+			default: break;
+		}
+		ui = new gui(this, "standard"); // TODO: add config setting for theme name
+		
+		floor::release_context();
 	}
-	
-	if(SDL_GetCurrentVideoDriver() == nullptr) {
-		log_error("couldn't get video driver: %s!", SDL_GetError());
-	}
-	else log_debug("video driver: %s", SDL_GetCurrentVideoDriver());
-	
-	evt->set_ldouble_click_time((unsigned int)config.ldouble_click_time);
-	evt->set_rdouble_click_time((unsigned int)config.rdouble_click_time);
-	evt->set_mdouble_click_time((unsigned int)config.mdouble_click_time);
-	
-	// initialize ogl
-	init_gl();
-	log_debug("opengl initialized");
-
-	// resize stuff
-	resize_window();
-
-	// set and check which anti-aliasing modes are supported (ranging from worst to best)
-	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::NONE);
-	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::FXAA);
-	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_2);
-	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_4);
-	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_4_3_FXAA);
-	supported_aa_modes.push_back(rtt::TEXTURE_ANTI_ALIASING::SSAA_2_FXAA);
-	set_anti_aliasing(config.anti_aliasing);
-
-	// set and check anisotropic
-	set_anisotropic(config.anisotropic);
-	
-	// create texture manager and render to texture object
-	t = new texman(exts, datapath, config.anisotropic);
-	r = new rtt(this, exts);
-	
-	// set standard texture filtering + anisotropic filtering
-	t->set_filtering(config.filtering);
-
-	// get standard (sdl internal) cursor and create cursor data
-	standard_cursor = SDL_GetCursor();
-	cursors["STANDARD"] = standard_cursor;
-	
-	// init/create shaders, init gfx
-	shd = new shader(this);
-	gfx2d::init(this);
-	
-	// draw the loading screen/image
-	start_draw();
-	start_2d_draw();
-	a2e_texture load_tex = t->add_texture(floor::data_path("loading.png"), TEXTURE_FILTERING::LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-	const uint2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
-	const uint2 img_offset((unsigned int)config.width/2 - load_tex_draw_size.x/2,
-						   (unsigned int)config.height/2 - load_tex_draw_size.y/2);
-	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
-	gfx2d::draw_rectangle_texture(rect(img_offset.x, img_offset.y,
-									   img_offset.x + load_tex_draw_size.x,
-									   img_offset.y + load_tex_draw_size.y),
-								  load_tex->tex(),
-								  coord(0.0f, 1.0f), coord(1.0f, 0.0f));
-	stop_2d_draw();
-	stop_draw();
-	
-	// create scene
-	sce = new scene(this);
-	
-	// create gui
-	if(config.ui_anti_aliasing > 2) config.ui_anti_aliasing = core::next_pot((unsigned int)config.ui_anti_aliasing);
-	if(exts->get_max_samples() < config.ui_anti_aliasing) {
-		config.ui_anti_aliasing = exts->get_max_samples();
-		log_error("your chosen gui anti-aliasing mode isn't supported by your graphic card - using \"%u\" instead!",
-				  config.ui_anti_aliasing);
-	}
-	else log_debug("using \"%ux\" gui anti-aliasing", config.ui_anti_aliasing);
-	
-	switch(config.ui_anti_aliasing) {
-		case 0: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::NONE; break;
-		case 2: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_2; break;
-		case 4: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_4; break;
-		case 8: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_8; break;
-		case 16: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_16; break;
-		case 32: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_32; break;
-		case 64: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_64; break;
-		default: break;
-	}
-	ui = new gui(this, "standard"); // TODO: add config setting for theme name
-	
-	release_gl_context();
 }
 
 void engine::destroy() {
 	log_debug("deleting engine object");
 	
-	acquire_gl_context();
+	floor::acquire_context();
 	
 	for(const auto& cursor : cursors) {
 		if(cursor.first != "STANDARD") {
@@ -320,7 +284,7 @@ void engine::destroy() {
 #if defined(A2E_DEBUG)
 	gl_timer::destroy();
 #endif
-	release_gl_context();
+	floor::release_context();
 	
 	log_debug("engine object deleted");
 	floor::destroy();
@@ -329,14 +293,14 @@ void engine::destroy() {
 /*! starts drawing the window
  */
 void engine::start_draw() {
-	acquire_gl_context();
+	floor::acquire_context();
 	gl_timer::stop_frame();
 	gl_timer::state_check();
 	gl_timer::start_frame();
 	
 	// draws ogl stuff
 	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-	glViewport(0, 0, (unsigned int)config.width, (unsigned int)config.height);
+	glViewport(0, 0, (unsigned int)floor::get_width(), (unsigned int)floor::get_height());
 	
 	// clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -385,24 +349,9 @@ void engine::stop_draw() {
 			log_error("unknown OpenGL error: %u!");
 			break;
 	}
-	
-	frame_time_sum += SDL_GetTicks() - frame_time_counter;
 
 	// fps "limiter"
 	if(config.fps_limit != 0) SDL_Delay((unsigned int)config.fps_limit);
-
-	// handle fps count
-	fps_counter++;
-	if(SDL_GetTicks() - fps_time > 1000) {
-		fps = fps_counter;
-		new_fps_count = true;
-		fps_counter = 0;
-		fps_time = SDL_GetTicks();
-		
-		frame_time = (float)frame_time_sum / (float)fps;
-		frame_time_sum = 0;
-	}
-	frame_time_counter = SDL_GetTicks();
 	
 	// check for shader/kernel reload (this is safe to do here)
 	if(reload_shaders_flag) {
@@ -411,17 +360,9 @@ void engine::stop_draw() {
 		glFinish();
 		shd->reload_shaders();
 	}
-	if(reload_kernels_flag) {
-		reload_kernels_flag = false;
-		glFlush();
-		glFinish();
-		ocl->flush();
-		ocl->finish();
-		ocl->reload_kernels();
-	}
 	
 	gl_timer::mark("FRAME_END");
-	release_gl_context();
+	floor::release_context();
 }
 
 void engine::push_ogl_state() {
@@ -479,12 +420,12 @@ void engine::init_gl() {
  */
 void engine::resize_window() {
 	// set the viewport
-	glViewport(0, 0, (GLsizei)config.width, (GLsizei)config.height);
+	glViewport(0, 0, (GLsizei)floor::get_width(), (GLsizei)floor::get_height());
 
 	// projection matrix
 	// set perspective with fov (default = 72) and near/far plane value (default = 1.0f/1000.0f)
-	projection_matrix.perspective(config.fov, float(config.width) / float(config.height),
-								  config.near_far_plane.x, config.near_far_plane.y);
+	projection_matrix.perspective(floor::get_fov(), float(floor::get_width()) / float(floor::get_height()),
+								  floor::get_near_far_plane().x, floor::get_near_far_plane().y);
 
 	// model view matrix
 	modelview_matrix.identity();
@@ -534,7 +475,7 @@ float3* engine::get_rotation() {
 /*! starts drawing the 2d elements and initializes the opengl functions for that
  */
 void engine::start_2d_draw() {
-	start_2d_draw((unsigned int)config.width, (unsigned int)config.height);
+	start_2d_draw((unsigned int)floor::get_width(), (unsigned int)floor::get_height());
 }
 
 void engine::start_2d_draw(const unsigned int width, const unsigned int height) {
@@ -610,12 +551,11 @@ scene* engine::get_scene() {
  *  @param str str we want to "add" to the data + shader path
  */
 string engine::shader_path(const string& str) const {
-	if(str.length() == 0) return datapath + shaderpath;
-	return datapath + shaderpath + str;
+	return floor::data_path(shaderpath + str);
 }
 
 void engine::load_ico(const char* ico) {
-	SDL_SetWindowIcon(config.wnd, IMG_Load(floor::data_path(ico).c_str()));
+	SDL_SetWindowIcon(floor::get_window(), IMG_Load(floor::data_path(ico).c_str()));
 }
 
 TEXTURE_FILTERING engine::get_filtering() const {
@@ -669,7 +609,7 @@ void engine::set_anti_aliasing(const rtt::TEXTURE_ANTI_ALIASING& anti_aliasing) 
 	if(recreate_buffers) {
 		evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
 					   make_shared<window_resize_event>(SDL_GetTicks(),
-														size2(config.width, config.height)));
+														size2(floor::get_width(), floor::get_height())));
 	}
 }
 
@@ -795,7 +735,7 @@ void engine::set_upscaling(const float& factor) {
 	config.upscaling = factor;
 	evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
 				   make_shared<window_resize_event>(SDL_GetTicks(),
-													size2(config.width, config.height)));
+													size2(floor::get_width(), floor::get_height())));
 }
 
 float engine::get_geometry_light_scaling() const {
@@ -807,7 +747,7 @@ void engine::set_geometry_light_scaling(const float& factor) {
 	config.geometry_light_scaling = factor;
 	evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
 				   make_shared<window_resize_event>(SDL_GetTicks(),
-													size2(config.width, config.height)));
+													size2(floor::get_width(), floor::get_height())));
 }
 
 const string engine::get_version() const {
@@ -816,7 +756,7 @@ const string engine::get_version() const {
 
 void engine::swap() {
 	gl_timer::mark("SWAP_START");
-	SDL_GL_SwapWindow(config.wnd);
+	floor::swap();
 	gl_timer::mark("SWAP_END");
 }
 
@@ -847,58 +787,11 @@ void engine::reload_shaders() {
 	reload_shaders_flag = true;
 }
 
-void engine::reload_kernels() {
-	reload_kernels_flag = true;
-}
-
 const rtt::TEXTURE_ANTI_ALIASING& engine::get_ui_anti_aliasing() const {
 	return config.ui_anti_aliasing_enum;
 }
 
-void engine::acquire_gl_context() {
-	// note: the context lock is recursive, so one thread can lock
-	// it multiple times. however, SDL_GL_MakeCurrent should only
-	// be called once (this is the purpose of ctx_active_locks).
-	config.ctx_lock.lock();
-	// note: not a race, since there can only be one active gl thread
-	const unsigned int cur_active_locks = config.ctx_active_locks++;
-	if(cur_active_locks == 0) {
-		if(SDL_GL_MakeCurrent(config.wnd, config.ctx) != 0) {
-			log_error("couldn't make gl context current: %s!", SDL_GetError());
-			return;
-		}
-		if(ocl != nullptr && ocl->is_supported()) {
-			ocl->activate_context();
-		}
-	}
-#if defined(A2E_IOS)
-	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-#endif
-}
-
-void engine::release_gl_context() {
-	// only call SDL_GL_MakeCurrent with nullptr, when this is the last lock
-	const unsigned int cur_active_locks = --config.ctx_active_locks;
-	if(cur_active_locks == 0) {
-		if(ocl != nullptr && ocl->is_supported()) {
-			ocl->finish();
-			ocl->deactivate_context();
-		}
-		if(SDL_GL_MakeCurrent(config.wnd, nullptr) != 0) {
-			log_error("couldn't release current gl context: %s!", SDL_GetError());
-			return;
-		}
-	}
-	config.ctx_lock.unlock();
-}
-
-bool engine::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
-	if(type == EVENT_TYPE::WINDOW_RESIZE) {
-		const window_resize_event& evt_obj = (const window_resize_event&)*obj;
-		config.width = evt_obj.size.x;
-		config.height = evt_obj.size.y;
-		resize_window();
-	}
+bool engine::window_event_handler(EVENT_TYPE type floor_unused, shared_ptr<event_object> obj floor_unused) {
 	return true;
 }
 

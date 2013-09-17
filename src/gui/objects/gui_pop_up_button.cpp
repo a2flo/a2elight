@@ -225,24 +225,24 @@ void gui_pop_up_button::set_active(const bool& active_state) {
 
 void gui_pop_up_button::open_selection_wnd() {
 	task::spawn([this]() {
-		e->acquire_gl_context();
+		floor::acquire_context();
 		ui->lock();
 		selection_wnd = ui->add<gui_pop_up_window>(float2(1.0f), float2(0.0f), this,
 												   rel_to_abs_position(position_abs), size_abs,
 												   display_items);
 		ui->unlock();
-		e->release_gl_context();
+		floor::release_context();
 	});
 }
 
 void gui_pop_up_button::close_selection_wnd() {
 	if(selection_wnd == nullptr) return;
 	task::spawn([this]() {
-		e->acquire_gl_context();
+		floor::acquire_context();
 		ui->lock();
 		ui->remove(selection_wnd);
 		selection_wnd = nullptr;
 		ui->unlock();
-		e->release_gl_context();
+		floor::release_context();
 	});
 }

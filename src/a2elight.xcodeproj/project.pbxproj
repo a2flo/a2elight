@@ -535,7 +535,7 @@
 		5C05F783123171DA00D122BF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0500;
 			};
 			buildConfigurationList = 5C05F786123171DA00D122BF /* Build configuration list for PBXProject "a2elight" */;
 			compatibilityVersion = "Xcode 3.2";

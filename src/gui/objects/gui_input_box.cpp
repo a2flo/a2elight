@@ -165,9 +165,9 @@ bool gui_input_box::handle_key_event(const EVENT_TYPE& type, const shared_ptr<ev
 			
 			// check if we need to cache the key/character
 			if(!fnt->is_cached(key_evt->key)) {
-				e->acquire_gl_context();
+				floor::acquire_context();
 				fnt->cache(key_evt->key, key_evt->key);
-				e->release_gl_context();
+				floor::release_context();
 			}
 			
 			if(input_cursor != -1) {
