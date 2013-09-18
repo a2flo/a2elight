@@ -92,7 +92,7 @@ BOOL APIENTRY DllMain(HANDLE hModule floor_unused, DWORD ul_reason_for_call, LPV
 void engine::init(const char* callpath_, const char* datapath_,
 				  const bool console_only_, const string config_name_,
 				  const char* ico_) {
-	floor::init(callpath_, datapath_, console_only_, config_name_);
+	floor::init(callpath_, datapath_, console_only_, config_name_, true);
 	floor::set_caption("A2E");
 	
 	// print out a2elight info
@@ -108,9 +108,6 @@ void engine::init(const char* callpath_, const char* datapath_,
 	evt = floor::get_event();
 	window_handler = new event::handler(&engine::window_event_handler);
 	evt->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
-	
-	// print out engine info
-	log_debug("%s", (A2E_VERSION_STRING).c_str());
 	
 	// load config (that aren't already part of floor)
 	const auto& config_doc = floor::get_config_doc();

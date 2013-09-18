@@ -16,29 +16,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "floor/floor.hpp"
+
 #include "engine.hpp"
 #include "global.hpp"
 
-#include "cl/opencl.hpp"
-
-#include "core/platform.hpp"
-#include "core/core.hpp"
-#include "core/file_io.hpp"
-#include "core/matrix4.hpp"
-#include "core/quaternion.hpp"
-#include "core/logger.hpp"
-#include "core/xml.hpp"
-#include "core/vector2.hpp"
-#include "core/vector3.hpp"
-#include "core/vector4.hpp"
-#include "core/util.hpp"
-#include "core/ray.hpp"
-#include "core/bbox.hpp"
-#include "core/functor.hpp"
-
 #include "gui/gui.hpp"
-#include "gui/gui_event.hpp"
-#include "core/event.hpp"
 #include "gui/image.hpp"
 #include "gui/font_manager.hpp"
 #include "gui/font.hpp"
@@ -81,7 +64,3 @@
 #include "scene/model/a2ematerial.hpp"
 #include "scene/model/a2estatic.hpp"
 #include "scene/model/a2emodel.hpp"
-
-#include "threading/thread_base.hpp"
-#include "threading/task.hpp"
-

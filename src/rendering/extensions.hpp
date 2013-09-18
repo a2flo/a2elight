@@ -85,6 +85,7 @@ public:
 		SGX_535,
 		SGX_543,
 		IVY_BRIDGE,
+		HASWELL,
 	};
 	static const GRAPHICS_CARD min_generic_card = GRAPHICS_CARD::GENERIC_SM4;
 	static const GRAPHICS_CARD max_generic_card = GRAPHICS_CARD::GENERIC_SM5;
@@ -95,7 +96,7 @@ public:
 	static const GRAPHICS_CARD min_powervr_card = GRAPHICS_CARD::SGX_535;
 	static const GRAPHICS_CARD max_powervr_card = GRAPHICS_CARD::SGX_543;
 	static const GRAPHICS_CARD min_intel_card = GRAPHICS_CARD::IVY_BRIDGE;
-	static const GRAPHICS_CARD max_intel_card = GRAPHICS_CARD::IVY_BRIDGE;
+	static const GRAPHICS_CARD max_intel_card = GRAPHICS_CARD::HASWELL;
 
 	GRAPHICS_CARD_VENDOR get_vendor();
 	GRAPHICS_CARD get_graphics_card();
@@ -115,6 +116,7 @@ public:
 		OPENGL_4_1,
 		OPENGL_4_2,
 		OPENGL_4_3,
+		OPENGL_4_4,
 	};
 	
 	enum class GLSL_VERSION {
@@ -126,6 +128,7 @@ public:
 		GLSL_410,			// opengl 4.1
 		GLSL_420,			// opengl 4.2
 		GLSL_430,			// opengl 4.3
+		GLSL_440,			// opengl 4.3
 	};
 	
 	const char* glsl_version_str_from_glsl_version(const GLSL_VERSION& version) const;
