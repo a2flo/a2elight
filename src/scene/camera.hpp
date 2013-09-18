@@ -28,8 +28,6 @@
  *  @brief a2e camera functions
  */
 
-class engine;
-
 class A2E_API camera {
 public:
 	camera();

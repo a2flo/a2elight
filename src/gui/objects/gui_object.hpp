@@ -30,7 +30,6 @@
  *  @brief gui object element functions
  */
 
-class engine;
 class gui;
 class A2E_API gui_object {
 public:

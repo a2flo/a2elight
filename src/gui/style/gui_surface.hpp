@@ -23,7 +23,6 @@
 #include "core/vector2.hpp"
 #include "rendering/rtt.hpp"
 
-class engine;
 class shader_gl3;
 typedef shared_ptr<shader_gl3> gl3shader;
 class gui_surface {

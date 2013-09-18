@@ -29,7 +29,6 @@
  *  @brief render to texture class
  */
 
-class engine;
 class A2E_API rtt {
 public:
 	rtt(ext* exts);

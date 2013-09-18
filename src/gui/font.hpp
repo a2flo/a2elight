@@ -26,7 +26,6 @@
  *  @brief stores a font and can be used for drawing
  */
 
-class engine;
 class shader;
 class font_manager;
 typedef struct FT_FaceRec_* FT_Face;

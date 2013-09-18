@@ -24,7 +24,6 @@
 #include "gui_color_scheme.hpp"
 #include "rendering/gfx2d.hpp"
 
-class engine;
 class xml;
 class font_manager;
 class font;

@@ -26,7 +26,6 @@
  *  @brief lighting routines
  */
 
-class engine;
 class A2E_API light {
 public:
 	light(const float& x, const float& y, const float& z);

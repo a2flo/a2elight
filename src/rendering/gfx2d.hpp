@@ -51,7 +51,6 @@ template<typename... Args> static void draw_ ##pc_name ##_ ##ds_name(const Args&
 	draw<pc_func<ds_func>>(args...); \
 }
 
-class engine;
 class A2E_API gfx2d {
 public:
 	//
