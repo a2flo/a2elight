@@ -37,9 +37,9 @@ struct event_object;
 class A2E_API font {
 public:
 	//! single font file or font collection
-	font(engine* e, font_manager* fm, const string& filename);
+	font(font_manager* fm, const string& filename);
 	//! multiple font files (note: only the first of each style will be used)
-	font(engine* e, font_manager* fm, const vector<string> filenames);
+	font(font_manager* fm, const vector<string> filenames);
 	~font();
 	
 	// draw functions
@@ -101,7 +101,6 @@ public:
 	};
 	
 protected:
-	engine* e = nullptr;
 	shader* s = nullptr;
 	font_manager* fm = nullptr;
 	const vector<string> filenames;

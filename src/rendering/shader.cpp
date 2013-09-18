@@ -23,14 +23,8 @@
 
 /*! create and initialize the shader class
  */
-shader::shader(engine* e_) {
-	// get classes
-	shader::e = e_;
-	shader::exts = e->get_ext();
-	shader::r = e->get_rtt();
-	shader::x = floor::get_xml();
-	
-	a2e_shd = new a2e_shader(e);
+shader::shader() : exts(engine::get_ext()), r(engine::get_rtt()), x(floor::get_xml()) {
+	a2e_shd = new a2e_shader();
 	a2e_shd->set_shader_class(this);
 	
 	gui_shader_rendering = false;
@@ -71,7 +65,7 @@ void shader::reload_shaders() {
 	shaders.clear();
 
 	// recreate
-	a2e_shd = new a2e_shader(e);
+	a2e_shd = new a2e_shader();
 	a2e_shd->set_shader_class(this);
 	a2e_shd->load_a2e_shader_includes();
 
@@ -520,7 +514,7 @@ bool shader::load_internal_shaders() {
 		
 		if(shader_filename != "") {
 			a2e_shd->add_a2e_shader(shader_identifier);
-			if(!a2e_shd->load_a2e_shader(shader_identifier, e->shader_path(shader_filename.c_str()), a2e_shd->get_a2e_shader(shader_identifier))) {
+			if(!a2e_shd->load_a2e_shader(shader_identifier, engine::shader_path(shader_filename.c_str()), a2e_shd->get_a2e_shader(shader_identifier))) {
 				err_cur_shader = true;
 				ret = false;
 			}
@@ -555,7 +549,7 @@ a2e_shader* shader::get_a2e_shader() {
 
 bool shader::add_a2e_shader(const string& identifier, const string& filename) {
 	a2e_shd->add_a2e_shader(identifier);
-	if(!a2e_shd->load_a2e_shader(identifier, e->shader_path(filename.c_str()), a2e_shd->get_a2e_shader(identifier))) {
+	if(!a2e_shd->load_a2e_shader(identifier, engine::shader_path(filename.c_str()), a2e_shd->get_a2e_shader(identifier))) {
 		log_error("couldn't load a2e-shader \"%s\"!", filename);
 		return false;
 	}

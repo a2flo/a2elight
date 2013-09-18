@@ -38,15 +38,7 @@
  *  @brief main engine
  */
 
-// the initialization mode is used to determine if we should load
-// or compute graphical stuff like textures or shaders
-enum class INIT_MODE : unsigned int {
-	GRAPHICAL,
-	CONSOLE
-};
-
 class shader;
-class opencl_base;
 class gui;
 class scene;
 class A2E_API engine {
@@ -54,114 +46,108 @@ public:
 	engine() = delete;
 	~engine() = delete;
 	
-	// graphic control functions
-	void init(const char* callpath, const char* datapath,
-			  const bool console_only = false, const string config_name = "config.xml",
-			  const char* ico = nullptr);
-	void destroy();
+	// the initialization mode is used to determine if we should load
+	// or compute graphical stuff like textures or shaders
+	enum class INIT_MODE : unsigned int {
+		GRAPHICAL,
+		CONSOLE
+	};
 	
-	void start_draw();
-	void stop_draw();
-	void start_2d_draw();
-	void start_2d_draw(const unsigned int width, const unsigned int height);
-	void stop_2d_draw();
-	void push_ogl_state();
-	void pop_ogl_state();
-	void init_gl();
-	void resize_window();
-	void swap();
-	const string get_version() const;
+	// graphic control functions
+	static void init(const char* callpath, const char* datapath,
+					 const bool console_only = false, const string config_name = "config.xml",
+					 const char* ico = nullptr);
+	static void destroy();
+	
+	static void start_draw();
+	static void stop_draw();
+	static void start_2d_draw();
+	static void start_2d_draw(const unsigned int width, const unsigned int height);
+	static void stop_2d_draw();
+	static void push_ogl_state();
+	static void pop_ogl_state();
+	static void init_gl();
+	static void resize_window();
+	static const string get_version();
 	
 	// class return functions
-	texman* get_texman();
-	ext* get_ext();
-	rtt* get_rtt();
-	shader* get_shader();
-	gui* get_gui();
-	scene* get_scene();
+	static texman* get_texman();
+	static ext* get_ext();
+	static rtt* get_rtt();
+	static shader* get_shader();
+	static gui* get_gui();
+	static scene* get_scene();
 
 	// miscellaneous control functions
-	SDL_Cursor* add_cursor(const char* name, const char** raw_data, unsigned int xsize, unsigned int ysize, unsigned int hotx, unsigned int hoty);
-	void set_cursor(SDL_Cursor* cursor);
-	SDL_Cursor* get_cursor(const char* name);
+	static SDL_Cursor* add_cursor(const char* name, const char** raw_data, unsigned int xsize, unsigned int ysize, unsigned int hotx, unsigned int hoty);
+	static void set_cursor(SDL_Cursor* cursor);
+	static SDL_Cursor* get_cursor(const char* name);
 	
-	string get_shader_path() const;
-	string shader_path(const string& str) const;
+	static string get_shader_path();
+	static string shader_path(const string& str);
 	
-	void reload_shaders();
+	static void reload_shaders();
 	
 	// misc position/rotation/matrix functions
-	void push_projection_matrix();
-	void pop_projection_matrix();
-	void push_modelview_matrix();
-	void pop_modelview_matrix();
-	matrix4f* get_projection_matrix();
-	matrix4f* get_modelview_matrix();
-	matrix4f* get_mvp_matrix();
-	matrix4f* get_translation_matrix();
-	matrix4f* get_rotation_matrix();
-	void set_position(float xpos, float ypos, float zpos);
-	float3* get_position(); //! shouldn't be used outside of the engine, use camera class function instead
-	void set_rotation(float xrot, float yrot);
-	float3* get_rotation(); //! shouldn't be used outside of the engine, use camera class function instead
+	static void push_projection_matrix();
+	static void pop_projection_matrix();
+	static void push_modelview_matrix();
+	static void pop_modelview_matrix();
+	static matrix4f* get_projection_matrix();
+	static matrix4f* get_modelview_matrix();
+	static matrix4f* get_mvp_matrix();
+	static matrix4f* get_translation_matrix();
+	static matrix4f* get_rotation_matrix();
+	static void set_position(float xpos, float ypos, float zpos);
+	static float3* get_position(); //! shouldn't be used outside of the engine, use camera class function instead
+	static void set_rotation(float xrot, float yrot);
+	static float3* get_rotation(); //! shouldn't be used outside of the engine, use camera class function instead
 	
-	const INIT_MODE& get_init_mode();
+	static const INIT_MODE& get_init_mode();
 	
 	// gui
-	const rtt::TEXTURE_ANTI_ALIASING& get_ui_anti_aliasing() const;
-	
-	// input
-	unsigned int get_key_repeat() const;
-	unsigned int get_ldouble_click_time() const;
-	unsigned int get_mdouble_click_time() const;
-	unsigned int get_rdouble_click_time() const;
+	static const rtt::TEXTURE_ANTI_ALIASING& get_ui_anti_aliasing();
 	
 	// sleep / fps limit
-	void set_fps_limit(unsigned int ms);
-	unsigned int get_fps_limit() const;
+	static void set_fps_limit(unsigned int ms);
+	static unsigned int get_fps_limit();
 	
 	// graphic
-	TEXTURE_FILTERING get_filtering() const;
-	size_t get_anisotropic() const;
-	rtt::TEXTURE_ANTI_ALIASING get_anti_aliasing() const;
+	static TEXTURE_FILTERING get_filtering();
+	static size_t get_anisotropic();
+	static rtt::TEXTURE_ANTI_ALIASING get_anti_aliasing();
 	
-	void set_filtering(const TEXTURE_FILTERING& filtering);
-	void set_anisotropic(const size_t& anisotropic);
-	void set_anti_aliasing(const rtt::TEXTURE_ANTI_ALIASING& anti_aliasing);
+	static void set_filtering(const TEXTURE_FILTERING& filtering);
+	static void set_anisotropic(const size_t& anisotropic);
+	static void set_anti_aliasing(const rtt::TEXTURE_ANTI_ALIASING& anti_aliasing);
 	
 	// graphic device
-	const string& get_disabled_extensions() const;
-	const string& get_force_device() const;
-	const string& get_force_vendor() const;
+	static const string& get_disabled_extensions();
+	static const string& get_force_device();
+	static const string& get_force_vendor();
 	
 	// inferred rendering
-	float get_upscaling() const;
-	float get_geometry_light_scaling() const;
+	static float get_upscaling();
+	static float get_geometry_light_scaling();
 	
-	void set_upscaling(const float& factor);
-	void set_geometry_light_scaling(const float& factor);
+	static void set_upscaling(const float& factor);
+	static void set_geometry_light_scaling(const float& factor);
 
 protected:
-	texman* t = nullptr;
-	ext* exts = nullptr;
-	rtt* r = nullptr;
-	shader* shd = nullptr;
-	gui* ui = nullptr;
-	scene* sce = nullptr;
-	event* evt = nullptr;
+	static texman* t;
+	static ext* exts;
+	static rtt* r;
+	static shader* shd;
+	static gui* ui;
+	static scene* sce;
+	static event* evt;
 	
-	void load_ico(const char* ico);
+	static void load_ico(const char* ico);
 	
-	struct engine_config {
+	static struct engine_config {
 		// gui
 		size_t ui_anti_aliasing = 8;
 		rtt::TEXTURE_ANTI_ALIASING ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_8;
-		
-		// input
-		size_t key_repeat = 200;
-		size_t ldouble_click_time = 200;
-		size_t mdouble_click_time = 200;
-		size_t rdouble_click_time = 200;
 		
 		// sleep / fps limit
 		size_t fps_limit = 0;
@@ -182,47 +168,47 @@ protected:
 	} config;
 	
 	// path variables
-	string shaderpath;
+	static string shaderpath;
 
 	// screen info variables
-	INIT_MODE mode;
-	vector<rtt::TEXTURE_ANTI_ALIASING> supported_aa_modes;
+	static INIT_MODE init_mode;
+	static vector<rtt::TEXTURE_ANTI_ALIASING> supported_aa_modes;
 
 	// transformation/positioning/rotation
-	float3 position;
-	float3 rotation;
-	matrix4f projection_matrix;
-	matrix4f modelview_matrix;
-	matrix4f mvp_matrix;
-	matrix4f translation_matrix;
-	matrix4f rotation_matrix;
-	deque<matrix4f*> projm_stack;
-	deque<matrix4f*> mvm_stack;
+	static float3 position;
+	static float3 rotation;
+	static matrix4f projection_matrix;
+	static matrix4f modelview_matrix;
+	static matrix4f mvp_matrix;
+	static matrix4f translation_matrix;
+	static matrix4f rotation_matrix;
+	static deque<matrix4f*> projm_stack;
+	static deque<matrix4f*> mvm_stack;
 	
 	// pushed gl state
-	GLint pushed_matrix_mode;
-	GLint pushed_blend_src, pushed_blend_dst;
-	GLint pushed_blend_src_rgb, pushed_blend_src_alpha;
-	GLint pushed_blend_dst_rgb, pushed_blend_dst_alpha;
-	deque<matrix4f*> pushed_matrices;
+	static GLint pushed_matrix_mode;
+	static GLint pushed_blend_src, pushed_blend_dst;
+	static GLint pushed_blend_src_rgb, pushed_blend_src_alpha;
+	static GLint pushed_blend_dst_rgb, pushed_blend_dst_alpha;
+	static deque<matrix4f*> pushed_matrices;
 	
 	// cursor
-	SDL_Cursor* standard_cursor;
-	map<string, SDL_Cursor*> cursors;
-	unsigned char* cursor_data;
-	unsigned char* cursor_mask;
-	unsigned char cursor_data16[2*16];
-	unsigned char cursor_mask16[2*16];
-	unsigned char cursor_data32[4*32];
-	unsigned char cursor_mask32[4*32];
+	static SDL_Cursor* standard_cursor;
+	static map<string, SDL_Cursor*> cursors;
+	static unsigned char* cursor_data;
+	static unsigned char* cursor_mask;
+	static unsigned char cursor_data16[2*16];
+	static unsigned char cursor_mask16[2*16];
+	static unsigned char cursor_data32[4*32];
+	static unsigned char cursor_mask32[4*32];
 	
 	// window event handlers
-	event::handler* window_handler;
-	bool window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
+	static event::handler* window_handler;
+	static bool window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	
 	// misc
-	atomic<bool> reload_shaders_flag { false };
-	GLuint global_vao;
+	static atomic<bool> reload_shaders_flag;
+	static GLuint global_vao;
 
 };
 

@@ -32,11 +32,11 @@
 
 constexpr unsigned int font::font_texture_size;
 
-font::font(engine* e_, font_manager* fm_, const string& filename_) : font(e_, fm_, vector<string> { filename_ }) {
+font::font(font_manager* fm_, const string& filename_) : font(fm_, vector<string> { filename_ }) {
 }
 
-font::font(engine* e_, font_manager* fm_, const vector<string> filenames_) :
-e(e_), s(e_->get_shader()), fm(fm_), filenames(filenames_),
+font::font(font_manager* fm_, const vector<string> filenames_) :
+s(engine::get_shader()), fm(fm_), filenames(filenames_),
 shader_reload_fnctr(this, &font::shader_reload_handler)
 {
 	set_size(10);
@@ -649,7 +649,7 @@ void font::draw_cached(const GLuint& ubo, const size_t& character_count, const f
 	
 	// draw
 	font_shd->use();
-	font_shd->uniform("mvpm", matrix4f().translate(position.x, position.y, 0.0f) * *e->get_mvp_matrix());
+	font_shd->uniform("mvpm", matrix4f().translate(position.x, position.y, 0.0f) * *engine::get_mvp_matrix());
 	font_shd->uniform("glyph_count", uint2(glyphs_per_line, glyphs_per_line));
 	font_shd->uniform("glyph_size", float2(display_font_size));
 	font_shd->uniform("page_size", float2(font_texture_size));

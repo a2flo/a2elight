@@ -19,24 +19,19 @@
 #include "image.hpp"
 #include "rendering/gfx2d.hpp"
 
-/*! there is no function currently
- *  @param e pointer to the engine class
- */
-image::image(engine* e_) : e(e_), t(e_->get_texman()), position() {
+image::image() : t(engine::get_texman()), position() {
 	scale = true;
 	gui_img = false;
 	color = 0xFFFFFF;
 }
 
-/*! there is no function currently
- */
 image::~image() {
 }
 
 /*! draws the image
  */
 void image::draw(unsigned int scale_x, unsigned int scale_y, bool flip_y) {
-	if(!gui_img) e->start_2d_draw();
+	if(!gui_img) engine::start_2d_draw();
 	
 	const float4 fcolor(float((color>>16) & 0xFF) / 255.0f,
 						float((color>>8) & 0xFF) / 255.0f,
@@ -78,7 +73,7 @@ void image::draw(unsigned int scale_x, unsigned int scale_y, bool flip_y) {
 	// the depth buffer, otherwise nothing will be seen
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	if(!gui_img) e->stop_2d_draw();
+	if(!gui_img) engine::stop_2d_draw();
 }
 
 /*! draws the image

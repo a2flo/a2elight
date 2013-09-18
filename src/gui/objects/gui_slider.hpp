@@ -23,7 +23,7 @@
 
 class A2E_API gui_slider : public gui_object {
 public:
-	gui_slider(engine* e, const float2& size, const float2& position);
+	gui_slider(const float2& size, const float2& position);
 	virtual ~gui_slider();
 	
 	virtual void draw();

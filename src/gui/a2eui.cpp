@@ -21,7 +21,7 @@
 
 #define A2E_UI_VERSION 3
 
-a2eui::a2eui(engine* e_) : e(e_), x(floor::get_xml()) {
+a2eui::a2eui() : x(floor::get_xml()) {
 }
 
 a2eui::~a2eui() {

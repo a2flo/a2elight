@@ -79,8 +79,7 @@ const char* ext::GRAPHICS_CARD_DEFINE_STR[] = {
 
 /*! create and initialize the extension class
  */
-ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, string* force_vendor_) {
-	ext::mode = imode;
+ext::ext(string* disabled_extensions_, string* force_device_, string* force_vendor_) {
 	ext::disabled_extensions = disabled_extensions_;
 	ext::force_device = force_device_;
 	ext::force_vendor = force_vendor_;
@@ -231,7 +230,8 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 	multisample_coverage_modes = nullptr;
 	max_draw_buffers = 0;
 	
-	if(imode == INIT_MODE::GRAPHICAL) {
+	const auto imode = engine::get_init_mode();
+	if(imode == engine::INIT_MODE::GRAPHICAL) {
 		string vendor_str = "";
 		if(*force_vendor != "") {
 			vendor_str = *force_vendor;
@@ -255,7 +255,7 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 		graphics_card = ext::GRAPHICS_CARD::UNKNOWN;
 	}
 	
-	if(imode == INIT_MODE::GRAPHICAL) {
+	if(imode == engine::INIT_MODE::GRAPHICAL) {
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, (GLint*)&max_texture_size);
 	}
 
@@ -276,7 +276,7 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 			if(ext_str == nullptr) break;
 			if(!is_ext_supported(ext_str)) {
 				*check.flag = false;
-				if(imode == INIT_MODE::GRAPHICAL) {
+				if(imode == engine::INIT_MODE::GRAPHICAL) {
 					log_msg("your graphic device doesn't support '%s'!", ext_str);
 				}
 				// don't break here, but rather print all extensions that aren't supported
@@ -297,16 +297,16 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 		glGetIntegerv(GL_MULTISAMPLE_COVERAGE_MODES_NV, (GLint*)multisample_coverage_modes);
 	}
 #endif
-	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_SAMPLES, (GLint*)&max_samples);
+	if(imode == engine::INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_SAMPLES, (GLint*)&max_samples);
 	
 	// get max vertex textures
 	GLint vtf = 0;
-	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vtf);
+	if(imode == engine::INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &vtf);
 	if(vtf > 0) {
 		log_debug("supported vertex textures: %i", vtf);
 	}
 	else {
-		if(imode == INIT_MODE::GRAPHICAL) log_error("your graphic device doesn't support 'Vertex Texture Fetching'!");
+		if(imode == engine::INIT_MODE::GRAPHICAL) log_error("your graphic device doesn't support 'Vertex Texture Fetching'!");
 	}
 	
 	// get max anisotropic filtering
@@ -316,18 +316,18 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 	}
 	
 	// get max textures
-	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&(ext::max_texture_image_units));
+	if(imode == engine::INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (GLint*)&(ext::max_texture_image_units));
 	
 	// get max draw buffers
 #if !defined(A2E_IOS)
-	if(imode == INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_DRAW_BUFFERS, (GLint*)&(ext::max_draw_buffers));
+	if(imode == engine::INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_DRAW_BUFFERS, (GLint*)&(ext::max_draw_buffers));
 #else
 	// TODO: no support on iOS (yet), workaround?
 	max_draw_buffers = 0;
 #endif
 
 	// graphic card handling
-	if(imode == INIT_MODE::GRAPHICAL) {
+	if(imode == engine::INIT_MODE::GRAPHICAL) {
 		graphics_card = (shader_support ? (shader_model_5_0_support ?
 										   GRAPHICS_CARD::GENERIC_SM5 : GRAPHICS_CARD::GENERIC_SM4) : GRAPHICS_CARD::UNKNOWN);
 
@@ -441,7 +441,7 @@ ext::ext(INIT_MODE imode, string* disabled_extensions_, string* force_device_, s
 		log_debug("your graphics card has been recognized as \"%s\"!", GRAPHICS_CARD_STR[(unsigned int)graphics_card]);
 	}
 	
-	if(imode == INIT_MODE::GRAPHICAL) {
+	if(imode == engine::INIT_MODE::GRAPHICAL) {
 		log_debug("opengl version: %s", cstr_from_gl_version(opengl_version));
 		log_debug("glsl version: GLSL %s", cstr_from_glsl_version(glsl_version));
 		log_debug("shader model: %s", shader_support ? (shader_model_5_0_support ? "5.0" : "4.0") : "none");

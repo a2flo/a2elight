@@ -18,9 +18,7 @@
 
 #include "particle_system.hpp"
 
-/*! there is no function currently
- */
-particle_system::particle_system(engine* e_) : e(e_) {
+particle_system::particle_system() {
 	visible = true;
 	active = true;
 	sorting = false;
@@ -56,8 +54,6 @@ particle_system::particle_system(engine* e_) : e(e_) {
 	data.ocl_range_global.set(0);
 }
 
-/*! there is no function currently
- */
 particle_system::~particle_system() {
 	if(glIsBuffer(lights_ubo)) glDeleteBuffers(1, &lights_ubo);
 	

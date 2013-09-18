@@ -22,8 +22,8 @@
 #include "core/xml.hpp"
 #include <regex>
 
-a2e_shader::a2e_shader(engine* eng) :
-e(eng), exts(e->get_ext()), x(floor::get_xml()),
+a2e_shader::a2e_shader() :
+exts(engine::get_ext()), x(floor::get_xml()),
 conditions({
 	// add graphic card specific conditions
 	{ ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[(unsigned int)exts->get_vendor()], true },
@@ -842,7 +842,7 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 }
 
 void a2e_shader::load_a2e_shader_includes() {
-	map<string, file_io::FILE_TYPE> file_list = core::get_file_list(e->shader_path("include/"), "a2eshdi");
+	map<string, file_io::FILE_TYPE> file_list = core::get_file_list(engine::shader_path("include/"), "a2eshdi");
 	for(const auto& include : file_list) {
 		const string inc_name = include.first.substr(0, include.first.find(".a2eshdi"));
 		a2e_shader_includes[inc_name] = new a2e_shader_include();
@@ -852,7 +852,7 @@ void a2e_shader::load_a2e_shader_includes() {
 	for(const auto& include : a2e_shader_includes) {
 		include.second->shader_include_object = create_a2e_shader_include();
 		load_a2e_shader("a2e_include_"+include.second->filename,
-						string(e->shader_path(include.second->filename.c_str())),
+						engine::shader_path(include.second->filename),
 						(a2e_shader_object*)include.second->shader_include_object);
 	}
 }

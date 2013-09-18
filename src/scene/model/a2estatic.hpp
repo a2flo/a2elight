@@ -38,7 +38,7 @@
 
 class A2E_API a2estatic : public a2emodel {
 public:
-	a2estatic(engine* e, shader* s, scene* sce);
+	a2estatic(shader* s, scene* sce);
 	virtual ~a2estatic();
 
 	virtual void draw(const DRAW_MODE draw_mode);

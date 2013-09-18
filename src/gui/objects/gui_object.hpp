@@ -34,7 +34,7 @@ class engine;
 class gui;
 class A2E_API gui_object {
 public:
-	gui_object(engine* e, const float2& size, const float2& position);
+	gui_object(const float2& size, const float2& position);
 	virtual ~gui_object();
 	
 	virtual void draw() = 0;
@@ -93,7 +93,6 @@ public:
 	virtual bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj);
 
 protected:
-	engine* e;
 	gui* ui;
 	gui_theme* theme;
 	event* evt;

@@ -21,9 +21,7 @@
 
 #include "cl/opencl.hpp"
 
-/*! there is no function currently
- */
-particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
+particle_manager_cl::particle_manager_cl() : particle_manager_base() {
 	max_particle_count = 16*1024*1024; // limit to 16 million+
 	
 	ocl->use_kernel("PARTICLE_INIT");
@@ -31,12 +29,7 @@ particle_manager_cl::particle_manager_cl(engine* e) : particle_manager_base(e) {
 	kernel_seed = (unsigned int)time(nullptr);
 }
 
-/*! there is no function currently
- */
 particle_manager_cl::~particle_manager_cl() {
-	log_debug("deleting particle_manager_cl object");
-	
-	log_debug("particle_manager_cl object deleted");
 }
 
 /*! adds a new particle system (position, color and direction should be created within the function call - they will get deleted in this function)
@@ -319,7 +312,7 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 		ocl->acquire_gl_object(pdata->ocl_indices[1]);
 		
 		//
-		float4 camera_pos(-*e->get_position(), 1.0f);
+		float4 camera_pos(-*engine::get_position(), 1.0f);
 		pdata->particle_indices_swap = 1 - pdata->particle_indices_swap; // swap
 		
 		// compute particle distances
@@ -434,8 +427,8 @@ void particle_manager_cl::sort_particle_system(particle_system* ps) {
 
 void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::fbo* frame_buffer) {
 	// prep matrices
-	matrix4f mvm(*e->get_modelview_matrix());
-	matrix4f pm(*e->get_projection_matrix());
+	matrix4f mvm(*engine::get_modelview_matrix());
+	matrix4f pm(*engine::get_projection_matrix());
 	matrix4f mvpm(mvm * pm);
 	
 	// draw

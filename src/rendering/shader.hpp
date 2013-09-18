@@ -43,7 +43,7 @@ protected:
 	map<string, shader_object*> shaders;
 	
 public:
-	shader(engine* e);
+	shader();
 	~shader();
 	
 	shader_object* add_shader_file(const string& identifier, ext::GLSL_VERSION glsl_version, const char* vname, const char* gname, const char* fname);
@@ -70,7 +70,6 @@ public:
 	void reload_shaders();
 
 protected:
-	engine* e;
 	ext* exts;
 	rtt* r;
 	xml* x;

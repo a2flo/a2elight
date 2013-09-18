@@ -24,7 +24,7 @@
 
 class A2E_API gui_window : public gui_object, public gui_surface {
 public:
-	gui_window(engine* e, const float2& buffer_size, const float2& position);
+	gui_window(const float2& buffer_size, const float2& position);
 	virtual ~gui_window();
 	
 	virtual void draw();

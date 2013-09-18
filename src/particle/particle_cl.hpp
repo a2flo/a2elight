@@ -35,7 +35,7 @@
 
 class A2E_API particle_manager_cl : public particle_manager_base {
 public:
-	particle_manager_cl(engine* e);
+	particle_manager_cl();
 	virtual ~particle_manager_cl();
 	
 	virtual particle_system* add_particle_system(const particle_system::EMITTER_TYPE type,

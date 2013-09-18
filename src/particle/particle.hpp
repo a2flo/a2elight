@@ -36,7 +36,7 @@ class opencl;
 class particle_manager_base;
 class A2E_API particle_manager {
 public:
-	particle_manager(engine* e);
+	particle_manager();
 	~particle_manager();
 
 	void draw(const rtt::fbo* frame_buffer);
@@ -63,7 +63,6 @@ public:
 	void set_manager(particle_manager_base* pm);
 
 protected:
-	engine* e;
 	shader* s;
 	rtt* r;
 	ext* exts;

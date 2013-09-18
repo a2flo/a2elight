@@ -22,11 +22,10 @@
 #include "global.hpp"
 #include "core/xml.hpp"
 
-class engine;
 class xml;
 class gui_color_scheme {
 public:
-	gui_color_scheme(engine* e);
+	gui_color_scheme();
 	~gui_color_scheme();
 	
 	bool load(const string& filename);
@@ -34,7 +33,6 @@ public:
 	const float4 get(const string& name) const;
 	
 protected:
-	engine* e;
 	xml* x;
 	
 	unordered_map<string, float4> colors;

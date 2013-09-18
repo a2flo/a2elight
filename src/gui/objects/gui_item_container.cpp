@@ -19,8 +19,8 @@
 #include "gui_item_container.hpp"
 #include "gui_event.hpp"
 
-gui_item_container::gui_item_container(engine* e_, const float2& size_, const float2& position_, const GUI_EVENT select_event_) :
-gui_object(e_, size_, position_), select_event(select_event_) {
+gui_item_container::gui_item_container(const float2& size_, const float2& position_, const GUI_EVENT select_event_) :
+gui_object(size_, position_), select_event(select_event_) {
 }
 
 gui_item_container::~gui_item_container() {

@@ -22,9 +22,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-font_manager::font_manager(engine* e_) :
+font_manager::font_manager() :
 thread_base("font_manager"),
-e(e_), r(e_->get_rtt()), fonts(), ft_library(nullptr) {
+r(engine::get_rtt()), fonts(), ft_library(nullptr) {
 	// init freetype
 	if(FT_Init_FreeType(&ft_library) != 0) {
 		log_error("failed to initialize freetype library!");
@@ -137,7 +137,7 @@ font& font_manager::add_font_family(const string& identifier, const vector<strin
 	}
 	
 	// TODO: -> emplace
-	const auto ret = fonts.insert(make_pair(identifier, new font(e, this, filenames)));
+	const auto ret = fonts.insert(make_pair(identifier, new font(this, filenames)));
 	return *ret.first->second;
 }
 

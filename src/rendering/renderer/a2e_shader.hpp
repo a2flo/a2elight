@@ -49,8 +49,7 @@ protected:
 	};
 	
 public:
-	
-	a2e_shader(engine* eng);
+	a2e_shader();
 	~a2e_shader();
 	
 	struct a2e_shader_code {
@@ -153,7 +152,6 @@ public:
 	}
 	
 protected:
-	engine* e;
 	ext* exts;
 	xml* x;
 	shader* shader_obj;

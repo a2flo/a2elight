@@ -42,7 +42,7 @@
 class scene;
 class A2E_API a2emodel {
 public:
-	a2emodel(engine* e, shader* s, scene* sce);
+	a2emodel(shader* s, scene* sce);
 	virtual ~a2emodel();
 	
 	// ret: void, args: draw_mode, sub_object_num
@@ -136,7 +136,6 @@ public:
 	
 protected:
 	// classes
-	engine* e;
 	texman* t;
 	shader* s;
 	ext* exts;

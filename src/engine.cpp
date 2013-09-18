@@ -28,6 +28,52 @@
 #include "osx/osx_helper.hpp"
 #endif
 
+// init engine static vars
+texman* engine::t { nullptr };
+ext* engine::exts { nullptr };
+rtt* engine::r { nullptr };
+shader* engine::shd { nullptr };
+gui* engine::ui { nullptr };
+scene* engine::sce { nullptr };
+event* engine::evt { nullptr };
+
+struct engine::engine_config engine::config;
+
+string engine::shaderpath { "shader/" };
+
+engine::INIT_MODE engine::init_mode { engine::INIT_MODE::GRAPHICAL };
+vector<rtt::TEXTURE_ANTI_ALIASING> engine::supported_aa_modes;
+
+float3 engine::position;
+float3 engine::rotation;
+matrix4f engine::projection_matrix;
+matrix4f engine::modelview_matrix;
+matrix4f engine::mvp_matrix;
+matrix4f engine::translation_matrix;
+matrix4f engine::rotation_matrix;
+deque<matrix4f*> engine::projm_stack;
+deque<matrix4f*> engine::mvm_stack;
+
+GLint engine::pushed_matrix_mode;
+GLint engine::pushed_blend_src, engine::pushed_blend_dst;
+GLint engine::pushed_blend_src_rgb, engine::pushed_blend_src_alpha;
+GLint engine::pushed_blend_dst_rgb, engine::pushed_blend_dst_alpha;
+deque<matrix4f*> engine::pushed_matrices;
+
+SDL_Cursor* engine::standard_cursor;
+map<string, SDL_Cursor*> engine::cursors;
+unsigned char* engine::cursor_data;
+unsigned char* engine::cursor_mask;
+unsigned char engine::cursor_data16[2*16];
+unsigned char engine::cursor_mask16[2*16];
+unsigned char engine::cursor_data32[4*32];
+unsigned char engine::cursor_mask32[4*32];
+
+event::handler* engine::window_handler;
+
+atomic<bool> engine::reload_shaders_flag { false };
+GLuint engine::global_vao { 0 };
+
 // dll main for windows dll export
 #if defined(__WINDOWS__)
 BOOL APIENTRY DllMain(HANDLE hModule floor_unused, DWORD ul_reason_for_call, LPVOID lpReserved floor_unused);
@@ -54,14 +100,13 @@ void engine::init(const char* callpath_, const char* datapath_,
 	
 	// TODO: kernels?
 	
-	shaderpath = "shader/";
 	standard_cursor = nullptr;
 	cursor_data = nullptr;
 	cursor_mask = nullptr;
 	global_vao = 0;
 	
 	evt = floor::get_event();
-	window_handler = new event::handler(this, &engine::window_event_handler);
+	window_handler = new event::handler(&engine::window_event_handler);
 	evt->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
 	// print out engine info
@@ -72,11 +117,6 @@ void engine::init(const char* callpath_, const char* datapath_,
 	if(config_doc.valid) {
 		// ui anti-aliasing should at least be 2x msaa
 		config.ui_anti_aliasing = std::max(config_doc.get<size_t>("config.gui.anti_aliasing", 8), (size_t)2);
-		
-		config.key_repeat = config_doc.get<size_t>("config.input.key_repeat", 200);
-		config.ldouble_click_time = config_doc.get<size_t>("config.input.ldouble_click_time", 200);
-		config.mdouble_click_time = config_doc.get<size_t>("config.input.mdouble_click_time", 200);
-		config.rdouble_click_time = config_doc.get<size_t>("config.input.rdouble_click_time", 200);
 		
 		config.fps_limit = config_doc.get<size_t>("config.sleep.time", 0);
 		
@@ -108,13 +148,13 @@ void engine::init(const char* callpath_, const char* datapath_,
 	}
 	
 	if(console_only_) {
-		mode = INIT_MODE::CONSOLE;
+		init_mode = engine::INIT_MODE::CONSOLE;
 		// create extension class object
-		exts = new ext(mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
+		exts = new ext(&config.disabled_extensions, &config.force_device, &config.force_vendor);
 		log_debug("initializing albion 2 engine in console only mode");
 	}
 	else {
-		mode = INIT_MODE::GRAPHICAL;
+		init_mode = engine::INIT_MODE::GRAPHICAL;
 		log_debug("initializing albion 2 engine in console + graphical mode");
 		
 		// load icon
@@ -125,11 +165,11 @@ void engine::init(const char* callpath_, const char* datapath_,
 		// make an early clear
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		swap();
+		floor::swap();
 		evt->handle_events(); // this will effectively create/open the window on some platforms
 		
 		// create extension class object
-		exts = new ext(engine::mode, &config.disabled_extensions, &config.force_device, &config.force_vendor);
+		exts = new ext(&config.disabled_extensions, &config.force_device, &config.force_vendor);
 		
 		// capability test
 #if !defined(A2E_IOS)
@@ -172,10 +212,6 @@ void engine::init(const char* callpath_, const char* datapath_,
 		}
 		else log_debug("video driver: %s", SDL_GetCurrentVideoDriver());
 		
-		evt->set_ldouble_click_time((unsigned int)config.ldouble_click_time);
-		evt->set_rdouble_click_time((unsigned int)config.rdouble_click_time);
-		evt->set_mdouble_click_time((unsigned int)config.mdouble_click_time);
-		
 		// initialize ogl
 		init_gl();
 		log_debug("opengl initialized");
@@ -197,7 +233,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 		
 		// create texture manager and render to texture object
 		t = new texman(exts, config.anisotropic);
-		r = new rtt(this, exts);
+		r = new rtt(exts);
 		
 		// set standard texture filtering + anisotropic filtering
 		t->set_filtering(config.filtering);
@@ -207,8 +243,8 @@ void engine::init(const char* callpath_, const char* datapath_,
 		cursors["STANDARD"] = standard_cursor;
 		
 		// init/create shaders, init gfx
-		shd = new shader(this);
-		gfx2d::init(this);
+		shd = new shader();
+		gfx2d::init();
 		
 		// draw the loading screen/image
 		start_draw();
@@ -227,7 +263,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 		stop_draw();
 		
 		// create scene
-		sce = new scene(this);
+		sce = new scene();
 		
 		// create gui
 		if(config.ui_anti_aliasing > 2) config.ui_anti_aliasing = core::next_pot((unsigned int)config.ui_anti_aliasing);
@@ -248,7 +284,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 			case 64: config.ui_anti_aliasing_enum = rtt::TEXTURE_ANTI_ALIASING::MSAA_64; break;
 			default: break;
 		}
-		ui = new gui(this, "standard"); // TODO: add config setting for theme name
+		ui = new gui("standard"); // TODO: add config setting for theme name
 		
 		floor::release_context();
 	}
@@ -272,14 +308,11 @@ void engine::destroy() {
 	gfx2d::destroy();
 	
 	if(t != nullptr) delete t;
-	if(exts != nullptr) delete exts;
 	if(shd != nullptr) delete shd;
 	if(ui != nullptr) delete ui;
 	if(sce != nullptr) delete sce;
-	if(ocl != nullptr) {
-		delete ocl;
-		ocl = nullptr;
-	}
+	if(r != nullptr) delete r;
+	if(exts != nullptr) delete exts;
 	
 #if defined(A2E_DEBUG)
 	gl_timer::destroy();
@@ -293,7 +326,7 @@ void engine::destroy() {
 /*! starts drawing the window
  */
 void engine::start_draw() {
-	floor::acquire_context();
+	floor::start_draw(); // acquires context
 	gl_timer::stop_frame();
 	gl_timer::state_check();
 	gl_timer::start_frame();
@@ -323,46 +356,23 @@ void engine::stop_draw() {
 	if(sce != nullptr) sce->draw();
 	if(ui != nullptr) ui->draw();
 	
-	//
-	swap();
-	
-	GLenum error = glGetError();
-	switch(error) {
-		case GL_NO_ERROR:
-			break;
-		case GL_INVALID_ENUM:
-			log_error("OpenGL error: invalid enum!");
-			break;
-		case GL_INVALID_VALUE:
-			log_error("OpenGL error: invalid value!");
-			break;
-		case GL_INVALID_OPERATION:
-			log_error("OpenGL error: invalid operation!");
-			break;
-		case GL_OUT_OF_MEMORY:
-			log_error("OpenGL error: out of memory!");
-			break;
-		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			log_error("OpenGL error: invalid framebuffer operation!");
-			break;
-		default:
-			log_error("unknown OpenGL error: %u!");
-			break;
-	}
+	// swap, gl error handling, fps counter handling, kernel reloading
+	// note: also releases the context
+	floor::stop_draw();
+	gl_timer::mark("FRAME_END");
 
 	// fps "limiter"
 	if(config.fps_limit != 0) SDL_Delay((unsigned int)config.fps_limit);
 	
 	// check for shader/kernel reload (this is safe to do here)
 	if(reload_shaders_flag) {
+		floor::acquire_context();
 		reload_shaders_flag = false;
 		glFlush();
 		glFinish();
 		shd->reload_shaders();
+		floor::release_context();
 	}
-	
-	gl_timer::mark("FRAME_END");
-	floor::release_context();
 }
 
 void engine::push_ogl_state() {
@@ -388,25 +398,14 @@ void engine::pop_ogl_state() {
 /*! opengl initialization function
  */
 void engine::init_gl() {
-	// set clear color
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	// depth buffer setup
-	glClearDepth(1.0f);
-	// enable depth testing
-	glEnable(GL_DEPTH_TEST);
-	// less/equal depth test
-	glDepthFunc(GL_LESS);
-	// enable backface culling
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
+	// this already handles most opengl initialization ...
+	floor::init_gl();
+	// ... except for these two
 	glFrontFace(GL_CCW);
-
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	glDisable(GL_STENCIL_TEST);
-	
+	// and ios specific code
 #if !defined(A2E_IOS)
-	//
 	static bool vao_init = false;
 	if(!vao_init) {
 		vao_init = true;
@@ -507,8 +506,8 @@ void engine::stop_2d_draw() {
 
 /*! returns the type of the initialization (0 = GRAPHICAL, 1 = CONSOLE)
  */
-const INIT_MODE& engine::get_init_mode() {
-	return engine::mode;
+const engine::INIT_MODE& engine::get_init_mode() {
+	return init_mode;
 }
 
 /*! returns the texman class
@@ -550,7 +549,7 @@ scene* engine::get_scene() {
 /*! returns data path + shader path + str
  *  @param str str we want to "add" to the data + shader path
  */
-string engine::shader_path(const string& str) const {
+string engine::shader_path(const string& str) {
 	return floor::data_path(shaderpath + str);
 }
 
@@ -558,7 +557,7 @@ void engine::load_ico(const char* ico) {
 	SDL_SetWindowIcon(floor::get_window(), IMG_Load(floor::data_path(ico).c_str()));
 }
 
-TEXTURE_FILTERING engine::get_filtering() const {
+TEXTURE_FILTERING engine::get_filtering() {
 	return config.filtering;
 }
 
@@ -568,7 +567,7 @@ void engine::set_filtering(const TEXTURE_FILTERING& filtering) {
 	t->set_filtering(filtering);
 }
 
-size_t engine::get_anisotropic() const {
+size_t engine::get_anisotropic() {
 	return config.anisotropic;
 }
 
@@ -581,7 +580,7 @@ void engine::set_anisotropic(const size_t& anisotropic) {
 	else log_debug("using \"%ux\" anisotropic-filtering", config.anisotropic);
 }
 
-rtt::TEXTURE_ANTI_ALIASING engine::get_anti_aliasing() const {
+rtt::TEXTURE_ANTI_ALIASING engine::get_anti_aliasing() {
 	return config.anti_aliasing;
 }
 
@@ -698,35 +697,19 @@ SDL_Cursor* engine::get_cursor(const char* name) {
 	return cursors[name];
 }
 
-unsigned int engine::get_key_repeat() const {
-	return (unsigned int)config.key_repeat;
-}
-
-unsigned int engine::get_ldouble_click_time() const {
-	return (unsigned int)config.ldouble_click_time;
-}
-
-unsigned int engine::get_mdouble_click_time() const {
-	return (unsigned int)config.mdouble_click_time;
-}
-
-unsigned int engine::get_rdouble_click_time() const {
-	return (unsigned int)config.rdouble_click_time;
-}
-
-const string& engine::get_disabled_extensions() const {
+const string& engine::get_disabled_extensions() {
 	return config.disabled_extensions;
 }
 
-const string& engine::get_force_device() const {
+const string& engine::get_force_device() {
 	return config.force_device;
 }
 
-const string& engine::get_force_vendor() const {
+const string& engine::get_force_vendor() {
 	return config.force_vendor;
 }
 
-float engine::get_upscaling() const {
+float engine::get_upscaling() {
 	return config.upscaling;
 }
 
@@ -738,7 +721,7 @@ void engine::set_upscaling(const float& factor) {
 													size2(floor::get_width(), floor::get_height())));
 }
 
-float engine::get_geometry_light_scaling() const {
+float engine::get_geometry_light_scaling() {
 	return config.geometry_light_scaling;
 }
 
@@ -750,14 +733,8 @@ void engine::set_geometry_light_scaling(const float& factor) {
 													size2(floor::get_width(), floor::get_height())));
 }
 
-const string engine::get_version() const {
+const string engine::get_version() {
 	return A2E_VERSION_STRING;
-}
-
-void engine::swap() {
-	gl_timer::mark("SWAP_START");
-	floor::swap();
-	gl_timer::mark("SWAP_END");
 }
 
 void engine::push_projection_matrix() {
@@ -787,7 +764,7 @@ void engine::reload_shaders() {
 	reload_shaders_flag = true;
 }
 
-const rtt::TEXTURE_ANTI_ALIASING& engine::get_ui_anti_aliasing() const {
+const rtt::TEXTURE_ANTI_ALIASING& engine::get_ui_anti_aliasing() {
 	return config.ui_anti_aliasing_enum;
 }
 

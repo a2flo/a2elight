@@ -76,7 +76,7 @@ protected:
 	};
 	
 public:
-	scene(engine* e);
+	scene();
 	~scene();
 
 	void draw();
@@ -161,7 +161,6 @@ public:
 	const set<env_probe*>& get_env_probes() const;
 
 protected:
-	engine* e;
 	shader* s;
 	ext* exts;
 	rtt* r;
@@ -212,7 +211,7 @@ protected:
 /*! creates an a2emodel object and returns it
  */
 template<typename T> T* scene::create_a2emodel() {
-	return new T(e, s, this);
+	return new T(s, this);
 }
 
 #endif

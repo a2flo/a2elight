@@ -27,11 +27,11 @@
 ////
 class gui_pop_up_window : public gui_window {
 public:
-	gui_pop_up_window(engine* e, const float2& size, const float2& position,
+	gui_pop_up_window(const float2& size, const float2& position,
 					  gui_pop_up_button* pop_up_button_,
 					  const float2& button_position_abs_, const float2& button_size_abs_,
 					  const vector<pair<const string, string>*>& items_)
-	: gui_window(e, size, position), pop_up_button(pop_up_button_),
+	: gui_window(size, position), pop_up_button(pop_up_button_),
 	button_position_abs(button_position_abs_), button_size_abs(button_size_abs_), items(items_) {
 		margin = roundf(gui_theme::point_to_pixel(margin));
 	}
@@ -177,8 +177,8 @@ bool gui_pop_up_window::handle_mouse_event(const EVENT_TYPE& type, const shared_
 }
 
 ////
-gui_pop_up_button::gui_pop_up_button(engine* e_, const float2& size_, const float2& position_) :
-gui_item_container(e_, size_, position_, GUI_EVENT::POP_UP_BUTTON_SELECT) {
+gui_pop_up_button::gui_pop_up_button(const float2& size_, const float2& position_) :
+gui_item_container(size_, position_, GUI_EVENT::POP_UP_BUTTON_SELECT) {
 }
 
 gui_pop_up_button::~gui_pop_up_button() {

@@ -57,7 +57,7 @@ public:
 	//
 	gfx2d() = delete;
 	~gfx2d() = delete;
-	static void init(engine* e);
+	static void init();
 	static void destroy();
 	
 	//
@@ -154,7 +154,6 @@ public:
 	static void compute_ellipsoid_points(vector<float2>& dst_points, const float& radius_lr, const float& radius_tb, const float& start_angle, const float& end_angle);
 	
 protected:
-	static engine* e;
 	static shader* eshd;
 	static ext* exts;
 	
@@ -393,7 +392,7 @@ struct gfx2d::draw_style_fill {
 					 const float4& color) {
 		//
 		simple_shd->use();
-		simple_shd->uniform("mvpm", *e->get_mvp_matrix());
+		simple_shd->uniform("mvpm", *engine::get_mvp_matrix());
 		simple_shd->uniform("in_color", color);
 		
 		// draw
@@ -411,7 +410,7 @@ struct gfx2d::draw_style_gradient {
 								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
 		
 		gradient_shd->use(option);
-		gradient_shd->uniform("mvpm", *e->get_mvp_matrix());
+		gradient_shd->uniform("mvpm", *engine::get_mvp_matrix());
 		
 		const size_t color_count = std::min(colors.size(), size_t(4));
 		gradient_shd->uniform("gradients", &colors[0], color_count);
@@ -534,7 +533,7 @@ protected:
 					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));
-		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
+		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *engine::get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
@@ -555,7 +554,7 @@ protected:
 					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));
-		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
+		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *engine::get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
@@ -583,7 +582,7 @@ protected:
 					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));
-		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *e->get_mvp_matrix());
+		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *engine::get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
 		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));

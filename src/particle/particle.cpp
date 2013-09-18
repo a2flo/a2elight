@@ -21,13 +21,12 @@
 #include "particle/particle_cl.hpp"
 #include "cl/opencl.hpp"
 
-/*! there is no function currently
- */
-particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), r(e_->get_rtt()), exts(e_->get_ext()), t(e_->get_texman()) {
+particle_manager::particle_manager() :
+s(engine::get_shader()), r(engine::get_rtt()), exts(engine::get_ext()), t(engine::get_texman()) {
 	//
 	if(ocl->is_supported()) {
 		log_debug("using OpenCL render path!");
-		pm = new particle_manager_cl(e);
+		pm = new particle_manager_cl();
 	}
 	// no hw/sw support at all
 	else {
@@ -36,8 +35,6 @@ particle_manager::particle_manager(engine* e_) : e(e_), s(e_->get_shader()), r(e
 	}
 }
 
-/*! there is no function currently
- */
 particle_manager::~particle_manager() {
 	log_debug("deleting particle_manager object");
 

@@ -30,7 +30,7 @@ class font_manager;
 class font;
 class gui_theme {
 public:
-	gui_theme(engine* e, font_manager* fm);
+	gui_theme(font_manager* fm);
 	~gui_theme();
 	
 	bool load(const string& filename);
@@ -259,7 +259,6 @@ public:
 	};
 	
 protected:
-	engine* e;
 	font_manager* fm;
 	xml* x;
 	rtt* r;

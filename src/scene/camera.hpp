@@ -32,7 +32,7 @@ class engine;
 
 class A2E_API camera {
 public:
-	camera(engine* e);
+	camera();
 	~camera();
 
 	void run();
@@ -62,7 +62,6 @@ public:
 	const float3& get_direction();
 
 protected:
-	engine* e;
 	event* evt;
 
 	float3 position;

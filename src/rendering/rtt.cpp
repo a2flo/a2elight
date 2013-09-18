@@ -41,18 +41,9 @@ const char* rtt::TEXTURE_ANTI_ALIASING_STR[] = {
 	"2xSSAA+FXAA",
 };
 
-/*! there is no function currently
- */
-rtt::rtt(engine* e_, ext* exts_) {
-	// get classes
-	rtt::e = e_;
-	rtt::exts = exts_;
-
-	current_buffer = nullptr;
+rtt::rtt(ext* exts_) : exts(exts_) {
 }
 
-/*! there is no function currently
- */
 rtt::~rtt() {
 	log_debug("deleting rtt object");
 
@@ -497,11 +488,11 @@ void rtt::stop_draw() {
 }
 
 void rtt::start_2d_draw() {
-	e->start_2d_draw(current_buffer->draw_width, current_buffer->draw_height);
+	engine::start_2d_draw(current_buffer->draw_width, current_buffer->draw_height);
 }
 
 void rtt::stop_2d_draw() {
-	e->stop_2d_draw();
+	engine::stop_2d_draw();
 }
 
 void rtt::clear(const unsigned int and_mask) {

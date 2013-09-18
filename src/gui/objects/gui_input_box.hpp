@@ -23,7 +23,7 @@
 
 class A2E_API gui_input_box : public gui_object {
 public:
-	gui_input_box(engine* e, const float2& size, const float2& position);
+	gui_input_box(const float2& size, const float2& position);
 	virtual ~gui_input_box();
 	
 	virtual void draw();

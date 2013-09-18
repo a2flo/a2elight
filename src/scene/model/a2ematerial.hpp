@@ -36,7 +36,7 @@
 
 class A2E_API a2ematerial {
 public:
-	a2ematerial(engine* eng);
+	a2ematerial();
 	~a2ematerial();
 	
 	//// generic lighting/material definitions
@@ -125,7 +125,6 @@ public:
 	void copy_object_mapping(const size_t& from_object, const vector<size_t>& to_objects);
 
 protected:
-	engine* e;
 	texman* t;
 	ext* exts;
 	xml* x;

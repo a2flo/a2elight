@@ -37,7 +37,7 @@ public:
 	enum_class_bitwise_and(SURFACE_FLAGS)
 	enum_class_bitwise_or(SURFACE_FLAGS)
 	
-	gui_surface(engine* e, const float2& buffer_size, const float2& offset, const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
+	gui_surface(const float2& buffer_size, const float2& offset, const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
 	virtual ~gui_surface();
 	
 	virtual void draw() = 0;
@@ -59,7 +59,6 @@ public:
 	const SURFACE_FLAGS& get_flags() const;
 	
 protected:
-	engine* e;
 	rtt* r;
 	
 	SURFACE_FLAGS flags;
@@ -87,7 +86,7 @@ class gui_simple_callback : public gui_surface {
 public:
 	// note: typedef functor<void, const DRAW_MODE_UI, rtt::fbo*> ui_draw_callback;
 	gui_simple_callback(functor<void, const DRAW_MODE_UI, rtt::fbo*>& callback,
-						const DRAW_MODE_UI& mode, engine* e,
+						const DRAW_MODE_UI& mode,
 						const float2& buffer_size, const float2& offset,
 						const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
 

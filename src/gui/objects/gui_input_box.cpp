@@ -22,8 +22,8 @@
 #include "gui.hpp"
 #include "threading/task.hpp"
 
-gui_input_box::gui_input_box(engine* e_, const float2& size_, const float2& position_) :
-gui_object(e_, size_, position_) {
+gui_input_box::gui_input_box(const float2& size_, const float2& position_) :
+gui_object(size_, position_) {
 	input_text_margin.set(gui_theme::point_to_pixel(input_text_margin.x),
 						  gui_theme::point_to_pixel(input_text_margin.y));
 	compute_abs_values(); // since we override this, call it again

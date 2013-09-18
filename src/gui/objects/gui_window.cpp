@@ -19,8 +19,8 @@
 #include "gui_window.hpp"
 #include "engine.hpp"
 
-gui_window::gui_window(engine* e_, const float2& buffer_size_, const float2& position_) :
-gui_object(e_, buffer_size_, position_), gui_surface(e_, buffer_size_, position_) {
+gui_window::gui_window(const float2& buffer_size_, const float2& position_) :
+gui_object(buffer_size_, position_), gui_surface(buffer_size_, position_) {
 	//
 }
 

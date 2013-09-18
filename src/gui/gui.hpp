@@ -30,7 +30,6 @@
  *  @brief graphical user interface functions
  */
 
-class engine;
 class core;
 class scene;
 class font_manager;
@@ -48,7 +47,7 @@ typedef functor<void, const DRAW_MODE_UI, rtt::fbo*> ui_draw_callback;
 
 class A2E_API gui : public thread_base {
 public:
-	gui(engine* e, const string& theme_name);
+	gui(const string& theme_name);
 	~gui();
 
 	void draw();
@@ -89,7 +88,6 @@ public:
 	const rtt::fbo* get_fullscreen_fbo() const;
 
 protected:
-	engine* e;
 	event* evt;
 	rtt* r;
 	shader* s;
@@ -148,7 +146,7 @@ template <class gui_class, typename... Args> gui_class* gui::add(Args&&... args)
 				  "can't add an object that doesn't inherit from gui_object!");
 	
 	lock();
-	gui_class* obj = new gui_class(e, forward<Args>(args)...);
+	gui_class* obj = new gui_class(forward<Args>(args)...);
 	
 	// "specialize" for gui_window, since we'll need to keep track of them:
 	// (also: i wish there'd be a static if ...)

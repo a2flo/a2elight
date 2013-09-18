@@ -72,7 +72,8 @@ static gui_theme::ui_float2 str_to_ui_float2(const string& str) {
 };
 
 //
-gui_theme::gui_theme(engine* e_, font_manager* fm_) : e(e_), fm(fm_), x(floor::get_xml()), r(e->get_rtt()), scheme(e_) {
+gui_theme::gui_theme(font_manager* fm_) :
+fm(fm_), x(floor::get_xml()), r(engine::get_rtt()), scheme() {
 	fnt = fm->get_font("SYSTEM_SANS_SERIF");
 	screen_dpi = floor::get_dpi();
 }
@@ -423,7 +424,7 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 			unsigned int tex_num = 0;
 			if(tex_name.find(".png") != string::npos) {
 				// TODO: stores textures; add/allow internal engine image names?
-				auto tex = e->get_texman()->add_texture(floor::data_path(tex_name));
+				auto tex = engine::get_texman()->add_texture(floor::data_path(tex_name));
 				tex_num = tex->tex();
 				tex_name = "";
 			}
@@ -734,7 +735,7 @@ void gui_theme::draw(const string& type, const string& state,
 					ds->texture = texture_lookup(ds->texture_name);
 					if(ds->texture == 0) {
 						log_error("texture \"%s\" not found!", ds->texture_name);
-						ds->texture = e->get_texman()->get_dummy_texture()->tex();
+						ds->texture = engine::get_texman()->get_dummy_texture()->tex();
 					}
 				}
 				

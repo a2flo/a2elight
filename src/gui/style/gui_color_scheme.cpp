@@ -21,7 +21,7 @@
 
 #define A2E_COLOR_SCHEME_VERSION 1
 
-gui_color_scheme::gui_color_scheme(engine* e_) : e(e_), x(floor::get_xml()) {
+gui_color_scheme::gui_color_scheme() : x(floor::get_xml()) {
 }
 
 gui_color_scheme::~gui_color_scheme() {

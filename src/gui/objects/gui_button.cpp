@@ -20,8 +20,8 @@
 #include "engine.hpp"
 #include "gui.hpp"
 
-gui_button::gui_button(engine* e_, const float2& size_, const float2& position_) :
-gui_text(e_, size_, position_) {
+gui_button::gui_button(const float2& size_, const float2& position_) :
+gui_text(size_, position_) {
 	//
 }
 

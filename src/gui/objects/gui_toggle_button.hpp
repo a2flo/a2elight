@@ -23,7 +23,7 @@
 
 class A2E_API gui_toggle_button : public gui_object {
 public:
-	gui_toggle_button(engine* e, const float2& size, const float2& position);
+	gui_toggle_button(const float2& size, const float2& position);
 	virtual ~gui_toggle_button();
 	
 	virtual void draw();

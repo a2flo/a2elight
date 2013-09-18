@@ -26,7 +26,6 @@
 gl3shader gfx2d::simple_shd = nullptr;
 gl3shader gfx2d::gradient_shd = nullptr;
 gl3shader gfx2d::texture_shd = nullptr;
-engine* gfx2d::e = nullptr;
 shader* gfx2d::eshd = nullptr;
 ext* gfx2d::exts = nullptr;
 
@@ -38,10 +37,9 @@ static const float fullscreen_quad[8] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f,
 
 event::handler gfx2d::evt_handler(&gfx2d::event_handler);
 
-void gfx2d::init(engine* e_) {
-	e = e_;
-	exts = e->get_ext();
-	eshd = e->get_shader();
+void gfx2d::init() {
+	exts = engine::get_ext();
+	eshd = engine::get_shader();
 	
 	//
 	floor::get_event()->add_internal_event_handler(evt_handler, EVENT_TYPE::SHADER_RELOAD);

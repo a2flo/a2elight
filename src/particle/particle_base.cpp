@@ -19,14 +19,11 @@
 #include "particle_base.hpp"
 #include "cl/opencl.hpp"
 
-/*! there is no function currently
- */
-particle_manager_base::particle_manager_base(engine* e_) : e(e_), s(e->get_shader()), r(e->get_rtt()), exts(e->get_ext()), t(e->get_texman()) {
+particle_manager_base::particle_manager_base() :
+s(engine::get_shader()), r(engine::get_rtt()), exts(engine::get_ext()), t(engine::get_texman()) {
 	max_particle_count = 1024*128; // limit to 2^17 for now
 }
 
-/*! there is no function currently
- */
 particle_manager_base::~particle_manager_base() {
 	log_debug("deleting particle_manager_base object");
 	
@@ -76,7 +73,7 @@ particle_system* particle_manager_base::init(const particle_system::EMITTER_TYPE
 											 const float4 color,
 											 const float2 size,
 											 void* aux_data) {
-	particle_system* ps = new particle_system(e);
+	particle_system* ps = new particle_system();
 	ps->set_type(type);
 	ps->set_lighting_type(ltype);
 	ps->set_spawn_rate(spawn_rate);

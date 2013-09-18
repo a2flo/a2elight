@@ -28,8 +28,8 @@ constexpr size_t scene::frame_buffers::cl_frame_buffers::max_ir_lights;
 
 /*! scene constructor
  */
-scene::scene(engine* e_) :
-e(e_), s(e_->get_shader()), exts(e_->get_ext()), r(e_->get_rtt()),
+scene::scene() :
+s(engine::get_shader()), exts(engine::get_ext()), r(engine::get_rtt()),
 window_handler(this, &scene::window_event_handler)
 {
 	//
@@ -129,9 +129,9 @@ void scene::delete_buffers(frame_buffers& buffers) {
 }
 
 void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer_size, const bool create_alpha_buffer) {
-	if(e->get_init_mode() != INIT_MODE::GRAPHICAL) return;
+	if(engine::get_init_mode() != engine::INIT_MODE::GRAPHICAL) return;
 	
-	const size2 buffer_size = size2(float2(unscaled_buffer_size) / e->get_upscaling());
+	const size2 buffer_size = size2(float2(unscaled_buffer_size) / engine::get_upscaling());
 	
 	// check if buffers have already been created (and delete them, if so)
 	delete_buffers(buffers);
@@ -155,13 +155,13 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	GLenum formats[] = { GL_RGBA, GL_RGBA };
 	GLenum targets[] = { target, target };
 	TEXTURE_FILTERING filters[] = { TEXTURE_FILTERING::POINT, TEXTURE_FILTERING::POINT };
-	const rtt::TEXTURE_ANTI_ALIASING taa = e->get_anti_aliasing();
+	const rtt::TEXTURE_ANTI_ALIASING taa = engine::get_anti_aliasing();
 	rtt::TEXTURE_ANTI_ALIASING taas[] = { taa, taa };
 	GLint wraps[] = { GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
 	GLenum types[] = { f16_format_type, f16_format_type };
 	
 	//
-	float2 inferred_scale(e->get_geometry_light_scaling());
+	float2 inferred_scale(engine::get_geometry_light_scaling());
 	inferred_scale *= float2(buffer_size);
 	uint2 render_buffer_size = uint2(inferred_scale);
 	if(render_buffer_size.x % 2 == 1) render_buffer_size.x++;
@@ -170,7 +170,7 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	if(final_buffer_size.x % 2 == 1) final_buffer_size.x++;
 	if(final_buffer_size.y % 2 == 1) final_buffer_size.y++;
 	
-	const float aa_scale = r->get_anti_aliasing_scale(e->get_anti_aliasing());
+	const float aa_scale = r->get_anti_aliasing_scale(engine::get_anti_aliasing());
 	
 	// create geometry buffer
 	// note that depth must be a 2d texture, because we will read it later inside a shader
@@ -292,10 +292,10 @@ void scene::draw() {
 	
 	// render env probes
 	if(!env_probes.empty()) {
-		e->push_modelview_matrix();
-		e->push_projection_matrix();
-		const float3 engine_pos(*e->get_position());
-		const float3 engine_rot(*e->get_rotation());
+		engine::push_modelview_matrix();
+		engine::push_projection_matrix();
+		const float3 engine_pos(*engine::get_position());
+		const float3 engine_rot(*engine::get_rotation());
 		for(const auto& probe : env_probes) {
 			bool render_probe = false;
 			switch (probe->freq) {
@@ -317,18 +317,18 @@ void scene::draw() {
 					break;
 			}
 			if(render_probe) {
-				e->set_position(-probe->position.x,
-								-probe->position.y,
-								-probe->position.z);
-				e->set_rotation(probe->rotation.x, probe->rotation.y);
+				engine::set_position(-probe->position.x,
+									 -probe->position.y,
+									 -probe->position.z);
+				engine::set_rotation(probe->rotation.x, probe->rotation.y);
 				geometry_pass(probe->buffers, DRAW_MODE::ENVIRONMENT_PASS);
 				light_and_material_pass(probe->buffers, DRAW_MODE::ENVIRONMENT_PASS);
 			}
 		}
-		e->pop_modelview_matrix();
-		e->pop_projection_matrix();
-		e->set_position(engine_pos.x, engine_pos.y, engine_pos.z);
-		e->set_rotation(engine_rot.x, engine_rot.y);
+		engine::pop_modelview_matrix();
+		engine::pop_projection_matrix();
+		engine::set_position(engine_pos.x, engine_pos.y, engine_pos.z);
+		engine::set_rotation(engine_rot.x, engine_rot.y);
 	}
 	gl_timer::mark("ENV_PROBES");
 	
@@ -351,7 +351,7 @@ void scene::sort_alpha_objects() {
 			float3 rmid((rhs.first->min + rhs.first->max) / 2.0f);
 			return (position - lhs.first->pos - lmid).length() < (position - rhs.first->pos - rmid).length();
 		}
-	} alpha_object_cmp_obj(-(*e->get_position())); // create cmp obj and as usual, flip pos
+	} alpha_object_cmp_obj(-(*engine::get_position())); // create cmp obj and as usual, flip pos
 	std::sort(sorted_alpha_objects.begin(), sorted_alpha_objects.end(), alpha_object_cmp_obj);
 	
 	// second, compute the transformed corners of each bbox
@@ -382,8 +382,8 @@ void scene::sort_alpha_objects() {
 	// third, project corners onto current near plane
 	ipnt (*bbox_proj)[8] = new ipnt[obj_count][8];
 	int4 viewport(0, 0, (int)floor::get_width(), (int)floor::get_height());
-	matrix4f mviewt = e->get_modelview_matrix();
-	matrix4f mprojt = e->get_projection_matrix();
+	matrix4f mviewt = engine::get_modelview_matrix();
+	matrix4f mprojt = engine::get_projection_matrix();
 	for(size_t i = 0; i < obj_count; i++) {
 		for(size_t j = 0; j < 8; j++) {
 			bbox_proj[i][j] = core::get_2d_from_3d(bbox_corners[i][j], mviewt, mprojt, viewport);
@@ -566,7 +566,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	const float2 near_far_plane = floor::get_near_far_plane();
 	const float2 projection_ab = float2(near_far_plane.y / (near_far_plane.y - near_far_plane.x),
 										(-near_far_plane.y * near_far_plane.x) / (near_far_plane.y - near_far_plane.x));
-	const float3 cam_position = -float3(*e->get_position());
+	const float3 cam_position = -float3(*engine::get_position());
 	const float2 screen_size = float2(float(l_buffer->width), float(l_buffer->height));
 #if !defined(A2E_IOS)
 	const bool light_alpha_objects = (!alpha_objects.empty() &&
@@ -577,8 +577,8 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 #endif
 	
 	// TODO: cleanup
-	const matrix4f projection_matrix = *e->get_projection_matrix();
-	const matrix4f modelview_matrix = *e->get_modelview_matrix();
+	const matrix4f projection_matrix = *engine::get_projection_matrix();
+	const matrix4f modelview_matrix = *engine::get_modelview_matrix();
 	const matrix4f mvpm = modelview_matrix * projection_matrix;
 	const matrix4f inv_modelview_matrix = matrix4f(modelview_matrix).invert();
 	
@@ -919,7 +919,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	r->stop_draw();
 	
 	// FXAA
-	const auto cur_aa = e->get_anti_aliasing();
+	const auto cur_aa = engine::get_anti_aliasing();
 	const bool is_fxaa = (cur_aa == rtt::TEXTURE_ANTI_ALIASING::FXAA ||
 						  cur_aa == rtt::TEXTURE_ANTI_ALIASING::SSAA_4_3_FXAA ||
 						  cur_aa == rtt::TEXTURE_ANTI_ALIASING::SSAA_2_FXAA);

@@ -246,8 +246,8 @@
 			children = (
 				5C7B325017E726E700153798 /* a2e_version.hpp */,
 				5C7B325117E726E700153798 /* a2e.hpp */,
-				5C7B325217E726E700153798 /* engine.hpp */,
 				5C3EC3F2123182960055330C /* engine.cpp */,
+				5C7B325217E726E700153798 /* engine.hpp */,
 				5C7B325317E726E700153798 /* global.hpp */,
 				5C3975C4123189750075C168 /* gui */,
 				5CA73B3B1466A34200B1B268 /* particle */,

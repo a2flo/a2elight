@@ -27,13 +27,12 @@
  *  @brief loads and caches fonts
  */
 
-class engine;
 class rtt;
 struct FT_LibraryRec_;
 typedef struct FT_LibraryRec_* FT_Library;
 class A2E_API font_manager : public thread_base {
 public:
-	font_manager(engine* e);
+	font_manager();
 	virtual ~font_manager();
 	FT_Library get_ft_library();
 	
@@ -45,7 +44,6 @@ public:
 	virtual void run();
 
 protected:
-	engine* e;
 	rtt* r;
 
 	// identifier -> font object

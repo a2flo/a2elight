@@ -20,15 +20,11 @@
 #include "engine.hpp"
 #include "core/event.hpp"
 
-/*! there is no function currently
- */
-camera::camera(engine* e_) : e(e_), evt(floor::get_event()),
+camera::camera() : evt(floor::get_event()),
 keyboard_handler(this, &camera::key_handler) {
 	evt->add_event_handler(keyboard_handler, EVENT_TYPE::KEY_DOWN, EVENT_TYPE::KEY_UP);
 }
 
-/*! there is no function currently
- */
 camera::~camera() {
 	evt->remove_event_handler(keyboard_handler);
 }
@@ -103,8 +99,8 @@ void camera::run() {
 	rotation.y = core::wrap(rotation.y, 360.0f);
 
 	// inform engine about position and rotation
-	e->set_position(position.x, position.y, position.z);
-	e->set_rotation(rotation.x, rotation.y);
+	engine::set_position(position.x, position.y, position.z);
+	engine::set_rotation(rotation.x, rotation.y);
 }
 
 /*! sets the position of the camera

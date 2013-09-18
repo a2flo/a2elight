@@ -36,7 +36,7 @@
 class light;
 class A2E_API particle_system {
 public:
-	particle_system(engine* e);
+	particle_system();
 	~particle_system();
 	
 	enum class EMITTER_TYPE : unsigned int {
@@ -155,7 +155,6 @@ public:
 	internal_particle_data* get_internal_particle_data();
 		
 protected:
-	engine* e;
 	EMITTER_TYPE type;
 	LIGHTING_TYPE lighting_type;
 	unsigned long long int spawn_rate;	// should be a multiple of 25

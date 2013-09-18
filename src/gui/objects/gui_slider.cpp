@@ -20,8 +20,8 @@
 #include "engine.hpp"
 #include "gui.hpp"
 
-gui_slider::gui_slider(engine* e_, const float2& size_, const float2& position_) :
-gui_object(e_, size_, position_) {
+gui_slider::gui_slider(const float2& size_, const float2& position_) :
+gui_object(size_, position_) {
 	//
 	knob_radius = gui_theme::point_to_pixel(knob_radius);
 	knob_offset = gui_theme::point_to_pixel(knob_offset);

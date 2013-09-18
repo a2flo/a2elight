@@ -20,8 +20,8 @@
 #include "engine.hpp"
 #include "gui.hpp"
 
-gui_toggle_button::gui_toggle_button(engine* e_, const float2& size_, const float2& position_) :
-gui_object(e_, size_, position_) {
+gui_toggle_button::gui_toggle_button(const float2& size_, const float2& position_) :
+gui_object(size_, position_) {
 	//
 }
 

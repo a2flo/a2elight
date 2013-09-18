@@ -22,17 +22,15 @@
 #include "global.hpp"
 #include "core/xml.hpp"
 
-class engine;
 class xml;
 class a2eui {
 public:
-	a2eui(engine* e);
+	a2eui();
 	~a2eui();
 	
 	void load(const string& filename);
 	
 protected:
-	engine* e;
 	xml* x;
 	
 	void process_node(const xml::xml_node* node, const xml::xml_node* parent);

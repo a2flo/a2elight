@@ -26,11 +26,11 @@
 #include "gui/style/gui_theme.hpp"
 #include "gui/objects/gui_window.hpp"
 
-gui::gui(engine* e_, const string& theme_name) :
+gui::gui(const string& theme_name) :
 thread_base("gui"),
-e(e_), evt(floor::get_event()), r(e_->get_rtt()), s(e_->get_shader()), sce(e_->get_scene()),
-fm(new font_manager(e)),
-theme(new gui_theme(e, fm)),
+evt(floor::get_event()), r(engine::get_rtt()), s(engine::get_shader()), sce(engine::get_scene()),
+fm(new font_manager()),
+theme(new gui_theme(fm)),
 main_fbo(1),
 key_handler_fnctr(this, &gui::key_handler),
 mouse_handler_fnctr(this, &gui::mouse_handler),
@@ -156,7 +156,7 @@ void gui::draw() {
 	
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 	texture_shd->use();
-	texture_shd->uniform("mvpm", *e->get_mvp_matrix());
+	texture_shd->uniform("mvpm", *engine::get_mvp_matrix());
 	texture_shd->uniform("orientation", float4(0.0f, 0.0f, 1.0f, 1.0f));
 	
 	// pre ui callbacks
@@ -190,7 +190,7 @@ void gui::draw() {
 	
 	//////////////////////////////////////////////////////////////////
 	// blend with scene buffer and draw result to the main framebuffer
-	e->start_2d_draw();
+	engine::start_2d_draw();
 	
 	blend_shd->use();
 	blend_shd->texture("src_buffer", main_fbo.tex[0]);
@@ -202,7 +202,7 @@ void gui::draw() {
 	
 	blend_shd->disable();
 	
-	e->stop_2d_draw();
+	engine::stop_2d_draw();
 	gl_timer::mark("GUI_END");
 }
 
@@ -386,7 +386,7 @@ gui_simple_callback* gui::add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_ca
 	const auto surface_iter = cb_surfaces.find(&cb);
 	if(surface_iter != cb_surfaces.end()) return surface_iter->second;
 	
-	gui_simple_callback* surface = new gui_simple_callback(cb, mode, e, size, offset, flags);
+	gui_simple_callback* surface = new gui_simple_callback(cb, mode, size, offset, flags);
 	cb_surfaces.insert(make_pair(&cb, surface));
 	return surface;
 }
@@ -414,7 +414,7 @@ void gui::recreate_buffers(const size2 size) {
 	delete_buffers();
 	
 	// create fullscreen aa and main gui buffer
-	aa_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, e->get_ui_anti_aliasing(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
+	aa_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, engine::get_ui_anti_aliasing(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
 	
 	glGenFramebuffers(1, &main_fbo.fbo_id);
 	glBindFramebuffer(GL_FRAMEBUFFER, main_fbo.fbo_id);

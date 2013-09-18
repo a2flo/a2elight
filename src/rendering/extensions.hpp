@@ -38,10 +38,9 @@
  *  @brief opengl extensions
  */
 
-enum class INIT_MODE : unsigned int;
 class A2E_API ext {
 public:
-	ext(INIT_MODE imode, string* disabled_extensions, string* force_device, string* force_vendor);
+	ext(string* disabled_extensions, string* force_device, string* force_vendor);
 	~ext();
 
 	bool is_ext_supported(const string& ext_name);
@@ -137,8 +136,6 @@ public:
 	const char* cstr_from_gl_version(const OPENGL_VERSION& version) const;
 
 protected:
-	INIT_MODE mode;
-	
 	OPENGL_VERSION opengl_version;
 	GLSL_VERSION glsl_version;
 	

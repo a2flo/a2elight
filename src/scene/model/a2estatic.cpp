@@ -20,7 +20,7 @@
 
 /*! a2estatic constructor
  */
-a2estatic::a2estatic(engine* e, shader* s, scene* sce) : a2emodel(e, s, sce) {
+a2estatic::a2estatic(shader* s, scene* sce) : a2emodel(s, sce) {
 	vertices = nullptr;
 	tex_coords = nullptr;
 	indices = nullptr;
@@ -82,7 +82,7 @@ void a2estatic::draw(const DRAW_MODE draw_mode) {
 		draw_phys_obj();
 	}
 	
-	if(!is_draw_phys_obj && e->get_init_mode() == INIT_MODE::GRAPHICAL) {
+	if(!is_draw_phys_obj && engine::get_init_mode() == engine::INIT_MODE::GRAPHICAL) {
 		pre_draw_setup();
 		
 		// vbo setup, part one (the same for all sub-objects)

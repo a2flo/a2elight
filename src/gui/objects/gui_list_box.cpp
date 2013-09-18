@@ -21,8 +21,8 @@
 #include "gui.hpp"
 #include "font.hpp"
 
-gui_list_box::gui_list_box(engine* e_, const float2& size_, const float2& position_) :
-gui_item_container(e_, size_, position_, GUI_EVENT::LIST_BOX_SELECT) {
+gui_list_box::gui_list_box(const float2& size_, const float2& position_) :
+gui_item_container(size_, position_, GUI_EVENT::LIST_BOX_SELECT) {
 	//
 	const float item_margin = gui_theme::point_to_pixel(2.0f); // in pt
 	item_height = fnt->get_display_size() + item_margin;

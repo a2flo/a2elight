@@ -22,8 +22,8 @@
 #include "threading/task.hpp"
 #include "font_manager.hpp"
 
-gui_object::gui_object(engine* e_, const float2& size_, const float2& position_) :
-e(e_), ui(e->get_gui()), theme(ui->get_theme()), evt(floor::get_event()), fm(ui->get_font_manager()), fnt(fm->get_font("SYSTEM_SANS_SERIF")), size(size_), position(position_) {
+gui_object::gui_object(const float2& size_, const float2& position_) :
+ui(engine::get_gui()), theme(ui->get_theme()), evt(floor::get_event()), fm(ui->get_font_manager()), fnt(fm->get_font("SYSTEM_SANS_SERIF")), size(size_), position(position_) {
 	compute_abs_values();
 }
 

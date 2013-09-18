@@ -32,7 +32,7 @@
 class engine;
 class A2E_API rtt {
 public:
-	rtt(engine* e, ext* exts);
+	rtt(ext* exts);
 	~rtt();
 
 	enum class TEXTURE_ANTI_ALIASING {
@@ -119,11 +119,10 @@ public:
 	void mipmap();
 
 protected:
-	engine* e;
 	ext* exts;
 
 	vector<fbo*> buffers;
-	fbo* current_buffer;
+	fbo* current_buffer = nullptr;
 
 };
 

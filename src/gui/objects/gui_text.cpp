@@ -20,8 +20,8 @@
 #include "engine.hpp"
 #include "core/core.hpp"
 
-gui_text::gui_text(engine* e_, const float2& size_, const float2& position_) :
-gui_object(e_, size_, position_) {
+gui_text::gui_text(const float2& size_, const float2& position_) :
+gui_object(size_, position_) {
 	//
 }
 

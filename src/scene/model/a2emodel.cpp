@@ -28,7 +28,7 @@ static size_t _create_model_id() {
 
 /*! a2emodel constructor
  */
-a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
+a2emodel::a2emodel(shader* s_, scene* sce_) {
 	scale.set(1.0f, 1.0f, 1.0f);
 	phys_scale.set(1.0f, 1.0f, 1.0f);
 	sub_bboxes = nullptr;
@@ -70,11 +70,10 @@ a2emodel::a2emodel(engine* e_, shader* s_, scene* sce_) {
 	id = _create_model_id();
 	
 	// get classes
-	a2emodel::e = e_;
 	a2emodel::s = s_;
 	a2emodel::sce = sce_;
-	a2emodel::t = e->get_texman();
-	a2emodel::exts = e->get_ext();
+	a2emodel::t = engine::get_texman();
+	a2emodel::exts = engine::get_ext();
 	a2emodel::material = nullptr;
 }
 
@@ -115,24 +114,24 @@ void a2emodel::pre_draw_setup(const ssize_t sub_object_num floor_unused) {
 	mvm *= rot_mat;
 	
 	// translate the model
-	mvm *= *e->get_translation_matrix();
+	mvm *= *engine::get_translation_matrix();
 	
 	// translate to model origin
 	mvm *= matrix4f().translate(position.x, position.y, position.z);
 	
 	// compute backside mvm/mvpm
 	quaternionf q_x, q_y;
-	q_x.set_rotation(e->get_rotation()->x, float3(1.0f, 0.0f, 0.0f));
-	q_y.set_rotation(180.0f - e->get_rotation()->y, float3(0.0f, 1.0f, 0.0f));
+	q_x.set_rotation(engine::get_rotation()->x, float3(1.0f, 0.0f, 0.0f));
+	q_y.set_rotation(180.0f - engine::get_rotation()->y, float3(0.0f, 1.0f, 0.0f));
 	q_y *= q_x;
 	q_y.normalize();
 	mvpm_backside = mvm * q_y.to_matrix4();
 	
 	//
-	mvm *= *e->get_rotation_matrix();
+	mvm *= *engine::get_rotation_matrix();
 	
-	mvpm = mvm * *e->get_projection_matrix();
-	mvpm_backside = mvpm_backside * *e->get_projection_matrix();
+	mvpm = mvm * *engine::get_projection_matrix();
+	mvpm_backside = mvpm_backside * *engine::get_projection_matrix();
 	
 	// if the wireframe flag is set, draw the model in wireframe mode
 #if !defined(A2E_IOS)
@@ -232,7 +231,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 					
 					shd = s->get_gl3shader(shd_name);
 					shd->use(shd_option, shd_combiners);
-					shd->uniform("cam_position", -float3(*e->get_position()));
+					shd->uniform("cam_position", -float3(*engine::get_position()));
 					shd->uniform("model_position", position);
 					
 					attr_array_mask |= VERTEX_ATTRIBUTE::TEXTURE_COORD | VERTEX_ATTRIBUTE::BINORMAL | VERTEX_ATTRIBUTE::TANGENT;
@@ -285,7 +284,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 					
 					shd = s->get_gl3shader(shd_name);
 					shd->use(shd_option, shd_combiners);
-					shd->uniform("cam_position", -float3(*e->get_position()));
+					shd->uniform("cam_position", -float3(*engine::get_position()));
 					shd->uniform("model_position", position);
 					
 					attr_array_mask |= VERTEX_ATTRIBUTE::NORMAL | VERTEX_ATTRIBUTE::BINORMAL | VERTEX_ATTRIBUTE::TANGENT;
@@ -361,7 +360,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 }
 
 void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<string>& combiners) {
-	const rtt::fbo* cur_buffer = e->get_rtt()->get_current_buffer();
+	const rtt::fbo* cur_buffer = engine::get_rtt()->get_current_buffer();
 	const float2 screen_size = float2(float(cur_buffer->width), float(cur_buffer->height));
 	
 	if(option == "opaque") {
@@ -395,7 +394,7 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 		shd->uniform("local_mview", rot_mat);
 		shd->uniform("local_scale", scale_mat);
 		shd->uniform("model_position", position);
-		shd->uniform("cam_position", -float3(*e->get_position()));
+		shd->uniform("cam_position", -float3(*engine::get_position()));
 		if(option == "opaque") {
 			shd->texture("normal_buffer", g_buffer->tex[0]);
 		}

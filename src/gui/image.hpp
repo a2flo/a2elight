@@ -29,7 +29,7 @@
 
 class A2E_API image {
 public:
-	image(engine* e);
+	image();
 	~image();
 
 	void draw();
@@ -53,7 +53,6 @@ public:
 	void set_color(unsigned int color);
 
 protected:
-	engine* e;
 	texman* t;
 	
 	pnt position;
