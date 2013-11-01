@@ -29,7 +29,7 @@ fi
 case $( uname | tr [:upper:] [:lower:] ) in
 	"darwin")
 		A2_OS="macosx"
-		A2_CPU_COUNT=$(sysctl -a | grep 'machdep.cpu.thread_count' | sed -E 's/.*(: )([:digit:]*)/\2/g')
+		A2_CPU_COUNT=$(sysctl -n hw.ncpu)
 		;;
 	"linux")
 		A2_OS="linux"
@@ -39,7 +39,7 @@ case $( uname | tr [:upper:] [:lower:] ) in
 	[a-z0-9]*"BSD")
 		A2_OS="bsd"
 		A2_MAKE="gmake"
-		# TODO: get cpu/thread count on *bsd
+		A2_CPU_COUNT=$(sysctl -n hw.ncpu)
 		;;
 	"cygwin"*)
 		A2_OS="windows"
