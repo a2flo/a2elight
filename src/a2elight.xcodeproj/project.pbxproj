@@ -649,7 +649,9 @@
 					DEBUG,
 					"A2E_DEBUG=1",
 					"A2E_EXPORT=1",
-					"A2E_CUDA_CL=1",
+					"FLOOR_DEBUG=1",
+					"FLOOR_EXPORT=1",
+					"FLOOR_CUDA_CL=1",
 					PLATFORM_X64,
 				);
 				GCC_UNROLL_LOOPS = YES;
@@ -661,7 +663,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					.,
-					/usr/include/floor,
+					/usr/include,
+					/usr/local/include,
 					/usr/local/include/floor,
 				);
 				INSTALL_PATH = "@rpath";
@@ -762,6 +765,8 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"A2E_EXPORT=1",
 					"A2E_CUDA_CL=1",
+					"FLOOR_EXPORT=1",
+					"FLOOR_CUDA_CL=1",
 					PLATFORM_X64,
 				);
 				GCC_UNROLL_LOOPS = YES;
@@ -773,7 +778,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					.,
-					/usr/include/floor,
+					/usr/include,
+					/usr/local/include,
 					/usr/local/include/floor,
 				);
 				INSTALL_PATH = "@rpath";

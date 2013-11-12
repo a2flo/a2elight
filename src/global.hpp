@@ -19,7 +19,7 @@
 #ifndef __A2E_GLOBAL_HPP__
 #define __A2E_GLOBAL_HPP__
 
-#include "core/platform.hpp"
+#include <floor/core/platform.hpp>
 
 // general includes
 #if defined(__APPLE__)
