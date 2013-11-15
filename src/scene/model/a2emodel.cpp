@@ -31,7 +31,6 @@ static size_t _create_model_id() {
 a2emodel::a2emodel(shader* s_, scene* sce_) {
 	scale.set(1.0f, 1.0f, 1.0f);
 	phys_scale.set(1.0f, 1.0f, 1.0f);
-	sub_bboxes = nullptr;
 	
 	model_vertices = nullptr;
 	model_tex_coords = nullptr;
@@ -39,7 +38,6 @@ a2emodel::a2emodel(shader* s_, scene* sce_) {
 	model_vertex_count = nullptr;
 	model_index_count = nullptr;
 	object_count = 0;
-	object_names = nullptr;
 	
 	collision_model = false;
 	col_vertex_count = 0;
@@ -80,21 +78,18 @@ a2emodel::a2emodel(shader* s_, scene* sce_) {
 /*! a2emodel destructor
  */
 a2emodel::~a2emodel() {
-	if(object_names != nullptr) { delete [] object_names; }
 	delete_sub_bboxes();
-	
 	is_sub_object_transparent.clear();
 }
 
 void a2emodel::delete_sub_bboxes() {
-	if(sub_bboxes != nullptr) {
-		for(unsigned int i = 0; i < object_count; i++) {
-			if(is_sub_object_transparent[i]) {
-				sce->delete_alpha_object(&sub_bboxes[i]);
-			}
+	if(sub_bboxes.empty()) return;
+	for(unsigned int i = 0; i < object_count; i++) {
+		if(is_sub_object_transparent[i]) {
+			sce->delete_alpha_object(&sub_bboxes[i]);
 		}
-		delete [] sub_bboxes;
 	}
+	sub_bboxes.clear();
 }
 
 const string& a2emodel::get_filename() const {
@@ -597,7 +592,7 @@ extbbox* a2emodel::get_bounding_box() {
 /*! returns the bounding box of the model
  */
 extbbox* a2emodel::get_bounding_box(const size_t& sub_object) {
-	if(sub_bboxes == nullptr || sub_object >= object_count) return nullptr;
+	if(sub_bboxes.empty() || sub_object >= object_count) return nullptr;
 	return &sub_bboxes[sub_object];
 }
 
@@ -734,7 +729,7 @@ unsigned int a2emodel::get_index_count(unsigned int obj_num) const {
 
 /*! returns a string pointer to the models sub-object names
  */
-string* a2emodel::get_object_names() {
+const vector<string>& a2emodel::get_object_names() const {
 	return a2emodel::object_names;
 }
 
@@ -860,9 +855,8 @@ void a2emodel::set_transparent(const size_t& sub_object, const bool state) {
 	if(is_sub_object_transparent[sub_object] != state) {
 		if(state) {
 			// TODO: handle draw_sub_object is function is overwritten
-			draw_callback* cb = new draw_callback(this, &a2emodel::draw_sub_object);
-			transparency_callbacks.push_back(cb);
-			sce->add_alpha_object(&sub_bboxes[sub_object], sub_object, cb);
+			sce->add_alpha_object(&sub_bboxes[sub_object], sub_object, bind(&a2emodel::draw_sub_object, this,
+																			placeholders::_1, placeholders::_2, placeholders::_3));
 		}
 		else {
 			sce->delete_alpha_object(&sub_bboxes[sub_object]);

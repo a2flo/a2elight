@@ -161,7 +161,7 @@ protected:
 		int coverage_samples;
 		int color_samples;
 	};
-	NV_MULTISAMPLE_COVERAGE_MODE* multisample_coverage_modes;
+	vector<NV_MULTISAMPLE_COVERAGE_MODE> multisample_coverage_modes;
 
 	string* disabled_extensions;
 	string* force_device;

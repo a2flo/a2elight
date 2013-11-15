@@ -86,13 +86,6 @@ protected:
 	float3* tangents;
 
 	// normal stuff
-	struct nlist {
-		unsigned int* obj_num;
-		unsigned int* num;
-		unsigned int count;
-	};
-	nlist* normal_list;
-	
 	void reorganize_model_data();
 
 	// used for parallax mapping

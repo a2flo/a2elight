@@ -30,7 +30,7 @@ constexpr size_t scene::frame_buffers::cl_frame_buffers::max_ir_lights;
  */
 scene::scene() :
 s(engine::get_shader()), exts(engine::get_ext()), r(engine::get_rtt()),
-window_handler(this, &scene::window_event_handler)
+window_handler(bind(&scene::window_event_handler, this, placeholders::_1, placeholders::_2))
 {
 	//
 	stereo = floor::get_stereo();
@@ -453,22 +453,30 @@ void scene::sort_alpha_objects() {
 	delete [] bbox_proj;
 	delete [] bbox_rects;
 }
-void scene::add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, a2emodel::draw_callback* cb) {
+
+void scene::add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, a2emodel::draw_callback cb) {
 	delete_alpha_object(bbox); // clean up old data if there is any
 	alpha_objects[bbox] = make_pair(sub_object_id, cb);
 	sorted_alpha_objects.push_back(make_pair(bbox, 0));
 }
 
-void scene::add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids, a2emodel::draw_callback* cbs) {
+void scene::add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids,
+							  initializer_list<a2emodel::draw_callback> cbs) {
+	if(count != cbs.size()) {
+		log_error("count %u != callback count %u", count, cbs.size());
+		return;
+	}
+	
 	// TODO: improve this?
-	for(size_t i = 0; i < count; i++) {
-		add_alpha_object(bboxes[i], sub_object_ids[i], &cbs[i]);
+	size_t i = 0;
+	for(const auto& cb : cbs) {
+		add_alpha_object(bboxes[i], sub_object_ids[i], cb);
+		i++;
 	}
 }
 
 void scene::delete_alpha_object(const extbbox* bbox) {
 	if(alpha_objects.count(bbox) != 0) {
-		delete alpha_objects[bbox].second; // delete functor
 		alpha_objects.erase(bbox);
 		// O(n) ... TODO: improve this
 		for(auto objiter = sorted_alpha_objects.begin(); objiter != sorted_alpha_objects.end(); objiter++) {
@@ -539,8 +547,8 @@ void scene::geometry_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_m
 		glDrawBuffers(2, draw_buffers);
 		
 		for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
-			const pair<size_t, a2emodel::draw_callback*>& obj = alpha_objects[iter->first];
-			(*obj.second)(geom_alpha_pass_masked, obj.first, iter->second);
+			const auto& obj = alpha_objects[iter->first];
+			obj.second(geom_alpha_pass_masked, obj.first, iter->second);
 		}
 		
 		// render callbacks (alpha)
@@ -894,8 +902,8 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // pre-multiplied alpha blending
 		for(auto iter = sorted_alpha_objects.crbegin(); iter != sorted_alpha_objects.crend(); iter++) {
-			const pair<size_t, a2emodel::draw_callback*>& obj = alpha_objects[iter->first];
-			(*obj.second)(mat_alpha_pass_masked, obj.first, iter->second);
+			const auto& obj = alpha_objects[iter->first];
+			obj.second(mat_alpha_pass_masked, obj.first, iter->second);
 		}
 		gl_timer::mark("MAT_PASS_ALPHA");
 		// render callbacks (alpha pass)

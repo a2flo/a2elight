@@ -43,7 +43,7 @@ enum class DRAW_MODE_UI : unsigned int {
 	PRE_UI,
 	POST_UI
 };
-typedef functor<void, const DRAW_MODE_UI, rtt::fbo*> ui_draw_callback;
+typedef function<void(const DRAW_MODE_UI, rtt::fbo*)> ui_draw_callback;
 
 class A2E_API gui : public thread_base {
 public:

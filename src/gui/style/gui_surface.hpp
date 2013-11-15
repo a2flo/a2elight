@@ -83,8 +83,8 @@ protected:
 enum class DRAW_MODE_UI : unsigned int;
 class gui_simple_callback : public gui_surface {
 public:
-	// note: typedef functor<void, const DRAW_MODE_UI, rtt::fbo*> ui_draw_callback;
-	gui_simple_callback(functor<void, const DRAW_MODE_UI, rtt::fbo*>& callback,
+	// note: typedef function<void(const DRAW_MODE_UI, rtt::fbo*)> ui_draw_callback;
+	gui_simple_callback(function<void(const DRAW_MODE_UI, rtt::fbo*)> callback,
 						const DRAW_MODE_UI& mode,
 						const float2& buffer_size, const float2& offset,
 						const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
@@ -94,7 +94,7 @@ public:
 protected:
 	const DRAW_MODE_UI mode;
 	
-	functor<void, const DRAW_MODE_UI, rtt::fbo*>* callback;
+	function<void(const DRAW_MODE_UI, rtt::fbo*)> callback;
 	
 };
 

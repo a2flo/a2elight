@@ -37,7 +37,7 @@ font::font(font_manager* fm_, const string& filename_) : font(fm_, vector<string
 
 font::font(font_manager* fm_, const vector<string> filenames_) :
 s(engine::get_shader()), fm(fm_), filenames(filenames_),
-shader_reload_fnctr(this, &font::shader_reload_handler)
+shader_reload_fnctr(bind(&font::shader_reload_handler, this, placeholders::_1, placeholders::_2))
 {
 	set_size(10);
 	

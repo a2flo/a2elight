@@ -46,7 +46,7 @@ public:
 	virtual ~a2emodel();
 	
 	// ret: void, args: draw_mode, sub_object_num
-	typedef functor<void, const DRAW_MODE&, const size_t&, const size_t&> draw_callback;
+	typedef function<void(const DRAW_MODE&, const size_t&, const size_t&)> draw_callback;
 	
 	virtual void load_model(const string& filename) = 0;
 	virtual const string& get_filename() const;
@@ -111,7 +111,7 @@ public:
 	virtual unsigned int get_vertex_count(unsigned int obj_num) const;
 	virtual unsigned int get_index_count() const;
 	virtual unsigned int get_index_count(unsigned int obj_num) const;
-	virtual string* get_object_names();
+	virtual const vector<string>& get_object_names() const;
 	virtual unsigned int get_object_count() const;
 	
 	// stuff for collision detection
@@ -154,7 +154,7 @@ protected:
 	unsigned int* model_index_count;
 	
 	unsigned int object_count;
-	string* object_names;
+	vector<string> object_names;
 	
 	bool collision_model;
 	unsigned int col_vertex_count;
@@ -198,7 +198,7 @@ protected:
 	float3 position;
 	float3 scale;
 	extbbox bbox;
-	extbbox* sub_bboxes;
+	vector<extbbox> sub_bboxes;
 	void delete_sub_bboxes();
 	
 	//
@@ -216,7 +216,6 @@ protected:
 	bool is_draw_phys_obj;
 	bool is_transparent;
 	vector<bool> is_sub_object_transparent;
-	vector<draw_callback*> transparency_callbacks;
 	
 	
 	// some variables for collision detection

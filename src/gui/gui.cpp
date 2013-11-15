@@ -32,10 +32,10 @@ evt(floor::get_event()), r(engine::get_rtt()), s(engine::get_shader()), sce(engi
 fm(new font_manager()),
 theme(new gui_theme(fm)),
 main_fbo(1),
-key_handler_fnctr(this, &gui::key_handler),
-mouse_handler_fnctr(this, &gui::mouse_handler),
-shader_reload_fnctr(this, &gui::shader_reload_handler),
-window_handler_fnctr(this, &gui::window_handler) {
+key_handler_fnctr(bind(&gui::key_handler, this, placeholders::_1, placeholders::_2)),
+mouse_handler_fnctr(bind(&gui::mouse_handler, this, placeholders::_1, placeholders::_2)),
+shader_reload_fnctr(bind(&gui::shader_reload_handler, this, placeholders::_1, placeholders::_2)),
+window_handler_fnctr(bind(&gui::window_handler, this, placeholders::_1, placeholders::_2)) {
 	// init clipboard (before adding event handlers)
 	if(SDL_HasClipboardText()) clipboard_text = SDL_GetClipboardText();
 	

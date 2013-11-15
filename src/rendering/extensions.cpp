@@ -233,7 +233,6 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 	max_texture_image_units = 0;
 	max_samples = 0;
 	max_multisample_coverage_modes = 0;
-	multisample_coverage_modes = nullptr;
 	max_draw_buffers = 0;
 	
 	const auto imode = engine::get_init_mode();
@@ -299,8 +298,9 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 #if !defined(A2E_IOS)
 	if(fbo_multisample_coverage_support) {
 		glGetIntegerv(GL_MAX_MULTISAMPLE_COVERAGE_MODES_NV, (GLint*)&max_multisample_coverage_modes);
-		multisample_coverage_modes = new ext::NV_MULTISAMPLE_COVERAGE_MODE[max_multisample_coverage_modes];
-		glGetIntegerv(GL_MULTISAMPLE_COVERAGE_MODES_NV, (GLint*)multisample_coverage_modes);
+		multisample_coverage_modes.clear();
+		multisample_coverage_modes.resize(max_multisample_coverage_modes);
+		glGetIntegerv(GL_MULTISAMPLE_COVERAGE_MODES_NV, (GLint*)&multisample_coverage_modes[0]);
 	}
 #endif
 	if(imode == engine::INIT_MODE::GRAPHICAL) glGetIntegerv(GL_MAX_SAMPLES, (GLint*)&max_samples);
@@ -466,7 +466,6 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 /*! delete everything
  */
 ext::~ext() {
-	if(multisample_coverage_modes != nullptr) delete [] multisample_coverage_modes;
 }
 
 /*! returns true if the extension (ext_name) is supported by the graphics adapter
@@ -558,8 +557,11 @@ unsigned int ext::get_max_draw_buffers() {
 /*! returns 
  */
 bool ext::is_fbo_multisample_coverage_mode_support(unsigned int coverage_samples, unsigned int color_samples) {
-	for(unsigned int i = 0; i < max_multisample_coverage_modes; i++) {
-		if(multisample_coverage_modes[i].coverage_samples == (int)coverage_samples && multisample_coverage_modes[i].color_samples == (int)color_samples) return true;
+	for(const auto& mode : multisample_coverage_modes) {
+		if(mode.coverage_samples == (int)coverage_samples &&
+		   mode.color_samples == (int)color_samples) {
+			return true;
+		}
 	}
 	return false;
 }

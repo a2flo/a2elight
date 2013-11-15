@@ -25,7 +25,7 @@
 #define A2E_MAJOR_VERSION "0"
 #define A2E_MINOR_VERSION "3"
 #define A2E_REVISION_VERSION "0"
-#define A2E_DEV_STAGE_VERSION "d2"
+#define A2E_DEV_STAGE_VERSION "d3"
 #define A2E_BUILD_TIME __TIME__
 #define A2E_BUILD_DATE __DATE__
 

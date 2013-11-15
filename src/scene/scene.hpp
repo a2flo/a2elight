@@ -92,7 +92,7 @@ public:
 	void add_particle_manager(particle_manager* pm);
 	void delete_particle_manager(particle_manager* pm);
 	
-	typedef functor<void, const DRAW_MODE> draw_callback;
+	typedef function<void(const DRAW_MODE)> draw_callback;
 	void add_draw_callback(const string& name, draw_callback& cb);
 	void delete_draw_callback(draw_callback& cb);
 	void delete_draw_callback(const string& name);
@@ -106,13 +106,14 @@ public:
 	const float& get_eye_distance() const;
 	
 	//
-	void add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, a2emodel::draw_callback* cb);
-	void add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids, a2emodel::draw_callback* cbs);
+	void add_alpha_object(const extbbox* bbox, const size_t& sub_object_id, a2emodel::draw_callback cb);
+	void add_alpha_objects(const size_t count, const extbbox** bboxes, const size_t* sub_object_ids,
+						   initializer_list<a2emodel::draw_callback> cbs);
 	void delete_alpha_object(const extbbox* bbox);
 	void delete_alpha_objects(const size_t count, const extbbox** bboxes);
 	
 	// post-processing
-	typedef functor<void, rtt::fbo*> post_processing_handler;
+	typedef function<void(rtt::fbo*)> post_processing_handler;
 	void add_post_processing(post_processing_handler* pph);
 	void delete_post_processing(const post_processing_handler* pph);
 	
@@ -179,8 +180,8 @@ protected:
 	vector<particle_manager*> particle_managers;
 	set<env_probe*> env_probes;
 	
-	// <bbox*, <sub-object id, draw functor*>>
-	map<const extbbox*, pair<size_t, a2emodel::draw_callback*>> alpha_objects;
+	// <bbox*, <sub-object id, draw functor>>
+	map<const extbbox*, pair<size_t, a2emodel::draw_callback>> alpha_objects;
 	// <bbox*, mask id>, mask id: 0 (invalid), {1, 2, 3}
 	vector<pair<const extbbox*, size_t>> sorted_alpha_objects;
 	

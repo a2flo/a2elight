@@ -173,10 +173,10 @@ const gui_surface::SURFACE_FLAGS& gui_surface::get_flags() const {
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-gui_simple_callback::gui_simple_callback(ui_draw_callback& callback_, const DRAW_MODE_UI& mode_,
+gui_simple_callback::gui_simple_callback(ui_draw_callback callback_, const DRAW_MODE_UI& mode_,
 										 const float2& buffer_size_, const float2& offset_,
 										 const SURFACE_FLAGS flags_) :
-gui_surface(buffer_size_, offset_, flags_), mode(mode_), callback(&callback_) {
+gui_surface(buffer_size_, offset_, flags_), mode(mode_), callback(callback_) {
 }
 
 void gui_simple_callback::draw() {
@@ -186,7 +186,7 @@ void gui_simple_callback::draw() {
 	r->clear();
 	r->start_2d_draw();
 	
-	(*callback)(mode, buffer);
+	callback(mode, buffer);
 	
 	r->stop_2d_draw();
 	stop_draw();

@@ -67,7 +67,7 @@ enum class GUI_EVENT : unsigned int {
 };
 namespace std {
 	template <> struct hash<GUI_EVENT> : public hash<unsigned int> {
-		size_t operator()(GUI_EVENT type) const throw() {
+		size_t operator()(GUI_EVENT type) const noexcept {
 			return hash<unsigned int>::operator()((unsigned int)type);
 		}
 	};

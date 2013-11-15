@@ -33,8 +33,6 @@ a2estatic::a2estatic(shader* s, scene* sce) : a2emodel(s, sce) {
 	normals = nullptr;
 	binormals = nullptr;
 	tangents = nullptr;
-	
-	normal_list = nullptr;
 }
 
 /*! a2estatic destructor
@@ -55,10 +53,6 @@ a2estatic::~a2estatic() {
 	if(normals != nullptr) { delete [] normals; }
 	if(binormals != nullptr) { delete [] binormals; }
 	if(tangents != nullptr) { delete [] tangents; }
-	
-	if(normal_list != nullptr) {
-		delete [] normal_list;
-	}
 	
 	if(model_vertices != nullptr) { delete [] model_vertices; }
 	if(model_vertex_count != nullptr) { delete [] model_vertex_count; }
@@ -177,9 +171,10 @@ void a2estatic::load_model(const string& filename_) {
 
 	object_count = file.get_uint();
 	delete_sub_bboxes();
-	sub_bboxes = new extbbox[object_count];
+	sub_bboxes.resize(object_count);
 
-	object_names = new string[object_count];
+	object_names.clear();
+	object_names.resize(object_count);
 	for(unsigned int i = 0; i < object_count; i++) {
 		file.get_terminated_block(object_names[i], (char)0xFF);
 	}
@@ -327,9 +322,10 @@ void a2estatic::load_from_memory(unsigned int object_count_, unsigned int vertex
 	}
 	
 	delete_sub_bboxes();
-	sub_bboxes = new extbbox[object_count];
+	sub_bboxes.resize(object_count);
 	
-	object_names = new string[object_count];
+	object_names.clear();
+	object_names.resize(object_count);
 	for(unsigned int i = 0; i < object_count; i++) {
 		object_names[i] = "object #" + uint2string(i);
 	}
