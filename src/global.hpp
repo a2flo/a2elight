@@ -39,17 +39,20 @@
 
 #elif defined(__WINDOWS__) && !defined(WIN_UNIXENV)
 #include <SDL2/SDL_image.h>
-#include <GL/gl3.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <GL/wglext.h>
 
 #elif defined(MINGW)
 #include <SDL2/SDL_image.h>
 #define GL3_PROTOTYPES
-#include <GL/gl3.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 
 #else
 #include <SDL_image.h>
-#include <GL/gl3.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 #if !defined(WIN_UNIXENV)
 #include <GL/glx.h>
 #include <GL/glxext.h>
