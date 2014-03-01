@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@
  *  @brief arb_timer_query wrapper + additional functionality
  */
 
+// NOTE: this is not supported on iOS
 class A2E_API gl_timer {
 public:
-	//
 	gl_timer() = delete;
 	~gl_timer() = delete;
 	

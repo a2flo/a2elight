@@ -1,5 +1,5 @@
 /*  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 		exts = new ext(&config.disabled_extensions, &config.force_device, &config.force_vendor);
 		
 		// capability test
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		if(!exts->is_gl_version(3, 2)) { // TODO: check for shader support! (use recognized gl version)
 			log_error("A2E doesn't support your graphic device! OpenGL 3.2 is the minimum requirement.");
 			SDL_Delay(10000);
@@ -185,7 +185,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 		
 		//
 #if defined(A2E_DEBUG)
-		gl_timer::init();
+		//gl_timer::init();
 #endif
 		
 		int tmp = 0;
@@ -246,6 +246,9 @@ void engine::init(const char* callpath_, const char* datapath_,
 		// draw the loading screen/image
 		start_draw();
 		start_2d_draw();
+		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		glBindRenderbuffer(GL_RENDERBUFFER, A2E_DEFAULT_RENDERBUFFER);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		a2e_texture load_tex = t->add_texture(floor::data_path("loading.png"), TEXTURE_FILTERING::LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 		const uint2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
 		const uint2 img_offset((unsigned int)floor::get_width()/2 - load_tex_draw_size.x/2,
@@ -328,12 +331,22 @@ void engine::start_draw() {
 	gl_timer::state_check();
 	gl_timer::start_frame();
 	
-	// draws ogl stuff
-	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-	glViewport(0, 0, (unsigned int)floor::get_width(), (unsigned int)floor::get_height());
-	
-	// clear the color and depth buffers
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// if no ui exists, use the "default" frame/renderbuffer
+	if(ui == nullptr) {
+		// draws ogl stuff
+		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		glBindRenderbuffer(GL_RENDERBUFFER, A2E_DEFAULT_RENDERBUFFER);
+		glViewport(0, 0, (unsigned int)floor::get_width(), (unsigned int)floor::get_height());
+		
+		// clear the color and depth buffers
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+	else {
+		// if the ui exists, it will handle all compositing and default frame/renderbuffer drawing
+		// -> unbind everything
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	}
 	
 	// reset model view matrix
 	modelview_matrix.identity();
@@ -341,7 +354,7 @@ void engine::start_draw() {
 	rotation_matrix.identity();
 	mvp_matrix = projection_matrix;
 	
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	glBindVertexArray(global_vao);
 #endif
 }
@@ -374,7 +387,7 @@ void engine::stop_draw() {
 
 void engine::push_ogl_state() {
 	// make a full soft-context-switch
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	glGetIntegerv(GL_BLEND_SRC, &pushed_blend_src);
 	glGetIntegerv(GL_BLEND_DST, &pushed_blend_dst);
 #endif
@@ -402,7 +415,7 @@ void engine::init_gl() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	// and ios specific code
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	static bool vao_init = false;
 	if(!vao_init) {
 		vao_init = true;

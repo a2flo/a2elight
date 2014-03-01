@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ void shader::reload_shaders() {
 }
 
 void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned int src_attachment, unsigned int dest_attachment) {
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	if((src_buffer->target[src_attachment] != GL_TEXTURE_2D && src_buffer->target[src_attachment] != GL_TEXTURE_RECTANGLE) ||
 	   (dest_buffer->target[dest_attachment] != GL_TEXTURE_2D && dest_buffer->target[dest_attachment] != GL_TEXTURE_RECTANGLE)) {
 		log_error("non-2D buffers aren't allowed to be copied at the moment!");
@@ -110,8 +110,8 @@ void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned i
 					  GL_COLOR_BUFFER_BIT | ((src_buffer->depth_type != rtt::DEPTH_TYPE::NONE && dest_buffer->depth_type != rtt::DEPTH_TYPE::NONE) ? GL_DEPTH_BUFFER_BIT : 0),
 					  GL_NEAREST);
 	
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 #else
 	// TODO: implement framebuffer blitting on iOS
 #endif
@@ -167,7 +167,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		return 0;
 	}
 	
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	// create the geometry shader object
 	if(gs_text != nullptr && strcmp(gs_text, "") != 0) {
 		shd_obj.geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
@@ -184,7 +184,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	else shd_obj.geometry_shader = 0;
 #else
 	if(gs_text != nullptr && strcmp(gs_text, "") != 0) {
-		log_error("geometry shaders are not supported in OpenGL ES 2.0!");
+		log_error("geometry shaders are not supported in OpenGL ES 2.0 or 3.0!");
 	}
 	shd_obj.geometry_shader = 0;
 #endif
@@ -259,7 +259,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	
 	// bind frag data locations (frag_color, frag_color_2, frag_color_3, ...)
 	bool fd_relink = false;
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	const unsigned int max_draw_buffers = exts->get_max_draw_buffers();
 	for(unsigned int i = 0; i < max_draw_buffers; i++) {
 		string name = "frag_color";
@@ -274,7 +274,8 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		}
 	}
 #else
-	// TODO: what todo on iOS?
+	// NOTE: MRTs are not support in OpenGL ES 2.0
+	// in OpenGL ES 3.0 the locations are already set in the shader
 #endif
 	if(fd_relink) {
 		// program must be linked again after the frag data locations were modified
@@ -316,7 +317,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	max_attr_len+=2;
 	max_uni_len+=2;
 	
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	GLint uni_block_count = 0, max_uni_block_len = 0;
 	glGetProgramiv(shd_obj.program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &max_uni_block_len);
 	glGetProgramiv(shd_obj.program, GL_ACTIVE_UNIFORM_BLOCKS, &uni_block_count);
@@ -369,12 +370,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 										  shader_object::internal_shader_object::shader_variable(var_location, var_size, var_type)));
 		
 		// if the uniform is a sampler, add it to the sampler mapping (with increasing id/num)
-		// also: use shader_gl3 here, because we can't use shader_base directly w/o instantiating it
-#if !defined(A2E_IOS)
-		if(shader_gl3::is_gl_sampler_type(var_type)) {
-#else
-		if(shader_gles2::is_gl_sampler_type(var_type)) {
-#endif
+		if(shader_class::is_gl_sampler_type(var_type)) {
 			shd_obj.samplers.insert(make_pair(uniform_name, shd_obj.samplers.size()));
 			
 			// while we are at it, also set the sampler location to a dummy value (this has to be done to satisfy program validation)
@@ -383,7 +379,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	}
 	delete [] uni_name;
 	
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	GLchar* uni_block_name = new GLchar[max_uni_block_len];
 	if(print_debug_info) log_undecorated("GL_ACTIVE_UNIFORM_BLOCKS: %u", uni_block_count);
 	for(GLint block = 0; block < uni_block_count; block++) {
@@ -479,7 +475,7 @@ bool shader::load_internal_shaders() {
 		// misc/postprocess/hdr/...
 		{ "BLURLINE3", "misc/blurline3.a2eshd" },
 		{ "BLURLINE5", "misc/blurline5.a2eshd" },
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		{ "LUMA", "misc/luma.a2eshd" },
 		{ "FXAA", "misc/fxaa3.a2eshd" },
 #endif
@@ -501,7 +497,7 @@ bool shader::load_internal_shaders() {
 		{ "IR_MP_DIFFUSE", "inferred/mp_diffuse.a2eshd" },
 		{ "IR_MP_PARALLAX", "inferred/mp_parallax.a2eshd" },
 		
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		// particle
 		{ "PARTICLE_DRAW_OPENCL", "particle/particle_draw_ocl.a2eshd" },
 #endif
@@ -580,8 +576,12 @@ template <> ret_type shader::get_shader(const string& identifier) const { \
 } \
 ret_type shader::get_##ret_type(const string& identifier) const { return get_shader<ret_type>(identifier); }
 
-#if !defined(A2E_IOS)
-make_get_shader(gl3shader, shader_gl3, ext::GLSL_VERSION::GLSL_150, ext::GLSL_VERSION::GLSL_330);
+#if !defined(FLOOR_IOS)
+make_get_shader(gl_shader, shader_gl3, ext::GLSL_VERSION::GLSL_150, ext::GLSL_VERSION::GLSL_330);
 #else
-make_get_shader(gl3shader, shader_gles2, ext::GLSL_VERSION::GLSL_ES_100, ext::GLSL_VERSION::GLSL_ES_100);
+#if defined(PLATFORM_X64)
+make_get_shader(gl_shader, shader_gles3, ext::GLSL_VERSION::GLSL_ES_300, ext::GLSL_VERSION::GLSL_ES_300);
+#else
+make_get_shader(gl_shader, shader_gles2, ext::GLSL_VERSION::GLSL_ES_100, ext::GLSL_VERSION::GLSL_ES_100);
+#endif
 #endif

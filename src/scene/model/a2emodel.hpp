@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -184,13 +184,13 @@ protected:
 	
 	// internal draw functions (override these in derived classes if you have to do custom rendering)
 	virtual void draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_object_num, const size_t& mask_id);
-	virtual void ir_mp_setup(gl3shader& shd, const string& option, const set<string>& combiners);
+	virtual void ir_mp_setup(gl_shader& shd, const string& option, const set<string>& combiners);
 	virtual void pre_draw_setup(const ssize_t sub_object_num = -1); // -1, no sub-object
 	virtual void post_draw_setup(const ssize_t sub_object_num = -1);
-	virtual void pre_draw_geometry(gl3shader& shd, VERTEX_ATTRIBUTE& attr_array_mask, a2ematerial::TEXTURE_TYPE& texture_mask);
-	virtual void post_draw_geometry(gl3shader& shd);
-		virtual void pre_draw_material(gl3shader& shd, VERTEX_ATTRIBUTE& attr_array_mask, a2ematerial::TEXTURE_TYPE& texture_mask);
-	virtual void post_draw_material(gl3shader& shd);
+	virtual void pre_draw_geometry(gl_shader& shd, VERTEX_ATTRIBUTE& attr_array_mask, a2ematerial::TEXTURE_TYPE& texture_mask);
+	virtual void post_draw_geometry(gl_shader& shd);
+		virtual void pre_draw_material(gl_shader& shd, VERTEX_ATTRIBUTE& attr_array_mask, a2ematerial::TEXTURE_TYPE& texture_mask);
+	virtual void post_draw_material(gl_shader& shd);
 	//! return an empty string if no custom shader should be used
 	virtual const string select_shader(const DRAW_MODE& draw_mode) const;
 	

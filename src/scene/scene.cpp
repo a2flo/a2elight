@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -147,18 +147,18 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	// TODO: add 4xSSAA support -> downscale in shader (+enable in engine)
 	
 	//
-	GLenum target = GL_TEXTURE_2D;
-	GLint rgba16_float_internal_format = GL_RGBA16F;
-	GLenum f16_format_type = GL_HALF_FLOAT;
+	constexpr GLenum target = GL_TEXTURE_2D;
+	constexpr GLint rgba16_float_internal_format = GL_RGBA16F;
+	constexpr GLenum f16_format_type = GL_HALF_FLOAT;
 	
-	GLint internal_formats[] = { rgba16_float_internal_format, rgba16_float_internal_format };
-	GLenum formats[] = { GL_RGBA, GL_RGBA };
-	GLenum targets[] = { target, target };
-	TEXTURE_FILTERING filters[] = { TEXTURE_FILTERING::POINT, TEXTURE_FILTERING::POINT };
+	constexpr GLint internal_formats[] { rgba16_float_internal_format, rgba16_float_internal_format };
+	constexpr GLenum formats[] { GL_RGBA, GL_RGBA };
+	constexpr GLenum targets[] { target, target };
+	constexpr TEXTURE_FILTERING filters[] { TEXTURE_FILTERING::POINT, TEXTURE_FILTERING::POINT };
 	const rtt::TEXTURE_ANTI_ALIASING taa = engine::get_anti_aliasing();
-	rtt::TEXTURE_ANTI_ALIASING taas[] = { taa, taa };
-	GLint wraps[] = { GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
-	GLenum types[] = { f16_format_type, f16_format_type };
+	rtt::TEXTURE_ANTI_ALIASING taas[] { taa, taa };
+	constexpr GLint wraps[] { GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE };
+	constexpr GLenum types[] { f16_format_type, f16_format_type };
 	
 	//
 	float2 inferred_scale(engine::get_geometry_light_scaling());
@@ -179,7 +179,7 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 										filters, taas, wraps, wraps, internal_formats, formats,
 										types, 1, rtt::DEPTH_TYPE::TEXTURE_2D, rtt::STENCIL_TYPE::STENCIL_8);
 	if(create_alpha_buffer) {
-#if !defined(A2E_IOS) // TODO: think of a workaround for this
+#if !defined(FLOOR_IOS) // TODO: think of a workaround for this
 		buffers.g_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, targets,
 											filters, taas, wraps, wraps, internal_formats, formats,
 											types, 2, rtt::DEPTH_TYPE::TEXTURE_2D, rtt::STENCIL_TYPE::STENCIL_8);
@@ -199,7 +199,7 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 #endif
 	
 	if(create_alpha_buffer) {
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 #if defined(A2E_COPY_DEPTH_BUFFER)
 		buffers.l_buffer[1] = r->add_buffer(render_buffer_size.x, render_buffer_size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, taa, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 2, rtt::DEPTH_TYPE::TEXTURE_2D, rtt::STENCIL_TYPE::STENCIL_8);
 #else
@@ -251,7 +251,7 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 	//buffers.cl_depth_buffer[0] = cl->create_ogl_image2d_renderbuffer(opencl::BT_READ, buffers.g_buffer[0]->depth_buffer);
 	buffers.cl.light_buffer[0] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[0]->tex[0]);
 	buffers.cl.light_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[0]->tex[1]);
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	/*buffers.cl_normal_nuv_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->tex[0]);
 	buffers.cl_depth_buffer[1] = cl->create_ogl_image2d_buffer(opencl::BT_READ, buffers.g_buffer[1]->depth_buffer);
 	buffers.cl_light_buffer[2] = cl->create_ogl_image2d_buffer(opencl::BT_WRITE, buffers.l_buffer[1]->tex[0]);
@@ -266,6 +266,7 @@ void scene::recreate_buffers(frame_buffers& buffers, const size2 unscaled_buffer
 }
 
 bool scene::window_event_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+	if(!enabled) return false;
 	if(type == EVENT_TYPE::WINDOW_RESIZE) {
 		const window_resize_event& evt = (const window_resize_event&)*obj;
 		recreate_buffers(frames[0], evt.size);
@@ -512,7 +513,7 @@ void scene::geometry_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_m
 	r->start_draw(buffers.g_buffer[0]);
 	r->clear();
 	
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(1, draw_buffers);
 #endif
@@ -540,7 +541,7 @@ void scene::geometry_pass(frame_buffers& buffers, const DRAW_MODE draw_mode_or_m
 	r->stop_draw();
 	
 	if(buffers.g_buffer[1] != nullptr) {
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		// render models (transparent/alpha)
 		r->start_draw(buffers.g_buffer[1]);
 		r->clear();
@@ -576,7 +577,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 										(-near_far_plane.y * near_far_plane.x) / (near_far_plane.y - near_far_plane.x));
 	const float3 cam_position = -float3(*engine::get_position());
 	const float2 screen_size = float2(float(l_buffer->width), float(l_buffer->height));
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	const bool light_alpha_objects = (!alpha_objects.empty() &&
 									  buffers.l_buffer[0] != nullptr &&
 									  buffers.g_buffer[1] != nullptr);
@@ -600,8 +601,8 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 	
 	// shader init
-	gl3shader ir_lighting = s->get_gl3shader("IR_LP_ASHIKHMIN_SHIRLEY");
-	gl3shader ir_stencil = s->get_gl3shader("IR_LP_STENCIL");
+	gl_shader ir_lighting = s->get_gl_shader("IR_LP_ASHIKHMIN_SHIRLEY");
+	gl_shader ir_stencil = s->get_gl_shader("IR_LP_STENCIL");
 	
 	gl_timer::mark("LIGHT_PASS_START");
 	for(size_t light_pass = 0; light_pass < (light_alpha_objects ? 2 : 1); light_pass++) {
@@ -617,15 +618,17 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 						  0, 0, l_buffer->width, l_buffer->height,
 						  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 		
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 #endif
 		
 		//
 		r->start_draw(buffers.l_buffer[light_pass]);
 		r->clear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 		static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glDrawBuffers(2, draw_buffers);
+#endif
 		glDepthMask(GL_FALSE);
 		
 		for(size_t light_type = 0; light_type < 2; light_type++) {
@@ -862,8 +865,10 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	// -> anything that has not equal depth will be culled/discarded early
 	// (this gives a nice speed boost and also saves memory)
 	r->start_draw(scene_buffer);
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, draw_buffers);
+#endif
 	if(scene_buffer->depth_type == rtt::DEPTH_TYPE::TEXTURE_2D) {
 		r->clear(GL_COLOR_BUFFER_BIT); // only clear color, keep depth
 		glDepthFunc(GL_EQUAL);
@@ -896,7 +901,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
 	
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	if(sorted_alpha_objects.size() > 0 || draw_callbacks.size() > 0) {
 		// render models (transparent/alpha)
 		glEnable(GL_BLEND);
@@ -938,7 +943,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 		r->start_draw(fxaa_buffer);
 		r->start_2d_draw();
 		
-		gl3shader luma_shd = s->get_gl3shader("LUMA");
+		gl_shader luma_shd = s->get_gl_shader("LUMA");
 		luma_shd->texture("src_buffer", scene_buffer->tex[0]);
 		gfx2d::draw_fullscreen_triangle();
 		luma_shd->disable();
@@ -950,7 +955,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 		r->start_draw(scene_buffer);
 		r->start_2d_draw();
 		
-		gl3shader fxaa_shd = s->get_gl3shader("FXAA");
+		gl_shader fxaa_shd = s->get_gl_shader("FXAA");
 		fxaa_shd->texture("src_buffer", fxaa_buffer->tex[0]);
 		fxaa_shd->uniform("texel_size",
 						  float2(1.0f) / float2(fxaa_buffer->width, fxaa_buffer->height));
@@ -1084,12 +1089,18 @@ void scene::delete_post_processing(const post_processing_handler* pph) {
 }
 
 void scene::set_enabled(const bool& status) {
-	if(status != enabled && !status) {
-		// clear scene buffers (so they are fully transparent)
-		for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
-			r->start_draw(frames[i].scene_buffer);
-			r->clear();
-			r->stop_draw();
+	if(status != enabled) {
+		if(!status) {
+			// delete all scene buffers since they aren't needed
+			for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
+				delete_buffers(frames[i]);
+			}
+		}
+		else {
+			// recreate buffers again if the scene gets reenabled
+			for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
+				recreate_buffers(frames[i], size2(floor::get_width(), floor::get_height()));
+			}
 		}
 	}
 	enabled = status;
@@ -1104,8 +1115,7 @@ void scene::add_draw_callback(const string& name, draw_callback& cb) {
 		log_error("this scene draw callback already exists!");
 		return;
 	}
-	//draw_callbacks.emplace(name, &cb); // TODO: use this, when gcc finally decides to correctly implement c++11
-	draw_callbacks.insert(make_pair(name, &cb));
+	draw_callbacks.emplace(name, &cb);
 }
 
 void scene::delete_draw_callback(draw_callback& cb) {

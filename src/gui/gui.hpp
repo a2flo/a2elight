@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "core/event.hpp"
 #include "gui/objects/gui_object.hpp"
 #include "gui/style/gui_surface.hpp"
+#include "rendering/renderer/gl_shader_fwd.hpp"
 
 /*! @class gui
  *  @brief graphical user interface functions
@@ -34,8 +35,6 @@ class core;
 class scene;
 class font_manager;
 class shader;
-class shader_gl3;
-typedef shared_ptr<shader_gl3> gl3shader;
 class gui_theme;
 class gui_window;
 
@@ -105,8 +104,8 @@ protected:
 	void delete_buffers();
 	
 	void reload_shaders();
-	gl3shader blend_shd;
-	gl3shader texture_shd;
+	gl_shader blend_shd;
+	gl_shader texture_shd;
 	
 	//
 	gui_object* active_object = nullptr;

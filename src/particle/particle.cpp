@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,12 +24,15 @@
 particle_manager::particle_manager() :
 s(engine::get_shader()), r(engine::get_rtt()), exts(engine::get_ext()), t(engine::get_texman()) {
 	//
+#if !defined(FLOOR_NO_OPENCL)
 	if(ocl->is_supported()) {
 		log_debug("using OpenCL render path!");
 		pm = new particle_manager_cl();
 	}
 	// no hw/sw support at all
-	else {
+	else
+#endif
+	{
 		log_error("no hardware or software support (install an opencl gpu or cpu driver)!");
 		pm = nullptr;
 	}

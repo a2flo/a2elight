@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,14 +32,15 @@ public:
 	virtual void clear();
 	virtual void add_item(const string& identifier, const string& label);
 	virtual void remove_item(const string& identifier);
+	virtual void scroll_to_item(const string& identifier);
 	
 	//
 	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
 	
 protected:
-	float item_height = 0.0f;
-	float box_height = 0.0f;
-	float scroll_position = 0.0f;
+	float item_height { 0.0f };
+	float box_height { 0.0f };
+	float scroll_position { 0.0f };
 	
 	void recompute_height();
 

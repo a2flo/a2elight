@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 
 class xml;
 class font_manager;
-class font;
+class a2e_font;
 class gui_theme {
 public:
 	gui_theme(font_manager* fm);
@@ -261,7 +261,7 @@ protected:
 	font_manager* fm;
 	xml* x;
 	rtt* r;
-	font* fnt;
+	a2e_font* fnt;
 	gui_color_scheme scheme;
 	string filename = "";
 	

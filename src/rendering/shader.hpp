@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,10 +28,14 @@
 #include "rendering/renderer/a2e_shader.hpp"
 #include "rendering/renderer/shader_object.hpp"
 #include "rendering/renderer/shader_base.hpp"
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 #include "rendering/renderer/gl3/shader_gl3.hpp"
 #else
+#if defined(PLATFORM_X64)
+#include "rendering/renderer/gles3/shader_gles3.hpp"
+#else
 #include "rendering/renderer/gles2/shader_gles2.hpp"
+#endif
 #endif
 
 /*! @class shader
@@ -55,7 +59,7 @@ public:
 	
 	template <class shader_type> shader_type get_shader(const string& identifier) const;
 	// for convenience:
-	gl3shader get_gl3shader(const string& identifier) const;
+	gl_shader get_gl_shader(const string& identifier) const;
 	
 	// actually a rtt function, but put here, b/c it uses shaders (which aren't allowed in rtt class, b/c of class dependency)
 	void copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned int src_attachment = 0, unsigned int dest_attachment = 0);
@@ -86,6 +90,6 @@ protected:
 	
 };
 
-template <> gl3shader shader::get_shader(const string& identifier) const;
+template <> gl_shader shader::get_shader(const string& identifier) const;
 
 #endif

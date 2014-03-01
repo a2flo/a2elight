@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,10 +30,15 @@ public:
 	virtual void clear();
 	virtual void add_item(const string& identifier, const string& label);
 	virtual void remove_item(const string& identifier);
+	virtual bool has_item(const string& identifier) const;
 	
 	virtual const pair<const string, string>* get_selected_item() const;
-	virtual void set_selected_item(const string& identifier, const bool event_on_equal = false);
-	virtual void set_selected_item(const size_t& index, const bool event_on_equal = false);
+	virtual void set_selected_item(const string& identifier,
+								   const bool event_on_equal = false,
+								   const bool event_on_unequal = true);
+	virtual void set_selected_item(const size_t& index,
+								   const bool event_on_equal = false,
+								   const bool event_on_unequal = true);
 	
 protected:
 	// <identifier, label>

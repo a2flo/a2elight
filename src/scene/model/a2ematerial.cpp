@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -428,7 +428,7 @@ bool a2ematerial::is_parallax_occlusion(const size_t& object_id) const {
 	return ((parallax_material*)obj->mat->mat)->parallax_occlusion;
 }
 
-void a2ematerial::enable_textures(const size_t& object_id, gl3shader& shd, const TEXTURE_TYPE texture_mask) const {
+void a2ematerial::enable_textures(const size_t& object_id, gl_shader& shd, const TEXTURE_TYPE texture_mask) const {
 	const object_mapping* obj = get_object_mapping(object_id);
 	if(obj == nullptr) return;
 	

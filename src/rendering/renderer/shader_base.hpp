@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@
 #include "rendering/texture_object.hpp"
 #include "rendering/renderer/shader_object.hpp"
 
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 
-//
+// OpenGL 3.2 Core
 #define A2E_GL_SHADER_TYPES(F) \
 F(GL_FLOAT) \
 F(GL_FLOAT_VEC2) \
@@ -59,13 +59,13 @@ F(GL_SAMPLER_1D) \
 F(GL_SAMPLER_2D) \
 F(GL_SAMPLER_3D) \
 F(GL_SAMPLER_CUBE) \
+F(GL_SAMPLER_CUBE_SHADOW) \
 F(GL_SAMPLER_1D_SHADOW) \
 F(GL_SAMPLER_2D_SHADOW) \
 F(GL_SAMPLER_1D_ARRAY) \
 F(GL_SAMPLER_2D_ARRAY) \
 F(GL_SAMPLER_1D_ARRAY_SHADOW) \
 F(GL_SAMPLER_2D_ARRAY_SHADOW) \
-F(GL_SAMPLER_CUBE_SHADOW) \
 F(GL_SAMPLER_BUFFER) \
 F(GL_SAMPLER_2D_RECT) \
 F(GL_SAMPLER_2D_RECT_SHADOW) \
@@ -131,6 +131,69 @@ F(GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY) \
 F(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY)
 
 #else
+#if defined(PLATFORM_X64)
+// iOS / OpenGL ES 3.0 types
+
+#define A2E_GL_SHADER_TYPES(F) \
+F(GL_FLOAT) \
+F(GL_FLOAT_VEC2) \
+F(GL_FLOAT_VEC3) \
+F(GL_FLOAT_VEC4) \
+F(GL_INT) \
+F(GL_INT_VEC2) \
+F(GL_INT_VEC3) \
+F(GL_INT_VEC4) \
+F(GL_UNSIGNED_INT) \
+F(GL_UNSIGNED_INT_VEC2) \
+F(GL_UNSIGNED_INT_VEC3) \
+F(GL_UNSIGNED_INT_VEC4) \
+F(GL_BOOL) \
+F(GL_BOOL_VEC2) \
+F(GL_BOOL_VEC3) \
+F(GL_BOOL_VEC4) \
+F(GL_FLOAT_MAT2) \
+F(GL_FLOAT_MAT3) \
+F(GL_FLOAT_MAT4) \
+F(GL_FLOAT_MAT2x3) \
+F(GL_FLOAT_MAT2x4) \
+F(GL_FLOAT_MAT3x2) \
+F(GL_FLOAT_MAT3x4) \
+F(GL_FLOAT_MAT4x2) \
+F(GL_FLOAT_MAT4x3) \
+F(GL_SAMPLER_2D) \
+F(GL_SAMPLER_3D) \
+F(GL_SAMPLER_CUBE) \
+F(GL_SAMPLER_CUBE_SHADOW) \
+F(GL_SAMPLER_2D_SHADOW) \
+F(GL_SAMPLER_2D_ARRAY) \
+F(GL_SAMPLER_2D_ARRAY_SHADOW) \
+F(GL_INT_SAMPLER_2D) \
+F(GL_INT_SAMPLER_3D) \
+F(GL_INT_SAMPLER_CUBE) \
+F(GL_INT_SAMPLER_2D_ARRAY) \
+F(GL_UNSIGNED_INT_SAMPLER_2D) \
+F(GL_UNSIGNED_INT_SAMPLER_3D) \
+F(GL_UNSIGNED_INT_SAMPLER_CUBE) \
+F(GL_UNSIGNED_INT_SAMPLER_2D_ARRAY)
+
+#define A2E_GL_SHADER_SAMPLER_TYPES(F) \
+F(GL_SAMPLER_2D) \
+F(GL_SAMPLER_3D) \
+F(GL_SAMPLER_CUBE) \
+F(GL_SAMPLER_CUBE_SHADOW) \
+F(GL_SAMPLER_2D_SHADOW) \
+F(GL_SAMPLER_2D_ARRAY) \
+F(GL_SAMPLER_2D_ARRAY_SHADOW) \
+F(GL_INT_SAMPLER_2D) \
+F(GL_INT_SAMPLER_3D) \
+F(GL_INT_SAMPLER_CUBE) \
+F(GL_INT_SAMPLER_2D_ARRAY) \
+F(GL_UNSIGNED_INT_SAMPLER_2D) \
+F(GL_UNSIGNED_INT_SAMPLER_3D) \
+F(GL_UNSIGNED_INT_SAMPLER_CUBE) \
+F(GL_UNSIGNED_INT_SAMPLER_2D_ARRAY)
+
+#else
 // iOS / OpenGL ES 2.0 types
 
 #define A2E_GL_SHADER_TYPES(F) \
@@ -155,6 +218,7 @@ F(GL_SAMPLER_CUBE)
 #define A2E_GL_SHADER_SAMPLER_TYPES(F) \
 F(GL_SAMPLER_2D) \
 F(GL_SAMPLER_CUBE)
+#endif
 
 #endif
 
@@ -171,12 +235,7 @@ public:
 	// basic functions
 	virtual void use() { cur_program = 0; }
 	virtual void use(const size_t& program) { cur_program = program; }
-#if !defined(__clang__)
-	virtual void use(const string& option) = 0;
-	virtual void use(const string& option, const set<string> combiners) = 0;
-#else
 	virtual void use(const string& option, const set<string> combiners = set<string> {}) = 0;
-#endif
 	virtual void disable() = 0;
 	virtual size_t get_cur_program() const = 0;
 	virtual const string& get_cur_option() const = 0;

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ enum class GUI_EVENT : unsigned int {
 	SLIDER_MOVE,
 	
 	LIST_BOX_SELECT,
+	LIST_BOX_SELECT_EXECUTE,
 	
 	//CHECKBOX_TOGGLE,
 	
@@ -52,8 +53,8 @@ enum class GUI_EVENT : unsigned int {
 	
 	//BAR_SCROLL,
 	
-	//FILE_OPEN,
-	//FILE_SAVE,
+	FILE_OPEN,
+	FILE_SAVE,
 	
 	// TODO: tree list
 	// TODO: color picker
@@ -65,13 +66,6 @@ enum class GUI_EVENT : unsigned int {
 	
 	//TAB_SELECT,
 };
-namespace std {
-	template <> struct hash<GUI_EVENT> : public hash<unsigned int> {
-		size_t operator()(GUI_EVENT type) const noexcept {
-			return hash<unsigned int>::operator()((unsigned int)type);
-		}
-	};
-}
 
 class gui_object;
 template<EVENT_TYPE event_type> struct gui_event_base : public event_object_base<event_type> {

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -98,11 +98,15 @@ void gui_window::draw() {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer->fbo_id);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer->resolve_buffer[0]);
 		for(const auto& blit_rect : blit_rects) {
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 			glBlitFramebuffer(blit_rect.x, blit_rect.y, blit_rect.z, blit_rect.w,
 							  blit_rect.x, blit_rect.y, blit_rect.z, blit_rect.w,
 							  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#else
+			// TODO: gles 2.0 implementation
+#endif
 		}
-		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	else stop_draw();
 }

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "global.hpp"
 #include "core/vector2.hpp"
+#include "gui/objects/gui_object_event.hpp"
 
 // since all inheriting classes will need this, include it here:
 #include "gui/style/gui_theme.hpp"
@@ -31,7 +32,7 @@
  */
 
 class gui;
-class A2E_API gui_object {
+class A2E_API gui_object : public gui_object_event {
 public:
 	gui_object(const float2& size, const float2& position);
 	virtual ~gui_object();
@@ -71,32 +72,14 @@ public:
 	virtual ipnt abs_to_rel_position(const ipnt& point) const;
 	virtual ipnt rel_to_abs_position(const ipnt& point) const;
 	
-	//
-	void lock();
-	bool try_lock();
-	void unlock();
-	
-	//
-	typedef std::function<void(GUI_EVENT, gui_object&)> handler;
-	void add_handler(handler&& handler_, GUI_EVENT type);
-	template<typename... event_types> void add_handler(handler&& handler_, event_types&&... types) {
-		// unwind types, always call the simple add handler for each type
-		unwind_add_handler(std::forward<handler>(handler_), std::forward<event_types>(types)...);
-	}
-	void remove_handlers(const GUI_EVENT& type);
-	void remove_handlers();
-	
 	// must return true if event was handled, false if not!
 	virtual bool should_handle_mouse_event(const EVENT_TYPE& type, const ipnt& point) const;
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
-	virtual bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj);
 
 protected:
 	gui* ui;
 	gui_theme* theme;
-	event* evt;
 	font_manager* fm;
-	font* fnt;
+	a2e_font* fnt;
 	
 	// returns true if object should be drawn, false if it shouldn't; also resets the redraw flag
 	virtual bool handle_draw();
@@ -115,24 +98,9 @@ protected:
 	float2 position_abs; // absolute screen coordinate
 	rect rectangle_abs;
 	
-	const string identifier = ""; // TODO: ?
-	
 	//
-	gui_object* parent = nullptr;
+	gui_object* parent { nullptr };
 	set<gui_object*> children;
-	recursive_mutex mutex;
-	
-	//
-	void unwind_add_handler(handler&& handler_, GUI_EVENT type) {
-		add_handler(std::forward<handler>(handler_), type);
-	}
-	template<typename... event_types> void unwind_add_handler(handler&& handler_, GUI_EVENT type, event_types&&... types) {
-		// unwind types, always call the simple add handler for each type
-		add_handler(std::forward<handler>(handler_), type);
-		unwind_add_handler(std::forward<handler>(handler_), std::forward<event_types>(types)...);
-	}
-	unordered_multimap<GUI_EVENT, handler> handlers;
-	virtual void handle(const GUI_EVENT gui_evt);
 
 };
 

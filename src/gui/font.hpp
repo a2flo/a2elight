@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,25 +21,22 @@
 
 #include "global.hpp"
 #include "core/event.hpp"
+#include "gui/font_manager.hpp"
+#include "rendering/renderer/gl_shader_fwd.hpp"
 
 /*! @class font
  *  @brief stores a font and can be used for drawing
  */
 
 class shader;
-class font_manager;
 typedef struct FT_FaceRec_* FT_Face;
-class shader_gl3;
-typedef shared_ptr<shader_gl3> gl3shader;
-enum class EVENT_TYPE : unsigned int;
-struct event_object;
-class A2E_API font {
+class A2E_API a2e_font {
 public:
 	//! single font file or font collection
-	font(font_manager* fm, const string& filename);
+	a2e_font(font_manager* fm, const string& filename);
 	//! multiple font files (note: only the first of each style will be used)
-	font(font_manager* fm, const vector<string> filenames);
-	~font();
+	a2e_font(font_manager* fm, vector<string>&& filenames);
+	~a2e_font();
 	
 	// draw functions
 	void draw(const string& text, const float2& position, const float4 color = float4(1.0f));
@@ -58,20 +55,20 @@ public:
 	
 	//! http://en.wikipedia.org/wiki/Basic_Multilingual_Plane#Basic_Multilingual_Plane
 	enum class BMP_BLOCK : unsigned int {
-		BASIC_LATIN				= 0x0000007F, // NOTE: will be cached automatically (0000 - 007F)
-		LATIN_1_SUPPLEMENT		= 0x008000FF, // NOTE: will be cached automatically (0080 - 00FF)
-		LATIN_EXTENDED_A		= 0x0100017F, // 0100 - 017F
-		LATIN_EXTENDED_B		= 0x0180024F, // 0180 - 024F
-		LATIN_IPA_EXTENSIONS	= 0x025002AF, // 0250 - 02AF
-		GREEK					= 0x037003FF, // 0370 - 03FF
-		CYRILLIC				= 0x040004FF, // 0400 - 04FF
-		CYRILLIC_SUPPLEMENT		= 0x0500052F, // 0500 - 052F
-		ARMENIAN				= 0x0530058F, // 0530 - 058F
-		HEBREW					= 0x059005FF, // 0590 - 05FF
-		ARABIC					= 0x060006FF, // 0600 - 06FF
-		ARABIC_SUPPLEMENT		= 0x0750077F, // 0750 - 077F
-		HIRAGANA				= 0x3040309F, // 3040 - 309F
-		KATAKANA				= 0x30A030FF  // 30A0 - 30FF
+		BASIC_LATIN				= 0x0000'007F, // NOTE: will be cached automatically (0000 - 007F)
+		LATIN_1_SUPPLEMENT		= 0x0080'00FF, // NOTE: will be cached automatically (0080 - 00FF)
+		LATIN_EXTENDED_A		= 0x0100'017F, // 0100 - 017F
+		LATIN_EXTENDED_B		= 0x0180'024F, // 0180 - 024F
+		LATIN_IPA_EXTENSIONS	= 0x0250'02AF, // 0250 - 02AF
+		GREEK					= 0x0370'03FF, // 0370 - 03FF
+		CYRILLIC				= 0x0400'04FF, // 0400 - 04FF
+		CYRILLIC_SUPPLEMENT		= 0x0500'052F, // 0500 - 052F
+		ARMENIAN				= 0x0530'058F, // 0530 - 058F
+		HEBREW					= 0x0590'05FF, // 0590 - 05FF
+		ARABIC					= 0x0600'06FF, // 0600 - 06FF
+		ARABIC_SUPPLEMENT		= 0x0750'077F, // 0750 - 077F
+		HIRAGANA				= 0x3040'309F, // 3040 - 309F
+		KATAKANA				= 0x30A0'30FF  // 30A0 - 30FF
 	};
 	//! shortcut for common blocks
 	void cache(const BMP_BLOCK block);
@@ -120,11 +117,14 @@ protected:
 	GLuint tex_array = 0;
 	size_t tex_array_layers = 0;
 	GLuint glyph_vbo = 0;
+#if defined(FLOOR_IOS)
+	unsigned char* tex_data { nullptr };
+#endif
 	
 	pair<vector<uint2>, float2> create_text_ubo_data(const string& text, std::function<void(unsigned int)> cache_fnc = [](unsigned int){}) const;
 	GLuint text_ubo = 0;
 		
-	gl3shader font_shd;
+	gl_shader font_shd;
 	void reload_shaders();
 	event::handler shader_reload_fnctr;
 	bool shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj);

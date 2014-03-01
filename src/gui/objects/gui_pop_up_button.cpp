@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ public:
 	}
 	virtual ~gui_pop_up_window() {
 		for(auto& cached_item : item_text_cache) {
-			font::destroy_text_cache(cached_item.second.first);
+			a2e_font::destroy_text_cache(cached_item.second.first);
 		}
 	}
 	virtual void draw();
@@ -50,7 +50,7 @@ protected:
 	const float2 button_size_abs;
 	const vector<pair<const string, string>*>& items;
 	// item ptr -> <cachce, item height>
-	unordered_map<pair<const string, string>*, pair<font::text_cache, float2>> item_text_cache;
+	unordered_map<pair<const string, string>*, pair<a2e_font::text_cache, float2>> item_text_cache;
 	
 	float margin = 3.5f; // in pt
 	float2 overlay_size;

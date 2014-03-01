@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -61,7 +61,8 @@ void gui_surface::resize(const float2& buffer_size_) {
 	
 	// share a "global" msaa fullscreen buffer among all surfaces and only add an additional
 	// resolve/blit buffer for each surface
-	if(flags == SURFACE_FLAGS::NONE &&
+#if !defined(FLOOR_IOS) // this is broken on iOS and I can't figure out why
+	if((flags & SURFACE_FLAGS::__SHAREABLE_FLAGS) == flags &&
 	   buffer_size.x == 1.0f && buffer_size.y == 1.0f) {
 		const auto* fs_fbo = engine::get_gui()->get_fullscreen_fbo();
 		buffer = r->add_buffer(buffer_size_abs.x, buffer_size_abs.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT,
@@ -76,11 +77,12 @@ void gui_surface::resize(const float2& buffer_size_) {
 		glGenFramebuffers(1, &buffer->resolve_buffer[0]);
 		glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[0]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer->tex[0], 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		shared_buffer = true;
 	}
 	else {
+#endif
 		buffer = r->add_buffer(buffer_size_abs.x, buffer_size_abs.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT,
 							   (flags & SURFACE_FLAGS::NO_ANTI_ALIASING) == SURFACE_FLAGS::NO_ANTI_ALIASING ?
 							   rtt::TEXTURE_ANTI_ALIASING::NONE : engine::get_ui_anti_aliasing(),
@@ -88,7 +90,9 @@ void gui_surface::resize(const float2& buffer_size_) {
 							   (flags & SURFACE_FLAGS::NO_DEPTH) == SURFACE_FLAGS::NO_DEPTH ?
 							   rtt::DEPTH_TYPE::NONE : rtt::DEPTH_TYPE::RENDERBUFFER);
 		shared_buffer = false;
+#if !defined(FLOOR_IOS)
 	}
+#endif
 	
 	// set blit vbo rectangle data
 	set_offset(offset);
@@ -113,7 +117,7 @@ const float2& gui_surface::get_buffer_size() const {
 	return buffer_size;
 }
 
-void gui_surface::blit(gl3shader& shd) {
+void gui_surface::blit(gl_shader& shd) {
 	shd->uniform("extent", extent);
 	shd->texture("tex", buffer->tex[0]);
 	
@@ -183,7 +187,9 @@ void gui_simple_callback::draw() {
 	if(!do_redraw) return;
 	
 	start_draw();
-	r->clear();
+	if((flags & SURFACE_FLAGS::NO_CLEAR) == SURFACE_FLAGS::NONE) {
+		r->clear();
+	}
 	r->start_2d_draw();
 	
 	callback(mode, buffer);

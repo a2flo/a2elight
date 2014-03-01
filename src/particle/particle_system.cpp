@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ particle_system::particle_system() {
 	
 	aux_data = nullptr;
 	
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	// only gen if ltype == POINT is set?
 	glGenBuffers(1, &lights_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, lights_ubo);
@@ -49,14 +49,16 @@ particle_system::particle_system() {
 	
 	blend_mode = gfx2d::BLEND_MODE::ADD;
 	
-	// init data
-	// for opencl computed particle systems
+#if !defined(FLOOR_NO_OPENCL)
+	// init data for opencl computed particle systems
 	data.ocl_range_global.set(0);
+#endif
 }
 
 particle_system::~particle_system() {
 	if(glIsBuffer(lights_ubo)) glDeleteBuffers(1, &lights_ubo);
 	
+#if !defined(FLOOR_NO_OPENCL)
 	if(data.ocl_pos_time_buffer != nullptr) ocl->delete_buffer(data.ocl_pos_time_buffer);
 	if(data.ocl_dir_buffer != nullptr) ocl->delete_buffer(data.ocl_dir_buffer);
 	if(data.ocl_distances != nullptr) ocl->delete_buffer(data.ocl_distances);
@@ -64,6 +66,7 @@ particle_system::~particle_system() {
 	if(data.ocl_indices[1] != nullptr) ocl->delete_buffer(data.ocl_indices[1]);
 	if(glIsBuffer(data.ocl_gl_pos_time_vbo)) glDeleteBuffers(1, &data.ocl_gl_pos_time_vbo);
 	if(glIsBuffer(data.ocl_gl_dir_vbo)) glDeleteBuffers(1, &data.ocl_gl_dir_vbo);
+#endif
 	
 	if(glIsBuffer(data.particle_indices_vbo[0])) glDeleteBuffers(1, &data.particle_indices_vbo[0]);
 	if(glIsBuffer(data.particle_indices_vbo[1])) glDeleteBuffers(1, &data.particle_indices_vbo[1]);

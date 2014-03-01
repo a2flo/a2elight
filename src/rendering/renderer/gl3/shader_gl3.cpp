@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 #include "shader_gl3.hpp"
+
+#if !defined(FLOOR_IOS)
 
 #if defined(A2E_DEBUG) // type checking in debug mode
 
@@ -126,12 +128,6 @@ void shader_gl3::use(const size_t& program) {
 	}
 #endif
 }
-
-#if !defined(__clang__)
-void shader_gl3::use(const string& option) {
-	use(option, {});
-}
-#endif
 
 void shader_gl3::use(const string& option, const set<string> combiners) {
 	const string combined_option(option + accumulate(cbegin(combiners), cend(combiners), string(),
@@ -769,3 +765,5 @@ void shader_gl3::block(const char* name, const GLuint& ubo) const {
 	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 	glBindBufferBase(GL_UNIFORM_BUFFER, (GLuint)index, ubo);
 }
+
+#endif

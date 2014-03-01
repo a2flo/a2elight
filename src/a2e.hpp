@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,11 +26,19 @@
 #include "gui/font_manager.hpp"
 #include "gui/font.hpp"
 
-#include "gui/objects/gui_object.hpp"
-#include "gui/objects/gui_window.hpp"
 #include "gui/objects/gui_button.hpp"
-#include "gui/objects/gui_text.hpp"
 #include "gui/objects/gui_input_box.hpp"
+#include "gui/objects/gui_list_box.hpp"
+#include "gui/objects/gui_object.hpp"
+#include "gui/objects/gui_pop_up_button.hpp"
+#include "gui/objects/gui_slider.hpp"
+#include "gui/objects/gui_text.hpp"
+#include "gui/objects/gui_toggle_button.hpp"
+#include "gui/objects/gui_window.hpp"
+
+#include "gui/compound/gui_file_dialog.hpp"
+#include "gui/compound/gui_file_open_dialog.hpp"
+#include "gui/compound/gui_file_save_dialog.hpp"
 
 #include "gui/style/gui_theme.hpp"
 #include "gui/style/gui_surface.hpp"
@@ -43,19 +51,21 @@
 #include "rendering/shader.hpp"
 #include "rendering/texman.hpp"
 #include "rendering/texture_object.hpp"
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 #include "rendering/gl_funcs.hpp"
-#else
-#include "rendering/gles_compat.hpp"
 #endif
 #include "rendering/renderer/shader_base.hpp"
 #include "rendering/renderer/shader_object.hpp"
 #include "rendering/renderer/a2e_shader.hpp"
-#if !defined(A2E_IOS)
-#include "rendering/renderer/gl3/shader_gl3.hpp"
 #include "rendering/gl_timer.hpp"
+#if !defined(FLOOR_IOS)
+#include "rendering/renderer/gl3/shader_gl3.hpp"
+#else
+#if defined(PLATFORM_X64)
+#include "rendering/renderer/gles3/shader_gles3.hpp"
 #else
 #include "rendering/renderer/gles2/shader_gles2.hpp"
+#endif
 #endif
 
 #include "scene/scene.hpp"

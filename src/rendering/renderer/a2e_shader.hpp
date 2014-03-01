@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -58,10 +58,14 @@ public:
 		ext::GLSL_VERSION version;
 		
 		a2e_shader_code() :
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		version(ext::GLSL_VERSION::GLSL_150)
 #else
+#if defined(PLATFORM_X64)
+		version(ext::GLSL_VERSION::GLSL_ES_300)
+#else
 		version(ext::GLSL_VERSION::GLSL_ES_100)
+#endif
 #endif
 		{}
 		a2e_shader_code(a2e_shader_code&& obj) noexcept :

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,12 +24,17 @@
 // general includes
 #if defined(__APPLE__)
 #include <SDL2_image/SDL_image.h>
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
 #else
+#if defined(PLATFORM_X64)
+#include <OpenGLES/ES3/gl.h>
+#include <OpenGLES/ES3/glext.h>
+#else
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
+#endif
 #endif
 
 #elif defined(__WINDOWS__) && !defined(WIN_UNIXENV)
@@ -51,10 +56,12 @@
 #endif
 #endif
 
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 #define A2E_DEFAULT_FRAMEBUFFER 0
+#define A2E_DEFAULT_RENDERBUFFER 0
 #else
 #define A2E_DEFAULT_FRAMEBUFFER 1
+#define A2E_DEFAULT_RENDERBUFFER 1
 #endif
 
 // on windows exports/imports: apparently these have to be treated separately,
@@ -71,7 +78,7 @@
 #else
 #define A2E_API
 #define OGL_API
-#endif // A2E_API_EXPORT
+#endif // A2E_EXPORTS
 
 // TODO: better location for this?
 #if !defined(__A2E_DRAW_MODE_DEF__)

@@ -8,6 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		5C053F90160CB31400540A7B /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C053F8F160CB31400540A7B /* libz.dylib */; };
+		5C118DAC18BE984E00012916 /* gui_object_event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C118DAA18BE984E00012916 /* gui_object_event.cpp */; };
+		5C118DAD18BE984E00012916 /* gui_object_event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C118DAA18BE984E00012916 /* gui_object_event.cpp */; };
+		5C118DAE18BE984E00012916 /* gui_object_event.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C118DAB18BE984E00012916 /* gui_object_event.hpp */; };
+		5C15CC0718BCC94A00EE1694 /* gui_file_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C15CC0118BCC94A00EE1694 /* gui_file_dialog.cpp */; };
+		5C15CC0818BCC94A00EE1694 /* gui_file_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C15CC0118BCC94A00EE1694 /* gui_file_dialog.cpp */; };
+		5C15CC0918BCC94A00EE1694 /* gui_file_dialog.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C15CC0218BCC94A00EE1694 /* gui_file_dialog.hpp */; };
+		5C15CC0A18BCC94A00EE1694 /* gui_file_open_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C15CC0318BCC94A00EE1694 /* gui_file_open_dialog.cpp */; };
+		5C15CC0B18BCC94A00EE1694 /* gui_file_open_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C15CC0318BCC94A00EE1694 /* gui_file_open_dialog.cpp */; };
+		5C15CC0C18BCC94A00EE1694 /* gui_file_open_dialog.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C15CC0418BCC94A00EE1694 /* gui_file_open_dialog.hpp */; };
+		5C15CC0D18BCC94A00EE1694 /* gui_file_save_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C15CC0518BCC94A00EE1694 /* gui_file_save_dialog.cpp */; };
+		5C15CC0E18BCC94A00EE1694 /* gui_file_save_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C15CC0518BCC94A00EE1694 /* gui_file_save_dialog.cpp */; };
+		5C15CC0F18BCC94A00EE1694 /* gui_file_save_dialog.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C15CC0618BCC94A00EE1694 /* gui_file_save_dialog.hpp */; };
+		5C15CC1118BCE37600EE1694 /* gui_fwd.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C15CC1018BCE37600EE1694 /* gui_fwd.hpp */; };
 		5C20264F159612C700D52A32 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CBCBF52158C139E007A661C /* ApplicationServices.framework */; };
 		5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C2C9274140AA9D900AC808C /* libxml2.dylib */; };
 		5C3EC498123182970055330C /* engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C3EC3F2123182960055330C /* engine.cpp */; };
@@ -72,7 +85,6 @@
 		5C7B32C717E7273600153798 /* gl_funcs.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32B717E7273600153798 /* gl_funcs.hpp */; };
 		5C7B32C817E7273600153798 /* gl_timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32B817E7273600153798 /* gl_timer.cpp */; };
 		5C7B32C917E7273600153798 /* gl_timer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32B917E7273600153798 /* gl_timer.hpp */; };
-		5C7B32CA17E7273600153798 /* gles_compat.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32BA17E7273600153798 /* gles_compat.hpp */; };
 		5C7B32CB17E7273600153798 /* rtt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32BB17E7273600153798 /* rtt.cpp */; };
 		5C7B32CC17E7273600153798 /* rtt.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32BC17E7273600153798 /* rtt.hpp */; };
 		5C7B32CD17E7273600153798 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32BD17E7273600153798 /* shader.cpp */; };
@@ -86,7 +98,6 @@
 		5C7B32D917E7274400153798 /* shader_object.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32D517E7274400153798 /* shader_object.hpp */; };
 		5C7B32DC17E7274B00153798 /* shader_gl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32DA17E7274B00153798 /* shader_gl3.cpp */; };
 		5C7B32DD17E7274B00153798 /* shader_gl3.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32DB17E7274B00153798 /* shader_gl3.hpp */; };
-		5C7B32E017E7275100153798 /* shader_gles2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32DE17E7275100153798 /* shader_gles2.cpp */; };
 		5C7B32E117E7275100153798 /* shader_gles2.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32DF17E7275100153798 /* shader_gles2.hpp */; };
 		5C7B32E817E7276600153798 /* camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32E217E7276600153798 /* camera.cpp */; };
 		5C7B32E917E7276600153798 /* camera.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32E317E7276600153798 /* camera.hpp */; };
@@ -100,6 +111,54 @@
 		5C7B32F717E7276C00153798 /* a2emodel.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32F117E7276C00153798 /* a2emodel.hpp */; };
 		5C7B32F817E7276C00153798 /* a2estatic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32F217E7276C00153798 /* a2estatic.cpp */; };
 		5C7B32F917E7276C00153798 /* a2estatic.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B32F317E7276C00153798 /* a2estatic.hpp */; };
+		5CAEC27E1867B66700BEC3A3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CAEC27D1867B66700BEC3A3 /* Foundation.framework */; };
+		5CAEC2A11867B91F00BEC3A3 /* engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C3EC3F2123182960055330C /* engine.cpp */; };
+		5CAEC2A21867B91F00BEC3A3 /* a2eui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B328C17E7271100153798 /* a2eui.cpp */; };
+		5CAEC2A31867B91F00BEC3A3 /* font_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B328E17E7271100153798 /* font_manager.cpp */; };
+		5CAEC2A41867B91F00BEC3A3 /* font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B329017E7271100153798 /* font.cpp */; };
+		5CAEC2A51867B91F00BEC3A3 /* gui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B329317E7271100153798 /* gui.cpp */; };
+		5CAEC2A61867B91F00BEC3A3 /* image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B329517E7271100153798 /* image.cpp */; };
+		5CAEC2A71867B91F00BEC3A3 /* gui_button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B325817E726F900153798 /* gui_button.cpp */; };
+		5CAEC2A81867B91F00BEC3A3 /* gui_input_box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B325A17E726F900153798 /* gui_input_box.cpp */; };
+		5CAEC2A91867B91F00BEC3A3 /* gui_item_container.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B325C17E726F900153798 /* gui_item_container.cpp */; };
+		5CAEC2AA1867B91F00BEC3A3 /* gui_list_box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B325E17E726F900153798 /* gui_list_box.cpp */; };
+		5CAEC2AB1867B91F00BEC3A3 /* gui_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B326017E726F900153798 /* gui_object.cpp */; };
+		5CAEC2AC1867B91F00BEC3A3 /* gui_pop_up_button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B326217E726F900153798 /* gui_pop_up_button.cpp */; };
+		5CAEC2AD1867B91F00BEC3A3 /* gui_slider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B326417E726F900153798 /* gui_slider.cpp */; };
+		5CAEC2AE1867B91F00BEC3A3 /* gui_text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B326617E726F900153798 /* gui_text.cpp */; };
+		5CAEC2AF1867B91F00BEC3A3 /* gui_toggle_button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B326817E726F900153798 /* gui_toggle_button.cpp */; };
+		5CAEC2B01867B91F00BEC3A3 /* gui_window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B326A17E726F900153798 /* gui_window.cpp */; };
+		5CAEC2B11867B91F00BEC3A3 /* gui_color_scheme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B328017E7270A00153798 /* gui_color_scheme.cpp */; };
+		5CAEC2B21867B91F00BEC3A3 /* gui_surface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B328217E7270A00153798 /* gui_surface.cpp */; };
+		5CAEC2B31867B91F00BEC3A3 /* gui_theme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B328417E7270A00153798 /* gui_theme.cpp */; };
+		5CAEC2B41867B91F00BEC3A3 /* particle_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32A217E7271F00153798 /* particle_base.cpp */; };
+		5CAEC2B51867B91F00BEC3A3 /* particle_cl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32A417E7271F00153798 /* particle_cl.cpp */; };
+		5CAEC2B61867B91F00BEC3A3 /* particle_system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32A617E7271F00153798 /* particle_system.cpp */; };
+		5CAEC2B71867B91F00BEC3A3 /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32A817E7271F00153798 /* particle.cpp */; };
+		5CAEC2B81867B91F00BEC3A3 /* extensions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32B217E7273600153798 /* extensions.cpp */; };
+		5CAEC2B91867B91F00BEC3A3 /* gfx2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32B417E7273600153798 /* gfx2d.cpp */; };
+		5CAEC2BA1867B91F00BEC3A3 /* gl_funcs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32B617E7273600153798 /* gl_funcs.cpp */; };
+		5CAEC2BB1867B91F00BEC3A3 /* gl_timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32B817E7273600153798 /* gl_timer.cpp */; };
+		5CAEC2BC1867B91F00BEC3A3 /* rtt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32BB17E7273600153798 /* rtt.cpp */; };
+		5CAEC2BD1867B91F00BEC3A3 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32BD17E7273600153798 /* shader.cpp */; };
+		5CAEC2BE1867B91F00BEC3A3 /* texman.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32BF17E7273600153798 /* texman.cpp */; };
+		5CAEC2BF1867B91F00BEC3A3 /* a2e_shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32D217E7274400153798 /* a2e_shader.cpp */; };
+		5CAEC2C01867B91F00BEC3A3 /* shader_gles2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32DE17E7275100153798 /* shader_gles2.cpp */; };
+		5CAEC2C11867B91F00BEC3A3 /* camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32E217E7276600153798 /* camera.cpp */; };
+		5CAEC2C21867B91F00BEC3A3 /* light.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32E417E7276600153798 /* light.cpp */; };
+		5CAEC2C31867B91F00BEC3A3 /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32E617E7276600153798 /* scene.cpp */; };
+		5CAEC2C41867B91F00BEC3A3 /* a2ematerial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32EE17E7276C00153798 /* a2ematerial.cpp */; };
+		5CAEC2C51867B91F00BEC3A3 /* a2emodel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32F017E7276C00153798 /* a2emodel.cpp */; };
+		5CAEC2C61867B91F00BEC3A3 /* a2estatic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C7B32F217E7276C00153798 /* a2estatic.cpp */; };
+		5CAEC2C81867B94E00BEC3A3 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CAEC2C71867B94E00BEC3A3 /* OpenGLES.framework */; };
+		5CAEC2CC1867B96200BEC3A3 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CAEC2CB1867B96200BEC3A3 /* UIKit.framework */; };
+		5CAEC2D01867B96E00BEC3A3 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CAEC2CD1867B96D00BEC3A3 /* CoreAudio.framework */; };
+		5CAEC2D11867B96E00BEC3A3 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CAEC2CE1867B96D00BEC3A3 /* CoreGraphics.framework */; };
+		5CAEC2D41867B97C00BEC3A3 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CAEC2D31867B97C00BEC3A3 /* AudioToolbox.framework */; };
+		5CAEC2DA1867B99700BEC3A3 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CAEC2D91867B99700BEC3A3 /* QuartzCore.framework */; };
+		5CAEC2E01867B9D000BEC3A3 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CAEC2DF1867B9D000BEC3A3 /* OpenCL.framework */; };
+		5CBA5C03186870CD00FAE27C /* shader_gles3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CBA5C01186870CD00FAE27C /* shader_gles3.cpp */; };
+		5CBA5C051868720E00FAE27C /* gl_shader_fwd.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5CBA5C041868720E00FAE27C /* gl_shader_fwd.hpp */; };
 		5CC97E3E1501677200AB0D95 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3C1501677200AB0D95 /* SDL2.framework */; };
 		5CC97E3F1501677200AB0D95 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CC97E3D1501677200AB0D95 /* SDL2_image.framework */; };
 		5CD83A3E1540FB4F002E5954 /* libfreetype.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CD83A3D1540FB4F002E5954 /* libfreetype.6.dylib */; };
@@ -108,7 +167,15 @@
 /* Begin PBXFileReference section */
 		5C053F8F160CB31400540A7B /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		5C05F790123171DA00D122BF /* liba2elightd.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liba2elightd.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		5C05F792123171DA00D122BF /* a2e_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e_Prefix.pch; sourceTree = "<group>"; };
+		5C118DAA18BE984E00012916 /* gui_object_event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_object_event.cpp; sourceTree = "<group>"; };
+		5C118DAB18BE984E00012916 /* gui_object_event.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gui_object_event.hpp; sourceTree = "<group>"; };
+		5C15CC0118BCC94A00EE1694 /* gui_file_dialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_file_dialog.cpp; sourceTree = "<group>"; };
+		5C15CC0218BCC94A00EE1694 /* gui_file_dialog.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gui_file_dialog.hpp; sourceTree = "<group>"; };
+		5C15CC0318BCC94A00EE1694 /* gui_file_open_dialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_file_open_dialog.cpp; sourceTree = "<group>"; };
+		5C15CC0418BCC94A00EE1694 /* gui_file_open_dialog.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gui_file_open_dialog.hpp; sourceTree = "<group>"; };
+		5C15CC0518BCC94A00EE1694 /* gui_file_save_dialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui_file_save_dialog.cpp; sourceTree = "<group>"; };
+		5C15CC0618BCC94A00EE1694 /* gui_file_save_dialog.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gui_file_save_dialog.hpp; sourceTree = "<group>"; };
+		5C15CC1018BCE37600EE1694 /* gui_fwd.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gui_fwd.hpp; sourceTree = "<group>"; };
 		5C2C9274140AA9D900AC808C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		5C3EC3F2123182960055330C /* engine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = engine.cpp; sourceTree = SOURCE_ROOT; };
 		5C47242915E3CCE5000CA003 /* install.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = install.sh; path = ../install.sh; sourceTree = "<group>"; };
@@ -175,7 +242,6 @@
 		5C7B32B717E7273600153798 /* gl_funcs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gl_funcs.hpp; sourceTree = "<group>"; };
 		5C7B32B817E7273600153798 /* gl_timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gl_timer.cpp; sourceTree = "<group>"; };
 		5C7B32B917E7273600153798 /* gl_timer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gl_timer.hpp; sourceTree = "<group>"; };
-		5C7B32BA17E7273600153798 /* gles_compat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gles_compat.hpp; sourceTree = "<group>"; };
 		5C7B32BB17E7273600153798 /* rtt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rtt.cpp; sourceTree = "<group>"; };
 		5C7B32BC17E7273600153798 /* rtt.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = rtt.hpp; sourceTree = "<group>"; };
 		5C7B32BD17E7273600153798 /* shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader.cpp; sourceTree = "<group>"; };
@@ -203,10 +269,32 @@
 		5C7B32F117E7276C00153798 /* a2emodel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = a2emodel.hpp; sourceTree = "<group>"; };
 		5C7B32F217E7276C00153798 /* a2estatic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = a2estatic.cpp; sourceTree = "<group>"; };
 		5C7B32F317E7276C00153798 /* a2estatic.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = a2estatic.hpp; sourceTree = "<group>"; };
+		5CAEC27C1867B66700BEC3A3 /* liba2elightd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liba2elightd.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5CAEC27D1867B66700BEC3A3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		5CAEC28B1867B66800BEC3A3 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC28E1867B66800BEC3A3 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2C71867B94E00BEC3A3 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/OpenGLES.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2C91867B95D00BEC3A3 /* libxml2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.2.dylib; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/usr/lib/libxml2.2.dylib; sourceTree = DEVELOPER_DIR; };
+		5CAEC2CB1867B96200BEC3A3 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2CD1867B96D00BEC3A3 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/CoreAudio.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2CE1867B96D00BEC3A3 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2CF1867B96E00BEC3A3 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2D31867B97C00BEC3A3 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2D51867B98300BEC3A3 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/ImageIO.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2D71867B98E00BEC3A3 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/MobileCoreServices.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2D91867B99700BEC3A3 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2DB1867B9AE00BEC3A3 /* libSDL2_image.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSDL2_image.a; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/usr/lib/libSDL2_image.a; sourceTree = DEVELOPER_DIR; };
+		5CAEC2DC1867B9AE00BEC3A3 /* libSDL2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSDL2.a; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/usr/lib/libSDL2.a; sourceTree = DEVELOPER_DIR; };
+		5CAEC2DF1867B9D000BEC3A3 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/PrivateFrameworks/OpenCL.framework; sourceTree = DEVELOPER_DIR; };
+		5CAEC2E11867BA4200BEC3A3 /* libfloor.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfloor.a; path = ../../../floor/bin/libfloor.a; sourceTree = "<group>"; };
+		5CBA5C01186870CD00FAE27C /* shader_gles3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader_gles3.cpp; sourceTree = "<group>"; };
+		5CBA5C02186870CD00FAE27C /* shader_gles3.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = shader_gles3.hpp; sourceTree = "<group>"; };
+		5CBA5C041868720E00FAE27C /* gl_shader_fwd.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gl_shader_fwd.hpp; sourceTree = "<group>"; };
 		5CBCBF52158C139E007A661C /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		5CBD7DAA15FC5B1400FB3954 /* CUDA.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CUDA.framework; path = /Library/Frameworks/CUDA.framework; sourceTree = "<group>"; };
 		5CC97E3C1501677200AB0D95 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Library/Frameworks/SDL2.framework; sourceTree = SDKROOT; };
 		5CC97E3D1501677200AB0D95 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Library/Frameworks/SDL2_image.framework; sourceTree = SDKROOT; };
+		5CD2FD8A1872286D00FC56C8 /* a2e_prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = a2e_prefix.pch; sourceTree = "<group>"; };
 		5CD83A3D1540FB4F002E5954 /* libfreetype.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfreetype.6.dylib; path = /opt/X11/lib/libfreetype.6.dylib; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -225,6 +313,21 @@
 				5C2C9275140AA9D900AC808C /* libxml2.dylib in Frameworks */,
 				5CD83A3E1540FB4F002E5954 /* libfreetype.6.dylib in Frameworks */,
 				5C053F90160CB31400540A7B /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5CAEC2791867B66700BEC3A3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5CAEC2D41867B97C00BEC3A3 /* AudioToolbox.framework in Frameworks */,
+				5CAEC2D01867B96E00BEC3A3 /* CoreAudio.framework in Frameworks */,
+				5CAEC2D11867B96E00BEC3A3 /* CoreGraphics.framework in Frameworks */,
+				5CAEC27E1867B66700BEC3A3 /* Foundation.framework in Frameworks */,
+				5CAEC2E01867B9D000BEC3A3 /* OpenCL.framework in Frameworks */,
+				5CAEC2C81867B94E00BEC3A3 /* OpenGLES.framework in Frameworks */,
+				5CAEC2DA1867B99700BEC3A3 /* QuartzCore.framework in Frameworks */,
+				5CAEC2CC1867B96200BEC3A3 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,8 +365,8 @@
 			children = (
 				5C7A8FF614B398B2004AA18B /* premake.sh */,
 				5C7A8FF714B398B2004AA18B /* premake4.lua */,
-				5C05F792123171DA00D122BF /* a2e_Prefix.pch */,
 				5C47242915E3CCE5000CA003 /* install.sh */,
+				5CD2FD8A1872286D00FC56C8 /* a2e_prefix.pch */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -271,6 +374,20 @@
 		5C05F78B123171DA00D122BF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5CAEC2E11867BA4200BEC3A3 /* libfloor.a */,
+				5CAEC2DF1867B9D000BEC3A3 /* OpenCL.framework */,
+				5CAEC2DB1867B9AE00BEC3A3 /* libSDL2_image.a */,
+				5CAEC2DC1867B9AE00BEC3A3 /* libSDL2.a */,
+				5CAEC2D91867B99700BEC3A3 /* QuartzCore.framework */,
+				5CAEC2D71867B98E00BEC3A3 /* MobileCoreServices.framework */,
+				5CAEC2D51867B98300BEC3A3 /* ImageIO.framework */,
+				5CAEC2D31867B97C00BEC3A3 /* AudioToolbox.framework */,
+				5CAEC2CD1867B96D00BEC3A3 /* CoreAudio.framework */,
+				5CAEC2CE1867B96D00BEC3A3 /* CoreGraphics.framework */,
+				5CAEC2CF1867B96E00BEC3A3 /* CoreImage.framework */,
+				5CAEC2CB1867B96200BEC3A3 /* UIKit.framework */,
+				5CAEC2C91867B95D00BEC3A3 /* libxml2.2.dylib */,
+				5CAEC2C71867B94E00BEC3A3 /* OpenGLES.framework */,
 				5C053F8F160CB31400540A7B /* libz.dylib */,
 				5CD83A3D1540FB4F002E5954 /* libfreetype.6.dylib */,
 				5C2C9274140AA9D900AC808C /* libxml2.dylib */,
@@ -282,6 +399,9 @@
 				5C61BDAA1231D32000FD3451 /* OpenCL.framework */,
 				5C61BDAB1231D32000FD3451 /* OpenGL.framework */,
 				5CBD7DAA15FC5B1400FB3954 /* CUDA.framework */,
+				5CAEC27D1867B66700BEC3A3 /* Foundation.framework */,
+				5CAEC28B1867B66800BEC3A3 /* XCTest.framework */,
+				5CAEC28E1867B66800BEC3A3 /* UIKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -290,8 +410,22 @@
 			isa = PBXGroup;
 			children = (
 				5C05F790123171DA00D122BF /* liba2elightd.dylib */,
+				5CAEC27C1867B66700BEC3A3 /* liba2elightd.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		5C15CC0018BCC94A00EE1694 /* compound */ = {
+			isa = PBXGroup;
+			children = (
+				5C15CC0118BCC94A00EE1694 /* gui_file_dialog.cpp */,
+				5C15CC0218BCC94A00EE1694 /* gui_file_dialog.hpp */,
+				5C15CC0318BCC94A00EE1694 /* gui_file_open_dialog.cpp */,
+				5C15CC0418BCC94A00EE1694 /* gui_file_open_dialog.hpp */,
+				5C15CC0518BCC94A00EE1694 /* gui_file_save_dialog.cpp */,
+				5C15CC0618BCC94A00EE1694 /* gui_file_save_dialog.hpp */,
+			);
+			path = compound;
 			sourceTree = "<group>";
 		};
 		5C3975C4123189750075C168 /* gui */ = {
@@ -308,6 +442,8 @@
 				5C7B329417E7271100153798 /* gui.hpp */,
 				5C7B329517E7271100153798 /* image.cpp */,
 				5C7B329617E7271100153798 /* image.hpp */,
+				5C15CC1018BCE37600EE1694 /* gui_fwd.hpp */,
+				5C15CC0018BCC94A00EE1694 /* compound */,
 				5CA9BB5314F18153004B7851 /* objects */,
 				5CA9BB5614F18153004B7851 /* style */,
 			);
@@ -325,7 +461,6 @@
 				5C7B32B717E7273600153798 /* gl_funcs.hpp */,
 				5C7B32B817E7273600153798 /* gl_timer.cpp */,
 				5C7B32B917E7273600153798 /* gl_timer.hpp */,
-				5C7B32BA17E7273600153798 /* gles_compat.hpp */,
 				5C7B32BB17E7273600153798 /* rtt.cpp */,
 				5C7B32BC17E7273600153798 /* rtt.hpp */,
 				5C7B32BD17E7273600153798 /* shader.cpp */,
@@ -346,7 +481,9 @@
 				5C7B32D417E7274400153798 /* shader_base.hpp */,
 				5C7B32D517E7274400153798 /* shader_object.hpp */,
 				5CA9BB6414F1830B004B7851 /* gles2 */,
+				5CBA5C00186870CD00FAE27C /* gles3 */,
 				5C39761F123189750075C168 /* gl3 */,
+				5CBA5C041868720E00FAE27C /* gl_shader_fwd.hpp */,
 			);
 			path = renderer;
 			sourceTree = "<group>";
@@ -415,6 +552,8 @@
 				5C7B325F17E726F900153798 /* gui_list_box.hpp */,
 				5C7B326017E726F900153798 /* gui_object.cpp */,
 				5C7B326117E726F900153798 /* gui_object.hpp */,
+				5C118DAA18BE984E00012916 /* gui_object_event.cpp */,
+				5C118DAB18BE984E00012916 /* gui_object_event.hpp */,
 				5C7B326217E726F900153798 /* gui_pop_up_button.cpp */,
 				5C7B326317E726F900153798 /* gui_pop_up_button.hpp */,
 				5C7B326417E726F900153798 /* gui_slider.cpp */,
@@ -451,6 +590,15 @@
 			path = gles2;
 			sourceTree = "<group>";
 		};
+		5CBA5C00186870CD00FAE27C /* gles3 */ = {
+			isa = PBXGroup;
+			children = (
+				5CBA5C01186870CD00FAE27C /* shader_gles3.cpp */,
+				5CBA5C02186870CD00FAE27C /* shader_gles3.hpp */,
+			);
+			path = gles3;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -459,6 +607,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5C7B32C917E7273600153798 /* gl_timer.hpp in Headers */,
+				5C15CC1118BCE37600EE1694 /* gui_fwd.hpp in Headers */,
 				5C7B325517E726E700153798 /* a2e.hpp in Headers */,
 				5C7B32D017E7273600153798 /* texman.hpp in Headers */,
 				5C7B328B17E7270A00153798 /* gui_theme.hpp in Headers */,
@@ -470,12 +619,13 @@
 				5C7B32ED17E7276600153798 /* scene.hpp in Headers */,
 				5C7B329F17E7271100153798 /* gui.hpp in Headers */,
 				5C7B32AD17E7271F00153798 /* particle_cl.hpp in Headers */,
+				5CBA5C051868720E00FAE27C /* gl_shader_fwd.hpp in Headers */,
+				5C118DAE18BE984E00012916 /* gui_object_event.hpp in Headers */,
 				5C7B32B117E7271F00153798 /* particle.hpp in Headers */,
 				5C7B32E917E7276600153798 /* camera.hpp in Headers */,
 				5C7B32A117E7271100153798 /* image.hpp in Headers */,
 				5C7B328717E7270A00153798 /* gui_color_scheme.hpp in Headers */,
 				5C7B32CE17E7273600153798 /* shader.hpp in Headers */,
-				5C7B32CA17E7273600153798 /* gles_compat.hpp in Headers */,
 				5C7B327F17E726F900153798 /* gui_window.hpp in Headers */,
 				5C7B32DD17E7274B00153798 /* shader_gl3.hpp in Headers */,
 				5C7B32C517E7273600153798 /* gfx2d.hpp in Headers */,
@@ -486,6 +636,8 @@
 				5C7B329817E7271100153798 /* a2eui.hpp in Headers */,
 				5C7B327917E726F900153798 /* gui_slider.hpp in Headers */,
 				5C7B328917E7270A00153798 /* gui_surface.hpp in Headers */,
+				5C15CC0918BCC94A00EE1694 /* gui_file_dialog.hpp in Headers */,
+				5C15CC0C18BCC94A00EE1694 /* gui_file_open_dialog.hpp in Headers */,
 				5C7B327717E726F900153798 /* gui_pop_up_button.hpp in Headers */,
 				5C7B32C717E7273600153798 /* gl_funcs.hpp in Headers */,
 				5C7B32D717E7274400153798 /* a2e_shader.hpp in Headers */,
@@ -499,6 +651,7 @@
 				5C7B32AB17E7271F00153798 /* particle_base.hpp in Headers */,
 				5C7B32AF17E7271F00153798 /* particle_system.hpp in Headers */,
 				5C7B327317E726F900153798 /* gui_list_box.hpp in Headers */,
+				5C15CC0F18BCC94A00EE1694 /* gui_file_save_dialog.hpp in Headers */,
 				5C7B327B17E726F900153798 /* gui_text.hpp in Headers */,
 				5C7B329C17E7271100153798 /* font.hpp in Headers */,
 				5C7B325617E726E700153798 /* engine.hpp in Headers */,
@@ -529,13 +682,30 @@
 			productReference = 5C05F790123171DA00D122BF /* liba2elightd.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
+		5CAEC27B1867B66700BEC3A3 /* a2elight_ios */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5CAEC29F1867B66800BEC3A3 /* Build configuration list for PBXNativeTarget "a2elight_ios" */;
+			buildPhases = (
+				5C47A5D5186B436700BE743A /* ShellScript */,
+				5CAEC2781867B66700BEC3A3 /* Sources */,
+				5CAEC2791867B66700BEC3A3 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = a2elight_ios;
+			productName = a2elight_ios;
+			productReference = 5CAEC27C1867B66700BEC3A3 /* liba2elightd.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		5C05F783123171DA00D122BF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 5C05F786123171DA00D122BF /* Build configuration list for PBXProject "a2elight" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -550,11 +720,25 @@
 			projectRoot = "";
 			targets = (
 				5C05F78F123171DA00D122BF /* a2elight */,
+				5CAEC27B1867B66700BEC3A3 /* a2elight_ios */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		5C47A5D5186B436700BE743A /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = ./build_version.sh;
+		};
 		5CA1EEB812319E5B00AAE151 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -580,6 +764,7 @@
 				5C7B326C17E726F900153798 /* gui_button.cpp in Sources */,
 				5C7B329717E7271100153798 /* a2eui.cpp in Sources */,
 				5C7B327017E726F900153798 /* gui_item_container.cpp in Sources */,
+				5C15CC0A18BCC94A00EE1694 /* gui_file_open_dialog.cpp in Sources */,
 				5C7B32CB17E7273600153798 /* rtt.cpp in Sources */,
 				5C7B327217E726F900153798 /* gui_list_box.cpp in Sources */,
 				5C7B32C217E7273600153798 /* extensions.cpp in Sources */,
@@ -587,11 +772,13 @@
 				5C7B32AA17E7271F00153798 /* particle_base.cpp in Sources */,
 				5C7B327817E726F900153798 /* gui_slider.cpp in Sources */,
 				5C7B32E817E7276600153798 /* camera.cpp in Sources */,
+				5C118DAC18BE984E00012916 /* gui_object_event.cpp in Sources */,
 				5C7B32A017E7271100153798 /* image.cpp in Sources */,
-				5C7B32E017E7275100153798 /* shader_gles2.cpp in Sources */,
 				5C7B328817E7270A00153798 /* gui_surface.cpp in Sources */,
 				5C7B32F617E7276C00153798 /* a2emodel.cpp in Sources */,
 				5C7B32CF17E7273600153798 /* texman.cpp in Sources */,
+				5C15CC0718BCC94A00EE1694 /* gui_file_dialog.cpp in Sources */,
+				5C15CC0D18BCC94A00EE1694 /* gui_file_save_dialog.cpp in Sources */,
 				5C7B32C617E7273600153798 /* gl_funcs.cpp in Sources */,
 				5C7B32C417E7273600153798 /* gfx2d.cpp in Sources */,
 				5C7B328617E7270A00153798 /* gui_color_scheme.cpp in Sources */,
@@ -617,6 +804,56 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5CAEC2781867B66700BEC3A3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5CAEC2A11867B91F00BEC3A3 /* engine.cpp in Sources */,
+				5CAEC2A21867B91F00BEC3A3 /* a2eui.cpp in Sources */,
+				5CAEC2A41867B91F00BEC3A3 /* font.cpp in Sources */,
+				5CAEC2A31867B91F00BEC3A3 /* font_manager.cpp in Sources */,
+				5CAEC2A51867B91F00BEC3A3 /* gui.cpp in Sources */,
+				5CAEC2A61867B91F00BEC3A3 /* image.cpp in Sources */,
+				5CAEC2A71867B91F00BEC3A3 /* gui_button.cpp in Sources */,
+				5CAEC2A81867B91F00BEC3A3 /* gui_input_box.cpp in Sources */,
+				5CAEC2A91867B91F00BEC3A3 /* gui_item_container.cpp in Sources */,
+				5CAEC2AA1867B91F00BEC3A3 /* gui_list_box.cpp in Sources */,
+				5CAEC2AB1867B91F00BEC3A3 /* gui_object.cpp in Sources */,
+				5CAEC2AC1867B91F00BEC3A3 /* gui_pop_up_button.cpp in Sources */,
+				5CAEC2AD1867B91F00BEC3A3 /* gui_slider.cpp in Sources */,
+				5CAEC2AE1867B91F00BEC3A3 /* gui_text.cpp in Sources */,
+				5CAEC2AF1867B91F00BEC3A3 /* gui_toggle_button.cpp in Sources */,
+				5C15CC0B18BCC94A00EE1694 /* gui_file_open_dialog.cpp in Sources */,
+				5CAEC2B01867B91F00BEC3A3 /* gui_window.cpp in Sources */,
+				5CAEC2B11867B91F00BEC3A3 /* gui_color_scheme.cpp in Sources */,
+				5CAEC2B21867B91F00BEC3A3 /* gui_surface.cpp in Sources */,
+				5CAEC2B31867B91F00BEC3A3 /* gui_theme.cpp in Sources */,
+				5CAEC2B41867B91F00BEC3A3 /* particle_base.cpp in Sources */,
+				5CAEC2B51867B91F00BEC3A3 /* particle_cl.cpp in Sources */,
+				5CAEC2B61867B91F00BEC3A3 /* particle_system.cpp in Sources */,
+				5CAEC2B71867B91F00BEC3A3 /* particle.cpp in Sources */,
+				5C15CC0E18BCC94A00EE1694 /* gui_file_save_dialog.cpp in Sources */,
+				5CAEC2B81867B91F00BEC3A3 /* extensions.cpp in Sources */,
+				5CAEC2B91867B91F00BEC3A3 /* gfx2d.cpp in Sources */,
+				5CAEC2BA1867B91F00BEC3A3 /* gl_funcs.cpp in Sources */,
+				5CBA5C03186870CD00FAE27C /* shader_gles3.cpp in Sources */,
+				5CAEC2BB1867B91F00BEC3A3 /* gl_timer.cpp in Sources */,
+				5CAEC2BC1867B91F00BEC3A3 /* rtt.cpp in Sources */,
+				5CAEC2BD1867B91F00BEC3A3 /* shader.cpp in Sources */,
+				5CAEC2BE1867B91F00BEC3A3 /* texman.cpp in Sources */,
+				5C118DAD18BE984E00012916 /* gui_object_event.cpp in Sources */,
+				5C15CC0818BCC94A00EE1694 /* gui_file_dialog.cpp in Sources */,
+				5CAEC2BF1867B91F00BEC3A3 /* a2e_shader.cpp in Sources */,
+				5CAEC2C01867B91F00BEC3A3 /* shader_gles2.cpp in Sources */,
+				5CAEC2C11867B91F00BEC3A3 /* camera.cpp in Sources */,
+				5CAEC2C21867B91F00BEC3A3 /* light.cpp in Sources */,
+				5CAEC2C31867B91F00BEC3A3 /* scene.cpp in Sources */,
+				5CAEC2C41867B91F00BEC3A3 /* a2ematerial.cpp in Sources */,
+				5CAEC2C51867B91F00BEC3A3 /* a2emodel.cpp in Sources */,
+				5CAEC2C61867B91F00BEC3A3 /* a2estatic.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -637,23 +874,21 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CONFIGURATION_BUILD_DIR = ../lib;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 0.3.0;
+				CURRENT_PROJECT_VERSION = 0.3.1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DYLIB_COMPATIBILITY_VERSION = 0.3.0;
-				DYLIB_CURRENT_VERSION = 0.3.0;
+				DYLIB_COMPATIBILITY_VERSION = 0.3.1;
+				DYLIB_CURRENT_VERSION = 0.3.1;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = a2e_prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DEBUG,
 					"A2E_DEBUG=1",
-					"A2E_EXPORT=1",
 					"FLOOR_DEBUG=1",
-					"FLOOR_EXPORT=1",
-					"FLOOR_CUDA_CL=1",
-					PLATFORM_X64,
 				);
 				GCC_UNROLL_LOOPS = YES;
 				GCC_VERSION = "";
@@ -662,29 +897,20 @@
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					.,
-					/usr/include,
-					/usr/local/include,
-					/usr/local/include/floor,
-				);
 				INSTALL_PATH = "@rpath";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(PRODUCT_NAME).dylib";
-				LIBRARY_SEARCH_PATHS = (
-					/usr/lib,
-					/usr/local/lib,
-					/usr/X11/lib,
-				);
+				LD_RUNPATH_SEARCH_PATHS = "/usr/local/lib /usr/lib @loader_path/../Resources @loader_path/../Frameworks /Library/Frameworks";
 				LLVM_VECTORIZE_LOOPS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-isystem",
-					/usr/X11/include,
+					"$(DT_TOOLCHAIN_DIR)/usr/include",
+					"-isystem",
+					"$(DT_TOOLCHAIN_DIR)/usr/lib/c++/v1",
 					"-isystem",
 					/usr/include/libxml2,
-					"-isystem",
-					/usr/X11/include/freetype2,
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -694,6 +920,8 @@
 				);
 				OTHER_LDFLAGS = (
 					"-lfloord",
+					"-framework",
+					SDL2,
 					"-weak_framework",
 					CUDA,
 				);
@@ -756,22 +984,18 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				CONFIGURATION_BUILD_DIR = ../lib;
-				CURRENT_PROJECT_VERSION = 0.3.0;
+				CURRENT_PROJECT_VERSION = 0.3.1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DYLIB_COMPATIBILITY_VERSION = 0.3.0;
-				DYLIB_CURRENT_VERSION = 0.3.0;
+				DYLIB_COMPATIBILITY_VERSION = 0.3.1;
+				DYLIB_CURRENT_VERSION = 0.3.1;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"A2E_EXPORT=1",
-					"A2E_CUDA_CL=1",
-					"FLOOR_EXPORT=1",
-					"FLOOR_CUDA_CL=1",
-					PLATFORM_X64,
-				);
+				GCC_PREFIX_HEADER = a2e_prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_UNROLL_LOOPS = YES;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -779,28 +1003,19 @@
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					.,
-					/usr/include,
-					/usr/local/include,
-					/usr/local/include/floor,
-				);
 				INSTALL_PATH = "@rpath";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(PRODUCT_NAME).dylib";
-				LIBRARY_SEARCH_PATHS = (
-					/usr/lib,
-					/usr/local/lib,
-					/usr/X11/lib,
-				);
+				LD_RUNPATH_SEARCH_PATHS = "/usr/local/lib /usr/lib @loader_path/../Resources @loader_path/../Frameworks /Library/Frameworks";
 				LLVM_VECTORIZE_LOOPS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
 					"-isystem",
-					/usr/X11/include,
+					"$(DT_TOOLCHAIN_DIR)/usr/include",
+					"-isystem",
+					"$(DT_TOOLCHAIN_DIR)/usr/lib/c++/v1",
 					"-isystem",
 					/usr/include/libxml2,
-					"-isystem",
-					/usr/X11/include/freetype2,
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -810,6 +1025,8 @@
 				);
 				OTHER_LDFLAGS = (
 					"-lfloor",
+					"-framework",
+					SDL2,
 					"-weak_framework",
 					CUDA,
 				);
@@ -859,12 +1076,177 @@
 		5C05F79D123171DA00D122BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"FLOOR_CUDA_CL=1",
+					PLATFORM_X64,
+				);
+				HEADER_SEARCH_PATHS = (
+					.,
+					/usr/include,
+					/usr/local/include,
+					/usr/local/include/floor,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/lib,
+					/usr/local/lib,
+					/usr/X11/lib,
+				);
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					/opt/X11/include,
+					"-isystem",
+					/opt/X11/include/freetype2,
+					"-isystem",
+					/usr/local/include,
+					"-isystem",
+					/usr/local/opt/openssl/include,
+					"-iframework",
+					/Library/Frameworks,
+				);
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
 			};
 			name = Debug;
 		};
 		5C05F79E123171DA00D122BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"FLOOR_CUDA_CL=1",
+					PLATFORM_X64,
+				);
+				HEADER_SEARCH_PATHS = (
+					.,
+					/usr/include,
+					/usr/local/include,
+					/usr/local/include/floor,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/lib,
+					/usr/local/lib,
+					/usr/X11/lib,
+				);
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					/opt/X11/include,
+					"-isystem",
+					/opt/X11/include/freetype2,
+					"-isystem",
+					/usr/local/include,
+					"-isystem",
+					/usr/local/opt/openssl/include,
+					"-iframework",
+					/Library/Frameworks,
+				);
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+			};
+			name = Release;
+		};
+		5CAEC29B1867B66800BEC3A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_X86_VECTOR_INSTRUCTIONS = default;
+				DSTROOT = /tmp/a2elight_ios.dst;
+				FRAMEWORK_SEARCH_PATHS = "$(SDKROOT)$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					FLOOR_IOS,
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
+					"$(inherited)",
+					PLATFORM_X64,
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=armv7]" = (
+					"$(inherited)",
+					PLATFORM_X32,
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=armv7s]" = (
+					"$(inherited)",
+					PLATFORM_X32,
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					PLATFORM_X64,
+					FLOOR_NO_OPENCL,
+				);
+				HEADER_SEARCH_PATHS = .;
+				INSTALL_PATH = /usr/lib;
+				LD_DYLIB_INSTALL_NAME = "";
+				LD_RUNPATH_SEARCH_PATHS = "";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"$(SDKROOT)/usr/include",
+					"-isystem",
+					"$(SDKROOT)/usr/include/freetype2",
+					"-I$(SDKROOT)/usr/include/floor",
+				);
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = a2elightd;
+				SDKROOT = iphoneos7.0;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
+			};
+			name = Debug;
+		};
+		5CAEC29C1867B66800BEC3A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_X86_VECTOR_INSTRUCTIONS = default;
+				COPY_PHASE_STRIP = YES;
+				DSTROOT = /tmp/a2elight_ios.dst;
+				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(SDKROOT)$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					FLOOR_IOS,
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
+					"$(inherited)",
+					PLATFORM_X64,
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=armv7]" = (
+					"$(inherited)",
+					PLATFORM_X32,
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=armv7s]" = (
+					"$(inherited)",
+					PLATFORM_X32,
+				);
+				HEADER_SEARCH_PATHS = .;
+				INSTALL_PATH = /usr/lib;
+				LD_DYLIB_INSTALL_NAME = "";
+				LD_RUNPATH_SEARCH_PATHS = "";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-isystem",
+					"$(SDKROOT)/usr/include",
+					"-isystem",
+					"$(SDKROOT)/usr/include/freetype2",
+					"-I$(SDKROOT)/usr/include/floor",
+				);
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = a2elight;
+				SDKROOT = iphoneos7.0;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
 			};
 			name = Release;
 		};
@@ -885,6 +1267,15 @@
 			buildConfigurations = (
 				5C05F79D123171DA00D122BF /* Debug */,
 				5C05F79E123171DA00D122BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5CAEC29F1867B66800BEC3A3 /* Build configuration list for PBXNativeTarget "a2elight_ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5CAEC29B1867B66800BEC3A3 /* Debug */,
+				5CAEC29C1867B66800BEC3A3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 #include "core/util.hpp"
 #define A2E_MAJOR_VERSION "0"
 #define A2E_MINOR_VERSION "3"
-#define A2E_REVISION_VERSION "0"
-#define A2E_DEV_STAGE_VERSION "d3"
+#define A2E_REVISION_VERSION "1"
+#define A2E_DEV_STAGE_VERSION "d1"
 #define A2E_BUILD_TIME __TIME__
 #define A2E_BUILD_DATE __DATE__
 
@@ -56,17 +56,17 @@
 #define A2E_LIBCXX ""
 #endif
 
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 #define A2E_PLATFORM (sizeof(void*) == 4 ? "x86" : (sizeof(void*) == 8 ? "x64" : "unknown"))
 #else
-#define A2E_PLATFORM (sizeof(void*) == 4 ? "ARM" : (sizeof(void*) == 8 ? "ARM64" : "unknown"))
+#define A2E_PLATFORM (sizeof(void*) == 4 ? "ARM32" : (sizeof(void*) == 8 ? "ARM64" : "unknown"))
 #endif
 
 #define A2E_VERSION_STRING (string("A2E::light ")+A2E_PLATFORM+A2E_DEBUG_STR \
 " v"+(A2E_MAJOR_VERSION)+"."+(A2E_MINOR_VERSION)+"."+(A2E_REVISION_VERSION)+(A2E_DEV_STAGE_VERSION)+"-"+size_t2string(A2E_BUILD_VERSION)+\
 " ("+A2E_BUILD_DATE+" "+A2E_BUILD_TIME+") built with "+string(A2E_COMPILER+A2E_LIBCXX))
 
-#define A2E_SOURCE_URL "http://www.albion2.org"
+#define A2E_SOURCE_URL "https://www.albion2.org"
 
 
 // compiler checks:

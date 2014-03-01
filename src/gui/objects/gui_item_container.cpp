@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -70,28 +70,38 @@ void gui_item_container::remove_item(const string& identifier) {
 	}
 }
 
+bool gui_item_container::has_item(const string& identifier) const {
+	return (items.find(identifier) != items.end());
+}
+
 const pair<const string, string>* gui_item_container::get_selected_item() const {
 	return selected_item;
 }
 
-void gui_item_container::set_selected_item(const string& identifier, const bool event_on_equal) {
+void gui_item_container::set_selected_item(const string& identifier,
+										   const bool event_on_equal,
+										   const bool event_on_unequal) {
 	const auto iter = items.find(identifier);
 	if(iter == items.end()) {
 		log_error("no item with the identifier \"%s\" found!", identifier);
 		return;
 	}
-	if(selected_item != &*iter || event_on_equal) {
+	if((selected_item != &*iter && event_on_unequal) ||
+	   (selected_item == &*iter && event_on_equal)) {
 		handle(select_event);
 	}
 	selected_item = &*iter;
 }
 
-void gui_item_container::set_selected_item(const size_t& index, const bool event_on_equal) {
+void gui_item_container::set_selected_item(const size_t& index,
+										   const bool event_on_equal,
+										   const bool event_on_unequal) {
 	if(index >= display_items.size()) {
 		log_error("index \"%u\" is greater than the amount of items!", index);
 		return;
 	}
-	if(selected_item != display_items[index] || event_on_equal) {
+	if((selected_item != display_items[index] && event_on_unequal) ||
+	   (selected_item == display_items[index] && event_on_equal)) {
 		handle(select_event);
 	}
 	selected_item = display_items[index];

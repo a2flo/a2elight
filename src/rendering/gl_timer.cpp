@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,17 +29,22 @@ array<unsigned int, gl_timer::stored_frames * 32> gl_timer::gl_queries;
 vector<unsigned int> gl_timer::query_store;
 
 void gl_timer::init() {
+#if !defined(FLOOR_IOS)
 	glGenQueries((GLsizei)gl_queries.size(), &gl_queries[0]);
 	query_store.insert(begin(query_store), begin(gl_queries), end(gl_queries));
+#endif
 	enabled = true;
 }
 void gl_timer::destroy() {
 	if(!enabled) return;
+#if !defined(FLOOR_IOS)
 	glDeleteQueries((GLsizei)gl_queries.size(), &gl_queries[0]);
+#endif
 }
 void gl_timer::state_check() {
 	if(!enabled) return;
 	
+#if !defined(FLOOR_IOS)
 	for(auto& frame : frames) {
 		if(!frame.done) continue;
 		if(frame.done && frame.available) continue;
@@ -48,6 +53,10 @@ void gl_timer::state_check() {
 		for(const auto& qry : frame.queries) {
 			glGetQueryObjectiv(qry.query_ref, GL_QUERY_RESULT_AVAILABLE, &available);
 			if(available == 0) break;
+			if(glGetError() == GL_INVALID_OPERATION) {
+				available = 0;
+				break;
+			}
 		}
 		if(available == 1) {
 			for(auto& qry : frame.queries) {
@@ -57,11 +66,13 @@ void gl_timer::state_check() {
 			frame.available = true;
 		}
 	}
+#endif
 }
 
 void gl_timer::start_frame() {
 	if(!enabled) return;
 	
+#if !defined(FLOOR_IOS)
 	// TODO: correct cleanup (wait for query?)
 	if(frames[cur_frame].done && !frames[cur_frame].available) {
 		log_error("overwriting frame query that is done, but not available yet!");
@@ -74,6 +85,7 @@ void gl_timer::start_frame() {
 	frames[cur_frame].available = false;
 	
 	mark("FRAME_START");
+#endif
 }
 
 void gl_timer::mark(const string& identifier) {
@@ -81,6 +93,7 @@ void gl_timer::mark(const string& identifier) {
 	//glFlush();
 	//glFinish();
 	
+#if !defined(FLOOR_IOS)
 	// random color through dumb string hash
 	unsigned int dumb_hash = accumulate(cbegin(identifier), cend(identifier), 0x41324554,
 										[](const unsigned int& cur_hash, const unsigned char& ch) {
@@ -99,20 +112,25 @@ void gl_timer::mark(const string& identifier) {
 	frames[cur_frame].queries.emplace_back(frame_info::query_object { identifier, gl_query, color, 0 });
 	//glFlush();
 	//glFinish();
+#endif
 }
 
 void gl_timer::stop_frame() {
 	if(!enabled) return;
+#if !defined(FLOOR_IOS)
 	mark("FRAME_STOP");
 	frames[cur_frame].done = true;
 	cur_frame = (cur_frame + 1) % stored_frames;
+#endif
 }
 
 const gl_timer::frame_info* gl_timer::get_last_available_frame() {
 	if(!enabled) return nullptr;
+#if !defined(FLOOR_IOS)
 	for(size_t i = 0; i < stored_frames; i++) {
 		const auto& frame(frames[(stored_frames + cur_frame - i - 1) % stored_frames]);
 		if(frame.available && frame.done) return &frame;
 	}
+#endif
 	return nullptr;
 }

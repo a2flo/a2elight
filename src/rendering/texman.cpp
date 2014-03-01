@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #endif
 
 // ..., internal format, format, type, bpp, red shift, green shift, blue shift, alpha shift
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 
 #define __TEXTURE_FORMATS(F, src_surface, dst_internal_format, dst_format, dst_type) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_R8, GL_RED, GL_UNSIGNED_BYTE, 8, 0, 0, 0, 0) \
@@ -45,8 +45,8 @@ F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGBA16, GL_RGBA, GL
 #else
 
 // these two are necessary to correctly convert bgr textures to rgb
-#define A2E_IOS_GL_BGR 1
-#define A2E_IOS_GL_BGR8 2
+#define FLOOR_IOS_GL_BGR 1
+#define FLOOR_IOS_GL_BGR8 2
 
 #define __TEXTURE_FORMATS(F, src_surface, dst_internal_format, dst_format, dst_type) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_R8, GL_RED, GL_UNSIGNED_BYTE, 8, 0, 0, 0, 0) \
@@ -54,8 +54,8 @@ F(src_surface, dst_internal_format, dst_format, dst_type, GL_RG8, GL_RG, GL_UNSI
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, 24, 0, 8, 16, 0) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE, 32, 0, 8, 16, 0) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 32, 0, 8, 16, 24) \
-F(src_surface, dst_internal_format, dst_format, dst_type, A2E_IOS_GL_BGR8, A2E_IOS_GL_BGR, GL_UNSIGNED_BYTE, 24, 16, 8, 0, 0) \
-F(src_surface, dst_internal_format, dst_format, dst_type, A2E_IOS_GL_BGR8, GL_BGRA, GL_UNSIGNED_BYTE, 32, 16, 8, 0, 0) \
+F(src_surface, dst_internal_format, dst_format, dst_type, FLOOR_IOS_GL_BGR8, FLOOR_IOS_GL_BGR, GL_UNSIGNED_BYTE, 24, 16, 8, 0, 0) \
+F(src_surface, dst_internal_format, dst_format, dst_type, FLOOR_IOS_GL_BGR8, GL_BGRA, GL_UNSIGNED_BYTE, 32, 16, 8, 0, 0) \
 F(src_surface, dst_internal_format, dst_format, dst_type, GL_BGRA8, GL_BGRA, GL_UNSIGNED_BYTE, 32, 16, 8, 0, 24)
 
 #endif
@@ -135,10 +135,10 @@ a2e_texture texman::add_texture(const string& filename, TEXTURE_FILTERING filter
 	check_format(tex_surface, internal_format, format, type);
 	
 	// if the format is BGR(A), convert it to RGB(A)
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	if(format == GL_BGR || format == GL_BGRA) {
 #else
-	if(format == A2E_IOS_GL_BGR || format == GL_BGRA) {
+	if(format == FLOOR_IOS_GL_BGR || format == GL_BGRA) {
 #endif
 		SDL_PixelFormat new_pformat;
 		memcpy(&new_pformat, tex_surface->format, sizeof(SDL_PixelFormat));
@@ -307,8 +307,9 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, select_filter(filtering));
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, wrap_s);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, wrap_t);
-#if !defined(A2E_IOS)
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, wrap_r); // TODO: why isn't this supported on iOS?
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
+	// NOTE: not supported on iOS with OpenGL ES 2.0
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, wrap_r);
 #endif
 	
 	if(anisotropic > 0 && filtering >= TEXTURE_FILTERING::BILINEAR) {
@@ -390,7 +391,7 @@ unsigned int texman::get_components(GLint format) {
 			break;
 		case GL_RGB:
 		case GL_RGB8:
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		case GL_BGR:
 		case GL_R3_G3_B2:
 		case GL_RGB4:
@@ -409,7 +410,7 @@ unsigned int texman::get_components(GLint format) {
 		case GL_RGB5_A1:
 		case GL_RGBA8:
 		case GL_RGBA16F:
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		case GL_RGBA2:
 		case GL_RGB10_A2:
 		case GL_RGBA12:
@@ -447,7 +448,7 @@ bool texman::get_alpha(GLint format) {
 		case GL_RG:
 		case GL_RGB:
 		case GL_RGB8:
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		case GL_BGR:
 		case GL_R3_G3_B2:
 		case GL_RGB4:
@@ -466,7 +467,7 @@ bool texman::get_alpha(GLint format) {
 		case GL_RGB5_A1:
 		case GL_RGBA8:
 		case GL_RGBA16F:
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		case GL_RGBA2:
 		case GL_RGB10_A2:
 		case GL_RGBA12:
@@ -486,7 +487,7 @@ bool texman::get_alpha(GLint format) {
 }
 
 GLint texman::convert_internal_format(const GLint& internal_format) {
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	return internal_format;
 #else
 	switch(internal_format) {

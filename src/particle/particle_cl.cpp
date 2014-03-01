@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+#if !defined(FLOOR_NO_OPENCL)
 
 #include "particle_cl.hpp"
 #include "scene/light.hpp"
@@ -439,8 +441,8 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	glDepthMask(GL_FALSE);
 	
 	// point -> gs: quad
-	gl3shader particle_draw = s->get_gl3shader("PARTICLE_DRAW_OPENCL");
-#if !defined(A2E_IOS)
+	gl_shader particle_draw = s->get_gl_shader("PARTICLE_DRAW_OPENCL");
+#if !defined(FLOOR_IOS)
 	const auto ltype = ps->get_lighting_type();
 #else
 	const auto ltype = particle_system::LIGHTING_TYPE::NONE; // can't use particle lighting on iOS/GLES2.0
@@ -448,7 +450,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	string shd_option = "#";
 	switch(ltype) {
 		case particle_system::LIGHTING_TYPE::NONE: shd_option = "#"; break;
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		case particle_system::LIGHTING_TYPE::POINT: shd_option = "lit"; break;
 		case particle_system::LIGHTING_TYPE::POINT_PP: shd_option = "lit_pp"; break;
 #endif
@@ -466,7 +468,7 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	particle_draw->texture("depth_buffer", frame_buffer->depth_buffer);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	if(ltype != particle_system::LIGHTING_TYPE::NONE) {
 		// note: max lights is currently 4
 		struct __attribute__((packed, aligned(4))) light_info {
@@ -524,3 +526,5 @@ void particle_manager_cl::draw_particle_system(particle_system* ps, const rtt::f
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::DEFAULT);
 	glDisable(GL_BLEND);
 }
+
+#endif

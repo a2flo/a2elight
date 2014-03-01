@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -115,8 +115,8 @@ gui::~gui() {
 }
 
 void gui::reload_shaders() {
-	blend_shd = s->get_gl3shader("BLEND");
-	texture_shd = s->get_gl3shader("GFX2D_TEXTURE");
+	blend_shd = s->get_gl_shader("BLEND");
+	texture_shd = s->get_gl_shader("GFX2D_TEXTURE");
 }
 
 void gui::draw() {
@@ -189,18 +189,37 @@ void gui::draw() {
 	glDisable(GL_BLEND);
 	
 	//////////////////////////////////////////////////////////////////
-	// blend with scene buffer and draw result to the main framebuffer
+	// blend with scene buffer (if the scene is enabled) and draw
+	// result to the main framebuffer.
+	// otherwise (scene is disabled) simply blit the main fbo.
+	// NOTE: this is (usually) the first time in the frame that anything
+	// is rendered to the main/default frame/renderbuffer (-> bind and clear it)
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+	glBindRenderbuffer(GL_RENDERBUFFER, A2E_DEFAULT_RENDERBUFFER);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	engine::start_2d_draw();
 	
-	blend_shd->use();
-	blend_shd->texture("src_buffer", main_fbo.tex[0]);
-	blend_shd->texture("dst_buffer", sce->get_scene_buffer()->tex[0]);
-	
-	glFrontFace(GL_CW);
-	gfx2d::draw_fullscreen_triangle();
-	glFrontFace(GL_CCW);
-	
-	blend_shd->disable();
+	if(sce->is_enabled()) {
+		blend_shd->use();
+		blend_shd->texture("src_buffer", main_fbo.tex[0]);
+		blend_shd->texture("dst_buffer", sce->get_scene_buffer()->tex[0]);
+		
+		glFrontFace(GL_CW);
+		gfx2d::draw_fullscreen_triangle();
+		glFrontFace(GL_CCW);
+		
+		blend_shd->disable();
+	}
+	else {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, main_fbo.fbo_id);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+		glBlitFramebuffer(0, main_fbo.draw_height, main_fbo.draw_width, 0,
+						  0, 0, main_fbo.draw_width, main_fbo.draw_height,
+						  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+	}
 	
 	engine::stop_2d_draw();
 	gl_timer::mark("GUI_END");
@@ -414,7 +433,10 @@ void gui::recreate_buffers(const size2 size) {
 	delete_buffers();
 	
 	// create fullscreen aa and main gui buffer
-	aa_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D, TEXTURE_FILTERING::POINT, engine::get_ui_anti_aliasing(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 1, rtt::DEPTH_TYPE::RENDERBUFFER);
+	aa_fbo = r->add_buffer((unsigned int)size.x, (unsigned int)size.y, GL_TEXTURE_2D,
+						   TEXTURE_FILTERING::POINT, engine::get_ui_anti_aliasing(),
+						   GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE,
+						   1, rtt::DEPTH_TYPE::RENDERBUFFER);
 	
 	glGenFramebuffers(1, &main_fbo.fbo_id);
 	glBindFramebuffer(GL_FRAMEBUFFER, main_fbo.fbo_id);
@@ -426,7 +448,7 @@ void gui::recreate_buffers(const size2 size) {
 	main_fbo.tex[0] = aa_fbo->tex[0];
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, main_fbo.tex[0], 0);
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
 	// resize/recreate surfaces
 	for(const auto& surface : cb_surfaces) {

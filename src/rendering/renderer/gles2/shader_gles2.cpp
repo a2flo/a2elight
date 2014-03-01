@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include "shader_gles2.hpp"
 
-#if defined(A2E_IOS)
+#if defined(FLOOR_IOS) && defined(PLATFORM_X32)
 
 #if defined(A2E_DEBUG) // type checking in debug mode
 
@@ -114,7 +114,7 @@ void shader_gles2::use() {
 	shader_gles2::use(0);
 }
 
-void shader_gles2::use(const size_t& program, const set<string> combiners = {}) {
+void shader_gles2::use(const size_t& program) {
 	shader_base::use(program);
 	glUseProgram(shd_obj.programs[cur_program]->program);
 #if defined(A2E_DEBUG)
@@ -124,7 +124,7 @@ void shader_gles2::use(const size_t& program, const set<string> combiners = {}) 
 #endif
 }
 
-void shader_gles2::use(const string& option) {
+void shader_gles2::use(const string& option, const set<string> combiners) {
 	const string combined_option(option + accumulate(cbegin(combiners), cend(combiners), string(),
 													 [](string& ret, const string& in) {
 														 return ret + in;
@@ -496,7 +496,7 @@ void shader_gles2::attribute(const char* name, const float4* arg1) const {
 ///////////////////////////////////////////////////////////////////////////////////////
 // -> attribute array
 
-void shader_gles2::attribute_array(const char* name, const GLuint& buffer, const GLint& size, const GLenum type, const GLboolean normalized, const GLsizei stride) {
+void shader_gles2::attribute_array(const char* name, const GLuint& buffer, const GLint& size, const GLenum type, const GLboolean normalized_, const GLsizei stride) {
 	A2E_CHECK_ATTRIBUTE_EXISTENCE(name);
 	
 	// SHADER TODO: type/size via shader obj?
@@ -507,6 +507,7 @@ void shader_gles2::attribute_array(const char* name, const GLuint& buffer, const
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glEnableVertexAttribArray((GLuint)location);
 	
+	GLboolean normalized = normalized_;
 	switch(type) {
 		case GL_BYTE:
 		case GL_UNSIGNED_BYTE:
@@ -514,26 +515,11 @@ void shader_gles2::attribute_array(const char* name, const GLuint& buffer, const
 		case GL_UNSIGNED_SHORT:
 		case GL_INT:
 		case GL_UNSIGNED_INT:
-			if(size <= 4) {
-				glVertexAttribIPointer((GLuint)location, size, type, stride, nullptr);
-			}
-			else if(size == 9) {
-				glVertexAttribIPointer((GLuint)location, 3, type, 36, nullptr);
-				glEnableVertexAttribArray((GLuint)location+1);
-				glVertexAttribIPointer((GLuint)location+1, 3, type, 36, (void*)12);
-				glEnableVertexAttribArray((GLuint)location+2);
-				glVertexAttribIPointer((GLuint)location+2, 3, type, 36, (void*)24);
-			}
-			else if(size == 16) {
-				glVertexAttribIPointer((GLuint)location, 4, type, 64, nullptr);
-				glEnableVertexAttribArray((GLuint)location+1);
-				glVertexAttribIPointer((GLuint)location+1, 4, type, 64, (void*)16);
-				glEnableVertexAttribArray((GLuint)location+2);
-				glVertexAttribIPointer((GLuint)location+2, 4, type, 64, (void*)32);
-				glEnableVertexAttribArray((GLuint)location+3);
-				glVertexAttribIPointer((GLuint)location+3, 4, type, 64, (void*)48);
-			}
-			break;
+			// there are no integer attributes in opengl es 2.0
+			normalized = false;
+#if defined(__clang__)
+			[[clang::fallthrough]];
+#endif
 		default:
 			if(size <= 4) {
 				glVertexAttribPointer((GLuint)location, size, type, normalized, stride, nullptr);

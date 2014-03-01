@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #define __A2E_TEXTURE_HPP__
 
 #include "global.hpp"
+#include <floor/core/gl_support.hpp>
 
 enum class TEXTURE_FILTERING : unsigned int {
 	POINT,

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #ifndef __A2E_PARTICLE_CL_HPP__
 #define __A2E_PARTICLE_CL_HPP__
+
+#if !defined(FLOOR_NO_OPENCL)
 
 #include "global.hpp"
 
@@ -71,5 +73,7 @@ protected:
 	unsigned int kernel_seed;
 	
 };
+
+#endif
 
 #endif

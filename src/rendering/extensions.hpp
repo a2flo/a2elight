@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@
 #include "global.hpp"
 
 #include "core/core.hpp"
-#if !(defined(A2E_EXTENSIONS_DONT_INCLUDE_GL_FUNCS) || defined(A2E_IOS))
+#if !(defined(A2E_EXTENSIONS_DONT_INCLUDE_GL_FUNCS) || defined(FLOOR_IOS))
 #include "rendering/gl_funcs.hpp"
 #endif
 
-#if defined(A2E_IOS)
-#include "rendering/gles_compat.hpp"
+#if defined(FLOOR_IOS)
+#include "core/gl_support.hpp"
 #endif
 
 #if !defined(__APPLE__)
@@ -63,6 +63,7 @@ public:
 		ATI,
 		POWERVR,
 		INTEL,
+		APPLE,
 	};
 
 	// these are only the most important and widely used models
@@ -84,8 +85,10 @@ public:
 		RADEON_HD8,
 		SGX_535,
 		SGX_543,
+		SGX_554,
 		IVY_BRIDGE,
 		HASWELL,
+		APPLE_A7,
 	};
 	static const GRAPHICS_CARD min_generic_card = GRAPHICS_CARD::GENERIC_SM4;
 	static const GRAPHICS_CARD max_generic_card = GRAPHICS_CARD::GENERIC_SM5;
@@ -94,9 +97,11 @@ public:
 	static const GRAPHICS_CARD min_ati_card = GRAPHICS_CARD::RADEON_HD2;
 	static const GRAPHICS_CARD max_ati_card = GRAPHICS_CARD::RADEON_HD8;
 	static const GRAPHICS_CARD min_powervr_card = GRAPHICS_CARD::SGX_535;
-	static const GRAPHICS_CARD max_powervr_card = GRAPHICS_CARD::SGX_543;
+	static const GRAPHICS_CARD max_powervr_card = GRAPHICS_CARD::SGX_554;
 	static const GRAPHICS_CARD min_intel_card = GRAPHICS_CARD::IVY_BRIDGE;
 	static const GRAPHICS_CARD max_intel_card = GRAPHICS_CARD::HASWELL;
+	static const GRAPHICS_CARD min_apple_card = GRAPHICS_CARD::APPLE_A7;
+	static const GRAPHICS_CARD max_apple_card = GRAPHICS_CARD::APPLE_A7;
 
 	GRAPHICS_CARD_VENDOR get_vendor();
 	GRAPHICS_CARD get_graphics_card();
@@ -108,6 +113,7 @@ public:
 	enum class OPENGL_VERSION {
 		OPENGL_UNKNOWN,
 		OPENGL_ES_2_0,
+		OPENGL_ES_3_0,
 		OPENGL_3_0,
 		OPENGL_3_1,
 		OPENGL_3_2,
@@ -122,13 +128,14 @@ public:
 	enum class GLSL_VERSION {
 		GLSL_NO_VERSION,	// used when none is applicable
 		GLSL_ES_100,		// opengl es 2.0
+		GLSL_ES_300,		// opengl es 3.0
 		GLSL_150,			// opengl 3.2
 		GLSL_330,			// opengl 3.3
 		GLSL_400,			// opengl 4.0
 		GLSL_410,			// opengl 4.1
 		GLSL_420,			// opengl 4.2
 		GLSL_430,			// opengl 4.3
-		GLSL_440,			// opengl 4.3
+		GLSL_440,			// opengl 4.4
 	};
 	
 	const char* glsl_version_str_from_glsl_version(const GLSL_VERSION& version) const;
@@ -145,17 +152,17 @@ protected:
 	void init_gl_funcs();
 	void check_gl_funcs();
 
-	bool shader_support;
-	bool shader_model_5_0_support;
-	bool anisotropic_filtering_support;
-	bool fbo_multisample_coverage_support;
+	bool shader_support { false };
+	bool shader_model_5_0_support { false };
+	bool anisotropic_filtering_support { false };
+	bool fbo_multisample_coverage_support { false };
 
-	unsigned int max_anisotropic_filtering;
-	unsigned int max_texture_size;
-	unsigned int max_texture_image_units;
-	unsigned int max_samples;
-	unsigned int max_multisample_coverage_modes;
-	unsigned int max_draw_buffers;
+	unsigned int max_anisotropic_filtering { 0 };
+	unsigned int max_texture_size { 0 };
+	unsigned int max_texture_image_units { 0 };
+	unsigned int max_samples { 0 };
+	unsigned int max_multisample_coverage_modes { 0 };
+	unsigned int max_draw_buffers { 0 };
 
 	struct NV_MULTISAMPLE_COVERAGE_MODE {
 		int coverage_samples;

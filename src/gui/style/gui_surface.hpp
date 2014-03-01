@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,16 +22,20 @@
 #include "global.hpp"
 #include "core/vector2.hpp"
 #include "rendering/rtt.hpp"
+#include "rendering/renderer/gl_shader_fwd.hpp"
 
-class shader_gl3;
-typedef shared_ptr<shader_gl3> gl3shader;
 class gui_surface {
 public:
 	enum class SURFACE_FLAGS : unsigned int {
-		NONE				= 0,
-		NO_ANTI_ALIASING	= (1 << 0),
-		NO_DEPTH			= (1 << 1),
-		ABSOLUTE_SIZE		= (1 << 2),
+		NONE				= (0u),			//!< default value (no special surface properties)
+		NO_ANTI_ALIASING	= (1u << 0u),	//!< no anti-aliasing is used
+		NO_DEPTH			= (1u << 1u),	//!< no depth buffer is used (implies NO_ANTI_ALIASING)
+		NO_CLEAR			= (1u << 2u),	//!< used by inheriting classes: surface is not cleared on redraw
+		NO_SHARING			= (1u << 3u),	//!< explicitly disables buffer sharing
+		ABSOLUTE_SIZE		= (1u << 4u),	//!< the buffer_size specified in the constructor is an abs size (not rel/norm)
+		
+		//
+		__SHAREABLE_FLAGS = (NONE | NO_CLEAR)
 	};
 	enum_class_bitwise_and(SURFACE_FLAGS)
 	enum_class_bitwise_or(SURFACE_FLAGS)
@@ -52,7 +56,7 @@ public:
 	
 	rtt::fbo* get_buffer() const;
 	
-	void blit(gl3shader& shd);
+	void blit(gl_shader& shd);
 	
 	void set_flags(const SURFACE_FLAGS& flags);
 	const SURFACE_FLAGS& get_flags() const;

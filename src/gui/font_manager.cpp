@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "font_manager.hpp"
+#include "font.hpp"
 #include "engine.hpp"
 
 #include <ft2build.h>
@@ -30,7 +31,8 @@ r(engine::get_rtt()), fonts(), ft_library(nullptr) {
 		log_error("failed to initialize freetype library!");
 	}
 	
-	// these should always exist
+#if !defined(FLOOR_IOS)
+	// these should always exist (desktop only)
 	add_font_family("DEJAVU_SANS_SERIF", vector<string> {
 		floor::data_path("fonts/DejaVuSans.ttf"),
 		floor::data_path("fonts/DejaVuSans-Oblique.ttf"),
@@ -49,34 +51,19 @@ r(engine::get_rtt()), fonts(), ft_library(nullptr) {
 		floor::data_path("fonts/DejaVuSansMono-Bold.ttf"),
 		floor::data_path("fonts/DejaVuSansMono-BoldOblique.ttf")
 	});
+#endif
 	
 	// TODO: add system font overrides to config
-#if defined(__APPLE__)
-	add_font("SYSTEM_SANS_SERIF", "/System/Library/Fonts/LucidaGrande.ttc");
+#if defined(__APPLE__) && !defined(FLOOR_IOS)
+	add_font_family("SYSTEM_SANS_SERIF", vector<string> {
+		floor::data_path("fonts/DejaVuSans.ttf"),
+		floor::data_path("fonts/DejaVuSans-Oblique.ttf"),
+		floor::data_path("fonts/DejaVuSans-Bold.ttf"),
+		floor::data_path("fonts/DejaVuSans-BoldOblique.ttf")
+	});
 	add_font("SYSTEM_SERIF", "/System/Library/Fonts/Times.dfont");
 	add_font("SYSTEM_MONOSPACE", "/System/Library/Fonts/Menlo.ttc");
-#elif defined(__WINDOWS__)
-	// TODO: find correct windows path
-	add_font_family("SYSTEM_SANS_SERIF", {
-		"C:/Windows/Fonts/arial.ttf",
-		"C:/Windows/Fonts/ariali.ttf",
-		"C:/Windows/Fonts/arialbd.ttf",
-		"C:/Windows/Fonts/arialbi.ttf"
-	});
-	add_font_family("SYSTEM_SERIF", {
-		"C:/Windows/Fonts/times.ttf",
-		"C:/Windows/Fonts/timesi.ttf",
-		"C:/Windows/Fonts/timesbd.ttf",
-		"C:/Windows/Fonts/timesbi.ttf"
-	});
-	add_font_family("SYSTEM_MONOSPACE", {
-		"C:/Windows/Fonts/cour.ttf",
-		"C:/Windows/Fonts/couri.ttf",
-		"C:/Windows/Fonts/courbd.ttf",
-		"C:/Windows/Fonts/courbi.ttf"
-	});
-#else // linux/*bsd/x11
-	// there isn't much choice here ...
+#else // linux/*bsd/x11/windows/iOS
 	add_font_family("SYSTEM_SANS_SERIF", vector<string> {
 		floor::data_path("fonts/DejaVuSans.ttf"),
 		floor::data_path("fonts/DejaVuSans-Oblique.ttf"),
@@ -126,19 +113,18 @@ FT_Library font_manager::get_ft_library() {
 	return ft_library;
 }
 
-font& font_manager::add_font(const string& identifier, const string& filename) {
+a2e_font* font_manager::add_font(const string& identifier, const string& filename) {
 	return add_font_family(identifier, vector<string> { filename });
 }
 
-font& font_manager::add_font_family(const string& identifier, const vector<string> filenames) {
+a2e_font* font_manager::add_font_family(const string& identifier, vector<string>&& filenames) {
 	const auto iter = fonts.find(identifier);
 	if(iter != fonts.end()) {
-		return *iter->second;
+		return iter->second;
 	}
 	
-	// TODO: -> emplace
-	const auto ret = fonts.insert(make_pair(identifier, new font(this, filenames)));
-	return *ret.first->second;
+	const auto ret = fonts.emplace(identifier, new a2e_font(this, move(filenames)));
+	return ret.first->second;
 }
 
 bool font_manager::remove_font(const string& identifier) {
@@ -153,7 +139,7 @@ bool font_manager::remove_font(const string& identifier) {
 	return true;
 }
 
-font* font_manager::get_font(const string& identifier) const {
+a2e_font* font_manager::get_font(const string& identifier) const {
 	const auto iter = fonts.find(identifier);
 	if(iter != fonts.end()) {
 		return iter->second;

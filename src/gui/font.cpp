@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,20 +24,34 @@
 #include "core/event_objects.hpp"
 #include "engine.hpp"
 #include "rendering/shader.hpp"
+#if !defined(FLOOR_IOS)
 #include "rendering/renderer/gl3/shader_gl3.hpp"
+#else
+#if defined(PLATFORM_X64)
+#include "rendering/renderer/gles3/shader_gles3.hpp"
+#else
+#include "rendering/renderer/gles2/shader_gles2.hpp"
+#endif
+#endif
 #include <numeric>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-constexpr unsigned int font::font_texture_size;
+#if !defined(FLOOR_IOS)
+#define A2E_FONT_UBO_SIZE 65536u
+#elif defined(FLOOR_IOS) && defined(PLATFORM_X64)
+#define A2E_FONT_UBO_SIZE 16384u
+#endif
 
-font::font(font_manager* fm_, const string& filename_) : font(fm_, vector<string> { filename_ }) {
+constexpr unsigned int a2e_font::font_texture_size;
+
+a2e_font::a2e_font(font_manager* fm_, const string& filename_) : a2e_font(fm_, vector<string> { filename_ }) {
 }
 
-font::font(font_manager* fm_, const vector<string> filenames_) :
-s(engine::get_shader()), fm(fm_), filenames(filenames_),
-shader_reload_fnctr(bind(&font::shader_reload_handler, this, placeholders::_1, placeholders::_2))
+a2e_font::a2e_font(font_manager* fm_, vector<string>&& filenames_) :
+s(engine::get_shader()), fm(fm_), filenames(move(filenames_)),
+shader_reload_fnctr(bind(&a2e_font::shader_reload_handler, this, placeholders::_1, placeholders::_2))
 {
 	set_size(10);
 	
@@ -89,32 +103,31 @@ shader_reload_fnctr(bind(&font::shader_reload_handler, this, placeholders::_1, p
 		return;
 	}
 	
-	// TODO: use emplace (w/o make_pair) instead of insert when gcc supports it
 	if(faces.find("Regular") == faces.end()) {
 		// use any since there is no real fallback
-		faces.insert(make_pair("Regular", faces.cbegin()->second));
+		faces.emplace("Regular", faces.cbegin()->second);
 	}
 	if(faces.find("Bold Italic") == faces.end()) {
 		if(faces.find("Bold") != faces.end()) {
-			faces.insert(make_pair("Bold Italic", faces.find("Bold")->second));
+			faces.emplace("Bold Italic", faces.find("Bold")->second);
 		}
 		if(faces.find("Italic") != faces.end()) {
-			faces.insert(make_pair("Bold Italic", faces.find("Italic")->second));
+			faces.emplace("Bold Italic", faces.find("Italic")->second);
 		}
 		else {
-			faces.insert(make_pair("Bold Italic", faces.find("Regular")->second));
+			faces.emplace("Bold Italic", faces.find("Regular")->second);
 		}
 	}
 	if(faces.find("Italic") == faces.end()) {
-		faces.insert(make_pair("Italic", faces.find("Regular")->second));
+		faces.emplace("Italic", faces.find("Regular")->second);
 	}
 	if(faces.find("Bold") == faces.end()) {
-		faces.insert(make_pair("Bold", faces.find("Regular")->second));
+		faces.emplace("Bold", faces.find("Regular")->second);
 	}
 	
 	// create glyph maps
 	for(const auto& face : faces) {
-		glyph_map.insert(make_pair(face.first, decltype(glyph_map)::mapped_type()));
+		glyph_map.emplace(face.first, decltype(glyph_map)::mapped_type());
 	}
 	
 	// cache most used glyphs
@@ -133,22 +146,25 @@ shader_reload_fnctr(bind(&font::shader_reload_handler, this, placeholders::_1, p
 	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float2), &glyph_quad[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	glGenBuffers(1, &text_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, text_ubo);
-	glBufferData(GL_UNIFORM_BUFFER, 65536, nullptr, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, A2E_FONT_UBO_SIZE, nullptr, GL_STATIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+#else
+	// TODO: gles 2.0 implementation
+#endif
 	
 	//
 	floor::get_event()->add_internal_event_handler(shader_reload_fnctr, EVENT_TYPE::SHADER_RELOAD);
 	reload_shaders();
 }
 
-font::~font() {
+a2e_font::~a2e_font() {
 	// different styles may point to the same FT_Font -> create a set
 	set<FT_Face> ft_faces;
 	for(const auto& face : faces) {
-		// TODO: -> emplace
-		ft_faces.insert(face.second);
+		ft_faces.emplace(face.second);
 	}
 	for(const auto& face : ft_faces) {
 		if(FT_Done_Face(face) != 0) {
@@ -160,17 +176,27 @@ font::~font() {
 	if(glIsBuffer(text_ubo)) glDeleteBuffers(1, &text_ubo);
 	if(glIsTexture(tex_array)) glDeleteTextures(1, &tex_array);
 	
+#if defined(FLOOR_IOS)
+	if(tex_data != nullptr) delete [] tex_data;
+#endif
+	
 	floor::get_event()->remove_event_handler(shader_reload_fnctr);
 }
 
-bool font::add_face(const string& style, FT_Face face) {
+bool a2e_font::add_face(const string& style, FT_Face face) {
 	// style remapping
 	auto map_style = [](string style_str) -> string {
 		static const unordered_map<string, string> style_remapping {
 			{ "Roman", "Regular" },
 			{ "Book", "Regular" },
+			{ "Light", "Regular" },
+			{ "ExtraLight", "Regular" },
+			{ "Condensed", "Regular" },
 			{ "Oblique", "Italic" },
+			{ "Condensed Oblique", "Italic" },
 			{ "Bold Oblique", "Bold Italic" },
+			{ "Condensed Bold Oblique", "Bold Italic" },
+			{ "Condensed Bold", "Bold" },
 			{ "R", "Regular" },
 			{ "I", "Italic" },
 			{ "O", "Italic" },
@@ -190,8 +216,7 @@ bool font::add_face(const string& style, FT_Face face) {
 	
 	const string style_name(map_style(style));
 	if(faces.find(style_name) == faces.end()) {
-		// TODO: i'm repeating myself ... -> emplace
-		faces.insert(make_pair(style_name, face));
+		faces.emplace(style_name, face);
 		return true;
 	}
 	
@@ -199,7 +224,7 @@ bool font::add_face(const string& style, FT_Face face) {
 	return false;
 }
 
-bool font::is_cached(const unsigned int& code) const {
+bool a2e_font::is_cached(const unsigned int& code) const {
 	for(const auto& face : faces) {
 		const auto& glyphs = glyph_map.at(face.first);
 		if(glyphs.find(code) == glyphs.end()) {
@@ -210,18 +235,18 @@ bool font::is_cached(const unsigned int& code) const {
 	return true;
 }
 
-void font::cache(const BMP_BLOCK block) {
+void a2e_font::cache(const BMP_BLOCK block) {
 	cache(((unsigned int)block >> 16) & 0xFFFF, (unsigned int)block & 0xFFFF);
 }
 
-void font::cache(const string& characters) {
+void a2e_font::cache(const string& characters) {
 	const vector<unsigned int> codes(unicode::utf8_to_unicode(characters));
 	for(const auto& code : codes) {
 		cache(code, code);
 	}
 }
 
-void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
+void a2e_font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 	if(start_code > end_code) {
 		log_error("start_code(%u) > end_code(%u)", start_code, end_code);
 		return;
@@ -272,16 +297,15 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 			
 			//
 			const unsigned int texture_index = (unsigned int)glyph_counter++;
-			// TODO: -> emplace
-			glyphs.insert(make_pair(code,
-									glyph_data {
-										texture_index,
-										int4(slot->bitmap_left,
-											 int(display_font_size) - slot->bitmap_top,
-											 (int)slot->advance.x,
-											 (int)slot->advance.y),
-										int2(int(slot->metrics.width >> 6), int(slot->metrics.height >> 6))
-									}));
+			glyphs.emplace(code,
+						   glyph_data {
+							   texture_index,
+							   int4(slot->bitmap_left,
+									int(display_font_size) - slot->bitmap_top,
+									(int)slot->advance.x,
+									(int)slot->advance.y),
+							   int2(int(slot->metrics.width >> 6), int(slot->metrics.height >> 6))
+						   });
 			const unsigned int layer = texture_index / glyphs_per_layer;
 			const int3 offset((texture_index - (layer*glyphs_per_layer)) % glyphs_per_line,
 							  (texture_index - (layer*glyphs_per_layer)) / glyphs_per_line,
@@ -303,10 +327,27 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 					   slot->bitmap.width);
 			}
 			
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0,
 							offset.x * display_font_size, offset.y * display_font_size, offset.z,
 							display_font_size, display_font_size, 1,
 							GL_RGB, GL_UNSIGNED_BYTE, glyph_buffer);
+#endif
+			
+#if defined(FLOOR_IOS)
+#if defined(PLATFORM_X64)
+			static constexpr size_t layer_size = font_texture_size * font_texture_size * 3;
+			for(size_t row = 0; row < (size_t)slot->bitmap.rows; row++) {
+				memcpy(tex_data + (offset.x * display_font_size * 3 +
+								   offset.y * font_texture_size * display_font_size * 3)
+					   + offset.z * layer_size,
+					   glyph_buffer + (row * row_data_length),
+					   slot->bitmap.width);
+			}
+#else
+			// TODO: gles 2.0 implementation
+#endif
+#endif
 			delete [] glyph_buffer;
 		}
 	}
@@ -315,56 +356,69 @@ void font::cache(const unsigned int& start_code, const unsigned int& end_code) {
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-font::text_cache font::cache_text(const string& text, const GLuint existing_ubo) {
+a2e_font::text_cache a2e_font::cache_text(const string& text, const GLuint existing_ubo) {
 	//
 	GLuint ubo = existing_ubo;
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	if(ubo == 0 || !glIsBuffer(ubo)) {
 		glGenBuffers(1, &ubo);
 		glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-		glBufferData(GL_UNIFORM_BUFFER, 65536, nullptr, GL_STATIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, A2E_FONT_UBO_SIZE, nullptr, GL_STATIC_DRAW);
 	}
 	else {
 		glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 	}
+#else
+	// TODO: gles 2.0 implementation
+#endif
 	
 	// update ubo with text data
 	const auto text_data(create_text_ubo_data(text, [&](unsigned int code) {
 		this->cache(code, code);
 	}));
 	
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, text_data.first.size() * sizeof(uint2), &text_data.first[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+#else
+	// TODO: gles 2.0 implementation
+#endif
 	
 	return { uint2(ubo, (unsigned int)text_data.first.size()), text_data.second };
 }
 
-void font::destroy_text_cache(text_cache& cached_text) {
+void a2e_font::destroy_text_cache(text_cache& cached_text) {
 	if(glIsBuffer(cached_text.first.x)) {
 		glDeleteBuffers(1, &cached_text.first.x);
 		cached_text.first.x = 0;
 	}
 }
 
-void font::recreate_texture_array(const size_t& layers) {
+void a2e_font::recreate_texture_array(const size_t& layers) {
 	const size_t prev_layers(tex_array_layers);
 	
 	// this works around an intel and ati driver bug (an array must at least have 2 layers)
-	tex_array_layers = std::max(layers, (size_t)2);
+	tex_array_layers = std::max(layers, (size_t)4); // TODO: reset to 2
+	log_debug("#### font resize: %u -> %u", prev_layers, tex_array_layers);
 	
 	const size_t layer_size(font_texture_size * font_texture_size * 3);
 	const size_t tex_size(layer_size * tex_array_layers);
-	unsigned char* tex_data = new unsigned char[tex_size];
+	unsigned char* new_tex_data = new unsigned char[tex_size];
 	
 	// check if we need to copy data from the old tex layers
 	if(prev_layers != 0 && tex_array != 0) {
+#if !defined(FLOOR_IOS)
 		glBindTexture(GL_TEXTURE_2D_ARRAY, tex_array);
-		glGetTexImage(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_data);
+		glGetTexImage(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, GL_UNSIGNED_BYTE, new_tex_data);
+#else
+		memcpy(new_tex_data, tex_data, layer_size * prev_layers);
+#endif
 		
 		const size_t layer_diff(tex_array_layers - prev_layers);
-		memset(tex_data + prev_layers * layer_size, 0, layer_diff * layer_size); // clear new layers
+		memset(new_tex_data + prev_layers * layer_size, 0, layer_diff * layer_size); // clear new layers
 	}
 	else {
-		memset(tex_data, 0, tex_size);
+		memset(new_tex_data, 0, tex_size);
 	}
 	
 	//
@@ -377,43 +431,56 @@ void font::recreate_texture_array(const size_t& layers) {
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB8,
 				 font_texture_size, font_texture_size, (GLsizei)tex_array_layers,
-				 0, GL_RGB, GL_UNSIGNED_BYTE, tex_data);
+				 0, GL_RGB, GL_UNSIGNED_BYTE, new_tex_data);
+#else
+	// TODO: gles 2.0 implementation
+#endif
 	
-	delete [] tex_data;
+#if !defined(FLOOR_IOS)
+	delete [] new_tex_data;
+#else
+	if(tex_data != nullptr) delete [] tex_data;
+	tex_data = new_tex_data;
+#endif
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-void font::reload_shaders() {
-	font_shd = s->get_gl3shader("FONT");
+void a2e_font::reload_shaders() {
+	font_shd = s->get_gl_shader("FONT");
 }
 
-bool font::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj floor_unused) {
+bool a2e_font::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj floor_unused) {
 	if(type == EVENT_TYPE::SHADER_RELOAD) {
 		reload_shaders();
 	}
 	return true;
 }
 
-void font::draw(const string& text, const float2& position, const float4 color) {
+void a2e_font::draw(const string& text, const float2& position, const float4 color) {
 	const auto ubo = cache_text(text, text_ubo);
 	draw_cached(text_ubo, ubo.first.y, position, color);
 }
 
-void font::draw_cached(const string& text, const float2& position, const float4 color) const {
+void a2e_font::draw_cached(const string& text, const float2& position, const float4 color) const {
 	// update ubo with text data
 	const auto text_data(create_text_ubo_data(text));
 	
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	glBindBuffer(GL_UNIFORM_BUFFER, text_ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, text_data.first.size() * sizeof(uint2), &text_data.first[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+#else
+	// TODO: gles 2.0 implementation
+#endif
 	
 	draw_cached(text_ubo, text_data.first.size(), position, color);
 }
 
-pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
-													   std::function<void(unsigned int)> cache_fnc) const {
+pair<vector<uint2>, float2> a2e_font::create_text_ubo_data(const string& text,
+														   std::function<void(unsigned int)> cache_fnc) const {
 	vector<uint2> ubo_data;
 	const float2 extent = text_stepper(text,
 									   [&ubo_data](unsigned int code floor_unused,
@@ -430,20 +497,20 @@ pair<vector<uint2>, float2> font::create_text_ubo_data(const string& text,
 	return { ubo_data, extent };
 }
 
-float font::compute_advance(const string& str, const unsigned int component) const {
+float a2e_font::compute_advance(const string& str, const unsigned int component) const {
 	return compute_advance(unicode::utf8_to_unicode(str), component);
 }
 
-float font::compute_advance(const vector<unsigned int>& unicode_str, const unsigned int component) const {
+float a2e_font::compute_advance(const vector<unsigned int>& unicode_str, const unsigned int component) const {
 	const float2 extent = text_stepper(unicode_str);
 	return extent[component];
 }
 
-vector<float2> font::compute_advance_map(const string& str, const unsigned int component) const {
+vector<float2> a2e_font::compute_advance_map(const string& str, const unsigned int component) const {
 	return compute_advance_map(unicode::utf8_to_unicode(str), component);
 }
 
-vector<float2> font::compute_advance_map(const vector<unsigned int>& unicode_str, const unsigned int component) const {
+vector<float2> a2e_font::compute_advance_map(const vector<unsigned int>& unicode_str, const unsigned int component) const {
 	vector<float2> advance_map;
 	advance_map.reserve(unicode_str.size());
 	float total_advance = 0.0f;
@@ -490,17 +557,17 @@ vector<float2> font::compute_advance_map(const vector<unsigned int>& unicode_str
 	return advance_map;
 }
 
-float2 font::text_stepper(const string& str,
-						  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
-						  std::function<void(unsigned int, const float2&, const float&)> line_break_fnc,
-						  std::function<void(unsigned int)> cache_fnc) const {
+float2 a2e_font::text_stepper(const string& str,
+							  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
+							  std::function<void(unsigned int, const float2&, const float&)> line_break_fnc,
+							  std::function<void(unsigned int)> cache_fnc) const {
 	return text_stepper(unicode::utf8_to_unicode(str), fnc, line_break_fnc, cache_fnc);
 }
 
-float2 font::text_stepper(const vector<unsigned int>& unicode_str_,
-						  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
-						  std::function<void(unsigned int, const float2&, const float&)> line_break_fnc,
-						  std::function<void(unsigned int)> cache_fnc) const {
+float2 a2e_font::text_stepper(const vector<unsigned int>& unicode_str_,
+							  std::function<void(unsigned int, const glyph_data&, const float2&, const float2&)> fnc,
+							  std::function<void(unsigned int, const float2&, const float&)> line_break_fnc,
+							  std::function<void(unsigned int)> cache_fnc) const {
 	// replace control strings by control characters (easier to handle later on)
 	static const struct {
 		const vector<unsigned int> search;
@@ -644,9 +711,10 @@ float2 font::text_stepper(const vector<unsigned int>& unicode_str_,
 	return extent;
 }
 
-void font::draw_cached(const GLuint& ubo, const size_t& character_count, const float2& position, const float4 color) const {
+void a2e_font::draw_cached(const GLuint& ubo, const size_t& character_count, const float2& position, const float4 color) const {
 	if(ubo == 0 || character_count == 0) return;
 	
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	// draw
 	font_shd->use();
 	font_shd->uniform("mvpm", matrix4f().translate(position.x, position.y, 0.0f) * *engine::get_mvp_matrix());
@@ -662,25 +730,29 @@ void font::draw_cached(const GLuint& ubo, const size_t& character_count, const f
 	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, (GLsizei)character_count);
 	
 	font_shd->disable();
+#else
+	// TODO: gles 2.0 implementation
+#endif
 }
 
-void font::set_size(const unsigned int& size) {
+void a2e_font::set_size(const unsigned int& size) {
 	font_size = size;
 	// slightly weird, but it seems to work for misc dpi sizes
 	display_font_size = (unsigned int)ceilf((float(font_size * floor::get_dpi()) / 64.0f) * (72.0f / 64.0f));
 	glyphs_per_line = font_texture_size / display_font_size;
 	glyphs_per_layer = glyphs_per_line * glyphs_per_line;
+	log_debug("### FONT SIZE INFO: %u | %u | %u", display_font_size, glyphs_per_line, glyphs_per_layer);
 }
 
-const unsigned int& font::get_size() const {
+const unsigned int& a2e_font::get_size() const {
 	return font_size;
 }
 
-const unsigned int& font::get_display_size() const {
+const unsigned int& a2e_font::get_display_size() const {
 	return display_font_size;
 }
 
-const vector<string> font::get_available_styles() const {
+const vector<string> a2e_font::get_available_styles() const {
 	vector<string> ret;
 	for(const auto& face : faces) {
 		ret.emplace_back(face.first);

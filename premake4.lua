@@ -80,7 +80,6 @@ project "a2elight"
 	language "C++"
 
 	files { "src/**.hpp", "src/**.cpp" }
-	defines { "A2E_NET_PROTOCOL=TCP_protocol" }
 
 	basedir "src"
 	targetdir "lib"
@@ -88,6 +87,7 @@ project "a2elight"
 				  "src/cl/",
 				  "src/core/",
 				  "src/gui/",
+				  "src/gui/compound/",
 				  "src/gui/objects/",
 				  "src/gui/style/",
 				  "src/particle/",
@@ -122,7 +122,6 @@ project "a2elight"
 			buildoptions { "-Wno-switch-enum -Wno-sign-conversion -Wno-conversion -Wno-exit-time-destructors" }
 			linkoptions { "-fvisibility=default" }
 			if(not win_unixenv) then
-				defines { "A2E_EXPORT=1" }
 				linkoptions { "-stdlib=libc++" }
 			else
 				-- link against everything that libc++ links to, now that there are no default libs
@@ -218,7 +217,7 @@ project "a2elight"
 		end
 
 	configuration { "x32" }
-		defines { "PLATFORM_X86" }
+		defines { "PLATFORM_X32" }
 		if(os.is("windows")) then
 			targetdir "lib/x86"
 		end

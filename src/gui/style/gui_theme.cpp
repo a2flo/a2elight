@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -671,7 +671,7 @@ void gui_theme::draw(const string& type, const string& state,
 				
 				//
 				fnt->draw_cached(text_data.first.x, text_data.first.y,
-								 position,  ds->color.value);
+								 position, ds->color.value);
 				continue; // nothing more to do here
 			}
 		}

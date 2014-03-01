@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #ifndef __A2E_SHADER_GL3_HPP__
 #define __A2E_SHADER_GL3_HPP__
 
+#if !defined(FLOOR_IOS)
+
 #include "global.hpp"
 #include "core/matrix4.hpp"
 #include "engine.hpp"
@@ -32,12 +34,7 @@ public:
 	
 	virtual void use();
 	virtual void use(const size_t& program);
-#if !defined(__clang__)
-	virtual void use(const string& option);
-	virtual void use(const string& option, const set<string> combiners);
-#else
 	virtual void use(const string& option, const set<string> combiners = set<string> {});
-#endif
 	virtual void disable();
 	virtual size_t get_cur_program() const;
 	virtual const string& get_cur_option() const;
@@ -153,6 +150,9 @@ protected:
 	
 };
 
-typedef shared_ptr<shader_gl3> gl3shader;
+typedef shared_ptr<shader_gl3> gl_shader;
+typedef shader_gl3 shader_class;
+
+#endif
 
 #endif

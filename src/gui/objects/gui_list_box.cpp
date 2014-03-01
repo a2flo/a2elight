@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -61,9 +61,10 @@ void gui_list_box::draw() {
 	glScissor(0, 0, floor::get_width(), floor::get_height());
 }
 
-bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const ipnt& point) {
+bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point) {
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
+		case EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK:
 		case EVENT_TYPE::MOUSE_LEFT_DOWN: {
 			ui->set_active_object(this);
 			const ipnt pos_in_box = point - position_abs;
@@ -74,14 +75,22 @@ bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<e
 				return false;
 			}
 			set_selected_item(select_item);
+			
+			// on a double click, send an execute event
+			if(type == EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK) {
+				handle(GUI_EVENT::LIST_BOX_SELECT_EXECUTE);
+			}
 			return true;
 		}
 		case EVENT_TYPE::MOUSE_WHEEL_UP:
-		case EVENT_TYPE::MOUSE_WHEEL_DOWN:
+		case EVENT_TYPE::MOUSE_WHEEL_DOWN: {
 			if(box_height < size_abs.y) return false;
-			scroll_position += item_height * 1.5f * (type == EVENT_TYPE::MOUSE_WHEEL_DOWN ? 1.0f : -1.0f);
+			const auto& amount = ((const shared_ptr<mouse_wheel_down_event>&)obj)->amount;
+			const float scaled_amount = float(amount) * 0.25f;
+			scroll_position += scaled_amount * item_height * (type == EVENT_TYPE::MOUSE_WHEEL_DOWN ? 1.0f : -1.0f);
 			scroll_position = core::clamp(scroll_position, 0.0f, box_height-float(size_abs.y));
 			return true;
+		}
 		default: break;
 	}
 	return false;
@@ -108,4 +117,16 @@ void gui_list_box::recompute_height() {
 		// reset scroll position if there are fewer items than the list can display
 		scroll_position = 0.0f;
 	}
+}
+
+void gui_list_box::scroll_to_item(const string& identifier) {
+	//
+	const auto iter = items.find(identifier);
+	if(iter == items.end()) return;
+	const auto disp_iter = find(begin(display_items), end(display_items), &*iter);
+	if(disp_iter == display_items.end()) return;
+	
+	const auto item_num = distance(begin(display_items), disp_iter);
+	scroll_position = float(item_num) * item_height;
+	scroll_position = core::clamp(scroll_position, 0.0f, box_height-float(size_abs.y));
 }

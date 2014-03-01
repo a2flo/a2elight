@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,12 +28,14 @@ const char* rtt::TEXTURE_ANTI_ALIASING_STR[] = {
 	"MSAA16",
 	"MSAA32",
 	"MSAA64",
+#if !defined(FLOOR_IOS)
 	"CSAA8",
 	"CSAA8Q",
 	"CSAA16",
 	"CSAA16Q",
 	"CSAA32",
 	"CSAA32Q",
+#endif
 	"2xSSAA",
 	"4xSSAA",
 	"FXAA",
@@ -58,7 +60,17 @@ rtt::~rtt() {
 	log_debug("rtt object deleted");
 }
 
-rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target, TEXTURE_FILTERING filtering, TEXTURE_ANTI_ALIASING taa, GLint wrap_s, GLint wrap_t, GLint internal_format, GLenum format, GLenum type, unsigned int attachment_count, DEPTH_TYPE depth_type, STENCIL_TYPE stencil_type) {
+rtt::fbo* rtt::add_buffer(const unsigned int width, const unsigned int height,
+						  const GLenum target,
+						  const TEXTURE_FILTERING filtering,
+						  const TEXTURE_ANTI_ALIASING taa,
+						  const GLint wrap_s, const GLint wrap_t,
+						  const GLint internal_format,
+						  const GLenum format,
+						  const GLenum type,
+						  const unsigned int attachment_count,
+						  const rtt::DEPTH_TYPE depth_type,
+						  const rtt::STENCIL_TYPE stencil_type) {
 	GLenum* targets = new GLenum[attachment_count];
 	TEXTURE_FILTERING* filterings = new TEXTURE_FILTERING[attachment_count];
 	TEXTURE_ANTI_ALIASING* taas = new TEXTURE_ANTI_ALIASING[attachment_count];
@@ -93,7 +105,19 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum target
 	return ret_buffer;
 }
 
-rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* target, TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count, DEPTH_TYPE depth_type, STENCIL_TYPE stencil_type) {
+rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
+						  const GLenum* target, const TEXTURE_FILTERING* filtering,
+						  const TEXTURE_ANTI_ALIASING* taa,
+						  const GLint* wrap_s, const GLint* wrap_t,
+						  const GLint* internal_format,
+						  const GLenum* format,
+						  const GLenum* type,
+						  const unsigned int attachment_count,
+						  const rtt::DEPTH_TYPE depth_type,
+						  const rtt::STENCIL_TYPE stencil_type) {
+	unsigned int width = width_;
+	unsigned int height = height_;
+	
 	rtt::fbo* buffer = new rtt::fbo(attachment_count);
 	buffers.push_back(buffer);
 	buffer->width = width;
@@ -156,7 +180,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 	
 	glGenTextures(attachment_count, &buffer->tex[0]);
 	for(unsigned int i = 0; i < buffer->attachment_count; i++) {
-#if defined(A2E_IOS)
+#if defined(FLOOR_IOS) && !defined(PLATFORM_X64)
 		if(i > 0) {
 			log_error("too many FBO attachments - only one is allowed on iOS!");
 			break;
@@ -176,7 +200,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		}
 		
 		switch(buffer->target[i]) {
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 			case GL_TEXTURE_1D:
 				glTexImage1D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, 0, format[i], type[i], nullptr);
 				break;
@@ -184,7 +208,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 			case GL_TEXTURE_2D:
 				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
 				break;
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 			case GL_TEXTURE_2D_MULTISAMPLE:
 				glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), texman::convert_internal_format(internal_format[i]), width, height, false);
 				break;
@@ -202,7 +226,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, buffer->target[i], buffer->tex[i], 0);
 		
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 #if defined(A2E_DEBUG)
 		// TODO: fbo/texture checking
 		GLint check_internal_format = 0, check_type = 0, check_size = 0;
@@ -288,7 +312,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 				
 				glGenRenderbuffers(1, &buffer->color_buffer);
 				glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
-				glRenderbufferStorageMultisample(GL_RENDERBUFFER, buffer->samples, format[0], buffer->width, buffer->height);
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, buffer->samples, internal_format[0], buffer->width, buffer->height);
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
 				check_fbo(current_buffer);
 				
@@ -298,7 +322,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 					glRenderbufferStorageMultisample(GL_RENDERBUFFER, buffer->samples, depth_internel_format, buffer->width, buffer->height);
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, depth_attachment_type, GL_RENDERBUFFER, buffer->depth_buffer);
 				}
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 				else if(depth_type == DEPTH_TYPE::TEXTURE_2D) {
 					glGenTextures(1, &buffer->depth_buffer);
 					glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer);
@@ -315,7 +339,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 				check_fbo(current_buffer);
 			}
 			break;
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 			case TEXTURE_ANTI_ALIASING::CSAA_8:
 			case TEXTURE_ANTI_ALIASING::CSAA_8Q:
 			case TEXTURE_ANTI_ALIASING::CSAA_16:
@@ -360,7 +384,7 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 				glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 				glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
 				
-				glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, format[0], buffer->width, buffer->height);
+				glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, internal_format[0], buffer->width, buffer->height);
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
 				check_fbo(current_buffer);
 				
@@ -374,8 +398,8 @@ rtt::fbo* rtt::add_buffer(unsigned int width, unsigned int height, GLenum* targe
 		}
 	}
 	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	
 	return buffer;
 }
@@ -386,24 +410,24 @@ void rtt::delete_buffer(rtt::fbo* buffer) {
 		glDeleteTextures(1, &buffer->tex[i]);
 	}
 	for(size_t i = 0; i < buffer->attachment_count; i++) {
-		if(buffer->resolve_buffer[i] == 0) break;
+		if(buffer->resolve_buffer[i] <= A2E_DEFAULT_FRAMEBUFFER) break;
 		glDeleteFramebuffers(1, &buffer->resolve_buffer[i]);
 	}
 	
 	// depending on how these were created, they can either be renderbuffers or textures
-	if(glIsRenderbuffer(buffer->color_buffer)) {
+	if(buffer->color_buffer > A2E_DEFAULT_RENDERBUFFER && glIsRenderbuffer(buffer->color_buffer)) {
 		glDeleteRenderbuffers(1, &buffer->color_buffer);
 		buffer->color_buffer = 0;
 	}
-	if(glIsRenderbuffer(buffer->depth_buffer)) {
+	if(buffer->depth_buffer > A2E_DEFAULT_RENDERBUFFER && glIsRenderbuffer(buffer->depth_buffer)) {
 		glDeleteRenderbuffers(1, &buffer->depth_buffer);
 		buffer->depth_buffer = 0;
 	}
-	if(glIsTexture(buffer->color_buffer)) {
+	if(buffer->color_buffer > 0 && glIsTexture(buffer->color_buffer)) {
 		glDeleteTextures(1, &buffer->color_buffer);
 		buffer->color_buffer = 0;
 	}
-	if(glIsTexture(buffer->depth_buffer)) {
+	if(buffer->depth_buffer > 0 && glIsTexture(buffer->depth_buffer)) {
 		glDeleteTextures(1, &buffer->depth_buffer);
 		buffer->depth_buffer = 0;
 	}
@@ -435,7 +459,7 @@ void rtt::start_draw(rtt::fbo* buffer) {
 		}
 		else if(buffer->depth_type == DEPTH_TYPE::TEXTURE_2D) {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, buffer->depth_attachment_type,
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 								   (buffer->samples == 0 ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE),
 #else
 								   GL_TEXTURE_2D,
@@ -467,12 +491,34 @@ void rtt::stop_draw() {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, current_buffer->fbo_id);
 			for(size_t i = 0; i < current_buffer->attachment_count; i++) {
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_buffer->resolve_buffer[i]);
-#if !defined(A2E_IOS)
-				glBlitFramebuffer(0, 0, current_buffer->draw_width, current_buffer->draw_height, 0, 0, current_buffer->draw_width, current_buffer->draw_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
+				glBlitFramebuffer(0, 0, current_buffer->draw_width, current_buffer->draw_height,
+								  0, 0, current_buffer->draw_width, current_buffer->draw_height,
+								  GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #else
-				// TODO: implement framebuffer blitting on iOS
+				glResolveMultisampleFramebufferAPPLE();
 #endif
 			}
+			
+#if defined(FLOOR_IOS)
+#if !defined(PLATFORM_X64)
+			// can only have one attachment
+			static const array<GLenum, 2> discards {{
+				GL_COLOR_ATTACHMENT0,
+				GL_DEPTH_ATTACHMENT
+			}};
+#else
+			// can have multiple color attachments
+			vector<GLenum> discards {
+				GL_COLOR_ATTACHMENT0,
+				GL_DEPTH_ATTACHMENT
+			};
+			for(size_t i = 1; i < current_buffer->attachment_count; i++) {
+				discards.emplace_back(GL_COLOR_ATTACHMENT0 + i);
+			}
+#endif
+			glInvalidateFramebuffer(GL_READ_FRAMEBUFFER, (int)discards.size(), &discards[0]);
+#endif
 		}
 	}
 	
@@ -484,7 +530,7 @@ void rtt::stop_draw() {
 		}
 	}
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void rtt::start_2d_draw() {
@@ -495,8 +541,8 @@ void rtt::stop_2d_draw() {
 	engine::stop_2d_draw();
 }
 
-void rtt::clear(const unsigned int and_mask) {
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+void rtt::clear(const unsigned int and_mask, const float4 clear_color) {
+	glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	GLbitfield bits = GL_COLOR_BUFFER_BIT;
 	bits |= (current_buffer->depth_type != DEPTH_TYPE::NONE ? GL_DEPTH_BUFFER_BIT : 0);
 	bits |= (current_buffer->stencil_type != STENCIL_TYPE::NONE ? GL_STENCIL_BUFFER_BIT : 0);
@@ -525,7 +571,7 @@ void rtt::check_fbo(rtt::fbo* buffer) {
 		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
 			log_error("incomplete framebuffer multisample (%u)!", status);
 			break;
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
 			log_error("incomplete framebuffer draw buffer (%u)!", status);
 			break;
@@ -551,12 +597,14 @@ size_t rtt::get_sample_count(const TEXTURE_ANTI_ALIASING& taa) const {
 		case TEXTURE_ANTI_ALIASING::MSAA_16: return 16;
 		case TEXTURE_ANTI_ALIASING::MSAA_32: return 32;
 		case TEXTURE_ANTI_ALIASING::MSAA_64: return 64;
+#if !defined(FLOOR_IOS)
 		case TEXTURE_ANTI_ALIASING::CSAA_8: return 0;
 		case TEXTURE_ANTI_ALIASING::CSAA_8Q: return 0;
 		case TEXTURE_ANTI_ALIASING::CSAA_16: return 0;
 		case TEXTURE_ANTI_ALIASING::CSAA_16Q: return 0;
 		case TEXTURE_ANTI_ALIASING::CSAA_32: return 0;
 		case TEXTURE_ANTI_ALIASING::CSAA_32Q: return 0;
+#endif
 		case TEXTURE_ANTI_ALIASING::SSAA_2: return 0;
 		case TEXTURE_ANTI_ALIASING::SSAA_4: return 0;
 		case TEXTURE_ANTI_ALIASING::FXAA: return 0;

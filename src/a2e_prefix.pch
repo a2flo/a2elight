@@ -1,0 +1,38 @@
+
+#if defined(__cplusplus) && !defined(__OBJC__)
+#include <floor/core/platform.hpp>
+#include <floor/core/cpp_headers.hpp>
+#include <floor/core/core.hpp>
+#include <floor/core/logger.hpp>
+#include <floor/core/vector2.hpp>
+#include <floor/core/vector3.hpp>
+#include <floor/core/vector4.hpp>
+#include <floor/core/util.hpp>
+#include <floor/core/const_string.hpp>
+
+#if defined(__APPLE__)
+#include <SDL2_image/SDL_image.h>
+#if !defined(FLOOR_IOS)
+#include <OpenGL/gl3.h>
+#include <OpenGL/gl3ext.h>
+#elif defined(PLATFORM_X64)
+#include <OpenGLES/ES3/gl.h>
+#include <OpenGLES/ES3/glext.h>
+#else
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
+#endif
+#endif
+
+#elif !defined(__OBJC__)
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <string.h>
+#include <math.h>
+#endif
+
+#if defined(__OBJC__)
+#import <Foundation/Foundation.h>
+#endif

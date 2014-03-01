@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,12 +42,14 @@ public:
 		MSAA_16,
 		MSAA_32,
 		MSAA_64,
+#if !defined(FLOOR_IOS)
 		CSAA_8,		// 4 col/8 cov
 		CSAA_8Q,	// 8 col/8 cov
 		CSAA_16,	// 4 col/16 cov
 		CSAA_16Q,	// 8 col/16 cov
 		CSAA_32,	// TODO: ratio?
 		CSAA_32Q,	// TODO: ratio?
+#endif
 		SSAA_2,
 		SSAA_4,
 		FXAA,
@@ -104,14 +106,34 @@ public:
 		}
 	};
 
-	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum target = GL_TEXTURE_2D, TEXTURE_FILTERING filtering = TEXTURE_FILTERING::POINT, TEXTURE_ANTI_ALIASING taa = TEXTURE_ANTI_ALIASING::NONE, GLint wrap_s = GL_REPEAT, GLint wrap_t = GL_REPEAT, GLint internal_format = GL_RGBA8, GLenum format = GL_RGBA, GLenum type = GL_UNSIGNED_BYTE, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = DEPTH_TYPE::NONE, rtt::STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE);
-	rtt::fbo* add_buffer(unsigned int width, unsigned int height, GLenum* target, TEXTURE_FILTERING* filtering, TEXTURE_ANTI_ALIASING* taa, GLint* wrap_s, GLint* wrap_t, GLint* internal_format, GLenum* format, GLenum* type, unsigned int attachment_count = 1, rtt::DEPTH_TYPE depth_type = DEPTH_TYPE::NONE, rtt::STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE);
+	rtt::fbo* add_buffer(const unsigned int width, const unsigned int height,
+						 const GLenum target = GL_TEXTURE_2D,
+						 const TEXTURE_FILTERING filtering = TEXTURE_FILTERING::POINT,
+						 const TEXTURE_ANTI_ALIASING taa = TEXTURE_ANTI_ALIASING::NONE,
+						 const GLint wrap_s = GL_REPEAT, const GLint wrap_t = GL_REPEAT,
+						 const GLint internal_format = GL_RGBA8,
+						 const GLenum format = GL_RGBA,
+						 const GLenum type = GL_UNSIGNED_BYTE,
+						 const unsigned int attachment_count = 1,
+						 const rtt::DEPTH_TYPE depth_type = DEPTH_TYPE::NONE,
+						 const rtt::STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE);
+	rtt::fbo* add_buffer(const unsigned int width, const unsigned int height,
+						 const GLenum* target, const TEXTURE_FILTERING* filtering,
+						 const TEXTURE_ANTI_ALIASING* taa,
+						 const GLint* wrap_s, const GLint* wrap_t,
+						 const GLint* internal_format,
+						 const GLenum* format,
+						 const GLenum* type,
+						 const unsigned int attachment_count = 1,
+						 const rtt::DEPTH_TYPE depth_type = DEPTH_TYPE::NONE,
+						 const rtt::STENCIL_TYPE stencil_type = STENCIL_TYPE::NONE);
 	void delete_buffer(rtt::fbo* buffer);
 	void start_draw(rtt::fbo* buffer);
 	void stop_draw();
 	void start_2d_draw();
 	void stop_2d_draw();
-	void clear(const unsigned int and_mask = 0xFFFFFFFF);
+	void clear(const unsigned int and_mask = 0xFFFFFFFF,
+			   const float4 clear_color = float4 { 0.0f });
 	void check_fbo(rtt::fbo* buffer);
 	const fbo* get_current_buffer() const;
 

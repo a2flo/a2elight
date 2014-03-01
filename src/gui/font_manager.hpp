@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 
 #include "global.hpp"
 #include "threading/thread_base.hpp"
-#include "gui/font.hpp"
 
 /*! @class font_manager
  *  @brief loads and caches fonts
@@ -30,15 +29,16 @@
 class rtt;
 struct FT_LibraryRec_;
 typedef struct FT_LibraryRec_* FT_Library;
+class a2e_font;
 class A2E_API font_manager : public thread_base {
 public:
 	font_manager();
 	virtual ~font_manager();
 	FT_Library get_ft_library();
 	
-	font& add_font(const string& identifier, const string& filename);
-	font& add_font_family(const string& identifier, const vector<string> filenames);
-	font* get_font(const string& identifier) const;
+	a2e_font* add_font(const string& identifier, const string& filename);
+	a2e_font* add_font_family(const string& identifier, vector<string>&& filenames);
+	a2e_font* get_font(const string& identifier) const;
 	bool remove_font(const string& identifier);
 	
 	virtual void run();
@@ -47,7 +47,7 @@ protected:
 	rtt* r;
 
 	// identifier -> font object
-	unordered_map<string, font*> fonts;
+	unordered_map<string, a2e_font*> fonts;
 	FT_Library ft_library;
 
 };

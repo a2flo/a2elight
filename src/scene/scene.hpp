@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,20 +44,20 @@ class particle_manager;
 class A2E_API scene {
 protected:
 	struct frame_buffers {
-		rtt::fbo* scene_buffer = nullptr; // final output buffer
-		rtt::fbo* fxaa_buffer = nullptr; // fxaa
-		rtt::fbo* g_buffer[2] = { nullptr, nullptr }; // opaque + alpha
-		rtt::fbo* l_buffer[2] = { nullptr, nullptr }; // opaque + alpha
+		rtt::fbo* scene_buffer { nullptr }; // final output buffer
+		rtt::fbo* fxaa_buffer { nullptr }; // fxaa
+		rtt::fbo* g_buffer[2] { nullptr, nullptr }; // opaque + alpha
+		rtt::fbo* l_buffer[2] { nullptr, nullptr }; // opaque + alpha
 		
 #if defined(A2E_INFERRED_RENDERING_CL)
 		struct cl_frame_buffers {
 			// buffers
-			opencl::buffer_object* geometry_buffer[2] = { nullptr, nullptr };
-			opencl::buffer_object* depth_buffer[2] = { nullptr, nullptr };
-			opencl::buffer_object* light_buffer[4] = { nullptr, nullptr, nullptr, nullptr };
+			opencl::buffer_object* geometry_buffer[2] { nullptr, nullptr };
+			opencl::buffer_object* depth_buffer[2] { nullptr, nullptr };
+			opencl::buffer_object* light_buffer[4] { nullptr, nullptr, nullptr, nullptr };
 			
 			// light data storage
-			opencl::buffer_object* lights_buffer = nullptr;
+			opencl::buffer_object* lights_buffer { nullptr };
 			struct __attribute__((aligned(32), packed)) ir_light {
 				float4 position;
 				float4 color;
@@ -70,7 +70,7 @@ protected:
 			GLuint depth_copy_fbo = 0;
 			
 			//
-			opencl::buffer_object* _dbg_buffer = nullptr;
+			opencl::buffer_object* _dbg_buffer { nullptr };
 		} cl;
 #endif
 	};

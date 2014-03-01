@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -129,7 +129,7 @@ void a2emodel::pre_draw_setup(const ssize_t sub_object_num floor_unused) {
 	mvpm_backside = mvpm_backside * *engine::get_projection_matrix();
 	
 	// if the wireframe flag is set, draw the model in wireframe mode
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	if(draw_wireframe) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
@@ -138,7 +138,7 @@ void a2emodel::pre_draw_setup(const ssize_t sub_object_num floor_unused) {
 
 void a2emodel::post_draw_setup(const ssize_t sub_object_num floor_unused) {
 	// reset to filled mode
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	if(draw_wireframe) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
@@ -188,7 +188,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	model_id.y = sub_object_num*4;
 	
 	//
-	gl3shader shd;
+	gl_shader shd;
 	const bool has_env_map(env_map != 0);
 	const string shd_option = (masked_draw_mode == DRAW_MODE::GEOMETRY_PASS ||
 							   masked_draw_mode == DRAW_MODE::MATERIAL_PASS ?
@@ -211,7 +211,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	
 	string shd_name = select_shader(draw_mode);
 	if(shd_name != "") {
-		shd = s->get_gl3shader(shd_name);
+		shd = s->get_gl_shader(shd_name);
 		shd->use(shd_option, shd_combiners);
 	}
 	
@@ -224,7 +224,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				case a2ematerial::MATERIAL_TYPE::PARALLAX: {
 					shd_name = material->is_parallax_occlusion(sub_object_num) ? "IR_GP_GBUFFER_PARALLAX" : "IR_GP_GBUFFER_PARALLAX";
 					
-					shd = s->get_gl3shader(shd_name);
+					shd = s->get_gl_shader(shd_name);
 					shd->use(shd_option, shd_combiners);
 					shd->uniform("cam_position", -float3(*engine::get_position()));
 					shd->uniform("model_position", position);
@@ -236,7 +236,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				// diffuse mapping
 				case a2ematerial::MATERIAL_TYPE::DIFFUSE:
 				case a2ematerial::MATERIAL_TYPE::NONE: {
-					shd = s->get_gl3shader("IR_GP_GBUFFER");
+					shd = s->get_gl_shader("IR_GP_GBUFFER");
 					shd->use(shd_option, shd_combiners);
 				}
 				break;
@@ -277,7 +277,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				case a2ematerial::MATERIAL_TYPE::PARALLAX: {
 					shd_name = material->is_parallax_occlusion(sub_object_num) ? "IR_MP_PARALLAX" : "IR_MP_PARALLAX";
 					
-					shd = s->get_gl3shader(shd_name);
+					shd = s->get_gl_shader(shd_name);
 					shd->use(shd_option, shd_combiners);
 					shd->uniform("cam_position", -float3(*engine::get_position()));
 					shd->uniform("model_position", position);
@@ -289,7 +289,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				// diffuse mapping
 				case a2ematerial::MATERIAL_TYPE::DIFFUSE:
 				case a2ematerial::MATERIAL_TYPE::NONE: {
-					shd = s->get_gl3shader("IR_MP_DIFFUSE");
+					shd = s->get_gl_shader("IR_MP_DIFFUSE");
 					shd->use(shd_option, shd_combiners);
 				}
 				break;
@@ -354,7 +354,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	}
 }
 
-void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<string>& combiners) {
+void a2emodel::ir_mp_setup(gl_shader& shd, const string& option, const set<string>& combiners) {
 	const rtt::fbo* cur_buffer = engine::get_rtt()->get_current_buffer();
 	const float2 screen_size = float2(float(cur_buffer->width), float(cur_buffer->height));
 	
@@ -399,16 +399,16 @@ void a2emodel::ir_mp_setup(gl3shader& shd, const string& option, const set<strin
 	}
 }
 
-void a2emodel::pre_draw_geometry(gl3shader& shd floor_unused, VERTEX_ATTRIBUTE& attr_array_mask floor_unused, a2ematerial::TEXTURE_TYPE& texture_mask floor_unused) {
+void a2emodel::pre_draw_geometry(gl_shader& shd floor_unused, VERTEX_ATTRIBUTE& attr_array_mask floor_unused, a2ematerial::TEXTURE_TYPE& texture_mask floor_unused) {
 }
 
-void a2emodel::post_draw_geometry(gl3shader& shd floor_unused) {
+void a2emodel::post_draw_geometry(gl_shader& shd floor_unused) {
 }
 
-void a2emodel::pre_draw_material(gl3shader& shd floor_unused, VERTEX_ATTRIBUTE& attr_array_mask floor_unused, a2ematerial::TEXTURE_TYPE& texture_mask floor_unused) {
+void a2emodel::pre_draw_material(gl_shader& shd floor_unused, VERTEX_ATTRIBUTE& attr_array_mask floor_unused, a2ematerial::TEXTURE_TYPE& texture_mask floor_unused) {
 }
 
-void a2emodel::post_draw_material(gl3shader& shd floor_unused) {
+void a2emodel::post_draw_material(gl_shader& shd floor_unused) {
 }
 
 const string a2emodel::select_shader(const DRAW_MODE& draw_mode floor_unused) const {

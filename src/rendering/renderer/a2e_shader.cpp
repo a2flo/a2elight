@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ conditions({
 	
 	// use sdl platform defines for this
 	{ "MAC_OS_X",
-#if defined(__MACOSX__) && !defined(A2E_IOS)
+#if defined(__MACOSX__) && !defined(FLOOR_IOS)
 		true
 #else
 		false
@@ -55,7 +55,7 @@ conditions({
 #endif
 	},
 	{ "IOS",
-#if defined(A2E_IOS)
+#if defined(FLOOR_IOS)
 		true
 #else
 		false
@@ -100,17 +100,6 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 		"header", "option", "condition"
 	};
 	
-	// TODO: remove this gcc workaround when gcc starts to conform to the spec
-#if !defined(__clang__)
-	const auto str_insert = [&shader_data](string::iterator& iter, std::initializer_list<char> char_list) {
-		iter++;
-		for(const auto& elem : char_list) {
-			iter = shader_data.insert(iter, elem);
-			iter++;
-		}
-	};
-#endif
-	
 	bool inside_tag = false;
 	bool inside_comment = false;
 	size_t hyphen_count = 0;
@@ -124,11 +113,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 		
 		switch(*iter) {
 			case '&':
-#if defined(__clang__)
 				iter = shader_data.insert(iter+1, { 'a', 'm', 'p', ';' });
-#else
-				str_insert(iter, { 'a', 'm', 'p', ';' });
-#endif
 				continue;
 			case '<':
 				if(inside_tag) break;
@@ -157,11 +142,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 					}
 				}
 				*iter = '&';
-#if defined(__clang__)
 				iter = shader_data.insert(iter+1, { 'l', 't', ';' });
-#else
-				str_insert(iter, { 'l', 't', ';' });
-#endif
 				continue;
 			case '>':
 				if(inside_comment) {
@@ -178,11 +159,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 					break;
 				}
 				*iter = '&';
-#if defined(__clang__)
 				iter = shader_data.insert(iter+1, { 'g', 't', ';' });
-#else
-				str_insert(iter, { 'g', 't', ';' });
-#endif
 				continue;
 			default: break;
 		}
@@ -214,9 +191,9 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	a2e_shd->identifier = identifier;
 	
 	// process includes
-#if defined(A2E_IOS)
-	// always include this in glsl es
-	if(node_name == "a2e_shader") a2e_shd->includes.push_back("glsles_compat");
+#if defined(FLOOR_IOS)
+	// always include this in glsl es (if it isn't an include file itself)
+	if(filename.find(".a2eshdi") == string::npos) a2e_shd->includes.push_back("glsles_compat");
 #endif
 	const string include_str(shd_doc.get<string>("a2e_shader.includes.content", ""));
 	if(include_str.length() > 0) {
@@ -396,10 +373,14 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 					node_name == "geometry_shader" ||
 					node_name == "fragment_shader") {
 				// get glsl version
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_VERSION::GLSL_150;
 #else
+#if defined(PLATFORM_X64)
+				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_VERSION::GLSL_ES_300;
+#else
 				static const ext::GLSL_VERSION default_glsl_version = ext::GLSL_VERSION::GLSL_ES_100;
+#endif
 #endif
 				ext::GLSL_VERSION glsl_version = default_glsl_version;
 				if(x->is_attribute(cur_elem->attributes, "version")) {
@@ -622,6 +603,10 @@ bool a2e_shader::check_shader_condition(const CONDITION_TYPE type, const string&
 				min_card = (unsigned int)ext::min_intel_card;
 				max_card = (unsigned int)ext::max_intel_card;
 			}
+			else if(vendor == ext::GRAPHICS_CARD_VENDOR::APPLE && graphics_card <= ext::max_apple_card) {
+				min_card = (unsigned int)ext::min_apple_card;
+				max_card = (unsigned int)ext::max_apple_card;
+			}
 			else {
 				log_error("unknown card %d!", graphics_card);
 				break;
@@ -664,6 +649,20 @@ a2e_shader::CONDITION_TYPE a2e_shader::get_condition_type(const string& conditio
 }
 
 bool a2e_shader::process_and_compile_a2e_shader(a2e_shader_object* shd) {
+#if defined(FLOOR_IOS)
+	// due to the lack of geometry shading in opengl es 3.0, environment probing is not supported on iOS
+	// -> remove *env_probe options
+	vector<string> rem_options;
+	for(const auto& option : shd->options) {
+		if(option.find("*env_probe") != string::npos) {
+			rem_options.emplace_back(option);
+		}
+	}
+	for(const auto& rem_option : rem_options) {
+		shd->remove_option(rem_option);
+	}
+#endif
+	
 	// do this for each option
 	for(const auto& option : shd->options) {
 		//
@@ -769,10 +768,14 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		else shd->geometry_shader_available = true;
 		
 		// version
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		static const string glsl_version_suffix = " core";
 #else
+#if defined(PLATFORM_X64)
+		static const string glsl_version_suffix = " es";
+#else
 		static const string glsl_version_suffix = "";
+#endif
 #endif
 		// TODO: 10.8 + kepler allows for: #version 410 core
 		
@@ -783,8 +786,24 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		}
 		
 		// default precision qualifiers (glsl es only)
-#if defined(A2E_IOS)
-		static const string def_prec_quals = "precision highp float;\nprecision highp int;\nprecision highp sampler2D;\nprecision highp samplerCube;\n";
+#if defined(FLOOR_IOS)
+		static const string def_prec_quals = ("precision highp float;\n"
+											  "precision highp int;\n"
+											  "precision highp sampler2D;\n"
+											  "precision highp samplerCube;\n"
+#if defined(PLATFORM_X64)
+											  "precision highp sampler3D;\n"
+											  "precision highp sampler2DArray;\n"
+											  "precision highp isampler2D;\n"
+											  "precision highp isampler3D;\n"
+											  "precision highp isamplerCube;\n"
+											  "precision highp isampler2DArray;\n"
+											  "precision highp usampler2D;\n"
+											  "precision highp usampler3D;\n"
+											  "precision highp usamplerCube;\n"
+											  "precision highp usampler2DArray;\n"
+#endif
+											  );
 		shd->vs_program[option] += def_prec_quals;
 		shd->fs_program[option] += def_prec_quals;
 #endif
@@ -809,7 +828,7 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		shd->fs_program[option] += fragment_shd.program;
 		if(shd->geometry_shader_available) shd->gs_program[option] += geometry_shd.program;
 		
-#if defined(A2E_IOS)
+#if defined(FLOOR_IOS)
 		make_glsl_es_compat(shd, option);
 #endif
 		
@@ -819,7 +838,7 @@ bool a2e_shader::compile_a2e_shader(a2e_shader_object* shd) {
 		file_io shdfile(string(shader_fname + "_" + option + "_vs.txt").c_str(), file_io::OT_WRITE);
 		shdfile.write_block(shd->vs_program[option].c_str(), shd->vs_program[option].size());
 		shdfile.close();
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 		shdfile.open(string(shader_fname + "_" + option + "_gs.txt").c_str(), file_io::OT_WRITE);
 		shdfile.write_block(shd->gs_program[option].c_str(), shd->gs_program[option].size());
 		shdfile.close();
@@ -865,26 +884,37 @@ void a2e_shader::make_glsl_es_compat(a2e_shader_object* shd, const string& optio
 		const regex rx;
 		const string repl;
 	};
-	static const regex_shader_replacement vs_regex[] = {
+	static const regex_shader_replacement vs_regex[] {
 		// strip unavailable storage qualifiers
+#if !defined(PLATFORM_X64)
 		{ regex("^([\\s]*)(smooth )([^;]+)"), "$3" }, // NOTE: these precede centroid
 		{ regex("^([\\s]*)(flat )([^;]+)"), "$3" },
+#endif
 		{ regex("^([\\s]*)(noperspective )([^;]+)"), "$3" },
+#if !defined(PLATFORM_X64)
 		{ regex("^([\\s]*)(centroid )([^;]+)"), "$3" },
 		
 		{ regex("^([\\s]*)(in )([^;]+)"), "attribute $3" },
 		{ regex("^([\\s]*)(out )([^;]+)"), "varying $3" },
+#endif
 	};
 	static const regex_shader_replacement fs_regex[] = {
 		// strip unavailable storage qualifiers
+#if !defined(PLATFORM_X64)
 		{ regex("^([\\s]*)(smooth )([^;]+)"), "$3" },
 		{ regex("^([\\s]*)(flat )([^;]+)"), "$3" },
+#endif
 		{ regex("^([\\s]*)(noperspective )([^;]+)"), "$3" },
+#if !defined(PLATFORM_X64)
 		{ regex("^([\\s]*)(centroid )([^;]+)"), "$3" },
 		
 		{ regex("^([\\s]*)(in )([^;]+)"), "varying $3" },
 		{ regex("^([\\s]*)(out )([^;]+)"), "// out $3 => gl_FragColor" },
 		{ regex("frag_color(_\\d){0,1}"), "gl_FragColor" },
+#else
+		{ regex("out vec4 frag_color;"), "layout(location = 0) out lowp vec4 frag_color;" },
+		{ regex("out vec4 frag_color_(\\d){0,1}"), "layout(location = $1) out lowp vec4 frag_color_$1" },
+#endif
 	};
 	
 	// modify shaders

@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#if 0
 #include "a2eui.hpp"
 #include "engine.hpp"
 
@@ -52,3 +53,4 @@ void a2eui::process_node(const xml::xml_node* node, const xml::xml_node* parent 
 		process_node(child.second, node);
 	}
 }
+#endif

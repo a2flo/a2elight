@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -57,10 +57,14 @@ struct shader_object {
 	bool a2e_shader;
 	
 	shader_object(const string& shd_name) : name(shd_name), programs(), options(),
-#if !defined(A2E_IOS)
+#if !defined(FLOOR_IOS)
 	glsl_version(ext::GLSL_VERSION::GLSL_150),
 #else
+#if defined(PLATFORM_X64)
+	glsl_version(ext::GLSL_VERSION::GLSL_ES_300),
+#else
 	glsl_version(ext::GLSL_VERSION::GLSL_ES_100),
+#endif
 #endif
 	a2e_shader(false) {}
 	~shader_object() {

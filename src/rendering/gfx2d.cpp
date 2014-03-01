@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #include "core/event_objects.hpp"
 #include "rendering/extensions.hpp"
 
-gl3shader gfx2d::simple_shd = nullptr;
-gl3shader gfx2d::gradient_shd = nullptr;
-gl3shader gfx2d::texture_shd = nullptr;
+gl_shader gfx2d::simple_shd = nullptr;
+gl_shader gfx2d::gradient_shd = nullptr;
+gl_shader gfx2d::texture_shd = nullptr;
 shader* gfx2d::eshd = nullptr;
 ext* gfx2d::exts = nullptr;
 
@@ -72,9 +72,9 @@ void gfx2d::destroy() {
 
 void gfx2d::reload_shaders() {
 	// get simple shd
-	gradient_shd = eshd->get_gl3shader("GFX2D_GRADIENT");
-	texture_shd = eshd->get_gl3shader("GFX2D_TEXTURE");
-	simple_shd = eshd->get_gl3shader("SIMPLE");
+	gradient_shd = eshd->get_gl_shader("GFX2D_GRADIENT");
+	texture_shd = eshd->get_gl_shader("GFX2D_TEXTURE");
+	simple_shd = eshd->get_gl_shader("SIMPLE");
 }
 
 bool gfx2d::event_handler(EVENT_TYPE type, shared_ptr<event_object> obj floor_unused) {
@@ -128,7 +128,7 @@ void gfx2d::compute_ellipsoid_points(vector<float2>& dst_points, const float& ra
 	}
 }
 
-void gfx2d::upload_points_and_draw(const gl3shader& shd, const primitive_properties& props) {
+void gfx2d::upload_points_and_draw(const gl_shader& shd, const primitive_properties& props) {
 	// points
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_primitive);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float2)*props.points.size(), &props.points[0], GL_STREAM_DRAW);

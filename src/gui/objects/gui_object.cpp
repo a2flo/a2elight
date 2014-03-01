@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,11 +19,12 @@
 #include "gui_object.hpp"
 #include "engine.hpp"
 #include "gui/gui.hpp"
-#include "threading/task.hpp"
 #include "font_manager.hpp"
 
 gui_object::gui_object(const float2& size_, const float2& position_) :
-ui(engine::get_gui()), theme(ui->get_theme()), evt(floor::get_event()), fm(ui->get_font_manager()), fnt(fm->get_font("SYSTEM_SANS_SERIF")), size(size_), position(position_) {
+gui_object_event(),
+ui(engine::get_gui()), theme(ui->get_theme()), fm(ui->get_font_manager()),
+fnt(fm->get_font("SYSTEM_SANS_SERIF")), size(size_), position(position_) {
 	compute_abs_values();
 }
 
@@ -162,14 +163,6 @@ const set<gui_object*>& gui_object::get_children() const {
 	return children;
 }
 
-bool gui_object::handle_mouse_event(const EVENT_TYPE& type floor_unused, const shared_ptr<event_object>& obj floor_unused, const ipnt& point floor_unused) {
-	return false;
-}
-
-bool gui_object::handle_key_event(const EVENT_TYPE& type floor_unused, const shared_ptr<event_object>& obj floor_unused) {
-	return false;
-}
-
 ipnt gui_object::abs_to_rel_position(const ipnt& point) const {
 	// override this in objects that contain other objects (e.g. gui_window)
 	if(parent != nullptr) return parent->abs_to_rel_position(point);
@@ -180,53 +173,6 @@ ipnt gui_object::rel_to_abs_position(const ipnt& point) const {
 	// override this in objects that contain other objects (e.g. gui_window)
 	if(parent != nullptr) return parent->rel_to_abs_position(point);
 	return point;
-}
-
-void gui_object::lock() {
-	mutex.lock();
-}
-
-bool gui_object::try_lock() {
-	return mutex.try_lock();
-}
-
-void gui_object::unlock() {
-	mutex.unlock();
-}
-
-void gui_object::add_handler(handler&& handler_, GUI_EVENT type) {
-	lock();
-	handlers.insert(pair<GUI_EVENT, handler>(type, handler_));
-	unlock();
-}
-
-void gui_object::handle(const GUI_EVENT gui_evt) {
-	lock();
-	const auto range = handlers.equal_range(gui_evt);
-	for(auto iter = range.first; iter != range.second; iter++) {
-		// we need a ref to the actual object, since we can't capture an iterator that
-		// will be invalid/different after the next iteration
-		const auto& hndlr = *iter;
-		task::spawn([hndlr, gui_evt, this]() {
-			hndlr.second(gui_evt, *this);
-		});
-	}
-	unlock();
-	
-	// also add this event to the global event handler
-	evt->add_event((EVENT_TYPE)gui_evt, make_shared<gui_event>(SDL_GetTicks(), *this));
-}
-
-void gui_object::remove_handlers(const GUI_EVENT& type) {
-	lock();
-	handlers.erase(type);
-	unlock();
-}
-
-void gui_object::remove_handlers() {
-	lock();
-	handlers.clear();
-	unlock();
 }
 
 bool gui_object::should_handle_mouse_event(const EVENT_TYPE& type floor_unused, const ipnt& point) const {

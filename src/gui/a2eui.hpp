@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "global.hpp"
 #include "core/xml.hpp"
 
+#if 0
+// TODO: implement this
 class xml;
 class a2eui {
 public:
@@ -36,5 +38,6 @@ protected:
 	void process_node(const xml::xml_node* node, const xml::xml_node* parent);
 	
 };
+#endif
 
 #endif

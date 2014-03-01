@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -61,11 +61,24 @@ public:
 	
 	//
 	enum class GRADIENT_TYPE : unsigned int {
-		HORIZONTAL,
-		VERTICAL,
-		DIAGONAL_LR,
-		DIAGONAL_RL
+		HORIZONTAL,		//!< left to right
+		VERTICAL,		//!< top to bottom
+		DIAGONAL_LR,	//!< left bottom to top right
+		DIAGONAL_RL,	//!< right bottom to top left
+		CENTER,			//!< inside to outside ("linear" -> straight shape)
+		CENTER_ROUND,	//!< inside to outside ("quadratic" -> round shape)
 	};
+	static constexpr const char* gradient_type_to_string(const GRADIENT_TYPE& type) {
+		switch(type) {
+			case GRADIENT_TYPE::HORIZONTAL: return "gradient_horizontal";
+			case GRADIENT_TYPE::VERTICAL: return "gradient_vertical";
+			case GRADIENT_TYPE::DIAGONAL_LR: return "gradient_diagonal_lr";
+			case GRADIENT_TYPE::DIAGONAL_RL: return "gradient_diagonal_rl";
+			case GRADIENT_TYPE::CENTER: return "gradient_center";
+			case GRADIENT_TYPE::CENTER_ROUND: return "gradient_center_round";
+		}
+		floor_unreachable();
+	}
 	
 	enum class BLEND_MODE : unsigned int {
 		DEFAULT,
@@ -156,9 +169,9 @@ protected:
 	static shader* eshd;
 	static ext* exts;
 	
-	static gl3shader simple_shd;
-	static gl3shader gradient_shd;
-	static gl3shader texture_shd;
+	static gl_shader simple_shd;
+	static gl_shader gradient_shd;
+	static gl_shader texture_shd;
 			
 	static GLuint vbo_primitive;
 	
@@ -166,7 +179,7 @@ protected:
 	static event::handler evt_handler;
 	static bool event_handler(EVENT_TYPE type, shared_ptr<event_object> obj);
 	
-	static void upload_points_and_draw(const gl3shader& shd, const primitive_properties& props);
+	static void upload_points_and_draw(const gl_shader& shd, const primitive_properties& props);
 	
 };
 
@@ -213,14 +226,14 @@ struct gfx2d::point_compute_line {
 		
 		// add half a pixel if this is a horizontal/vertical line - this is necessary to get
 		// sharp lines (anti-aliasing would 50/50 distribute the color to two pixels otherwise)
-		if(x1 == x2) {
+		/*if(x1 == x2) {
 			x1 += 0.5f;
 			x2 += 0.5f;
 		}
 		else if(y1 == y2) {
 			y1 += 0.5f;
 			y2 += 0.5f;
-		}
+		}*/
 		// else: diagonal
 		
 		// swap points if first point is below second point
@@ -404,9 +417,7 @@ struct gfx2d::draw_style_gradient {
 					 const float4& stops,
 					 const vector<float4>& colors) {
 		// draw
-		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
-							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
-								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
+		const string option = gradient_type_to_string(type);
 		
 		gradient_shd->use(option);
 		gradient_shd->uniform("mvpm", *engine::get_mvp_matrix());
@@ -466,9 +477,7 @@ struct gfx2d::draw_style_texture {
 					 const coord bottom_left = coord(0.0f),
 					 const coord top_right = coord(1.0f),
 					 const float draw_depth = 0.0f) {
-		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
-							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
-								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
+		const string option = gradient_type_to_string(type);
 		draw(props, texture, false, 0.0f, mul_color, add_color, gradient_stops, gradient_colors, gradient_mul_interpolator,
 			 gradient_add_interpolator, bottom_left, top_right, draw_depth, option);
 	}
@@ -515,9 +524,7 @@ struct gfx2d::draw_style_texture {
 					 const coord bottom_left = coord(0.0f),
 					 const coord top_right = coord(1.0f),
 					 const float draw_depth = 0.0f) {
-		const string option = (type == gfx2d::GRADIENT_TYPE::HORIZONTAL ? "gradient_horizontal" :
-							   (type == gfx2d::GRADIENT_TYPE::VERTICAL ? "gradient_vertical" :
-								(type == gfx2d::GRADIENT_TYPE::DIAGONAL_LR ? "gradient_diagonal_lr" : "gradient_diagonal_rl")));
+		const string option = gradient_type_to_string(type);
 		draw(props, texture, true, layer, mul_color, add_color, gradient_stops, gradient_colors, gradient_mul_interpolator,
 			 gradient_add_interpolator, bottom_left, top_right, draw_depth, option);
 	}

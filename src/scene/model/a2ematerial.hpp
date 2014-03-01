@@ -1,6 +1,6 @@
 /*
  *  Albion 2 Engine "light"
- *  Copyright (C) 2004 - 2013 Florian Ziesche
+ *  Copyright (C) 2004 - 2014 Florian Ziesche
  *  
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -118,7 +118,7 @@ public:
 	material& get_material(const size_t& material_id);
 	size_t get_material_count() const;
 
-	void enable_textures(const size_t& object_id, gl3shader& shd, const TEXTURE_TYPE texture_mask = (TEXTURE_TYPE)~(unsigned int)0) const;
+	void enable_textures(const size_t& object_id, gl_shader& shd, const TEXTURE_TYPE texture_mask = (TEXTURE_TYPE)~(unsigned int)0) const;
 	void disable_textures(const size_t& object_id) const;
 	
 	void copy_object_mapping(const size_t& from_object, const size_t& to_object);
