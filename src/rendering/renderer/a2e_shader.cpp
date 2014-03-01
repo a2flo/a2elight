@@ -34,7 +34,7 @@ conditions({
 	
 	// use sdl platform defines for this
 	{ "MAC_OS_X",
-#if defined(__MACOSX__) && !defined(FLOOR_IOS)
+#if defined(__APPLE__) && !defined(FLOOR_IOS)
 		true
 #else
 		false

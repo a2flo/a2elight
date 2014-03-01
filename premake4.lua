@@ -111,10 +111,12 @@ project "a2elight"
 		add_include("/usr/include/libxml")
 		add_include("/usr/include/freetype2")
 		add_include("/usr/local/include/freetype2")
+		add_include("/usr/include/floor")
+		add_include("/usr/local/include/floor")
 		buildoptions { "-Wall -x c++ -std=c++1y" }
 		
 		if(clang_libcxx) then
-			buildoptions { "-stdlib=libc++ -integrated-as" }
+			buildoptions { "-stdlib=libc++" }
 			buildoptions { "-Weverything" }
 			buildoptions { "-Wno-unknown-warning-option" }
 			buildoptions { "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-header-hygiene -Wno-gnu -Wno-float-equal" }
@@ -122,12 +124,16 @@ project "a2elight"
 			buildoptions { "-Wno-switch-enum -Wno-sign-conversion -Wno-conversion -Wno-exit-time-destructors" }
 			linkoptions { "-fvisibility=default" }
 			if(not win_unixenv) then
+				defines { "FLOOR_EXPORT=1" }
 				linkoptions { "-stdlib=libc++" }
+				if(os.is("linux")) then
+					linkoptions { "-lc++abi" }
+				end
 			else
-				-- link against everything that libc++ links to, now that there are no default libs
-				linkoptions { "-lsupc++ -lpthread -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcr100 -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt" }
-				linkoptions { "-nodefaultlibs -stdlib=libc++ -lc++.dll" }
-				add_include("/usr/include/c++/v1")
+				-- "--allow-multiple-definition" is necessary, because gcc is still used as a linker
+				-- and will always link against libstdc++ (-> multiple definitions with libc++)
+				-- also note: since libc++ is linked first, libc++'s functions will be used
+				linkoptions { "-stdlib=libc++ -lc++.dll -Wl,--allow-multiple-definition" }
 			end
 		end
 		
@@ -137,12 +143,12 @@ project "a2elight"
 		
 		if(cuda) then
 			add_include("/usr/local/cuda/include")
-			add_include("/usr/local/cuda-5.0/include")
+			add_include("/usr/local/cuda-6.0/include")
 			defines { "A2E_CUDA_CL=1" }
 			if(platform == "x64") then
-				libdirs { "/opt/cuda-toolkit/lib64", "/usr/local/cuda/lib64", "/usr/local/cuda-5.0/lib64" }
+				libdirs { "/opt/cuda-toolkit/lib64", "/usr/local/cuda/lib64", "/usr/local/cuda-6.0/lib64" }
 			else
-				libdirs { "/opt/cuda-toolkit/lib", "/usr/local/cuda/lib", "/usr/local/cuda-5.0/lib" }
+				libdirs { "/opt/cuda-toolkit/lib", "/usr/local/cuda/lib", "/usr/local/cuda-6.0/lib" }
 			end
 			links { "cuda", "cudart" }
 		end
@@ -167,7 +173,7 @@ project "a2elight"
 		-- set system includes
 		buildoptions { system_includes }
 		
-		links { "OpenCL", "freetype", "z" }
+		links { "OpenCL", "freetype", "z", "floor" }
 		libdirs { os.findlib("GL"), os.findlib("xml2"), os.findlib("OpenCL") }
 		if(not win_unixenv) then
 			links { "GL", "SDL2_image", "Xxf86vm", "xml2" }
