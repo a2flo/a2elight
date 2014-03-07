@@ -23,9 +23,6 @@ gui_item_container::gui_item_container(const float2& size_, const float2& positi
 gui_object(size_, position_), select_event(select_event_) {
 }
 
-gui_item_container::~gui_item_container() {
-}
-
 void gui_item_container::clear() {
 	display_items.clear();
 	items.clear();

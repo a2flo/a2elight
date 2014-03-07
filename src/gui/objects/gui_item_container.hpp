@@ -25,7 +25,7 @@
 class A2E_API gui_item_container : public gui_object {
 public:
 	gui_item_container(const float2& size, const float2& position, const GUI_EVENT select_event);
-	virtual ~gui_item_container();
+	virtual ~gui_item_container() = default;
 	
 	virtual void clear();
 	virtual void add_item(const string& identifier, const string& label);

@@ -54,6 +54,7 @@ public:
 	//
 	font_manager* get_font_manager() const;
 	gui_theme* get_theme() const;
+	gui_window* get_main_window() const;
 	
 	bool set_clipboard_text(const string& text);
 	const string& get_clipboard_text() const;
@@ -85,6 +86,9 @@ public:
 	
 	//
 	const rtt::fbo* get_fullscreen_fbo() const;
+	
+	//
+	void create_main_window();
 
 protected:
 	event* evt;
@@ -93,6 +97,7 @@ protected:
 	scene* sce;
 	font_manager* fm;
 	gui_theme* theme;
+	gui_window* main_window;
 	
 	// note: this must be ordered
 	array<vector<ui_draw_callback*>, 2> draw_callbacks; // pre and post

@@ -26,8 +26,8 @@
 class gui;
 class A2E_API gui_object_event {
 public:
-	gui_object_event();
-	virtual ~gui_object_event();
+	gui_object_event() noexcept;
+	virtual ~gui_object_event() = default;
 
 	//
 	void lock();

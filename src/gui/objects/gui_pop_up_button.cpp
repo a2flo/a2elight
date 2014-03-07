@@ -23,6 +23,7 @@
 #include "gui.hpp"
 #include "threading/task.hpp"
 #include "font.hpp"
+#include "gui_window.hpp"
 
 ////
 class gui_pop_up_window : public gui_window {
@@ -106,7 +107,9 @@ void gui_pop_up_window::draw() {
 	// draw overlay rectangle
 	theme->draw("pop_up_button", "overlay",
 				overlay_position, overlay_size,
-				false);
+				false, true,
+				get_parent_window()->get_background_color(),
+				images);
 	
 	// draw items
 	const pnt mouse_pos { floor::get_event()->get_mouse_pos() };
@@ -127,7 +130,9 @@ void gui_pop_up_window::draw() {
 		   mouse_pos.y > item_position.y && mouse_pos.y <= (item_position.y + item_size.y)) {
 			// active item
 			theme->draw("pop_up_button", "item_active",
-						item_position, item_size, false);
+						item_position, item_size, false, true,
+						get_parent_window()->get_background_color(),
+						images);
 			fnt->draw_cached(cached_item.first.first.x, cached_item.first.first.y,
 							 (item_position + text_margin).rounded(),
 							 font_color_active);
@@ -181,15 +186,14 @@ gui_pop_up_button::gui_pop_up_button(const float2& size_, const float2& position
 gui_item_container(size_, position_, GUI_EVENT::POP_UP_BUTTON_SELECT) {
 }
 
-gui_pop_up_button::~gui_pop_up_button() {
-}
-
 void gui_pop_up_button::draw() {
 	if(!gui_object::handle_draw()) return;
 	
 	// TODO: handle disabled state
 	theme->draw("pop_up_button", state.active ? "active" : "normal",
 				position_abs, size_abs, true, true,
+				get_parent_window()->get_background_color(),
+				images,
 				[this](const string& str floor_unused) -> string {
 					if(selected_item == nullptr) return "";
 					return selected_item->second;
@@ -232,7 +236,7 @@ void gui_pop_up_button::open_selection_wnd() {
 												   display_items);
 		ui->unlock();
 		floor::release_context();
-	});
+	}, "open_selection_wnd");
 }
 
 void gui_pop_up_button::close_selection_wnd() {
@@ -244,5 +248,5 @@ void gui_pop_up_button::close_selection_wnd() {
 		selection_wnd = nullptr;
 		ui->unlock();
 		floor::release_context();
-	});
+	}, "close_selection_wnd");
 }

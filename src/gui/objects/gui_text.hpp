@@ -23,8 +23,8 @@
 
 class A2E_API gui_text : public gui_object {
 public:
-	gui_text(const float2& size, const float2& position);
-	virtual ~gui_text();
+	using gui_object::gui_object;
+	virtual ~gui_text() = default;
 	
 	virtual void draw();
 	
@@ -35,8 +35,8 @@ public:
 	virtual const bool& get_shade() const;
 	
 protected:
-	string label = "";
-	bool shade = false;
+	string label { "" };
+	bool shade { false };
 
 };
 

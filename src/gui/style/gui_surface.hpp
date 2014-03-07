@@ -32,7 +32,8 @@ public:
 		NO_DEPTH			= (1u << 1u),	//!< no depth buffer is used (implies NO_ANTI_ALIASING)
 		NO_CLEAR			= (1u << 2u),	//!< used by inheriting classes: surface is not cleared on redraw
 		NO_SHARING			= (1u << 3u),	//!< explicitly disables buffer sharing
-		ABSOLUTE_SIZE		= (1u << 4u),	//!< the buffer_size specified in the constructor is an abs size (not rel/norm)
+		NO_BUFFER			= (1u << 4u),	//!< doesn't create an fbo/surface buffer (obviously limited purpose)
+		ABSOLUTE_SIZE		= (1u << 5u),	//!< the buffer_size specified in the constructor is an abs size (not rel/norm)
 		
 		//
 		__SHAREABLE_FLAGS = (NONE | NO_CLEAR)

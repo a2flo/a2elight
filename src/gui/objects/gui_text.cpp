@@ -19,22 +19,18 @@
 #include "gui_text.hpp"
 #include "engine.hpp"
 #include "core/core.hpp"
-
-gui_text::gui_text(const float2& size_, const float2& position_) :
-gui_object(size_, position_) {
-	//
-}
-
-gui_text::~gui_text() {
-}
+#include "gui_window.hpp"
 
 void gui_text::draw() {
 	if(!gui_object::handle_draw()) return;
+	if(label.empty()) return;
 	
 	// TODO: handle disabled state
 	// TODO: handle centering
 	theme->draw("text", shade ? "normal_shade" : "normal",
 				position_abs, size_abs, true, true,
+				get_parent_window()->get_background_color(),
+				images,
 				[this](const string& str floor_unused) { return label; });
 }
 

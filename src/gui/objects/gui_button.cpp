@@ -19,14 +19,7 @@
 #include "gui_button.hpp"
 #include "engine.hpp"
 #include "gui.hpp"
-
-gui_button::gui_button(const float2& size_, const float2& position_) :
-gui_text(size_, position_) {
-	//
-}
-
-gui_button::~gui_button() {
-}
+#include "gui_window.hpp"
 
 void gui_button::draw() {
 	if(!gui_object::handle_draw()) return;
@@ -34,6 +27,8 @@ void gui_button::draw() {
 	// TODO: handle disabled state
 	theme->draw("button", state.active ? "active" : "normal",
 				position_abs, size_abs, true, true,
+				get_parent_window()->get_background_color(),
+				images,
 				[this](const string& str floor_unused) { return label; });
 }
 

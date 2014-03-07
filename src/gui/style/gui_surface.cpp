@@ -46,6 +46,10 @@ void gui_surface::delete_buffer() {
 }
 
 void gui_surface::resize(const float2& buffer_size_) {
+	if((flags & SURFACE_FLAGS::NO_BUFFER) == SURFACE_FLAGS::NO_BUFFER) {
+		return;
+	}
+	
 	uint2 buffer_size_abs_ = ((flags & SURFACE_FLAGS::ABSOLUTE_SIZE) == SURFACE_FLAGS::ABSOLUTE_SIZE ?
 							  buffer_size_.rounded() :
 							  buffer_size_ * float2(floor::get_width(), floor::get_height()));
@@ -155,7 +159,7 @@ const float2& gui_surface::get_offset() const {
 }
 
 void gui_surface::start_draw() {
-	r->start_draw(buffer);
+	if(buffer) r->start_draw(buffer);
 	if(shared_buffer) {
 		// these must always be reset, since other buffers use them too
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
@@ -164,7 +168,7 @@ void gui_surface::start_draw() {
 }
 
 void gui_surface::stop_draw() {
-	r->stop_draw();
+	if(buffer) r->stop_draw();
 }
 
 void gui_surface::set_flags(const gui_surface::SURFACE_FLAGS& flags_) {

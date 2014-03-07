@@ -23,8 +23,8 @@
 
 class A2E_API gui_button : public gui_text {
 public:
-	gui_button(const float2& size, const float2& position);
-	virtual ~gui_button();
+	using gui_text::gui_text;
+	virtual ~gui_button() = default;
 	
 	virtual void draw();
 	

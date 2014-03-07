@@ -19,14 +19,7 @@
 #include "gui_toggle_button.hpp"
 #include "engine.hpp"
 #include "gui.hpp"
-
-gui_toggle_button::gui_toggle_button(const float2& size_, const float2& position_) :
-gui_object(size_, position_) {
-	//
-}
-
-gui_toggle_button::~gui_toggle_button() {
-}
+#include "gui_window.hpp"
 
 void gui_toggle_button::draw() {
 	if(!gui_object::handle_draw()) return;
@@ -34,6 +27,8 @@ void gui_toggle_button::draw() {
 	// TODO: handle disabled state
 	theme->draw("toggle_button", toggled ? "toggled" : "normal",
 				position_abs, size_abs, true, true,
+				get_parent_window()->get_background_color(),
+				images,
 				[this](const string& str floor_unused) { return toggled ? toggled_label : untoggled_label; });
 }
 

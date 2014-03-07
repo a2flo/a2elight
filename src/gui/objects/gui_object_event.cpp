@@ -21,10 +21,7 @@
 #include "gui/gui.hpp"
 #include "threading/task.hpp"
 
-gui_object_event::gui_object_event() : evt(floor::get_event()) {
-}
-
-gui_object_event::~gui_object_event() {
+gui_object_event::gui_object_event() noexcept : evt(floor::get_event()) {
 }
 
 void gui_object_event::lock() {
@@ -51,7 +48,7 @@ void gui_object_event::handle(const GUI_EVENT gui_evt) {
 	for(auto iter = range.first; iter != range.second; iter++) {
 		task::spawn([&hndlr = *iter, gui_evt, this]() {
 			hndlr.second(gui_evt, (gui_object&)*this);
-		});
+		}, "evt handler");
 	}
 	unlock();
 	

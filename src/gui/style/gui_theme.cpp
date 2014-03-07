@@ -354,6 +354,8 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 			{ "vertical", gfx2d::GRADIENT_TYPE::VERTICAL },
 			{ "diagonal_lr", gfx2d::GRADIENT_TYPE::DIAGONAL_LR },
 			{ "diagonal_rl", gfx2d::GRADIENT_TYPE::DIAGONAL_RL },
+			{ "center", gfx2d::GRADIENT_TYPE::CENTER },
+			{ "center_round", gfx2d::GRADIENT_TYPE::CENTER_ROUND },
 		};
 		
 		const auto iter = types.find(gradient_str);
@@ -491,6 +493,8 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 void gui_theme::draw(const string& type, const string& state,
 					 const float2& offset, const float2& size,
 					 const bool clear, const bool scissor,
+					 const float4 background_color,
+					 const unordered_map<string, a2e_image*>& image_lookup,
 					 std::function<string(const string&)> text_lookup,
 					 std::function<unsigned int(const string&)> texture_lookup) {
 	const auto iter = ui_objects.find(type);
@@ -512,7 +516,9 @@ void gui_theme::draw(const string& type, const string& state,
 		glScissor(floorf(offset.x), floorf(offset.y),
 				  ceilf(size.x), ceilf(size.y));
 	}
-	if(clear) r->clear();
+	if(clear) {
+		r->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, background_color);
+	}
 	
 	//
 	gui_ui_object::state* st = state_iter->second.get();
@@ -730,15 +736,26 @@ void gui_theme::draw(const string& type, const string& state,
 				ds->mul_color.compute(scheme);
 				ds->add_color.compute(scheme);
 				
-				// external/dynamic texture: lookup texture num
+				// external/dynamic texture: lookup image or texture num
 				if(!ds->texture_name.empty()) {
-					ds->texture = texture_lookup(ds->texture_name);
-					if(ds->texture == 0) {
-						log_error("texture \"%s\" not found!", ds->texture_name);
-						ds->texture = engine::get_texman()->get_dummy_texture()->tex();
+					// check image_lookup first ...
+					const auto img_iter = image_lookup.find(ds->texture_name);
+					if(img_iter != image_lookup.end()) {
+						// found it
+						ds->texture = img_iter->second->get_texture()->tex();
+					}
+					else {
+						// ... then texture_lookup
+						ds->texture = texture_lookup(ds->texture_name);
 					}
 				}
 				
+				// if the texture wasn't found (or is nonexistent), don't draw anything
+				if(ds->texture == 0) {
+					break;
+				}
+				
+				// draw
 				if(!ds->is_gradient) {
 					if(ds->passthrough) {
 						if(prim.style == DRAW_STYLE::TEXTURE) {

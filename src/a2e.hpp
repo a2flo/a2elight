@@ -30,6 +30,7 @@
 #include "gui/objects/gui_input_box.hpp"
 #include "gui/objects/gui_list_box.hpp"
 #include "gui/objects/gui_object.hpp"
+#include "gui/objects/gui_object_event.hpp"
 #include "gui/objects/gui_pop_up_button.hpp"
 #include "gui/objects/gui_slider.hpp"
 #include "gui/objects/gui_text.hpp"

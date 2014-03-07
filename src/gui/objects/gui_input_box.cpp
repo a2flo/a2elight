@@ -21,6 +21,7 @@
 #include "font.hpp"
 #include "gui.hpp"
 #include "threading/task.hpp"
+#include "gui_window.hpp"
 
 gui_input_box::gui_input_box(const float2& size_, const float2& position_) :
 gui_object(size_, position_) {
@@ -43,7 +44,9 @@ void gui_input_box::draw() {
 	
 	// below the text
 	theme->draw("input_box", state.active ? "active" : "normal",
-				position_abs, size_abs);
+				position_abs, size_abs, true, true,
+				get_parent_window()->get_background_color(),
+				images);
 	
 	// draw the text
 	// note: scissor will be reset in the next theme draw
@@ -61,13 +64,19 @@ void gui_input_box::draw() {
 		limited_size.x -= blink_offset;
 		theme->draw("input_box", "blink",
 					blink_position, limited_size,
-					false); // don't clear underlying input box
+					false, // don't clear underlying input box
+					true,
+					get_parent_window()->get_background_color(),
+					images);
 	}
 	
 	// above the text
 	theme->draw("input_box", state.active ? "active_top" : "normal_top",
 				position_abs, size_abs,
-				false); // don't clear underlying input box
+				false, // don't clear underlying input box
+				true,
+				get_parent_window()->get_background_color(),
+				images);
 }
 
 void gui_input_box::set_active(const bool& active_state) {
@@ -101,7 +110,7 @@ void gui_input_box::set_active(const bool& active_state) {
 				} while(true);
 				blink_state = false;
 				blink_task_end = true;
-			});
+			}, "gui_input_box blink task");
 		}
 	}
 	// kill the blink task

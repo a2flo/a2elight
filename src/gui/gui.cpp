@@ -31,6 +31,7 @@ thread_base("gui"),
 evt(floor::get_event()), r(engine::get_rtt()), s(engine::get_shader()), sce(engine::get_scene()),
 fm(new font_manager()),
 theme(new gui_theme(fm)),
+main_window(nullptr),
 main_fbo(1),
 key_handler_fnctr(bind(&gui::key_handler, this, placeholders::_1, placeholders::_2)),
 mouse_handler_fnctr(bind(&gui::mouse_handler, this, placeholders::_1, placeholders::_2)),
@@ -87,7 +88,7 @@ window_handler_fnctr(bind(&gui::window_handler, this, placeholders::_1, placehol
 }
 
 gui::~gui() {
-	log_debug("deleting gui object");
+	log_debug("deleting gui");
 	
 	set_thread_should_finish();
 	
@@ -104,6 +105,7 @@ gui::~gui() {
 		delete surface.second;
 	}
 	
+	// delete all created windows (including main_window) and their children
 	for(const auto& wnd : windows) {
 		delete wnd;
 	}
@@ -111,7 +113,14 @@ gui::~gui() {
 	delete theme;
 	delete fm;
 
-	log_debug("gui object deleted");
+	log_debug("gui deleted");
+}
+
+void gui::create_main_window() {
+	// NOTE: main window creation must be delayed (outside the gui constructor), because the gui_object/gui_window
+	// constructor depends on the gui variable being set in the engine (among other things)
+	if(main_window != nullptr) return;
+	main_window = this->add<gui_window>(float2(1.0f), float2(0.0f), gui_surface::SURFACE_FLAGS::NO_BUFFER);
 }
 
 void gui::reload_shaders() {
@@ -143,6 +152,7 @@ void gui::draw() {
 	// smoother gui drawing (-> no halts due to event handling)
 	if(try_lock()) {
 		for(const auto& wnd : windows) {
+			if(wnd == main_window) continue;
 			wnd->draw();
 		}
 		unlock();
@@ -167,6 +177,7 @@ void gui::draw() {
 	// blit windows (in reverse order)
 	// TODO: lock?
 	for(auto riter = windows.crbegin(); riter != windows.crend(); riter++) {
+		if(*riter == main_window) continue;
 		if((*riter)->is_visible()) (*riter)->blit(texture_shd);
 	}
 	
@@ -479,6 +490,10 @@ font_manager* gui::get_font_manager() const {
 
 gui_theme* gui::get_theme() const {
 	return theme;
+}
+
+gui_window* gui::get_main_window() const {
+	return main_window;
 }
 
 void gui::add_window(gui_window* wnd) {

@@ -19,8 +19,8 @@
 #include "gui_window.hpp"
 #include "engine.hpp"
 
-gui_window::gui_window(const float2& buffer_size_, const float2& position_) :
-gui_object(buffer_size_, position_), gui_surface(buffer_size_, position_) {
+gui_window::gui_window(const float2& buffer_size_, const float2& position_, const SURFACE_FLAGS flags_) :
+gui_object(buffer_size_, position_), gui_surface(buffer_size_, position_, flags_) {
 	//
 }
 
@@ -33,14 +33,14 @@ void gui_window::clear(const bool delete_children) {
 	if(delete_children) {
 		// delete all children (we need to copy the container, since deleting
 		// a child will modify the children container)
-		const set<gui_object*> children_copy(children);
+		const auto children_copy(children);
 		for(const auto& child : children_copy) {
 			delete child;
 		}
 	}
 	else {
 		// just remove all children from the window
-		const set<gui_object*> children_copy(children);
+		const auto children_copy(children);
 		for(const auto& child : children_copy) {
 			child->set_parent(nullptr); // this will also remove the child from this window
 		}
@@ -72,7 +72,9 @@ void gui_window::draw() {
 	//
 	vector<int4> blit_rects;
 	start_draw();
-	if(redraw_all) r->clear();
+	if(redraw_all) {
+		r->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, background_color);
+	}
 	else if(shared_buffer) {
 		// when using a shared buffer: create a blit rectangle list of all childs that are redrawn
 		for(const auto& child : children) {
@@ -122,9 +124,17 @@ bool gui_window::needs_redraw() const {
 void gui_window::resize(const float2& buffer_size_) {
 	gui_surface::resize(buffer_size_);
 	size = buffer_size_;
+	
+	// update size/position values first
 	compute_abs_values();
 	for(const auto& child : children) {
 		child->compute_abs_values();
+	}
+	
+	// then update all attachment values
+	compute_attachment_values();
+	for(const auto& child : children) {
+		child->compute_attachment_values();
 	}
 }
 
@@ -136,6 +146,7 @@ void gui_window::set_position(const float2& position_) {
 	position = position_;
 	set_offset(position_);
 	compute_abs_values();
+	compute_attachment_values();
 }
 
 bool gui_window::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point) {
@@ -175,4 +186,13 @@ ipnt gui_window::rel_to_abs_position(const ipnt& point) const {
 	ipnt p = (parent != nullptr ? parent->rel_to_abs_position(point) : point);
 	p += position_abs;
 	return p;
+}
+
+void gui_window::set_background_color(const float4& color) {
+	background_color = color;
+	redraw();
+}
+
+const float4& gui_window::get_background_color() const {
+	return background_color;
 }

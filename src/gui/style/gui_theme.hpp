@@ -23,6 +23,7 @@
 #include "core/xml.hpp"
 #include "gui_color_scheme.hpp"
 #include "rendering/gfx2d.hpp"
+#include "gui/image.hpp"
 
 class xml;
 class font_manager;
@@ -39,9 +40,11 @@ public:
 	// text lookup: takes an identifier and returns the associated string
 	void draw(const string& type, const string& state,
 			  const float2& offset, const float2& size,
-			  const bool clear = true, const bool scissor = true,
-			  std::function<string(const string&)> text_lookup = [](const string& str floor_unused){return "";},
-			  std::function<unsigned int(const string&)> texture_lookup = [](const string& tex_name floor_unused){return 0;});
+			  const bool clear, const bool scissor,
+			  const float4 background_color,
+			  const unordered_map<string, a2e_image*>& image_lookup,
+			  function<string(const string&)> text_lookup = [](const string&) { return ""; },
+			  function<unsigned int(const string&)> texture_lookup = [](const string&) { return 0; });
 	
 	const gui_color_scheme& get_color_scheme() const;
 	

@@ -26,7 +26,7 @@ class gui_pop_up_window;
 class A2E_API gui_pop_up_button : public gui_item_container {
 public:
 	gui_pop_up_button(const float2& size, const float2& position);
-	virtual ~gui_pop_up_button();
+	virtual ~gui_pop_up_button() = default;
 	
 	virtual void draw();
 	

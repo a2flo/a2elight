@@ -285,6 +285,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 			default: break;
 		}
 		ui = new gui("standard"); // TODO: add config setting for theme name
+		ui->create_main_window();
 		
 		floor::release_context();
 	}

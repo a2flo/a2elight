@@ -142,6 +142,7 @@ void gui_file_dialog::open(const string directory, const bool write_history) {
 	if(dialog_wnd == nullptr) {
 		gui* ui = engine::get_gui();
 		dialog_wnd = ui->add<gui_window>(float2(1.0f, 1.0f), float2(0.0f, 0.0f));
+		dialog_wnd->set_background_color(float4 { 1.0f });
 		
 		static constexpr float elem_height { 0.03f };
 		static constexpr float margin { 0.003f };

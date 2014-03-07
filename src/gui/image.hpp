@@ -23,46 +23,47 @@
 
 #include "engine.hpp"
 
-/*! @class image
- *  @brief functions to display an image
- */
-
-class A2E_API image {
+class A2E_API a2e_image {
 public:
-	image();
-	~image();
+	constexpr a2e_image() = default;
+	a2e_image(const string& filename, const TEXTURE_FILTERING filter = TEXTURE_FILTERING::POINT);
+	a2e_image(a2e_image&& img) = default;
+	~a2e_image() = default;
+	
+	a2e_image& operator=(a2e_image& img) = default;
+	a2e_image& operator=(a2e_image&& img) = default;
+	
+	void open_image(const string& filename, const TEXTURE_FILTERING filter = TEXTURE_FILTERING::POINT);
 
 	void draw();
-	void draw(unsigned int scale_x, unsigned int scale_y, bool flip_y = false);
-	void open_image(const char* filename);
+	void draw(const pnt& scale_xy, const bool flip_y = false);
 
-	void set_position(unsigned int x, unsigned int y);
-	void set_position(pnt* position);
-	pnt& get_position();
+	void set_position(const unsigned int& x, const unsigned int& y);
+	void set_position(const pnt& position);
+	const pnt& get_position() const;
 
 	const a2e_texture& get_texture() const;
 	void set_texture(const a2e_texture& new_tex);
 
-	void set_scaling(bool state);
-	bool get_scaling();
-	void set_gui_img(bool state);
+	void set_scaling(const bool& state);
+	const bool& get_scaling() const;
+	void set_gui_image(const bool& state);
+	const bool& is_gui_image() const;
 
-	unsigned int get_width();
-	unsigned int get_height();
+	unsigned int get_width() const;
+	unsigned int get_height() const;
 
-	void set_color(unsigned int color);
+	void set_color(const float4& color);
+	const float4& get_color() const;
 
 protected:
-	texman* t;
-	
 	pnt position;
+	float4 color { 1.0f };
+
+	bool scale { true };
+	bool gui_img { false };
 
 	a2e_texture tex;
-
-	bool scale;
-	bool gui_img;
-
-	unsigned int color;
 
 };
 

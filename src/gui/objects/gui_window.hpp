@@ -24,7 +24,7 @@
 
 class A2E_API gui_window : public gui_object, public gui_surface {
 public:
-	gui_window(const float2& buffer_size, const float2& position);
+	gui_window(const float2& buffer_size, const float2& position, const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
 	virtual ~gui_window();
 	
 	virtual void draw();
@@ -45,8 +45,15 @@ public:
 	virtual bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj);
 	
 	virtual void clear(const bool delete_children = true);
+	
+	//! sets the window background color (the default is a fully transparent background)
+	virtual void set_background_color(const float4& color);
+	virtual const float4& get_background_color() const;
 
 protected:
+	float4 background_color { 0.0f, 0.0f, 0.0f, 0.0f };
+	
+	virtual bool is_window() const override { return true; }
 
 };
 

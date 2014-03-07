@@ -19,26 +19,21 @@
 #include "gui_slider.hpp"
 #include "engine.hpp"
 #include "gui.hpp"
-
-gui_slider::gui_slider(const float2& size_, const float2& position_) :
-gui_object(size_, position_) {
-	//
-	knob_radius = gui_theme::point_to_pixel(knob_radius);
-	knob_offset = gui_theme::point_to_pixel(knob_offset);
-}
-
-gui_slider::~gui_slider() {
-}
+#include "gui_window.hpp"
 
 void gui_slider::draw() {
 	if(!gui_object::handle_draw()) return;
 	
 	// TODO: handle disabled state
 	theme->draw("slider", "normal",
-				position_abs, size_abs);
+				position_abs, size_abs, true, true,
+				get_parent_window()->get_background_color(),
+				images);
 	theme->draw("slider", state.active ? "active_knob" : "normal_knob",
 				position_abs + float2((knob_offset - knob_radius) + knob_position * slider_width, 0.0f),
-				float2(knob_radius * 2.0f, size_abs.y), false);
+				float2(knob_radius * 2.0f, size_abs.y), false, true,
+				get_parent_window()->get_background_color(),
+				images);
 }
 
 void gui_slider::compute_abs_values() {

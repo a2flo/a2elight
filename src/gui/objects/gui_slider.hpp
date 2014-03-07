@@ -23,8 +23,8 @@
 
 class A2E_API gui_slider : public gui_object {
 public:
-	gui_slider(const float2& size, const float2& position);
-	virtual ~gui_slider();
+	using gui_object::gui_object;
+	virtual ~gui_slider() = default;
 	
 	virtual void draw();
 	virtual void compute_abs_values();
@@ -38,10 +38,10 @@ public:
 	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
 	
 protected:
-	float knob_radius = 6.0f; // in pt
-	float knob_offset = knob_radius + 2.0f; // in pt
+	float knob_radius { gui_theme::point_to_pixel(6.0f) }; // in pt
+	float knob_offset { gui_theme::point_to_pixel(knob_radius + 2.0f) }; // in pt
 	atomic<float> knob_position { 0.5f };
-	float slider_width = 0.0f;
+	float slider_width { 0.0f };
 	
 	bool move_knob(const ipnt& point);
 

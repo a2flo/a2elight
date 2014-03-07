@@ -20,6 +20,7 @@
 #include "engine.hpp"
 #include "gui.hpp"
 #include "font.hpp"
+#include "gui_window.hpp"
 
 gui_list_box::gui_list_box(const float2& size_, const float2& position_) :
 gui_item_container(size_, position_, GUI_EVENT::LIST_BOX_SELECT) {
@@ -28,14 +29,14 @@ gui_item_container(size_, position_, GUI_EVENT::LIST_BOX_SELECT) {
 	item_height = fnt->get_display_size() + item_margin;
 }
 
-gui_list_box::~gui_list_box() {
-}
-
 void gui_list_box::draw() {
 	if(!gui_object::handle_draw()) return;
 	
 	// TODO: handle disabled state
-	theme->draw("list_box", "normal", position_abs, size_abs);
+	theme->draw("list_box", "normal", position_abs, size_abs,
+				true, true,
+				get_parent_window()->get_background_color(),
+				images);
 	
 	// manual scissor test:
 	glScissor(floorf(position_abs.x), floorf(position_abs.y),
@@ -55,6 +56,8 @@ void gui_list_box::draw() {
 		theme->draw("list_box", item == selected_item ? "item_active" : "item",
 					cur_position, float2(size_abs.x, item_height),
 					false, false,
+					get_parent_window()->get_background_color(),
+					images,
 					[&item](const string&) -> string { return item->second; });
 	}
 	

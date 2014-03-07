@@ -19,24 +19,12 @@
 #include "image.hpp"
 #include "rendering/gfx2d.hpp"
 
-image::image() : t(engine::get_texman()), position() {
-	scale = true;
-	gui_img = false;
-	color = 0xFFFFFF;
+a2e_image::a2e_image(const string& filename, const TEXTURE_FILTERING filter) {
+	open_image(filename, filter);
 }
 
-image::~image() {
-}
-
-/*! draws the image
- */
-void image::draw(unsigned int scale_x, unsigned int scale_y, bool flip_y) {
+void a2e_image::draw(const pnt& scale_xy, const bool flip_y) {
 	if(!gui_img) engine::start_2d_draw();
-	
-	const float4 fcolor(float((color>>16) & 0xFF) / 255.0f,
-						float((color>>8) & 0xFF) / 255.0f,
-						float(color & 0xFF) / 255.0f,
-						1.0f);
 	
 	if(tex->alpha) {
 		glEnable(GL_BLEND);
@@ -56,8 +44,8 @@ void image::draw(unsigned int scale_x, unsigned int scale_y, bool flip_y) {
 	if(scale) {
 		rectangle.x1 = position.x;
 		rectangle.y1 = position.y;
-		rectangle.x2 = position.x + scale_x;
-		rectangle.y2 = position.y + scale_y;
+		rectangle.x2 = position.x + scale_xy.x;
+		rectangle.y2 = position.y + scale_xy.y;
 	}
 	else {
 		rectangle.x1 = position.x;
@@ -65,7 +53,7 @@ void image::draw(unsigned int scale_x, unsigned int scale_y, bool flip_y) {
 		rectangle.x2 = position.x + tex->width;
 		rectangle.y2 = position.y + tex->height;
 	}
-	gfx2d::draw_rectangle_texture(rectangle, tex->tex(), fcolor, float4(0.0f), bottom_left, top_right);
+	gfx2d::draw_rectangle_texture(rectangle, tex->tex(), color, float4(0.0f), bottom_left, top_right);
 
 	if(tex->alpha) { glDisable(GL_BLEND); }
 
@@ -76,24 +64,22 @@ void image::draw(unsigned int scale_x, unsigned int scale_y, bool flip_y) {
 	if(!gui_img) engine::stop_2d_draw();
 }
 
-/*! draws the image
- */
-void image::draw() {
+void a2e_image::draw() {
 	draw(tex->width, tex->height);
 }
 
 /*! opens an image file
  *  @param filename the image files name
  */
-void image::open_image(const char* filename) {
-	tex = t->add_texture(filename, TEXTURE_FILTERING::POINT);
+void a2e_image::open_image(const string& filename, const TEXTURE_FILTERING filter) {
+	tex = engine::get_texman()->add_texture(filename, filter);
 }
 
 /*! sets the position (2 * unsigned int) of the image
  *  @param x the (new) x position of the image
  *  @param y the (new) y position of the image
  */
-void image::set_position(unsigned int x, unsigned int y) {
+void a2e_image::set_position(const unsigned int& x, const unsigned int& y) {
 	position.x = x;
 	position.y = y;
 }
@@ -101,52 +87,60 @@ void image::set_position(unsigned int x, unsigned int y) {
 /*! sets the position (pnt) of the image
  *  @param position the (new) position of the image
  */
-void image::set_position(pnt* position_) {
-	set_position(position_->x, position_->y);
+void a2e_image::set_position(const pnt& position_) {
+	set_position(position_.x, position_.y);
 }
 
 /*! returns the position (pnt) of the image
  */
-pnt& image::get_position() {
+const pnt& a2e_image::get_position() const {
 	return position;
 }
 
 /*! sets the images texture
  *  @param tex the texture we want to set
  */
-void image::set_texture(const a2e_texture& new_tex) {
+void a2e_image::set_texture(const a2e_texture& new_tex) {
 	tex = new_tex;
 }
 
 //! returns the images texture
-const a2e_texture& image::get_texture() const {
+const a2e_texture& a2e_image::get_texture() const {
 	return tex;
 }
 
 /*! sets image scaling to state
  *  @param state the scaling state
  */
-void image::set_scaling(bool state) {
-	image::scale = state;
+void a2e_image::set_scaling(const bool& state) {
+	a2e_image::scale = state;
 }
 
 //! returns the image scale flag
-bool image::get_scaling() {
+const bool& a2e_image::get_scaling() const {
 	return scale;
 }
 
-unsigned int image::get_width() {
+void a2e_image::set_gui_image(const bool& state) {
+	gui_img = state;
+}
+
+const bool& a2e_image::is_gui_image() const {
+	return scale;
+}
+
+unsigned int a2e_image::get_width() const {
 	return tex->width;
 }
 
-unsigned int image::get_height() {
+unsigned int a2e_image::get_height() const {
 	return tex->height;
 }
 
-void image::set_color(unsigned int color_) {
-	image::color = color_;
+void a2e_image::set_color(const float4& color_) {
+	color = color_;
 }
 
-void image::set_gui_img(bool state) {
-	gui_img = state;
+const float4& a2e_image::get_color() const {
+	return color;
 }
