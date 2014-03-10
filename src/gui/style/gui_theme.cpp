@@ -687,9 +687,7 @@ void gui_theme::draw(const string& type, const string& state,
 			//
 			case DRAW_STYLE::BORDER_FILL:
 				((ds_border_fill*)&*prim.ddata)->thickness.compute(size_avg);
-#if defined(__clang__)
-				[[clang::fallthrough]];
-#endif
+				floor_fallthrough;
 			case DRAW_STYLE::FILL: {
 				auto ds = (ds_fill*)&*prim.ddata;
 				ds->color.compute(scheme);
@@ -705,9 +703,7 @@ void gui_theme::draw(const string& type, const string& state,
 			//
 			case DRAW_STYLE::BORDER_GRADIENT:
 				((ds_border_gradient*)&*prim.ddata)->thickness.compute(size_avg);
-#if defined(__clang__)
-			[[clang::fallthrough]];
-#endif
+				floor_fallthrough;
 			case DRAW_STYLE::GRADIENT: {
 				auto ds = (ds_gradient*)&*prim.ddata;
 				vector<float4> colors;
@@ -728,9 +724,7 @@ void gui_theme::draw(const string& type, const string& state,
 			//
 			case DRAW_STYLE::BORDER_TEXTURE:
 				((ds_border_texture*)&*prim.ddata)->thickness.compute(size_avg);
-#if defined(__clang__)
-				[[clang::fallthrough]];
-#endif
+				floor_fallthrough;
 			case DRAW_STYLE::TEXTURE: {
 				auto ds = (ds_texture*)&*prim.ddata;
 				ds->mul_color.compute(scheme);

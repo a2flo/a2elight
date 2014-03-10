@@ -517,9 +517,7 @@ void shader_gles2::attribute_array(const char* name, const GLuint& buffer, const
 		case GL_UNSIGNED_INT:
 			// there are no integer attributes in opengl es 2.0
 			normalized = false;
-#if defined(__clang__)
-			[[clang::fallthrough]];
-#endif
+			floor_fallthrough;
 		default:
 			if(size <= 4) {
 				glVertexAttribPointer((GLuint)location, size, type, normalized, stride, nullptr);

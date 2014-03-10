@@ -112,9 +112,19 @@ void gui_input_box::set_active(const bool& active_state) {
 				blink_task_end = true;
 			}, "gui_input_box blink task");
 		}
+		
+#if defined(FLOOR_IOS)
+		// open the on-screen keyboard on iOS
+		SDL_StartTextInput();
+#endif
 	}
 	// kill the blink task
 	else {
+#if defined(FLOOR_IOS)
+		// close the on-screen keyboard on iOS
+		SDL_StopTextInput();
+#endif
+		
 		blink_task = false;
 		handle(GUI_EVENT::INPUT_BOX_DEACTIVATION);
 	}
@@ -260,9 +270,7 @@ bool gui_input_box::handle_key_event(const EVENT_TYPE& type, const shared_ptr<ev
 					if((mod & (KMOD_RCTRL | KMOD_LCTRL)) == 0) {
 						break;
 					}
-#if defined(__clang__)
-					[[clang::fallthrough]];
-#endif
+					floor_fallthrough;
 				case SDLK_DOWN:
 				case SDLK_END:
 					input_cursor = -1;
@@ -273,9 +281,7 @@ bool gui_input_box::handle_key_event(const EVENT_TYPE& type, const shared_ptr<ev
 					if((mod & (KMOD_RCTRL | KMOD_LCTRL)) == 0) {
 						break;
 					}
-#if defined(__clang__)
-					[[clang::fallthrough]];
-#endif
+					floor_fallthrough;
 				case SDLK_UP:
 				case SDLK_HOME:
 					input_cursor = 0;
