@@ -76,6 +76,7 @@ public:
 		GEFORCE_GT200,
 		GEFORCE_GF100,
 		GEFORCE_GK100,
+		GEFORCE_GM100,
 		RADEON_HD2,
 		RADEON_HD3,
 		RADEON_HD4,
@@ -93,7 +94,7 @@ public:
 	static const GRAPHICS_CARD min_generic_card = GRAPHICS_CARD::GENERIC_SM4;
 	static const GRAPHICS_CARD max_generic_card = GRAPHICS_CARD::GENERIC_SM5;
 	static const GRAPHICS_CARD min_nvidia_card = GRAPHICS_CARD::GEFORCE_8;
-	static const GRAPHICS_CARD max_nvidia_card = GRAPHICS_CARD::GEFORCE_GK100;
+	static const GRAPHICS_CARD max_nvidia_card = GRAPHICS_CARD::GEFORCE_GM100;
 	static const GRAPHICS_CARD min_ati_card = GRAPHICS_CARD::RADEON_HD2;
 	static const GRAPHICS_CARD max_ati_card = GRAPHICS_CARD::RADEON_HD8;
 	static const GRAPHICS_CARD min_powervr_card = GRAPHICS_CARD::SGX_535;

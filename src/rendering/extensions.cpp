@@ -36,6 +36,7 @@ const char* ext::GRAPHICS_CARD_STR[] = {
 	"GeForce GT200",
 	"GeForce GF100",
 	"GeForce GK100",
+	"GeForce GM100",
 	"Radeon HD2",
 	"Radeon HD3",
 	"Radeon HD4",
@@ -69,6 +70,7 @@ const char* ext::GRAPHICS_CARD_DEFINE_STR[] = {
 	"GEFORCE_GT200",
 	"GEFORCE_GF100",
 	"GEFORCE_GK100",
+	"GEFORCE_GM100",
 	"RADEON_HD2",
 	"RADEON_HD3",
 	"RADEON_HD4",
@@ -389,6 +391,11 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 					renderer_str.find("geforce gt 7") != string::npos ||	// GT 7xx
 					renderer_str.find("geforce titan") != string::npos) {	// Titan
 				graphics_card = ext::GRAPHICS_CARD::GEFORCE_GK100;
+			}
+			else if(renderer_str.find("geforce gtx 8") != string::npos ||	// GTX 8xx
+					renderer_str.find("geforce gts 8") != string::npos ||	// GTS 8xx
+					renderer_str.find("geforce gt 8") != string::npos) {	// GT 8xx
+				graphics_card = ext::GRAPHICS_CARD::GEFORCE_GM100;
 			}
 		}
 		else if(vendor == ext::GRAPHICS_CARD_VENDOR::ATI) {

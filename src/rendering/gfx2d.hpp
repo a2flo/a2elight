@@ -226,14 +226,14 @@ struct gfx2d::point_compute_line {
 		
 		// add half a pixel if this is a horizontal/vertical line - this is necessary to get
 		// sharp lines (anti-aliasing would 50/50 distribute the color to two pixels otherwise)
-		/*if(x1 == x2) {
+		if(x1 == x2) {
 			x1 += 0.5f;
 			x2 += 0.5f;
 		}
 		else if(y1 == y2) {
 			y1 += 0.5f;
 			y2 += 0.5f;
-		}*/
+		}
 		// else: diagonal
 		
 		// swap points if first point is below second point
