@@ -23,6 +23,7 @@
 #include "rendering/gfx2d.hpp"
 #include "scene/scene.hpp"
 #include "rendering/gl_timer.hpp"
+#include "audio/audio_controller.hpp"
 
 #if defined(__APPLE__)
 #include "osx/osx_helper.hpp"
@@ -366,6 +367,13 @@ void engine::stop_draw() {
 	// draw scene and gui
 	if(sce != nullptr) sce->draw();
 	if(ui != nullptr) ui->draw();
+	
+#if !defined(FLOOR_NO_OPENAL)
+	const matrix4f inv_rot_mat { matrix4f(rotation_matrix).invert() };
+	audio_controller::update(-position,
+							 (float3(0.0f, 0.0f, -1.0f) * inv_rot_mat).normalized(),
+							 (float3(0.0f, 1.0f, 0.0f) * inv_rot_mat).normalized());
+#endif
 	
 	// swap, gl error handling, fps counter handling, kernel reloading
 	// note: also releases the context

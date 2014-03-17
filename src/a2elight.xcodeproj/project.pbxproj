@@ -28,6 +28,7 @@
 		5C61BDAD1231D32000FD3451 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDA91231D32000FD3451 /* Cocoa.framework */; };
 		5C61BDAE1231D32000FD3451 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDAA1231D32000FD3451 /* OpenCL.framework */; };
 		5C61BDAF1231D32000FD3451 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C61BDAB1231D32000FD3451 /* OpenGL.framework */; };
+		5C7173C718D7530500DDF097 /* OpenALSoft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C7173C618D7530500DDF097 /* OpenALSoft.framework */; };
 		5C7B325417E726E700153798 /* a2e_version.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B325017E726E700153798 /* a2e_version.hpp */; };
 		5C7B325517E726E700153798 /* a2e.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B325117E726E700153798 /* a2e.hpp */; };
 		5C7B325617E726E700153798 /* engine.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5C7B325217E726E700153798 /* engine.hpp */; };
@@ -183,6 +184,7 @@
 		5C61BDA91231D32000FD3451 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		5C61BDAA1231D32000FD3451 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = /System/Library/Frameworks/OpenCL.framework; sourceTree = "<absolute>"; };
 		5C61BDAB1231D32000FD3451 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		5C7173C618D7530500DDF097 /* OpenALSoft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenALSoft.framework; path = ../../../../../../Library/Frameworks/OpenALSoft.framework; sourceTree = "<group>"; };
 		5C7A8FF614B398B2004AA18B /* premake.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = premake.sh; path = ../premake.sh; sourceTree = "<group>"; };
 		5C7A8FF714B398B2004AA18B /* premake4.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = premake4.lua; path = ../premake4.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.python; };
 		5C7B325017E726E700153798 /* a2e_version.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = a2e_version.hpp; sourceTree = SOURCE_ROOT; };
@@ -303,6 +305,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5C7173C718D7530500DDF097 /* OpenALSoft.framework in Frameworks */,
 				5C20264F159612C700D52A32 /* ApplicationServices.framework in Frameworks */,
 				5C61BDAC1231D32000FD3451 /* AppKit.framework in Frameworks */,
 				5C61BDAD1231D32000FD3451 /* Cocoa.framework in Frameworks */,
@@ -374,6 +377,7 @@
 		5C05F78B123171DA00D122BF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5C7173C618D7530500DDF097 /* OpenALSoft.framework */,
 				5CAEC2E11867BA4200BEC3A3 /* libfloor.a */,
 				5CAEC2DF1867B9D000BEC3A3 /* OpenCL.framework */,
 				5CAEC2DB1867B9AE00BEC3A3 /* libSDL2_image.a */,
@@ -1076,6 +1080,10 @@
 		5C05F79D123171DA00D122BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FLOOR_CUDA_CL=1",
@@ -1112,6 +1120,10 @@
 		5C05F79E123171DA00D122BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FLOOR_CUDA_CL=1",
@@ -1158,6 +1170,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					FLOOR_IOS,
+					FLOOR_NO_OPENAL,
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
 					"$(inherited)",
@@ -1214,6 +1227,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					FLOOR_IOS,
+					FLOOR_NO_OPENAL,
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
 					"$(inherited)",
