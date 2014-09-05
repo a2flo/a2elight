@@ -1,7 +1,7 @@
 
 Build Instructions:
 Linux:
-* install gcc 4.9+ (with libstdc++) or clang 3.4+ (with libc++)
+* install clang 3.5+ (with libc++)
 * install the opengl and opencl headers and libraries (you need a gl3.h with support for OpenGL 3.2+ and OpenCL headers with support for OpenCL 1.1+)
 * install zlib, libpng, libxml2, freetype2
 * clone the SDL2 and SDL2_image repositories: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
@@ -12,7 +12,7 @@ Linux:
 * run "./install.sh" (this will install a2elight to /usr/local/) or copy/link all files manually (*.so to /usr/local/lib and a2elight/src to /usr/local/include/a2elight)
 
 OS X:
-* install Xcode 5.1+
+* install Xcode 6.0+
 * install XQuartz http://xquartz.macosforge.org (needed for zlib, libxml2, freetype2)
 * clone the SDL2 and SDL2_image repositories: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
 * build both of them and install them to /Library/Frameworks
@@ -24,7 +24,7 @@ OS X:
 ** sudo ln -sf /path/to/a2elight/lib/liba2elightd.dylib /usr/local/lib/liba2elightd.dylib
 
 on iOS:
-* install Xcode 5.1+
+* install Xcode 6.0+
 * install floor: https://github.com/a2flo/floor
 * compile a2elight.xcodeproj (a2elight_ios target)
 * install/symlink a2elight .a and lib folder:
@@ -33,7 +33,7 @@ on iOS:
 * linker flags for a depending project: -lSDL2 -lSDL2_image -lfloor -la2elight -lcrypto -lssl
 
 Windows:
-* install an x64 MinGW-w64 distribution with gcc 4.9 and full std::thread support (http://mingw-w64.sourceforge.net), or clang 3.4+ and libc++ (must be compiled manually)
+* install an x64 MinGW-w64 distribution with gcc 4.9 and full std::thread support (http://mingw-w64.sourceforge.net), and clang 3.5+/libc++ (must be compiled manually)
 * install MSYS (http://sourceforge.net/apps/trac/mingw-w64/wiki/MSYS) to /path/to/mingw/msys
 * build and install zlib, libpng, libxml2, freetype2, SDL2, SDL2_image
 * install the opengl 3.2+ and opencl 1.1+ headers and libraries (renaming might be necessary depending on your distribution and version)
