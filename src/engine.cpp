@@ -142,7 +142,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 		
 		config.upscaling = config_doc.get<float>("config.inferred.upscaling", 1.0f);
 		config.geometry_light_scaling = config_doc.get<float>("config.inferred.geometry_light_scaling", 1.0f);
-		config.geometry_light_scaling = core::clamp(config.geometry_light_scaling, 0.5f, 1.0f);
+		config.geometry_light_scaling = const_math::clamp(config.geometry_light_scaling, 0.5f, 1.0f);
 	}
 	
 	if(console_only_) {
@@ -267,7 +267,9 @@ void engine::init(const char* callpath_, const char* datapath_,
 		sce = new scene();
 		
 		// create gui
-		if(config.ui_anti_aliasing > 2) config.ui_anti_aliasing = core::next_pot((unsigned int)config.ui_anti_aliasing);
+		if(config.ui_anti_aliasing > 2) {
+			config.ui_anti_aliasing = const_math::next_pot((unsigned int)config.ui_anti_aliasing);
+		}
 		if(exts->get_max_samples() < config.ui_anti_aliasing) {
 			config.ui_anti_aliasing = exts->get_max_samples();
 			log_error("your chosen gui anti-aliasing mode isn't supported by your graphic card - using \"%u\" instead!",

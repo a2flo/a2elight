@@ -77,7 +77,7 @@ void particle_manager_cl::compute_particle_count(particle_system* ps) {
 	}*/
 	
 	// particle count must be a power of two
-	pdata->particle_count = core::next_pot(pdata->particle_count);
+	pdata->particle_count = const_math::next_pot(pdata->particle_count);
 }
 
 void particle_manager_cl::reset_particle_count(particle_system* ps) {

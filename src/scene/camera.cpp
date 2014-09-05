@@ -95,8 +95,8 @@ void camera::run() {
 	}
 
 	// wrap around 360°
-	rotation.x = core::wrap(rotation.x, 360.0f);
-	rotation.y = core::wrap(rotation.y, 360.0f);
+	rotation.x = const_math::wrap(rotation.x, 360.0f);
+	rotation.y = const_math::wrap(rotation.y, 360.0f);
 
 	// inform engine about position and rotation
 	engine::set_position(position.x, position.y, position.z);

@@ -554,8 +554,8 @@ void a2emodel::build_bounding_box() {
 		
 		for(unsigned int j = 0; j < model_vertex_count[i]; j++) {
 			const float3& vert = model_vertices[i][j];
-			smin = float3::min(smin, vert);
-			smax = float3::max(smax, vert);
+			smin.min(vert);
+			smax.max(vert);
 		}
 		
 		min = float3::min(smin, min);

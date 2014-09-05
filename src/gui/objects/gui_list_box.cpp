@@ -91,7 +91,7 @@ bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<e
 			const auto& amount = ((const shared_ptr<mouse_wheel_down_event>&)obj)->amount;
 			const float scaled_amount = float(amount) * 0.25f;
 			scroll_position += scaled_amount * item_height * (type == EVENT_TYPE::MOUSE_WHEEL_DOWN ? 1.0f : -1.0f);
-			scroll_position = core::clamp(scroll_position, 0.0f, box_height-float(size_abs.y));
+			scroll_position = const_math::clamp(scroll_position, 0.0f, box_height-float(size_abs.y));
 			return true;
 		}
 		default: break;
@@ -131,5 +131,5 @@ void gui_list_box::scroll_to_item(const string& identifier) {
 	
 	const auto item_num = distance(begin(display_items), disp_iter);
 	scroll_position = float(item_num) * item_height;
-	scroll_position = core::clamp(scroll_position, 0.0f, box_height-float(size_abs.y));
+	scroll_position = const_math::clamp(scroll_position, 0.0f, box_height-float(size_abs.y));
 }

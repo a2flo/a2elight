@@ -89,7 +89,7 @@ bool gui_slider::should_handle_mouse_event(const EVENT_TYPE& type, const ipnt& p
 }
 
 void gui_slider::set_knob_position(const float& pos) {
-	knob_position = core::clamp(pos, 0.0f, 1.0f);
+	knob_position = const_math::clamp(pos, 0.0f, 1.0f);
 	handle(GUI_EVENT::SLIDER_MOVE);
 }
 
