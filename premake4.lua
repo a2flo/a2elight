@@ -113,7 +113,7 @@ project "a2elight"
 		add_include("/usr/local/include/freetype2")
 		add_include("/usr/include/floor")
 		add_include("/usr/local/include/floor")
-		buildoptions { "-Wall -x c++ -std=c++1y" }
+		buildoptions { "-Wall -x c++ -std=gnu++1y" }
 		
 		if(clang_libcxx) then
 			buildoptions { "-stdlib=libc++" }

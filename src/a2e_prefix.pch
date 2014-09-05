@@ -1,14 +1,11 @@
 
 #if defined(__cplusplus) && !defined(__OBJC__)
-#include <floor/core/platform.hpp>
+/*#include <floor/core/platform.hpp>
 #include <floor/core/cpp_headers.hpp>
 #include <floor/core/core.hpp>
 #include <floor/core/logger.hpp>
-#include <floor/core/vector2.hpp>
-#include <floor/core/vector3.hpp>
-#include <floor/core/vector4.hpp>
-#include <floor/core/util.hpp>
-#include <floor/core/const_string.hpp>
+#include <floor/math/vector_lib.hpp>
+#include <floor/core/util.hpp>*/
 
 #if defined(__APPLE__)
 #include <SDL2_image/SDL_image.h>

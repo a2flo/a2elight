@@ -35,22 +35,22 @@ void camera::run() {
 	if(keyboard_input) {
 		// ... recalculate the cameras position
 		if(key_state[0]) {
-			position.x += (float)sin((rotation.y - 90.0f) * _PIDIV180) * cam_speed;
-			position.z -= (float)cos((rotation.y - 90.0f) * _PIDIV180) * cam_speed;
+			position.x += (float)sin((rotation.y - 90.0f) * PI_DIV_180) * cam_speed;
+			position.z -= (float)cos((rotation.y - 90.0f) * PI_DIV_180) * cam_speed;
 		}
 		if(key_state[1]) {
-			position.x -= (float)sin((rotation.y - 90.0f) * _PIDIV180) * cam_speed;
-			position.z += (float)cos((rotation.y - 90.0f) * _PIDIV180) * cam_speed;
+			position.x -= (float)sin((rotation.y - 90.0f) * PI_DIV_180) * cam_speed;
+			position.z += (float)cos((rotation.y - 90.0f) * PI_DIV_180) * cam_speed;
 		}
 		if(key_state[2]) {
-			position.x -= (float)sin(rotation.y * _PIDIV180) * cam_speed;
-			position.y += (float)sin(rotation.x * _PIDIV180) * cam_speed;
-			position.z += (float)cos(rotation.y * _PIDIV180) * cam_speed;
+			position.x -= (float)sin(rotation.y * PI_DIV_180) * cam_speed;
+			position.y += (float)sin(rotation.x * PI_DIV_180) * cam_speed;
+			position.z += (float)cos(rotation.y * PI_DIV_180) * cam_speed;
 		}
 		if(key_state[3]) {
-			position.x += (float)sin(rotation.y * _PIDIV180) * cam_speed;
-			position.y -= (float)sin(rotation.x * _PIDIV180) * cam_speed;
-			position.z -= (float)cos(rotation.y * _PIDIV180) * cam_speed;
+			position.x += (float)sin(rotation.y * PI_DIV_180) * cam_speed;
+			position.y -= (float)sin(rotation.x * PI_DIV_180) * cam_speed;
+			position.z -= (float)cos(rotation.y * PI_DIV_180) * cam_speed;
 		}
 	}
 
@@ -235,9 +235,9 @@ float camera::get_cam_speed() const {
 /*! returns the cameras direction
  */
 const float3& camera::get_direction() {
-	direction.x = (float)-sin(rotation.y * _PIDIV180);
-	direction.y = (float)sin(rotation.x * _PIDIV180);
-	direction.z = (float)cos(rotation.y * _PIDIV180);
+	direction.x = (float)-sin(rotation.y * PI_DIV_180);
+	direction.y = (float)sin(rotation.x * PI_DIV_180);
+	direction.z = (float)cos(rotation.y * PI_DIV_180);
 	return direction;
 }
 

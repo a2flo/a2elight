@@ -709,7 +709,7 @@
 		5C05F783123171DA00D122BF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
 			};
 			buildConfigurationList = 5C05F786123171DA00D122BF /* Build configuration list for PBXProject "a2elight" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -869,7 +869,7 @@
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = NO;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -883,11 +883,12 @@
 				DYLIB_COMPATIBILITY_VERSION = 0.3.1;
 				DYLIB_CURRENT_VERSION = 0.3.1;
 				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
-				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_FAST_MATH = YES;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = a2e_prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DEBUG,
@@ -918,7 +919,6 @@
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
-					"-std=c++1y",
 					"-fno-elide-type",
 					"-fdiagnostics-show-template-tree",
 				);
@@ -941,33 +941,16 @@
 					"-Wno-c99-extensions",
 					"-Wno-header-hygiene",
 					"-Wno-gnu",
-					"-Wno-float-equal",
 					"-Wno-documentation",
 					"-Wno-system-headers",
 					"-Wno-global-constructors",
 					"-Wno-padded",
 					"-Wno-packed",
 					"-Wno-switch-enum",
-					"-Wno-sign-conversion",
-					"-Wno-conversion",
 					"-Wno-exit-time-destructors",
 					"-Wno-unknown-warning-option",
-					"-Wmissing-field-initializers",
-					"-Wmissing-prototypes",
-					"-Wreturn-type",
-					"-Woverloaded-virtual",
-					"-Wmissing-braces",
-					"-Wunused-function",
-					"-Wunused-label",
-					"-Wunused-parameter",
-					"-Wunused-variable",
-					"-Wuninitialized",
-					"-Wunknown-pragmas",
-					"-Wfour-char-constants",
-					"-Wshorten-64-to-32",
-					"-Wnewline-eof",
-					"-Wnon-virtual-dtor",
 					"-Wno-nested-anon-types",
+					"-Wno-old-style-cast",
 				);
 			};
 			name = Debug;
@@ -980,7 +963,7 @@
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = NO;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -993,11 +976,12 @@
 				DYLIB_COMPATIBILITY_VERSION = 0.3.1;
 				DYLIB_CURRENT_VERSION = 0.3.1;
 				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
-				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_FAST_MATH = YES;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_OPTIMIZATION_LEVEL = fast;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = a2e_prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_UNROLL_LOOPS = YES;
@@ -1023,7 +1007,6 @@
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
-					"-std=c++1y",
 					"-fno-elide-type",
 					"-fdiagnostics-show-template-tree",
 				);
@@ -1046,33 +1029,16 @@
 					"-Wno-c99-extensions",
 					"-Wno-header-hygiene",
 					"-Wno-gnu",
-					"-Wno-float-equal",
 					"-Wno-documentation",
 					"-Wno-system-headers",
 					"-Wno-global-constructors",
 					"-Wno-padded",
 					"-Wno-packed",
 					"-Wno-switch-enum",
-					"-Wno-sign-conversion",
-					"-Wno-conversion",
 					"-Wno-exit-time-destructors",
 					"-Wno-unknown-warning-option",
-					"-Wmissing-field-initializers",
-					"-Wmissing-prototypes",
-					"-Wreturn-type",
-					"-Woverloaded-virtual",
-					"-Wmissing-braces",
-					"-Wunused-function",
-					"-Wunused-label",
-					"-Wunused-parameter",
-					"-Wunused-variable",
-					"-Wuninitialized",
-					"-Wunknown-pragmas",
-					"-Wfour-char-constants",
-					"-Wshorten-64-to-32",
-					"-Wnewline-eof",
-					"-Wnon-virtual-dtor",
 					"-Wno-nested-anon-types",
+					"-Wno-old-style-cast",
 				);
 			};
 			name = Release;
@@ -1205,7 +1171,7 @@
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = a2elightd;
-				SDKROOT = iphoneos7.0;
+				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
@@ -1257,7 +1223,7 @@
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = a2elight;
-				SDKROOT = iphoneos7.0;
+				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";

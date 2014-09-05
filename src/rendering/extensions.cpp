@@ -153,14 +153,17 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 					opengl_version = OPENGL_VERSION::OPENGL_4_3;
 					break;
 				case '4':
-				default:
 					opengl_version = OPENGL_VERSION::OPENGL_4_4;
+					break;
+				case '5':
+				default:
+					opengl_version = OPENGL_VERSION::OPENGL_4_5;
 					break;
 			}
 			break;
 		default:
 			// default to highest version
-			opengl_version = OPENGL_VERSION::OPENGL_4_4;
+			opengl_version = OPENGL_VERSION::OPENGL_4_5;
 			break;
 	}
 #else
@@ -175,11 +178,19 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 			opengl_version = OPENGL_VERSION::OPENGL_ES_2_0;
 			break;
 		case '3':
-			opengl_version = OPENGL_VERSION::OPENGL_ES_3_0;
+			switch(str_glsl_version[2]) {
+				case '0':
+					opengl_version = OPENGL_VERSION::OPENGL_ES_3_0;
+					break;
+				case '1':
+				default:
+					opengl_version = OPENGL_VERSION::OPENGL_ES_3_1;
+					break;
+			}
 			break;
 		default:
 			// default to highest version
-			opengl_version = OPENGL_VERSION::OPENGL_ES_3_0;
+			opengl_version = OPENGL_VERSION::OPENGL_ES_3_1;
 			break;
 	}
 #endif
@@ -207,15 +218,16 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 				case '1': glsl_version = GLSL_VERSION::GLSL_410; break;
 				case '2': glsl_version = GLSL_VERSION::GLSL_420; break;
 				case '3': glsl_version = GLSL_VERSION::GLSL_430; break;
-				case '4':
+				case '4': glsl_version = GLSL_VERSION::GLSL_440; break;
+				case '5':
 				default:
-					glsl_version = GLSL_VERSION::GLSL_440;
+					glsl_version = GLSL_VERSION::GLSL_450;
 					break;
 			}
 			break;
 		default:
 			// default to highest version
-			glsl_version = GLSL_VERSION::GLSL_440;
+			glsl_version = GLSL_VERSION::GLSL_450;
 			break;
 	}
 #else
@@ -349,8 +361,10 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 					renderer_str.find("geforce g1") != string::npos ||		// G1xx(M)
 					renderer_str.find("geforce gt 1") != string::npos ||	// GT 1xx(M)
 					renderer_str.find("geforce gts 1") != string::npos ||	// GTS 1xx(M)
-					(renderer_str.find("geforce gts 2") != string::npos && renderer_str.find("m") == string::npos) || // GTS 2xx (!M)
-					(renderer_str.find("geforce gtx 2") != string::npos && renderer_str.find("m") != string::npos)) { // GTX 2xxM
+					(renderer_str.find("geforce gts 2") != string::npos &&	// GTS 2xx (!M)
+					 renderer_str.find("m") == string::npos) ||
+					(renderer_str.find("geforce gtx 2") != string::npos &&	// GTX 2xxM
+					 renderer_str.find("m") != string::npos)) {
 				graphics_card = ext::GRAPHICS_CARD::GEFORCE_9;
 			}
 			else if(renderer_str.find("geforce 2") != string::npos ||		// 2xx(M)
@@ -386,13 +400,16 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 			else if(renderer_str.find("geforce gtx 6") != string::npos ||	// GTX 6xx
 					renderer_str.find("geforce gts 6") != string::npos ||	// GTS 6xx
 					renderer_str.find("geforce gt 6") != string::npos ||	// GT 6xx
-					renderer_str.find("geforce gtx 7") != string::npos ||	// GTX 7xx
+					(renderer_str.find("geforce gtx 7") != string::npos &&	// GTX 7xx (!750)
+					 (renderer_str.find("750") == string::npos ||
+					  renderer_str.find("m") != string::npos)) ||
 					renderer_str.find("geforce gts 7") != string::npos ||	// GTS 7xx
 					renderer_str.find("geforce gt 7") != string::npos ||	// GT 7xx
 					renderer_str.find("geforce titan") != string::npos) {	// Titan
 				graphics_card = ext::GRAPHICS_CARD::GEFORCE_GK100;
 			}
-			else if(renderer_str.find("geforce gtx 8") != string::npos ||	// GTX 8xx
+			else if(renderer_str.find("geforce gtx 750") != string::npos ||	// GTX 750
+					renderer_str.find("geforce gtx 8") != string::npos ||	// GTX 8xx
 					renderer_str.find("geforce gts 8") != string::npos ||	// GTS 8xx
 					renderer_str.find("geforce gt 8") != string::npos) {	// GT 8xx
 				graphics_card = ext::GRAPHICS_CARD::GEFORCE_GM100;
@@ -579,6 +596,7 @@ const char* ext::cstr_from_glsl_version(const ext::GLSL_VERSION& version) const 
 	switch(version) {
 		case GLSL_VERSION::GLSL_ES_100: return "1.00";
 		case GLSL_VERSION::GLSL_ES_300: return "3.00";
+		case GLSL_VERSION::GLSL_ES_310: return "3.10";
 		case GLSL_VERSION::GLSL_150: return "1.50";
 		case GLSL_VERSION::GLSL_330: return "3.30";
 		case GLSL_VERSION::GLSL_400: return "4.00";
@@ -586,6 +604,7 @@ const char* ext::cstr_from_glsl_version(const ext::GLSL_VERSION& version) const 
 		case GLSL_VERSION::GLSL_420: return "4.20";
 		case GLSL_VERSION::GLSL_430: return "4.30";
 		case GLSL_VERSION::GLSL_440: return "4.40";
+		case GLSL_VERSION::GLSL_450: return "4.50";
 		case GLSL_VERSION::GLSL_NO_VERSION: break;
 	}
 	return "<unknown>";
@@ -595,6 +614,7 @@ const char* ext::glsl_version_str_from_glsl_version(const ext::GLSL_VERSION& ver
 	switch(version) {
 		case GLSL_VERSION::GLSL_ES_100: return "100";
 		case GLSL_VERSION::GLSL_ES_300: return "300";
+		case GLSL_VERSION::GLSL_ES_310: return "310";
 		case GLSL_VERSION::GLSL_150: return "150";
 		case GLSL_VERSION::GLSL_330: return "330";
 		case GLSL_VERSION::GLSL_400: return "400";
@@ -602,6 +622,7 @@ const char* ext::glsl_version_str_from_glsl_version(const ext::GLSL_VERSION& ver
 		case GLSL_VERSION::GLSL_420: return "420";
 		case GLSL_VERSION::GLSL_430: return "430";
 		case GLSL_VERSION::GLSL_440: return "440";
+		case GLSL_VERSION::GLSL_450: return "450";
 		case GLSL_VERSION::GLSL_NO_VERSION: break;
 	}
 	return "<unknown>";
@@ -619,6 +640,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& major_version, const size_t
 		case 3:
 			switch(minor_version) {
 				case 0: return GLSL_VERSION::GLSL_ES_300;
+				case 10: return GLSL_VERSION::GLSL_ES_310;
 				case 30: return GLSL_VERSION::GLSL_330;
 				default: break;
 			}
@@ -630,6 +652,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& major_version, const size_t
 				case 20: return GLSL_VERSION::GLSL_420;
 				case 30: return GLSL_VERSION::GLSL_430;
 				case 40: return GLSL_VERSION::GLSL_440;
+				case 50: return GLSL_VERSION::GLSL_450;
 				default: break;
 			}
 			break;
@@ -645,6 +668,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& version) const {
 	switch(version) {
 		case 100: return GLSL_VERSION::GLSL_ES_100;
 		case 300: return GLSL_VERSION::GLSL_ES_300;
+		case 310: return GLSL_VERSION::GLSL_ES_310;
 		case 150: return GLSL_VERSION::GLSL_150;
 		case 330: return GLSL_VERSION::GLSL_330;
 		case 400: return GLSL_VERSION::GLSL_400;
@@ -652,6 +676,7 @@ ext::GLSL_VERSION ext::to_glsl_version(const size_t& version) const {
 		case 420: return GLSL_VERSION::GLSL_420;
 		case 430: return GLSL_VERSION::GLSL_430;
 		case 440: return GLSL_VERSION::GLSL_440;
+		case 450: return GLSL_VERSION::GLSL_450;
 	}
 	
 	log_error("invalid glsl version %d!", version);
@@ -662,6 +687,7 @@ const char* ext::cstr_from_gl_version(const ext::OPENGL_VERSION& version) const 
 	switch(version) {
 		case OPENGL_VERSION::OPENGL_ES_2_0: return "OpenGL ES 2.0";
 		case OPENGL_VERSION::OPENGL_ES_3_0: return "OpenGL ES 3.0";
+		case OPENGL_VERSION::OPENGL_ES_3_1: return "OpenGL ES 3.1";
 		case OPENGL_VERSION::OPENGL_3_0: return "OpenGL 3.0";
 		case OPENGL_VERSION::OPENGL_3_1: return "OpenGL 3.1";
 		case OPENGL_VERSION::OPENGL_3_2: return "OpenGL 3.2";
@@ -671,6 +697,7 @@ const char* ext::cstr_from_gl_version(const ext::OPENGL_VERSION& version) const 
 		case OPENGL_VERSION::OPENGL_4_2: return "OpenGL 4.2";
 		case OPENGL_VERSION::OPENGL_4_3: return "OpenGL 4.3";
 		case OPENGL_VERSION::OPENGL_4_4: return "OpenGL 4.4";
+		case OPENGL_VERSION::OPENGL_4_5: return "OpenGL 4.5";
 		case OPENGL_VERSION::OPENGL_UNKNOWN : break;
 	}
 	return "<unknown>";

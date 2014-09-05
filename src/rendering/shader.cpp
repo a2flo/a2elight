@@ -580,7 +580,7 @@ ret_type shader::get_##ret_type(const string& identifier) const { return get_sha
 make_get_shader(gl_shader, shader_gl3, ext::GLSL_VERSION::GLSL_150, ext::GLSL_VERSION::GLSL_330);
 #else
 #if defined(PLATFORM_X64)
-make_get_shader(gl_shader, shader_gles3, ext::GLSL_VERSION::GLSL_ES_300, ext::GLSL_VERSION::GLSL_ES_300);
+make_get_shader(gl_shader, shader_gles3, ext::GLSL_VERSION::GLSL_ES_300, ext::GLSL_VERSION::GLSL_ES_310);
 #else
 make_get_shader(gl_shader, shader_gles2, ext::GLSL_VERSION::GLSL_ES_100, ext::GLSL_VERSION::GLSL_ES_100);
 #endif

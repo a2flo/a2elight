@@ -115,6 +115,7 @@ public:
 		OPENGL_UNKNOWN,
 		OPENGL_ES_2_0,
 		OPENGL_ES_3_0,
+		OPENGL_ES_3_1,
 		OPENGL_3_0,
 		OPENGL_3_1,
 		OPENGL_3_2,
@@ -124,12 +125,14 @@ public:
 		OPENGL_4_2,
 		OPENGL_4_3,
 		OPENGL_4_4,
+		OPENGL_4_5,
 	};
 	
 	enum class GLSL_VERSION {
 		GLSL_NO_VERSION,	// used when none is applicable
 		GLSL_ES_100,		// opengl es 2.0
 		GLSL_ES_300,		// opengl es 3.0
+		GLSL_ES_310,		// opengl es 3.1
 		GLSL_150,			// opengl 3.2
 		GLSL_330,			// opengl 3.3
 		GLSL_400,			// opengl 4.0
@@ -137,6 +140,7 @@ public:
 		GLSL_420,			// opengl 4.2
 		GLSL_430,			// opengl 4.3
 		GLSL_440,			// opengl 4.4
+		GLSL_450,			// opengl 4.5
 	};
 	
 	const char* glsl_version_str_from_glsl_version(const GLSL_VERSION& version) const;

@@ -369,10 +369,12 @@ void engine::stop_draw() {
 	if(ui != nullptr) ui->draw();
 	
 #if !defined(FLOOR_NO_OPENAL)
-	const matrix4f inv_rot_mat { matrix4f(rotation_matrix).invert() };
-	audio_controller::update(-position,
-							 (float3(0.0f, 0.0f, -1.0f) * inv_rot_mat).normalized(),
-							 (float3(0.0f, 1.0f, 0.0f) * inv_rot_mat).normalized());
+	if(!floor::is_audio_disabled()) {
+		const matrix4f inv_rot_mat { matrix4f(rotation_matrix).invert() };
+		audio_controller::update(-position,
+								 (float3(0.0f, 0.0f, -1.0f) * inv_rot_mat).normalized(),
+								 (float3(0.0f, 1.0f, 0.0f) * inv_rot_mat).normalized());
+	}
 #endif
 	
 	// swap, gl error handling, fps counter handling, kernel reloading
@@ -733,7 +735,7 @@ float engine::get_upscaling() {
 }
 
 void engine::set_upscaling(const float& factor) {
-	if(factor == config.upscaling) return;
+	if(FLOAT_EQ(factor, config.upscaling)) return;
 	config.upscaling = factor;
 	evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
 				   make_shared<window_resize_event>(SDL_GetTicks(),
@@ -745,7 +747,7 @@ float engine::get_geometry_light_scaling() {
 }
 
 void engine::set_geometry_light_scaling(const float& factor) {
-	if(factor == config.geometry_light_scaling) return;
+	if(FLOAT_EQ(factor, config.geometry_light_scaling)) return;
 	config.geometry_light_scaling = factor;
 	evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
 				   make_shared<window_resize_event>(SDL_GetTicks(),
