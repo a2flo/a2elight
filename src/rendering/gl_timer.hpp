@@ -20,7 +20,7 @@
 #define __A2E_GL_TIMER_HPP__
 
 #include "global.hpp"
-#include "core/vector3.hpp"
+#include "math/vector_lib.hpp"
 
 /*! @class gl_timer
  *  @brief arb_timer_query wrapper + additional functionality

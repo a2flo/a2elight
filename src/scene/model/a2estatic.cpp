@@ -165,8 +165,8 @@ void a2estatic::load_model(const string& filename_) {
 		vertices[i].z = file.get_float();
 	}
 	for(unsigned int i = 0; i < tex_coord_count; i++) {
-		tex_coords[i].u = file.get_float();
-		tex_coords[i].v = 1.0f - file.get_float();
+		tex_coords[i].x = file.get_float();
+		tex_coords[i].y = 1.0f - file.get_float();
 	}
 
 	object_count = file.get_uint();
@@ -529,8 +529,8 @@ void a2estatic::generate_normals() {
  */
 void a2estatic::scale_tex_coords(const float su, const float sv) {
 	for(unsigned int i = 0; i < vertex_count; i++) {
-		tex_coords[i].u *= su;
-		tex_coords[i].v *= sv;
+		tex_coords[i].x *= su;
+		tex_coords[i].y *= sv;
 	}
 	
 	// delete old vertex coordinates

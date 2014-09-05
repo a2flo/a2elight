@@ -28,7 +28,7 @@
 #include "rendering/extensions.hpp"
 #include "core/xml.hpp"
 #include "rendering/rtt.hpp"
-#include "core/vector3.hpp"
+#include "math/vector_lib.hpp"
 #include "core/matrix4.hpp"
 #include "core/unicode.hpp"
 

@@ -250,7 +250,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 				if(aslm->anisotropic_texture != nullptr) {
 					shd->texture("aux_texture", aslm->anisotropic_texture);
 				}
-				else shd->uniform("Nuv", aslm->anisotropic_roughness.u, aslm->anisotropic_roughness.v);
+				else shd->uniform("Nuv", aslm->anisotropic_roughness.x, aslm->anisotropic_roughness.y);
 			}
 			break;
 			// phong lighting
@@ -558,13 +558,13 @@ void a2emodel::build_bounding_box() {
 			smax.max(vert);
 		}
 		
-		min = float3::min(smin, min);
-		max = float3::max(smax, max);
+		min.min(smin);
+		max.max(smax);
 		
 		sbbox.min = smin;
 		sbbox.max = smax;
-		sbbox.min.scale(scale);
-		sbbox.max.scale(scale);
+		sbbox.min *= scale;
+		sbbox.max *= scale;
 		sbbox.mview = rot_mat;
 		sbbox.pos.set(position);
 	}
@@ -573,8 +573,8 @@ void a2emodel::build_bounding_box() {
 	bbox.max = max;
 	
 	// scale bbox
-	bbox.min.scale(scale);
-	bbox.max.scale(scale);
+	bbox.min *= scale;
+	bbox.max *= scale;
 	
 	// rotate bbox
 	bbox.mview = rot_mat;

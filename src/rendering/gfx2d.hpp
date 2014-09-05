@@ -543,7 +543,7 @@ protected:
 		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *engine::get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
-		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
+		texture_shd->uniform("orientation", float4(bottom_left.x, bottom_left.y, top_right.x, top_right.y));
 		texture_shd->texture("tex", texture, is_tex_array ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D);
 		if(is_tex_array) texture_shd->uniform("layer", layer);
 		
@@ -564,7 +564,7 @@ protected:
 		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *engine::get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
-		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
+		texture_shd->uniform("orientation", float4(bottom_left.x, bottom_left.y, top_right.x, top_right.y));
 		texture_shd->texture("tex", texture, is_tex_array ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D);
 		if(is_tex_array) texture_shd->uniform("layer", layer);
 		
@@ -592,7 +592,7 @@ protected:
 		const matrix4f mvpm(matrix4f().translate(0.0f, 0.0f, draw_depth) * *engine::get_mvp_matrix());
 		texture_shd->uniform("mvpm", mvpm);
 		texture_shd->uniform("extent", props.extent);
-		texture_shd->uniform("orientation", float4(bottom_left.u, bottom_left.v, top_right.u, top_right.v));
+		texture_shd->uniform("orientation", float4(bottom_left.x, bottom_left.y, top_right.x, top_right.y));
 		texture_shd->texture("tex", texture, is_tex_array ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D);
 		if(is_tex_array) texture_shd->uniform("layer", layer);
 		

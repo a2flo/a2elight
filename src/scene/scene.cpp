@@ -402,8 +402,8 @@ void scene::sort_alpha_objects() {
 		bbox_rects[i][1] = ipnt(numeric_limits<int>::min()); // pmax
 		for(size_t j = 0; j < 8; j++) {
 			if(bbox_proj[i][j].x == numeric_limits<int>::min()) continue;
-			bbox_rects[i][0] = ipnt::min(bbox_rects[i][0], bbox_proj[i][j]);
-			bbox_rects[i][1] = ipnt::max(bbox_rects[i][1], bbox_proj[i][j]);
+			bbox_rects[i][0].min(bbox_proj[i][j]);
+			bbox_rects[i][1].max(bbox_proj[i][j]);
 		}
 		if(bbox_rects[i][0].x == numeric_limits<int>::max() || bbox_rects[i][1].x == numeric_limits<int>::min()) {
 			// invisible

@@ -18,8 +18,7 @@
 
 #include "font.hpp"
 #include "font_manager.hpp"
-#include "core/vector2.hpp"
-#include "core/vector3.hpp"
+#include "math/vector_lib.hpp"
 #include "core/unicode.hpp"
 #include "core/event_objects.hpp"
 #include "engine.hpp"
@@ -699,7 +698,7 @@ float2 a2e_font::text_stepper(const vector<unsigned int>& unicode_str_,
 		
 		const float2 fpos(origin.x + float(iter->second.layout.x), origin.y + float(iter->second.layout.y));
 		if(code != 0x20) { // ignore spaces (other whitespace has already been ignored)
-			extent = float2::max(fpos, extent); // max extent
+			extent.max(fpos); // max extent
 		}
 		
 		fnc(code, iter->second, origin, fpos);
@@ -707,7 +706,7 @@ float2 a2e_font::text_stepper(const vector<unsigned int>& unicode_str_,
 		origin.x += iter->second.layout.z >> 6;
 		origin.y += iter->second.layout.w >> 6;
 	}
-	extent = float2::max(extent, origin); // in case of whitespace, do a last max
+	extent.max(origin); // in case of whitespace, do a last max
 	return extent;
 }
 

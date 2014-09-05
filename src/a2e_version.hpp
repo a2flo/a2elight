@@ -25,7 +25,7 @@
 #define A2E_MAJOR_VERSION "0"
 #define A2E_MINOR_VERSION "3"
 #define A2E_REVISION_VERSION "1"
-#define A2E_DEV_STAGE_VERSION "d2"
+#define A2E_DEV_STAGE_VERSION "d3"
 #define A2E_BUILD_TIME __TIME__
 #define A2E_BUILD_DATE __DATE__
 
@@ -78,14 +78,14 @@
 
 // clang check
 #elif defined(__clang__)
-#if !defined(__clang_major__) || !defined(__clang_minor__) || (__clang_major__ < 3) || (__clang_major__ == 3 && __clang_minor__ < 4)
-#error "Sorry, but you need Clang 3.4+ to compile A2E"
+#if !defined(__clang_major__) || !defined(__clang_minor__) || (__clang_major__ < 3) || (__clang_major__ == 3 && __clang_minor__ < 5)
+#error "Sorry, but you need Clang 3.5+ to compile A2E"
 #endif
 
 // gcc check
 #elif defined(__GNUC__)
-#if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
-#error "Sorry, but you need GCC 4.9+ to compile A2E"
+#if (__GNUC__ < 5)
+#error "Sorry, but you need GCC 5.x+ to compile A2E"
 #endif
 
 // just fall through ...

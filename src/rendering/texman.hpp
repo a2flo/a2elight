@@ -22,7 +22,7 @@
 #include "global.hpp"
 
 #include "core/file_io.hpp"
-#include "core/vector3.hpp"
+#include "math/vector_lib.hpp"
 #include "rendering/extensions.hpp"
 #include "rendering/texture_object.hpp"
 #include "core/unicode.hpp"

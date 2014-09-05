@@ -22,7 +22,7 @@
 #include "global.hpp"
 
 #include "core/core.hpp"
-#include "core/vector3.hpp"
+#include "math/vector_lib.hpp"
 #include "core/bbox.hpp"
 #include "core/file_io.hpp"
 #include "engine.hpp"

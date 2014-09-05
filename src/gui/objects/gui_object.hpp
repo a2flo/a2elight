@@ -20,7 +20,7 @@
 #define __A2E_GUI_OBJECT_HPP__
 
 #include "global.hpp"
-#include "core/vector2.hpp"
+#include "math/vector_lib.hpp"
 #include "gui/objects/gui_object_event.hpp"
 
 // since all inheriting classes will need this, include it here:
