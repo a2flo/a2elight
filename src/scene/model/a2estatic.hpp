@@ -23,12 +23,12 @@
 
 #include "core/core.hpp"
 #include "math/vector_lib.hpp"
-#include "core/bbox.hpp"
+#include "math/bbox.hpp"
 #include "core/file_io.hpp"
 #include "engine.hpp"
 #include "scene/model/a2ematerial.hpp"
 #include "rendering/shader.hpp"
-#include "core/matrix4.hpp"
+#include "math/matrix4.hpp"
 #include "scene/light.hpp"
 #include "scene/model/a2emodel.hpp"
 

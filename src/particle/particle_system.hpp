@@ -23,7 +23,7 @@
 
 #include "core/core.hpp"
 #include "engine.hpp"
-#include "core/bbox.hpp"
+#include "math/bbox.hpp"
 #include "rendering/gfx2d.hpp"
 #include "cl/opencl.hpp"
 

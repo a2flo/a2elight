@@ -18,7 +18,7 @@
 
 #include "a2emodel.hpp"
 #include "scene/scene.hpp"
-#include "core/quaternion.hpp"
+#include "math/quaternion.hpp"
 
 static size_t _initial_model_id = 0;
 static size_t _create_model_id() {

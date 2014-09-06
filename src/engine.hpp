@@ -29,7 +29,7 @@
 #include "core/xml.hpp"
 #include "rendering/rtt.hpp"
 #include "math/vector_lib.hpp"
-#include "core/matrix4.hpp"
+#include "math/matrix4.hpp"
 #include "core/unicode.hpp"
 
 #define A2M_VERSION 2

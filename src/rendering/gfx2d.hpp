@@ -21,7 +21,7 @@
 
 #include "global.hpp"
 #include "core/core.hpp"
-#include "core/basic_math.hpp"
+#include "math/basic_math.hpp"
 
 #include "rendering/shader.hpp"
 #include "rendering/extensions.hpp"
