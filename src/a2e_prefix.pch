@@ -1,13 +1,15 @@
 
 #if defined(__cplusplus) && !defined(__OBJC__)
-/*#include <floor/core/platform.hpp>
+#include <floor/core/platform.hpp>
 #include <floor/core/cpp_headers.hpp>
 #include <floor/core/core.hpp>
 #include <floor/core/logger.hpp>
 #include <floor/math/vector_lib.hpp>
-#include <floor/core/util.hpp>*/
+#include <floor/math/matrix4.hpp>
+#include <floor/core/util.hpp>
 
 #if defined(__APPLE__)
+#include <SDL2/SDL.h>
 #include <SDL2_image/SDL_image.h>
 #if !defined(FLOOR_IOS)
 #include <OpenGL/gl3.h>
