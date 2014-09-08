@@ -119,7 +119,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 				if(inside_tag) break;
 				else {
 					//
-					const size_t cur_pos(iter - begin(shader_data));
+					const size_t cur_pos = (size_t)distance(begin(shader_data), iter);
 					if(cur_pos+4 < shader_data.size() &&
 					   shader_data.substr(cur_pos+1, 3) == "!--") {
 						inside_tag = true;
@@ -136,7 +136,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 						const string tag_name(shader_data.substr(cur_pos+1+end_tag, tag_len));
 						if(valid_tags.count(tag_name) > 0) {
 							inside_tag = true;
-							iter += tag_len;
+							advance(iter, (ssize_t)tag_len);
 							break;
 						}
 					}
@@ -357,7 +357,7 @@ bool a2e_shader::load_a2e_shader(const string& identifier, const string& filenam
 	}
 	
 	// create an xml doc from the read data
-	xmlDoc* doc = xmlReadMemory(shader_data.c_str(), (unsigned int)shader_data.size(), nullptr,
+	xmlDoc* doc = xmlReadMemory(shader_data.c_str(), (int)shader_data.size(), nullptr,
 								(const char*)"UTF-8", 0);
 	xmlNode* root = xmlDocGetRootElement(doc);
 	

@@ -61,7 +61,7 @@ a2estatic::~a2estatic() {
 	if(glIsBuffer(vbo_vertices_id)) { glDeleteBuffers(1, &vbo_vertices_id); }
 	if(glIsBuffer(vbo_tex_coords_id)) { glDeleteBuffers(1, &vbo_tex_coords_id); }
 	if(vbo_indices_ids != nullptr) {
-		if(glIsBuffer(vbo_indices_ids[0])) { glDeleteBuffers(object_count, vbo_indices_ids); }
+		if(glIsBuffer(vbo_indices_ids[0])) { glDeleteBuffers((GLsizei)object_count, vbo_indices_ids); }
 		delete [] vbo_indices_ids;
 	}
 	if(glIsBuffer(vbo_normals_id)) { glDeleteBuffers(1, &vbo_normals_id); }
@@ -142,7 +142,7 @@ void a2estatic::load_model(const string& filename_) {
 	}
 
 	// get model type and abort if it's not 0x00 or 0x02
-	char mtype = file.get_char();
+	auto mtype = file.get_char();
 	if(mtype != 0x00 && mtype != 0x02) {
 		log_error("non supported model type: %u!", (unsigned int)(mtype & 0xFF));
 		file.close();
@@ -176,7 +176,7 @@ void a2estatic::load_model(const string& filename_) {
 	object_names.clear();
 	object_names.resize(object_count);
 	for(unsigned int i = 0; i < object_count; i++) {
-		file.get_terminated_block(object_names[i], (char)0xFF);
+		file.get_terminated_block(object_names[i], 0xFF);
 	}
 
 	indices = new index3*[object_count];

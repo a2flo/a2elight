@@ -143,7 +143,7 @@ void shader_gl3::use(const string& option, const set<string> combiners) {
 	cur_option = combined_option;
 	const shader_object::internal_shader_object* int_shd_obj = shd_obj.options.find(cur_option)->second;
 	const auto piter = find(shd_obj.programs.cbegin(), shd_obj.programs.cend(), int_shd_obj);
-	cur_program = piter - shd_obj.programs.begin();
+	cur_program = (size_t)distance(shd_obj.programs.begin(), piter);
 	use(cur_program);
 }
 
@@ -495,7 +495,7 @@ void shader_gl3::set_texture(const char* name, const GLuint& tex, const GLenum& 
 	
 	// set uniform, activate and bind texture
 	glUniform1i(A2E_SHADER_GET_UNIFORM_POSITION(name), (GLint)tex_num);
-	glActiveTexture(GL_TEXTURE0+(GLint)tex_num);
+	glActiveTexture(GL_TEXTURE0 + (GLenum)tex_num);
 	glBindTexture(texture_type, tex);
 }
 

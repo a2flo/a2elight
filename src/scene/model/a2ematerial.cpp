@@ -233,7 +233,7 @@ void a2ematerial::load_material(const string& filename_) {
 							}
 						}
 						
-						a2e_texture tex = t->add_texture(floor::data_path(texture_filename.c_str()), filtering, engine::get_anisotropic(), wrap_s, wrap_t);
+						a2e_texture tex = t->add_texture(floor::data_path(texture_filename.c_str()), filtering, engine::get_anisotropic(), (GLint)wrap_s, (GLint)wrap_t);
 						switch(texture_type) {
 							case TEXTURE_TYPE::DIFFUSE: ((diffuse_material*)cur_material->mat)->diffuse_texture = tex; break;
 							case TEXTURE_TYPE::SPECULAR: ((diffuse_material*)cur_material->mat)->specular_texture = tex; break;

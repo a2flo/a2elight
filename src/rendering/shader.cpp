@@ -105,8 +105,8 @@ void shader::copy_buffer(rtt::fbo* src_buffer, rtt::fbo* dest_buffer, unsigned i
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+dest_attachment, dest_buffer->target[dest_attachment], dest_buffer->tex[dest_attachment], 0);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0+dest_attachment);
 	
-	glBlitFramebuffer(0, 0, src_buffer->width, src_buffer->height,
-					  0, 0, dest_buffer->width, dest_buffer->height,
+	glBlitFramebuffer(0, 0, (GLint)src_buffer->width, (GLint)src_buffer->height,
+					  0, 0, (GLint)dest_buffer->width, (GLint)dest_buffer->height,
 					  GL_COLOR_BUFFER_BIT | ((src_buffer->depth_type != rtt::DEPTH_TYPE::NONE && dest_buffer->depth_type != rtt::DEPTH_TYPE::NONE) ? GL_DEPTH_BUFFER_BIT : 0),
 					  GL_NEAREST);
 	
@@ -333,11 +333,11 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		cout << endl << "## " << identifier << "::" << option << endl;
 	}*/
 	
-	GLchar* attr_name = new GLchar[max_attr_len];
+	GLchar* attr_name = new GLchar[(size_t)max_attr_len];
 	if(print_debug_info) log_undecorated("## shader: %s", identifier);
 	if(print_debug_info) log_undecorated("GL_ACTIVE_ATTRIBUTES: %u", attr_count);
-	for(GLint attr = 0; attr < attr_count; attr++) {
-		memset(attr_name, 0, max_attr_len);
+	for(GLuint attr = 0; attr < (GLuint)attr_count; attr++) {
+		memset(attr_name, 0, (size_t)max_attr_len);
 		glGetActiveAttrib(shd_obj.program, attr, max_attr_len-1, nullptr, &var_size, &var_type, attr_name);
 		var_location = glGetAttribLocation(shd_obj.program, attr_name);
 		if(var_location < 0) {
@@ -349,14 +349,14 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		string attribute_name = attr_name;
 		if(attribute_name.find("[") != string::npos) attribute_name = attribute_name.substr(0, attribute_name.find("["));
 		shd_obj.attributes.insert(make_pair(attribute_name,
-											shader_object::internal_shader_object::shader_variable(var_location, var_size, var_type)));
+											shader_object::internal_shader_object::shader_variable((size_t)var_location, (size_t)var_size, var_type)));
 	}
 	delete [] attr_name;
 	
-	GLchar* uni_name = new GLchar[max_uni_len];
+	GLchar* uni_name = new GLchar[(size_t)max_uni_len];
 	if(print_debug_info) log_undecorated("GL_ACTIVE_UNIFORMS: %u", uni_count);
-	for(GLint uniform = 0; uniform < uni_count; uniform++) {
-		memset(uni_name, 0, max_uni_len);
+	for(GLuint uniform = 0; uniform < (GLuint)uni_count; uniform++) {
+		memset(uni_name, 0, (size_t)max_uni_len);
 		glGetActiveUniform(shd_obj.program, uniform, max_uni_len-1, nullptr, &var_size, &var_type, uni_name);
 		var_location = glGetUniformLocation(shd_obj.program, uni_name);
 		if(var_location < 0) {
@@ -367,7 +367,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		string uniform_name = uni_name;
 		if(uniform_name.find("[") != string::npos) uniform_name = uniform_name.substr(0, uniform_name.find("["));
 		shd_obj.uniforms.insert(make_pair(uniform_name,
-										  shader_object::internal_shader_object::shader_variable(var_location, var_size, var_type)));
+										  shader_object::internal_shader_object::shader_variable((size_t)var_location, (size_t)var_size, var_type)));
 		
 		// if the uniform is a sampler, add it to the sampler mapping (with increasing id/num)
 		if(shader_class::is_gl_sampler_type(var_type)) {
@@ -380,11 +380,11 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	delete [] uni_name;
 	
 #if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
-	GLchar* uni_block_name = new GLchar[max_uni_block_len];
+	GLchar* uni_block_name = new GLchar[(size_t)max_uni_block_len];
 	if(print_debug_info) log_undecorated("GL_ACTIVE_UNIFORM_BLOCKS: %u", uni_block_count);
-	for(GLint block = 0; block < uni_block_count; block++) {
-		memset(uni_block_name, 0, max_uni_block_len);
-		glGetActiveUniformBlockName(shd_obj.program, block, max_uni_block_len-1, nullptr, uni_block_name);
+	for(GLuint block = 0; block < (GLuint)uni_block_count; block++) {
+		memset(uni_block_name, 0, (size_t)max_uni_block_len);
+		glGetActiveUniformBlockName(shd_obj.program, (GLuint)block, max_uni_block_len-1, nullptr, uni_block_name);
 		
 		GLuint block_index = glGetUniformBlockIndex(shd_obj.program, uni_block_name);
 		if(block_index == GL_INVALID_INDEX) {
@@ -399,7 +399,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		const string uniform_block_name = uni_block_name;
 		
 		shd_obj.blocks.insert(make_pair(uniform_block_name,
-										shader_object::internal_shader_object::shader_variable(block_index, data_size, GL_UNIFORM_BUFFER)));
+										shader_object::internal_shader_object::shader_variable(block_index, (size_t)data_size, GL_UNIFORM_BUFFER)));
 		
 		// TODO: handle samplers?
 	}

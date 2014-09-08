@@ -63,7 +63,7 @@ bool gui_slider::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<eve
 }
 
 bool gui_slider::move_knob(const ipnt& point) {
-	const int iknob_offset = ceilf(knob_offset);
+	const int iknob_offset = (int)ceilf(knob_offset);
 	const int2 slider_x_pos((int)rectangle_abs.x1 + iknob_offset,
 							(int)rectangle_abs.x2 - iknob_offset);
 	if(point.x <= slider_x_pos.x && knob_position > 0.0f) {

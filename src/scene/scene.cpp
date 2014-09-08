@@ -394,7 +394,7 @@ void scene::sort_alpha_objects() {
 	// fourth, check projected bbox overlap, TODO: use polygon/polygon intersection/overlap test
 	// TODO: http://stackoverflow.com/questions/115426/algorithm-to-detect-intersection-of-two-rectangles
 	// for the moment, do a simple rectangle/rectangle overlap test
-	ipnt screen_dim(floor::get_width(), floor::get_height());
+	ipnt screen_dim((int)floor::get_width(), (int)floor::get_height());
 	ipnt (*bbox_rects)[2] = new ipnt[obj_count][2];
 	for(size_t i = 0; i < obj_count; i++) {
 		// compute rectangle

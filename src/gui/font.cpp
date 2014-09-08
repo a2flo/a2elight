@@ -63,7 +63,7 @@ shader_reload_fnctr(bind(&a2e_font::shader_reload_handler, this, placeholders::_
 			return;
 		}
 		if(font_name == "NONE") font_name = first_face->family_name;
-		const size_t num_faces = first_face->num_faces;
+		const size_t num_faces = (size_t)first_face->num_faces;
 		
 		// add if style doesn't exist yet
 		if(!add_face(first_face->style_name, first_face)) {
@@ -74,7 +74,7 @@ shader_reload_fnctr(bind(&a2e_font::shader_reload_handler, this, placeholders::_
 		for(size_t face_index = 0; face_index < num_faces; face_index++) {
 			FT_Face face = nullptr;
 			if(face_index > 0) {
-				if(FT_New_Face(fm->get_ft_library(), filename.c_str(), face_index, &face) != 0) {
+				if(FT_New_Face(fm->get_ft_library(), filename.c_str(), (FT_Long)face_index, &face) != 0) {
 					log_error("couldn't load face #%u for font %s!", face_index, filename);
 					return;
 				}
@@ -267,7 +267,7 @@ void a2e_font::cache(const unsigned int& start_code, const unsigned int& end_cod
 	
 	// check if we need to expand the texture to fit all glyphs in
 	const size_t new_glyph_count = (end_code - start_code + 1) * faces.size();
-	const size_t cur_glyph_count = accumulate(cbegin(glyph_map), cend(glyph_map), 0,
+	const size_t cur_glyph_count = accumulate(cbegin(glyph_map), cend(glyph_map), (size_t)0,
 											  [](const size_t& accu, const decltype(glyph_map)::value_type& elem) {
 												  return accu + elem.second.size(); // TODO: when glyph_data will contain more than one glyph, this needs to be computed here
 	});
@@ -306,9 +306,9 @@ void a2e_font::cache(const unsigned int& start_code, const unsigned int& end_cod
 							   int2(int(slot->metrics.width >> 6), int(slot->metrics.height >> 6))
 						   });
 			const unsigned int layer = texture_index / glyphs_per_layer;
-			const int3 offset((texture_index - (layer*glyphs_per_layer)) % glyphs_per_line,
-							  (texture_index - (layer*glyphs_per_layer)) / glyphs_per_line,
-							  layer);
+			const uint3 offset((texture_index - (layer*glyphs_per_layer)) % glyphs_per_line,
+							   (texture_index - (layer*glyphs_per_layer)) / glyphs_per_line,
+							   layer);
 			
 			// ignore 0px writes ...
 			if(slot->bitmap.width == 0 || slot->bitmap.rows == 0) continue;
@@ -322,14 +322,16 @@ void a2e_font::cache(const unsigned int& start_code, const unsigned int& end_cod
 			const size_t row_data_length(display_font_size * 3);
 			for(size_t row = 0; row < (size_t)slot->bitmap.rows; row++) {
 				memcpy(glyph_buffer + (row * row_data_length),
-					   slot->bitmap.buffer + (row * slot->bitmap.pitch),
-					   slot->bitmap.width);
+					   slot->bitmap.buffer + (row * size_t(slot->bitmap.pitch)),
+					   size_t(slot->bitmap.width));
 			}
 			
 #if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0,
-							offset.x * display_font_size, offset.y * display_font_size, offset.z,
-							display_font_size, display_font_size, 1,
+							(GLsizei)(offset.x * display_font_size),
+							(GLsizei)(offset.y * display_font_size),
+							(GLsizei)offset.z,
+							(GLsizei)display_font_size, (GLsizei)display_font_size, 1,
 							GL_RGB, GL_UNSIGNED_BYTE, glyph_buffer);
 #endif
 			
@@ -377,7 +379,7 @@ a2e_font::text_cache a2e_font::cache_text(const string& text, const GLuint exist
 	}));
 	
 #if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, text_data.first.size() * sizeof(uint2), &text_data.first[0]);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, (GLsizeiptr)(text_data.first.size() * sizeof(uint2)), &text_data.first[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 #else
 	// TODO: gles 2.0 implementation
@@ -469,7 +471,7 @@ void a2e_font::draw_cached(const string& text, const float2& position, const flo
 	
 #if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
 	glBindBuffer(GL_UNIFORM_BUFFER, text_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, text_data.first.size() * sizeof(uint2), &text_data.first[0]);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, (GLsizeiptr)(text_data.first.size() * sizeof(uint2)), &text_data.first[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 #else
 	// TODO: gles 2.0 implementation
@@ -486,10 +488,9 @@ pair<vector<uint2>, float2> a2e_font::create_text_ubo_data(const string& text,
 												   const glyph_data& glyph,
 												   const float2& origin floor_unused,
 												   const float2& fpos) {
-										   const int2 pos(fpos); // round to integer
+										   const uint2 pos(fpos); // round to integer
 										   ubo_data.emplace_back(glyph.tex_index,
-																 (unsigned int)(((short int)pos.x) & 0xFFFFu) +
-																 (((unsigned int)(((short int)pos.y) & 0xFFFFu)) << 16u));
+																 (pos.x & 0xFFFFu) + ((pos.y & 0xFFFFu) << 16u));
 									   },
 									   [](unsigned int, const float2&, const float&){},
 									   cache_fnc);
@@ -583,7 +584,7 @@ float2 a2e_font::text_stepper(const vector<unsigned int>& unicode_str_,
 		while((iter = search(begin(unicode_str), end(unicode_str),
 							 begin(cc.search), end(cc.search)))
 			  != end(unicode_str)) {
-			unicode_str.insert(unicode_str.erase(iter, iter + cc.search.size()), cc.repl);
+			unicode_str.insert(unicode_str.erase(iter, iter + (ssize_t)cc.search.size()), cc.repl);
 		}
 	}
 	
@@ -597,7 +598,7 @@ float2 a2e_font::text_stepper(const vector<unsigned int>& unicode_str_,
 	const decltype(glyph_map)::value_type::second_type& bold_italic_map(glyph_map.find("Bold Italic")->second);
 	const decltype(glyph_map)::value_type::second_type* cur_style_map = &regular_map;
 	
-	static const unsigned int tab_multiplier = 4;
+	static const int tab_multiplier = 4;
 	static const float leading_multiplier = 1.125f;
 	const unordered_map<string, unordered_map<unsigned int, unsigned int>> whitespace_sizes {
 		{

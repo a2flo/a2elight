@@ -56,9 +56,9 @@ deque<matrix4f*> engine::projm_stack;
 deque<matrix4f*> engine::mvm_stack;
 
 GLint engine::pushed_matrix_mode;
-GLint engine::pushed_blend_src, engine::pushed_blend_dst;
-GLint engine::pushed_blend_src_rgb, engine::pushed_blend_src_alpha;
-GLint engine::pushed_blend_dst_rgb, engine::pushed_blend_dst_alpha;
+GLenum engine::pushed_blend_src, engine::pushed_blend_dst;
+GLenum engine::pushed_blend_src_rgb, engine::pushed_blend_src_alpha;
+GLenum engine::pushed_blend_dst_rgb, engine::pushed_blend_dst_alpha;
 deque<matrix4f*> engine::pushed_matrices;
 
 SDL_Cursor* engine::standard_cursor;
@@ -251,9 +251,9 @@ void engine::init(const char* callpath_, const char* datapath_,
 		glBindRenderbuffer(GL_RENDERBUFFER, A2E_DEFAULT_RENDERBUFFER);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		a2e_texture load_tex = t->add_texture(floor::data_path("loading.png"), TEXTURE_FILTERING::LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-		const uint2 load_tex_draw_size(load_tex->width/2, load_tex->height/2);
-		const uint2 img_offset((unsigned int)floor::get_width()/2 - load_tex_draw_size.x/2,
-							   (unsigned int)floor::get_height()/2 - load_tex_draw_size.y/2);
+		const uint2 load_tex_draw_size((unsigned int)load_tex->width/2, (unsigned int)load_tex->height/2);
+		const uint2 img_offset(floor::get_width()/2 - load_tex_draw_size.x/2,
+							   floor::get_height()/2 - load_tex_draw_size.y/2);
 		gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 		gfx2d::draw_rectangle_texture(rect(img_offset.x, img_offset.y,
 										   img_offset.x + load_tex_draw_size.x,
@@ -340,7 +340,7 @@ void engine::start_draw() {
 		// draws ogl stuff
 		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 		glBindRenderbuffer(GL_RENDERBUFFER, A2E_DEFAULT_RENDERBUFFER);
-		glViewport(0, 0, (unsigned int)floor::get_width(), (unsigned int)floor::get_height());
+		glViewport(0, 0, (GLsizei)floor::get_width(), (GLsizei)floor::get_height());
 		
 		// clear the color and depth buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -401,13 +401,13 @@ void engine::stop_draw() {
 void engine::push_ogl_state() {
 	// make a full soft-context-switch
 #if !defined(FLOOR_IOS)
-	glGetIntegerv(GL_BLEND_SRC, &pushed_blend_src);
-	glGetIntegerv(GL_BLEND_DST, &pushed_blend_dst);
+	glGetIntegerv(GL_BLEND_SRC, (GLint*)&pushed_blend_src);
+	glGetIntegerv(GL_BLEND_DST, (GLint*)&pushed_blend_dst);
 #endif
-	glGetIntegerv(GL_BLEND_SRC_RGB, &pushed_blend_src_rgb);
-	glGetIntegerv(GL_BLEND_DST_RGB, &pushed_blend_dst_rgb);
-	glGetIntegerv(GL_BLEND_SRC_ALPHA, &pushed_blend_src_alpha);
-	glGetIntegerv(GL_BLEND_DST_ALPHA, &pushed_blend_dst_alpha);
+	glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)&pushed_blend_src_rgb);
+	glGetIntegerv(GL_BLEND_DST_RGB, (GLint*)&pushed_blend_dst_rgb);
+	glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)&pushed_blend_src_alpha);
+	glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)&pushed_blend_dst_alpha);
 }
 
 void engine::pop_ogl_state() {
@@ -501,7 +501,7 @@ void engine::start_2d_draw() {
 }
 
 void engine::start_2d_draw(const unsigned int width, const unsigned int height) {
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, int(width), int(height));
 
 	// we need an orthogonal view (2d) for drawing 2d elements
 	push_projection_matrix();

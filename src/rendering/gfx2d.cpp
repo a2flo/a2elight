@@ -115,15 +115,15 @@ void gfx2d::compute_ellipsoid_points(vector<float2>& dst_points, const float& ra
 	const float angle_size = (end_angle >= start_angle ? (end_angle - start_angle) : (360.0f + end_angle - start_angle)) / 360.0f;
 	const float steps_per_quadrant_lr = ceilf(radius_lr); // "per 90° or 0.25 angle size"
 	const float steps_per_quadrant_tb = ceilf(radius_tb);
-	const float angle_offset = (start_angle / 360.0f) * (2.0f * M_PI);
+	const float angle_offset = start_angle * float(PI_DIV_180);
 	const size_t steps = (size_t)(std::max(steps_per_quadrant_lr, steps_per_quadrant_tb) * (angle_size * 4.0f));
-	const float fsteps = steps-1;
+	const float steps_div = float((_2_MUL_PI * (long double)angle_size) / (long double)(steps-1));
 	
 	dst_points.reserve(dst_points.size() + steps);
 	for(size_t i = 0; i < steps; i++) {
-		const float fstep = ((float(i) / fsteps) * angle_size) * (2.0f * M_PI);
-		const float sin_step = sinf(angle_offset + fstep);
-		const float cos_step = -cosf(angle_offset + fstep);
+		const float fstep = float(i) * steps_div + angle_offset;
+		const float sin_step = sinf(fstep);
+		const float cos_step = -cosf(fstep);
 		dst_points.emplace_back(float2(sin_step * radius_lr, cos_step * radius_tb));
 	}
 }
@@ -131,7 +131,7 @@ void gfx2d::compute_ellipsoid_points(vector<float2>& dst_points, const float& ra
 void gfx2d::upload_points_and_draw(const gl_shader& shd, const primitive_properties& props) {
 	// points
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_primitive);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float2)*props.points.size(), &props.points[0], GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(sizeof(float2) * props.points.size()), &props.points[0], GL_STREAM_DRAW);
 	glVertexAttribPointer((GLuint)shd->get_attribute_position("in_vertex"),
 						  2, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray((GLuint)shd->get_attribute_position("in_vertex"));

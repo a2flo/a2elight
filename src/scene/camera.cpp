@@ -70,7 +70,7 @@ void camera::run() {
 		if(xpos != 0.5 || ypos != 0.5) {
 			rotation.x -= (0.5 - ypos) * (double)rotation_speed;
 			rotation.y -= (0.5 - xpos) * (double)rotation_speed;
-			SDL_WarpMouseInWindow(floor::get_window(), floor::get_width()/2, floor::get_height()/2);
+			SDL_WarpMouseInWindow(floor::get_window(), (int)(floor::get_width()/2), (int)(floor::get_height()/2));
 		}
 ////////////////////////////////
 // os x version
@@ -88,7 +88,7 @@ void camera::run() {
 			else ignore_next_rotation--;
 			
 			const float2 center_point(float2(floor::get_width(), floor::get_height()) * 0.5f);
-			SDL_WarpMouseInWindow(floor::get_window(), roundf(center_point.x), roundf(center_point.y));
+			SDL_WarpMouseInWindow(floor::get_window(), (int)roundf(center_point.x), (int)roundf(center_point.y));
 		}
 #endif
 ////////////////////////////////
@@ -174,7 +174,7 @@ void camera::set_mouse_input(const bool& state) {
 	// this fixes some weird mouse positioning when switching from grab to non-grab mode
 	if(mouse_input && !state) {
 		const float2 center_point(float2(floor::get_width(), floor::get_height()) * 0.5f);
-		SDL_WarpMouseInWindow(floor::get_window(), roundf(center_point.x), roundf(center_point.y));
+		SDL_WarpMouseInWindow(floor::get_window(), (int)roundf(center_point.x), (int)roundf(center_point.y));
 	}
 #endif
 	

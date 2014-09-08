@@ -206,11 +206,11 @@ void gui_file_dialog::open(const string directory, const bool write_history) {
 		last_button->add_handler([this](GUI_EVENT, gui_object&) {
 			floor::acquire_context();
 			if(dir_history_pos == -1) {
-				dir_history_pos = dir_history.size() - 1;
+				dir_history_pos = ssize_t(dir_history.size()) - 1;
 			}
 			--dir_history_pos;
 			if(dir_history_pos < 0) dir_history_pos = 0;
-			open(dir_history[dir_history_pos], false);
+			open(dir_history[size_t(dir_history_pos)], false);
 			floor::release_context();
 		}, GUI_EVENT::BUTTON_PRESS);
 		
@@ -218,9 +218,9 @@ void gui_file_dialog::open(const string directory, const bool write_history) {
 			floor::acquire_context();
 			if(dir_history_pos != -1) {
 				++dir_history_pos;
-				const ssize_t max_history = dir_history.size() - 1;
+				const ssize_t max_history = ssize_t(dir_history.size()) - 1;
 				if(dir_history_pos > max_history) dir_history_pos = max_history;
-				open(dir_history[dir_history_pos], false);
+				open(dir_history[size_t(dir_history_pos)], false);
 			}
 			floor::release_context();
 		}, GUI_EVENT::BUTTON_PRESS);
@@ -242,7 +242,7 @@ void gui_file_dialog::open(const string directory, const bool write_history) {
 				file_extension = ext_id.substr(1);
 				ext_filter = EXT_FILTER::EXTENSION_STRING;
 			}
-			open(dir_history_pos == -1 ? dir_history.back() : dir_history[dir_history_pos], false);
+			open(dir_history_pos < 0 ? dir_history.back() : dir_history[size_t(dir_history_pos)], false);
 			floor::release_context();
 		}, GUI_EVENT::POP_UP_BUTTON_SELECT);
 		
@@ -381,5 +381,5 @@ void gui_file_dialog::set_file_name() {
 		}
 		input = directory_entries->get_selected_item()->second;
 	}
-	file_name = (dir_history_pos == -1 ? dir_history.back() : dir_history[dir_history_pos]) + input;
+	file_name = (dir_history_pos < 0 ? dir_history.back() : dir_history[size_t(dir_history_pos)]) + input;
 }

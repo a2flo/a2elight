@@ -95,7 +95,7 @@ void gl_timer::mark(const string& identifier) {
 	
 #if !defined(FLOOR_IOS)
 	// random color through dumb string hash
-	unsigned int dumb_hash = accumulate(cbegin(identifier), cend(identifier), 0x41324554,
+	unsigned int dumb_hash = accumulate(cbegin(identifier), cend(identifier), 0x41324554u,
 										[](const unsigned int& cur_hash, const unsigned char& ch) {
 											return (cur_hash * (unsigned int)ch) * 16807;
 	});

@@ -39,8 +39,8 @@ void gui_list_box::draw() {
 				images);
 	
 	// manual scissor test:
-	glScissor(floorf(position_abs.x), floorf(position_abs.y),
-			  ceilf(size_abs.x), ceilf(size_abs.y));
+	glScissor((GLint)floorf(position_abs.x), (GLint)floorf(position_abs.y),
+			  (GLsizei)ceilf(size_abs.x), (GLsizei)ceilf(size_abs.y));
 	
 	size_t item_counter = 0;
 	for(const auto& item : display_items) {
@@ -61,7 +61,7 @@ void gui_list_box::draw() {
 					[&item](const string&) -> string { return item->second; });
 	}
 	
-	glScissor(0, 0, floor::get_width(), floor::get_height());
+	glScissor(0, 0, (GLsizei)floor::get_width(), (GLsizei)floor::get_height());
 }
 
 bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point) {
@@ -71,7 +71,7 @@ bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<e
 		case EVENT_TYPE::MOUSE_LEFT_DOWN: {
 			ui->set_active_object(this);
 			const ipnt pos_in_box = point - position_abs;
-			const size_t select_item = floorf((float(pos_in_box.y) + scroll_position) / item_height);
+			const size_t select_item = (size_t)floorf((float(pos_in_box.y) + scroll_position) / item_height);
 			// this check is also done in set_selected_item, but since the item number can legitimately
 			// be out of range, do this check here to avoid the log error
 			if(select_item >= display_items.size()) {

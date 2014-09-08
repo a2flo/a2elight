@@ -372,7 +372,7 @@ void texman::set_filtering(TEXTURE_FILTERING filtering) {
 	texman::standard_filtering = filtering;
 }
 
-unsigned int texman::get_components(GLint format) {
+unsigned int texman::get_components(GLenum format) {
 	unsigned int ret = 0;
 	switch(format) {
 		case 0:
@@ -429,7 +429,7 @@ unsigned int texman::get_components(GLint format) {
 	return ret;
 }
 
-bool texman::get_alpha(GLint format) {
+bool texman::get_alpha(GLenum format) {
 	bool ret = false;
 	switch(format) {
 		case 0:
@@ -513,7 +513,7 @@ GLint texman::convert_internal_format(const GLint& internal_format) {
 #endif
 }
 
-GLenum texman::select_filter(const TEXTURE_FILTERING& filter) {
+GLint texman::select_filter(const TEXTURE_FILTERING& filter) {
 	switch(filter) {
 		case TEXTURE_FILTERING::POINT: return GL_NEAREST;
 		case TEXTURE_FILTERING::LINEAR: return GL_LINEAR;

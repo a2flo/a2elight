@@ -57,7 +57,7 @@ public:
 		SSAA_2_FXAA,
 	};
 	static const char* TEXTURE_ANTI_ALIASING_STR[];
-	size_t get_sample_count(const TEXTURE_ANTI_ALIASING& taa) const;
+	unsigned int get_sample_count(const TEXTURE_ANTI_ALIASING& taa) const;
 	float get_anti_aliasing_scale(const TEXTURE_ANTI_ALIASING& taa) const;
 	float2 get_resolution_for_scale(const float& scale, const size2& res) const;
 	

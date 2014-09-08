@@ -99,9 +99,9 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 	
 	// get supported extensions
 #if !defined(FLOOR_IOS)
-	GLint ext_count = 0;
-	glGetIntegerv(GL_NUM_EXTENSIONS, &ext_count);
-	for(int i = 0; i < ext_count; i++) {
+	unsigned int ext_count = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, (int*)&ext_count);
+	for(unsigned int i = 0; i < ext_count; i++) {
 		supported_extensions.insert((const char*)glGetStringi(GL_EXTENSIONS, i));
 	}
 #else

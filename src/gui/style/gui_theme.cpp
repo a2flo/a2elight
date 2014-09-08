@@ -513,8 +513,8 @@ void gui_theme::draw(const string& type, const string& state,
 	
 	// set scissor test rect
 	if(scissor) {
-		glScissor(floorf(offset.x), floorf(offset.y),
-				  ceilf(size.x), ceilf(size.y));
+		glScissor((GLint)floorf(offset.x), (GLint)floorf(offset.y),
+				  (GLsizei)ceilf(size.x), (GLsizei)ceilf(size.y));
 	}
 	if(clear) {
 		r->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, background_color);
@@ -564,10 +564,10 @@ void gui_theme::draw(const string& type, const string& state,
 				auto pd = (pc_rectangle*)&*prim.pdata;
 				pd->start_point.compute(size);
 				pd->end_point.compute(size);
-				gfx2d::point_compute_rectangle<compute_only_draw_style>::compute_and_draw(rect(pd->start_point.value.x + offset.x,
-																							   pd->start_point.value.y + offset.y,
-																							   pd->end_point.value.x + offset.x,
-																							   pd->end_point.value.y + offset.y));
+				gfx2d::point_compute_rectangle<compute_only_draw_style>::compute_and_draw(rect((unsigned int)(pd->start_point.value.x + offset.x),
+																							   (unsigned int)(pd->start_point.value.y + offset.y),
+																							   (unsigned int)(pd->end_point.value.x + offset.x),
+																							   (unsigned int)(pd->end_point.value.y + offset.y)));
 			}
 			break;
 			case PRIMITIVE_TYPE::ROUNDED_RECTANGLE: {
@@ -575,10 +575,10 @@ void gui_theme::draw(const string& type, const string& state,
 				pd->start_point.compute(size);
 				pd->end_point.compute(size);
 				pd->radius.compute(size_avg);
-				const rect rec(pd->start_point.value.x + offset.x,
-							   pd->start_point.value.y + offset.y,
-							   pd->end_point.value.x + offset.x,
-							   pd->end_point.value.y + offset.y);
+				const rect rec((unsigned int)(pd->start_point.value.x + offset.x),
+							   (unsigned int)(pd->start_point.value.y + offset.y),
+							   (unsigned int)(pd->end_point.value.x + offset.x),
+							   (unsigned int)(pd->end_point.value.y + offset.y));
 				gfx2d::point_compute_rounded_rectangle<compute_only_draw_style>::compute_and_draw(rec, pd->radius.value, pd->corners);
 			}
 			break;
@@ -805,7 +805,7 @@ void gui_theme::draw(const string& type, const string& state,
 	
 	// reset scissor rect
 	if(scissor) {
-		glScissor(0, 0, floor::get_width(), floor::get_height());
+		glScissor(0, 0, (GLsizei)floor::get_width(), (GLsizei)floor::get_height());
 	}
 }
 

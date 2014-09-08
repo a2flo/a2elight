@@ -130,10 +130,10 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	
 	glGenBuffers(1, &pdata->ocl_gl_pos_time_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, pdata->ocl_gl_pos_time_vbo);
-	glBufferData(GL_ARRAY_BUFFER, pdata->particle_count * sizeof(float4), pos_time_data, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(pdata->particle_count * sizeof(float4)), pos_time_data, GL_DYNAMIC_DRAW);
 	glGenBuffers(1, &pdata->ocl_gl_dir_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, pdata->ocl_gl_dir_vbo);
-	glBufferData(GL_ARRAY_BUFFER, pdata->particle_count * sizeof(float4), dir_data, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(pdata->particle_count * sizeof(float4)), dir_data, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
 	delete [] pos_time_data;
@@ -155,7 +155,7 @@ void particle_manager_cl::reset_particle_count(particle_system* ps) {
 	for(unsigned int i = 0; i < 2; i++) {
 		glGenBuffers(1, &pdata->particle_indices_vbo[i]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_indices_vbo[i]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, pdata->particle_count * sizeof(unsigned int), particle_indices, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)(pdata->particle_count * sizeof(unsigned int)), particle_indices, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		
 		pdata->ocl_indices[i] = ocl->create_ogl_buffer(opencl::BUFFER_FLAG::READ_WRITE, pdata->particle_indices_vbo[i]);

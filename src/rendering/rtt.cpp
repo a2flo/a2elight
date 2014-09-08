@@ -178,7 +178,7 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 	glGenFramebuffers(1, &buffer->fbo_id);
 	glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 	
-	glGenTextures(attachment_count, &buffer->tex[0]);
+	glGenTextures((GLsizei)attachment_count, &buffer->tex[0]);
 	for(unsigned int i = 0; i < buffer->attachment_count; i++) {
 #if defined(FLOOR_IOS) && !defined(PLATFORM_X64)
 		if(i > 0) {
@@ -196,25 +196,25 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 		glTexParameteri(buffer->target[i], GL_TEXTURE_WRAP_S, wrap_s[i]);
 		glTexParameteri(buffer->target[i], GL_TEXTURE_WRAP_T, wrap_t[i]);
 		if(exts->is_anisotropic_filtering_support() && filtering[i] >= TEXTURE_FILTERING::BILINEAR) {
-			glTexParameteri(buffer->target[i], GL_TEXTURE_MAX_ANISOTROPY_EXT, exts->get_max_anisotropic_filtering());
+			glTexParameteri(buffer->target[i], GL_TEXTURE_MAX_ANISOTROPY_EXT, (GLint)exts->get_max_anisotropic_filtering());
 		}
 		
 		switch(buffer->target[i]) {
 #if !defined(FLOOR_IOS)
 			case GL_TEXTURE_1D:
-				glTexImage1D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, 0, format[i], type[i], nullptr);
+				glTexImage1D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), (GLsizei)width, 0, format[i], type[i], nullptr);
 				break;
 #endif
 			case GL_TEXTURE_2D:
-				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
+				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), (GLsizei)width, (GLsizei)height, 0, format[i], type[i], nullptr);
 				break;
 #if !defined(FLOOR_IOS)
 			case GL_TEXTURE_2D_MULTISAMPLE:
-				glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), texman::convert_internal_format(internal_format[i]), width, height, false);
+				glTexImage2DMultisample(buffer->target[i], (GLsizei)get_sample_count(buffer->anti_aliasing[0]), texman::convert_internal_format(internal_format[i]), (GLsizei)width, (GLsizei)height, false);
 				break;
 #endif
 			default:
-				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), width, height, 0, format[i], type[i], nullptr);
+				glTexImage2D(buffer->target[i], 0, texman::convert_internal_format(internal_format[i]), (GLsizei)width, (GLsizei)height, 0, format[i], type[i], nullptr);
 				break;
 		}
 		
@@ -276,7 +276,7 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 				if(depth_type == DEPTH_TYPE::RENDERBUFFER) {
 					glGenRenderbuffers(1, &buffer->depth_buffer);
 					glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
-					glRenderbufferStorage(GL_RENDERBUFFER, depth_internel_format, width, height);
+					glRenderbufferStorage(GL_RENDERBUFFER, depth_internel_format, (GLsizei)width, (GLsizei)height);
 				}
 				else if(depth_type == DEPTH_TYPE::TEXTURE_2D) {
 					glGenTextures(1, &buffer->depth_buffer);
@@ -287,7 +287,7 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 					
-					glTexImage2D(GL_TEXTURE_2D, 0, texman::convert_internal_format(depth_internel_format), width, height, 0, depth_format, depth_storage_type, nullptr);
+					glTexImage2D(GL_TEXTURE_2D, 0, texman::convert_internal_format((GLint)depth_internel_format), (GLsizei)width, (GLsizei)height, 0, depth_format, depth_storage_type, nullptr);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, depth_attachment_type, GL_TEXTURE_2D, buffer->depth_buffer, 0);
 				}
 				
@@ -299,9 +299,9 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 			case TEXTURE_ANTI_ALIASING::MSAA_16:
 			case TEXTURE_ANTI_ALIASING::MSAA_32:
 			case TEXTURE_ANTI_ALIASING::MSAA_64: {
-				buffer->samples = (GLsizei)get_sample_count(buffer->anti_aliasing[0]);
+				buffer->samples = get_sample_count(buffer->anti_aliasing[0]);
 				
-				glGenFramebuffers(attachment_count, &buffer->resolve_buffer[0]);
+				glGenFramebuffers((GLsizei)attachment_count, &buffer->resolve_buffer[0]);
 				for(size_t i = 0; i < attachment_count; i++) {
 					glBindFramebuffer(GL_FRAMEBUFFER, buffer->resolve_buffer[i]);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)(GL_COLOR_ATTACHMENT0+i), target[i], buffer->tex[i], 0);
@@ -312,14 +312,14 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 				
 				glGenRenderbuffers(1, &buffer->color_buffer);
 				glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
-				glRenderbufferStorageMultisample(GL_RENDERBUFFER, buffer->samples, internal_format[0], buffer->width, buffer->height);
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)buffer->samples, (GLenum)internal_format[0], (GLsizei)buffer->width, (GLsizei)buffer->height);
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
 				check_fbo(current_buffer);
 				
 				if(depth_type == DEPTH_TYPE::RENDERBUFFER) {
 					glGenRenderbuffers(1, &buffer->depth_buffer);
 					glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
-					glRenderbufferStorageMultisample(GL_RENDERBUFFER, buffer->samples, depth_internel_format, buffer->width, buffer->height);
+					glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)buffer->samples, depth_internel_format, (GLsizei)buffer->width, (GLsizei)buffer->height);
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, depth_attachment_type, GL_RENDERBUFFER, buffer->depth_buffer);
 				}
 #if !defined(FLOOR_IOS)
@@ -331,7 +331,7 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 					
-					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, buffer->samples, texman::convert_internal_format(depth_internel_format), width, height, false);
+					glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, (GLsizei)buffer->samples, texman::convert_internal_format((GLint)depth_internel_format), (GLsizei)width, (GLsizei)height, false);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, depth_attachment_type, GL_TEXTURE_2D_MULTISAMPLE, buffer->depth_buffer, 0);
 				}
 #endif
@@ -384,12 +384,12 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 				glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 				glBindRenderbuffer(GL_RENDERBUFFER, buffer->color_buffer);
 				
-				glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, internal_format[0], buffer->width, buffer->height);
+				glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, (GLenum)internal_format[0], (GLsizei)buffer->width, (GLsizei)buffer->height);
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);
 				check_fbo(current_buffer);
 				
 				glBindRenderbuffer(GL_RENDERBUFFER, buffer->depth_buffer);
-				glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, depth_internel_format, buffer->width, buffer->height);
+				glRenderbufferStorageMultisampleCoverageNV(GL_RENDERBUFFER, coverage_samples, color_samples, depth_internel_format, (GLsizei)buffer->width, (GLsizei)buffer->height);
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, depth_attachment_type, GL_RENDERBUFFER, buffer->depth_buffer);
 				check_fbo(current_buffer);
 			}
@@ -474,7 +474,7 @@ void rtt::start_draw(rtt::fbo* buffer) {
 	else {
 		glBindFramebuffer(GL_FRAMEBUFFER, buffer->fbo_id);
 	}
-	glViewport(0, 0, buffer->draw_width, buffer->draw_height);
+	glViewport(0, 0, (int)buffer->draw_width, (int)buffer->draw_height);
 }
 
 void rtt::stop_draw() {
@@ -492,8 +492,8 @@ void rtt::stop_draw() {
 			for(size_t i = 0; i < current_buffer->attachment_count; i++) {
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_buffer->resolve_buffer[i]);
 #if !defined(FLOOR_IOS) || defined(PLATFORM_X64)
-				glBlitFramebuffer(0, 0, current_buffer->draw_width, current_buffer->draw_height,
-								  0, 0, current_buffer->draw_width, current_buffer->draw_height,
+				glBlitFramebuffer(0, 0, (int)current_buffer->draw_width, (int)current_buffer->draw_height,
+								  0, 0, (int)current_buffer->draw_width, (int)current_buffer->draw_height,
 								  GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #else
 				glResolveMultisampleFramebufferAPPLE();
@@ -550,10 +550,10 @@ void rtt::clear(const unsigned int and_mask, const float4 clear_color) {
 }
 
 void rtt::check_fbo(rtt::fbo* buffer) {
-	GLint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	const auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE) {
 		log_error("framebuffer (size: %u*%upx; depth: %i; stencil: %i; tex id: %u; fbo id: %u) didn't pass status check!",
-				  buffer->width, buffer->height, (unsigned int)buffer->depth_type, (unsigned int)buffer->stencil_type, buffer->tex[0], buffer->fbo_id);
+				  buffer->width, buffer->height, buffer->depth_type, buffer->stencil_type, buffer->tex[0], buffer->fbo_id);
 	}
 	
 	switch(status) {
@@ -588,7 +588,7 @@ void rtt::check_fbo(rtt::fbo* buffer) {
 	}
 }
 
-size_t rtt::get_sample_count(const TEXTURE_ANTI_ALIASING& taa) const {
+unsigned int rtt::get_sample_count(const TEXTURE_ANTI_ALIASING& taa) const {
 	switch(taa) {
 		case TEXTURE_ANTI_ALIASING::NONE: return 0;
 		case TEXTURE_ANTI_ALIASING::MSAA_2: return 2;

@@ -50,9 +50,10 @@ void gui_input_box::draw() {
 	
 	// draw the text
 	// note: scissor will be reset in the next theme draw
-	glScissor(floorf(position_abs.x + input_text_margin.x),
-			  floorf(position_abs.y + input_text_margin.y),
-			  ceilf(input_size_abs.x), ceilf(input_size_abs.y));
+	glScissor((int)floorf(position_abs.x + input_text_margin.x),
+			  (int)floorf(position_abs.y + input_text_margin.y),
+			  (int)ceilf(input_size_abs.x),
+			  (int)ceilf(input_size_abs.y));
 	fnt->draw_cached(input, input_text_position, theme->get_color_scheme().get("TEXT_INVERSE"));
 	
 	// draw blink character
@@ -151,9 +152,9 @@ bool gui_input_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<
 					if(position_in_text < advance.x) {
 						// found the character
 						// get the previous advance and determine the side on which the cursor should be placed
-						const float2& prev_advance = advance_map[position-1];
+						const float2& prev_advance = advance_map[(size_t)(position > 0 ? position - 1 : 0)];
 						const size_t side = (position_in_text - prev_advance.x) < (prev_advance.y * 0.5f) ? 1 : 0;
-						input_cursor = position - side;
+						input_cursor = position - (ssize_t)side;
 						break;
 					}
 					position++;
@@ -250,7 +251,7 @@ bool gui_input_box::handle_key_event(const EVENT_TYPE& type, const shared_ptr<ev
 				case SDLK_LEFT:
 					if(input_cursor != 0) {
 						if(input_cursor == -1) {
-							input_cursor = unicode_input.size();
+							input_cursor = (ssize_t)unicode_input.size();
 						}
 						input_cursor--;
 						update_text_display();
@@ -346,7 +347,7 @@ void gui_input_box::update_text_display() {
 	const float text_width = advance_map.back().x; // last element contains the total width
 	
 	input_text_position = position_abs;
-	cursor_position = (input_cursor != -1 ? advance_map[input_cursor].x : text_width);
+	cursor_position = (input_cursor >= 0 ? advance_map[(size_t)input_cursor].x : text_width);
 	if(text_width > input_size_abs.x) {
 		// only a portition of the text fits into the box -> determine which
 		if(input_cursor == -1) {

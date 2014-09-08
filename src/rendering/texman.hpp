@@ -53,13 +53,13 @@ public:
 	
 	void set_filtering(TEXTURE_FILTERING filtering);
 
-	unsigned int get_components(GLint format);
-	bool get_alpha(GLint format);
+	unsigned int get_components(GLenum format);
+	bool get_alpha(GLenum format);
 	
 	const a2e_texture get_dummy_texture() const;
 	
 	static GLint convert_internal_format(const GLint& internal_format);
-	static GLenum select_filter(const TEXTURE_FILTERING& filter);
+	static GLint select_filter(const TEXTURE_FILTERING& filter);
 
 protected:
 	ext* exts;

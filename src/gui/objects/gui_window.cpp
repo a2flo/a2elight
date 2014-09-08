@@ -151,7 +151,7 @@ void gui_window::set_position(const float2& position_) {
 
 bool gui_window::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point) {
 	// substract window position (all childs positions/sizes are relative to the window position)
-	const ipnt point_in_window { point - ipnt(floorf(position_abs.x), floorf(position_abs.y)) };
+	const ipnt point_in_window { point - ipnt((int)floorf(position_abs.x), (int)floorf(position_abs.y)) };
 	for(const auto& child : children) {
 		if(child->should_handle_mouse_event(type, point_in_window)) {
 			child->lock();

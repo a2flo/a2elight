@@ -134,7 +134,7 @@ void gui::draw() {
 	//
 	glEnable(GL_BLEND);
 	glEnable(GL_SCISSOR_TEST);
-	glScissor(0, 0, aa_fbo->draw_width, aa_fbo->draw_height);
+	glScissor(0, 0, (int)aa_fbo->draw_width, (int)aa_fbo->draw_height);
 	glDepthFunc(GL_LEQUAL);
 	gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 	
@@ -226,8 +226,8 @@ void gui::draw() {
 	else {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, main_fbo.fbo_id);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
-		glBlitFramebuffer(0, main_fbo.draw_height, main_fbo.draw_width, 0,
-						  0, 0, main_fbo.draw_width, main_fbo.draw_height,
+		glBlitFramebuffer(0, (int)main_fbo.draw_height, (int)main_fbo.draw_width, 0,
+						  0, 0, (int)main_fbo.draw_width, (int)main_fbo.draw_height,
 						  GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 	}

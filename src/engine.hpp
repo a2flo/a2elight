@@ -187,9 +187,9 @@ protected:
 	
 	// pushed gl state
 	static GLint pushed_matrix_mode;
-	static GLint pushed_blend_src, pushed_blend_dst;
-	static GLint pushed_blend_src_rgb, pushed_blend_src_alpha;
-	static GLint pushed_blend_dst_rgb, pushed_blend_dst_alpha;
+	static GLenum pushed_blend_src, pushed_blend_dst;
+	static GLenum pushed_blend_src_rgb, pushed_blend_src_alpha;
+	static GLenum pushed_blend_dst_rgb, pushed_blend_dst_alpha;
 	static deque<matrix4f*> pushed_matrices;
 	
 	// cursor

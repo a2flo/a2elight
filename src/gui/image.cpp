@@ -50,8 +50,8 @@ void a2e_image::draw(const pnt& scale_xy, const bool flip_y) {
 	else {
 		rectangle.x1 = position.x;
 		rectangle.y1 = position.y;
-		rectangle.x2 = position.x + tex->width;
-		rectangle.y2 = position.y + tex->height;
+		rectangle.x2 = position.x + (unsigned int)tex->width;
+		rectangle.y2 = position.y + (unsigned int)tex->height;
 	}
 	gfx2d::draw_rectangle_texture(rectangle, tex->tex(), color, float4(0.0f), bottom_left, top_right);
 
@@ -65,7 +65,7 @@ void a2e_image::draw(const pnt& scale_xy, const bool flip_y) {
 }
 
 void a2e_image::draw() {
-	draw(tex->width, tex->height);
+	draw((unsigned int)tex->width, (unsigned int)tex->height);
 }
 
 /*! opens an image file
@@ -130,11 +130,11 @@ const bool& a2e_image::is_gui_image() const {
 }
 
 unsigned int a2e_image::get_width() const {
-	return tex->width;
+	return (unsigned int)tex->width;
 }
 
 unsigned int a2e_image::get_height() const {
-	return tex->height;
+	return (unsigned int)tex->height;
 }
 
 void a2e_image::set_color(const float4& color_) {

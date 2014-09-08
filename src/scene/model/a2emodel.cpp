@@ -179,7 +179,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 	
 	if(masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
 	   masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
-		pre_draw_setup(sub_object_num);
+		pre_draw_setup((ssize_t)sub_object_num);
 	}
 	
 	// little hacky, but it's working for the moment :> (TODO: better method?)
@@ -350,7 +350,7 @@ void a2emodel::draw_sub_object(const DRAW_MODE& draw_mode, const size_t& sub_obj
 
 	if(masked_draw_mode == DRAW_MODE::GEOMETRY_ALPHA_PASS ||
 	   masked_draw_mode == DRAW_MODE::MATERIAL_ALPHA_PASS) {
-		post_draw_setup(sub_object_num);
+		post_draw_setup((ssize_t)sub_object_num);
 	}
 }
 

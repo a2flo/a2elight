@@ -108,8 +108,10 @@ void gui_object::compute_abs_values() {
 		}
 	}
 	
-	rectangle_abs.set(position_abs.x, position_abs.y,
-					  position_abs.x + size_abs.x, position_abs.y + size_abs.y);
+	rectangle_abs.set((unsigned int)position_abs.x,
+					  (unsigned int)position_abs.y,
+					  (unsigned int)(position_abs.x + size_abs.x),
+					  (unsigned int)(position_abs.y + size_abs.y));
 }
 
 const float2& gui_object::get_position() const {
@@ -258,8 +260,10 @@ void gui_object::compute_attachment_values() {
 		else position.x = position_abs.x / parent_size.x;
 	}
 	
-	rectangle_abs.set(position_abs.x, position_abs.y,
-					  position_abs.x + size_abs.x, position_abs.y + size_abs.y);
+	rectangle_abs.set((unsigned int)position_abs.x,
+					  (unsigned int)position_abs.y,
+					  (unsigned int)(position_abs.x + size_abs.x),
+					  (unsigned int)(position_abs.y + size_abs.y));
 }
 
 void gui_object::set_parent(gui_object* parent_) {
