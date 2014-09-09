@@ -119,10 +119,10 @@ project "a2elight"
 			buildoptions { "-stdlib=libc++" }
 			buildoptions { "-Weverything" }
 			buildoptions { "-Wno-unknown-warning-option" }
-			buildoptions { "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-header-hygiene -Wno-gnu -Wno-float-equal" }
+			buildoptions { "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-header-hygiene -Wno-gnu" }
 			buildoptions { "-Wno-documentation -Wno-system-headers -Wno-global-constructors -Wno-padded -Wno-packed" }
 			buildoptions { "-Wno-switch-enum -Wno-sign-conversion -Wno-conversion -Wno-exit-time-destructors" }
-			buildoptions { "-Wno-nested-anon-types" }
+			buildoptions { "-Wno-nested-anon-types -Wno-old-style-cast -Wno-date-time" }
 			linkoptions { "-fvisibility=default" }
 			if(not win_unixenv) then
 				defines { "FLOOR_EXPORT=1" }

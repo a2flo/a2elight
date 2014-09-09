@@ -159,7 +159,9 @@ const float2& gui_surface::get_offset() const {
 }
 
 void gui_surface::start_draw() {
-	if(buffer) r->start_draw(buffer);
+	if(buffer == nullptr) return;
+	
+	r->start_draw(buffer);
 	if(shared_buffer) {
 		// these must always be reset, since other buffers use them too
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer->color_buffer);

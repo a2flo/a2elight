@@ -974,6 +974,7 @@
 					"-Wno-unknown-warning-option",
 					"-Wno-nested-anon-types",
 					"-Wno-old-style-cast",
+					"-Wno-date-time",
 				);
 			};
 			name = Debug;
@@ -1086,6 +1087,7 @@
 					"-Wno-unknown-warning-option",
 					"-Wno-nested-anon-types",
 					"-Wno-old-style-cast",
+					"-Wno-date-time",
 				);
 			};
 			name = Release;
