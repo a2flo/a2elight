@@ -24,7 +24,7 @@
 #include "core/event.hpp"
 
 class gui;
-class A2E_API gui_object_event {
+class gui_object_event {
 public:
 	gui_object_event() noexcept;
 	virtual ~gui_object_event() = default;

@@ -38,11 +38,8 @@
 #endif
 #endif
 
-/*! @class shader
- *  @brief shader class
- */
-
-class A2E_API shader {
+//! shader class
+class shader {
 protected:
 	map<string, shader_object*> shaders;
 	

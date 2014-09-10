@@ -27,10 +27,6 @@
 #include "gui/style/gui_surface.hpp"
 #include "rendering/renderer/gl_shader_fwd.hpp"
 
-/*! @class gui
- *  @brief graphical user interface functions
- */
-
 class core;
 class scene;
 class font_manager;
@@ -44,7 +40,8 @@ enum class DRAW_MODE_UI : unsigned int {
 };
 typedef function<void(const DRAW_MODE_UI, rtt::fbo*)> ui_draw_callback;
 
-class A2E_API gui : public thread_base {
+//! graphical user interface functions
+class gui : public thread_base {
 public:
 	gui(const string& theme_name);
 	~gui();

@@ -227,7 +227,7 @@ F(GL_SAMPLER_CUBE)
 #define A2E_SHADER_GET_ATTRIBUTE_POSITION(name) (GLuint)(get_attribute_position(name))
 #define A2E_SHADER_GET_BLOCK_POSITION(name) (GLuint)(get_block_position(name))
 
-template<class shader_impl> class A2E_API shader_base {
+template<class shader_impl> class shader_base {
 public:
 	shader_base(const shader_object& shd_obj_) : shd_obj(shd_obj_), cur_program(0), cur_option("#") {}
 	virtual ~shader_base() {}

@@ -28,12 +28,10 @@
 #include "rendering/texman.hpp"
 #include "particle/particle_system.hpp"
 
-/*! @class particle_manager base class
- *  @brief a2e particle manager base class
- */
-
 class opencl;
-class A2E_API particle_manager_base {
+
+//! a2e particle manager base class
+class particle_manager_base {
 public:
 	particle_manager_base();
 	virtual ~particle_manager_base();

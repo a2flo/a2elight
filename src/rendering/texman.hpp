@@ -27,12 +27,10 @@
 #include "rendering/texture_object.hpp"
 #include "core/unicode.hpp"
 
-/*! @class texman
- *  @brief texture management routines
- */
-
 struct texture;
-class A2E_API texman {
+
+//! texture management routines
+class texman {
 public:
 	texman(ext* exts, const size_t& standard_anisotropic);
 	~texman();

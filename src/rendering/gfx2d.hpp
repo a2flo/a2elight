@@ -25,10 +25,6 @@
 #include "rendering/shader.hpp"
 #include "rendering/extensions.hpp"
 
-/*! @class gfx2d
- *  @brief graphical functions
- */
-
 #define __GFX2D_POINT_COMPUTE_FUNCS(F, DS_FUNC, DS_NAME) \
 F(gfx2d::point_compute_point, point, DS_FUNC, DS_NAME) \
 F(gfx2d::point_compute_line, line, DS_FUNC, DS_NAME) \
@@ -51,7 +47,8 @@ template<typename... Args> static void draw_ ##pc_name ##_ ##ds_name(const Args&
 	draw<pc_func<ds_func>>(args...); \
 }
 
-class A2E_API gfx2d {
+//! 2D graphical functions
+class gfx2d {
 public:
 	//
 	gfx2d() = delete;

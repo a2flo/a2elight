@@ -30,11 +30,8 @@
 
 #define A2E_MATERIAL_VERSION 2
 
-/*! @class a2ematerial
- *  @brief a2e material routines
- */
-
-class A2E_API a2ematerial {
+//! a2e material routines
+class a2ematerial {
 public:
 	a2ematerial();
 	~a2ematerial();

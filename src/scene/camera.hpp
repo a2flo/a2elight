@@ -24,11 +24,8 @@
 #include "core/core.hpp"
 #include "core/event.hpp"
 
-/*! @class camera
- *  @brief a2e camera functions
- */
-
-class A2E_API camera {
+//! a2e camera functions
+class camera {
 public:
 	camera();
 	~camera();

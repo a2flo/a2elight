@@ -28,7 +28,7 @@
 #include "rendering/rtt.hpp"
 #include "rendering/renderer/shader_base.hpp"
 
-class A2E_API shader_gl3 : public shader_base<shader_gl3> {
+class shader_gl3 : public shader_base<shader_gl3> {
 public:
 	shader_gl3(const shader_object& shd_obj_);
 	

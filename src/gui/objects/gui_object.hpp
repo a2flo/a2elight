@@ -27,14 +27,12 @@
 #include "gui/style/gui_theme.hpp"
 #include "gui/gui_event.hpp"
 
-/*! @class gui_object
- *  @brief gui object element functions
- */
-
 class gui;
 class gui_window;
 class a2e_image;
-class A2E_API gui_object : public gui_object_event {
+
+//! gui object element functions, base class for all gui objects
+class gui_object : public gui_object_event {
 public:
 	gui_object() = delete;
 	explicit gui_object(const float2& size, const float2& position) noexcept;

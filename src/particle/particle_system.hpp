@@ -27,14 +27,12 @@
 #include "rendering/gfx2d.hpp"
 #include "cl/opencl.hpp"
 
-/*! @class particle_system class
- *  @brief a2e particle system class
- */
-
 #define A2E_MAX_PARTICLE_LIGHTS 4ULL
 
 class light;
-class A2E_API particle_system {
+
+//! a2e particle system class
+class particle_system {
 public:
 	particle_system();
 	~particle_system();

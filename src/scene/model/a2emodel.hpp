@@ -35,12 +35,10 @@
 
 #define A2E_MAX_MASK_ID 3
 
-/*! @class a2emodel
- *  @brief a2e model base class
- */
-
 class scene;
-class A2E_API a2emodel {
+
+//! a2e model base class
+class a2emodel {
 public:
 	a2emodel(shader* s, scene* sce);
 	virtual ~a2emodel();

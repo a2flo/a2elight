@@ -34,11 +34,8 @@
 #define A2E_DEFINE_EXTENSIONS
 #endif
 
-/*! @class ext
- *  @brief opengl extensions
- */
-
-class A2E_API ext {
+//! opengl extensions and general opengl handling
+class ext {
 public:
 	ext(string* disabled_extensions, string* force_device, string* force_vendor);
 	~ext();

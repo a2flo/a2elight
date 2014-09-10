@@ -23,7 +23,7 @@
 
 #include "engine.hpp"
 
-class A2E_API a2e_image {
+class a2e_image {
 public:
 	constexpr a2e_image() = default;
 	a2e_image(const string& filename, const TEXTURE_FILTERING filter = TEXTURE_FILTERING::POINT);

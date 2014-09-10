@@ -32,11 +32,8 @@
 #include "scene/light.hpp"
 #include "scene/model/a2emodel.hpp"
 
-/*! @class a2estatic
- *  @brief class for loading and displaying an a2e static model
- */
-
-class A2E_API a2estatic : public a2emodel {
+//! class for loading and displaying an a2e static model
+class a2estatic : public a2emodel {
 public:
 	a2estatic(shader* s, scene* sce);
 	virtual ~a2estatic();

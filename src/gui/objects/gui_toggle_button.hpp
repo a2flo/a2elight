@@ -21,7 +21,7 @@
 
 #include "gui/objects/gui_text.hpp"
 
-class A2E_API gui_toggle_button : public gui_object {
+class gui_toggle_button : public gui_object {
 public:
 	using gui_object::gui_object;
 	virtual ~gui_toggle_button() = default;

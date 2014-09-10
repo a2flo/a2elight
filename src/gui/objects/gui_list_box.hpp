@@ -21,7 +21,7 @@
 
 #include "gui/objects/gui_item_container.hpp"
 
-class A2E_API gui_list_box : public gui_item_container {
+class gui_list_box : public gui_item_container {
 public:
 	gui_list_box(const float2& size, const float2& position);
 	virtual ~gui_list_box() = default;

@@ -21,7 +21,7 @@
 
 #include "gui/objects/gui_object.hpp"
 
-class A2E_API gui_input_box : public gui_object {
+class gui_input_box : public gui_object {
 public:
 	gui_input_box(const float2& size, const float2& position);
 	virtual ~gui_input_box();

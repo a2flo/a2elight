@@ -31,11 +31,8 @@
 #include "particle/particle_base.hpp"
 #include "cl/opencl.hpp"
 
-/*! @class particle_manager opencl class
- *  @brief a2e particle manager opencl class
- */
-
-class A2E_API particle_manager_cl : public particle_manager_base {
+//! a2e particle manager opencl class
+class particle_manager_cl : public particle_manager_base {
 public:
 	particle_manager_cl();
 	virtual ~particle_manager_cl();

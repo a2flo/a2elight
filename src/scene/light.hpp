@@ -22,11 +22,8 @@
 #include "global.hpp"
 #include "core/core.hpp"
 
-/*! @class light
- *  @brief lighting routines
- */
-
-class A2E_API light {
+//! lighting routines
+class light {
 public:
 	light(const float& x, const float& y, const float& z);
 	light(const float3& pos) : light(pos.x, pos.y, pos.z) {}

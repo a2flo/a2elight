@@ -21,8 +21,8 @@
 
 #include "gui/objects/gui_object.hpp"
 
-// use this as the base class for all objects that need to store items (don't instantiate directly!)
-class A2E_API gui_item_container : public gui_object {
+//! use this as the base class for all objects that need to store items (don't instantiate directly!)
+class gui_item_container : public gui_object {
 public:
 	gui_item_container(const float2& size, const float2& position, const GUI_EVENT select_event);
 	virtual ~gui_item_container() = default;

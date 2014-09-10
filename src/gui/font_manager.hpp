@@ -22,15 +22,13 @@
 #include "global.hpp"
 #include "threading/thread_base.hpp"
 
-/*! @class font_manager
- *  @brief loads and caches fonts
- */
-
 class rtt;
 struct FT_LibraryRec_;
 typedef struct FT_LibraryRec_* FT_Library;
 class a2e_font;
-class A2E_API font_manager : public thread_base {
+
+//! loads and caches fonts
+class font_manager : public thread_base {
 public:
 	font_manager();
 	virtual ~font_manager();

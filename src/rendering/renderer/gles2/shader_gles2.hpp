@@ -28,7 +28,7 @@
 #include "rendering/rtt.hpp"
 #include "rendering/renderer/shader_base.hpp"
 
-class A2E_API shader_gles2 : public shader_base<shader_gles2> {
+class shader_gles2 : public shader_base<shader_gles2> {
 public:
 	shader_gles2(const shader_object& shd_obj_);
 	

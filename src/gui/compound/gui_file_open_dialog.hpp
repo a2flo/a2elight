@@ -21,7 +21,7 @@
 
 #include "gui/compound/gui_file_dialog.hpp"
 
-class A2E_API gui_file_open_dialog : public gui_file_dialog {
+class gui_file_open_dialog : public gui_file_dialog {
 public:
 	gui_file_open_dialog(const string& directory,
 						 const string file_extension = "", // any file/folder

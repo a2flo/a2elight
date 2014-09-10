@@ -21,7 +21,7 @@
 
 #include "gui/objects/gui_text.hpp"
 
-class A2E_API gui_button : public gui_text {
+class gui_button : public gui_text {
 public:
 	using gui_text::gui_text;
 	virtual ~gui_button() = default;

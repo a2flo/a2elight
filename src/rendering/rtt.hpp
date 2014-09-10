@@ -25,11 +25,8 @@
 #include "rendering/extensions.hpp"
 #include "rendering/texture_object.hpp"
 
-/*! @class rtt
- *  @brief render to texture class
- */
-
-class A2E_API rtt {
+//! render to texture (fbo) class
+class rtt {
 public:
 	rtt(ext* exts);
 	~rtt();

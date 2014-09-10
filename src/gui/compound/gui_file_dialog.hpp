@@ -24,7 +24,7 @@
 #include "gui/gui_fwd.hpp"
 #include "gui/objects/gui_object_event.hpp"
 
-class A2E_API gui_file_dialog : public gui_object_event {
+class gui_file_dialog : public gui_object_event {
 public:
 	gui_file_dialog(const string& directory,
 					const string file_extension = "", // any file/folder

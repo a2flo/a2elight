@@ -28,12 +28,10 @@
 
 #define A2E_SHADER_VERSION 2
 
-/*! @class shader
- *  @brief shader class
- */
-
 class shader;
-class A2E_API a2e_shader {
+
+//! a2e shader class
+class a2e_shader {
 protected:
 	enum class CONDITION_TYPE : unsigned int {
 		INVALID,

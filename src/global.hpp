@@ -68,18 +68,15 @@
 #endif
 
 // on windows exports/imports: apparently these have to be treated separately,
-// always use dllexport for a2e/c++ stuff and depending on compiling or using
-// a2e, use dllexport or dllimport for all opengl functions
+// use dllexport or dllimport for all opengl functions, depending on compiling
+// a2e itself or other projects using/including a2e
 #if defined(A2E_EXPORTS)
 #pragma warning(disable: 4251)
-#define A2E_API __declspec(dllexport)
 #define OGL_API __declspec(dllexport)
 #elif defined(A2E_IMPORTS)
 #pragma warning(disable: 4251)
-#define A2E_API __declspec(dllexport)
 #define OGL_API __declspec(dllimport)
 #else
-#define A2E_API
 #define OGL_API
 #endif // A2E_EXPORTS
 
@@ -102,10 +99,10 @@ enum class DRAW_MODE : unsigned int {
 	ENV_MATERIAL_ALPHA_PASS	= ENVIRONMENT_PASS | MATERIAL_ALPHA_PASS,
 	ENV_GM_PASSES_MASK		= ENVIRONMENT_PASS | GM_PASSES_MASK
 };
-A2E_API DRAW_MODE operator|(const DRAW_MODE& e0, const DRAW_MODE& e1);
-A2E_API DRAW_MODE& operator|=(DRAW_MODE& e0, const DRAW_MODE& e1);
-A2E_API DRAW_MODE operator&(const DRAW_MODE& e0, const DRAW_MODE& e1);
-A2E_API DRAW_MODE& operator&=(DRAW_MODE& e0, const DRAW_MODE& e1);
+DRAW_MODE operator|(const DRAW_MODE& e0, const DRAW_MODE& e1);
+DRAW_MODE& operator|=(DRAW_MODE& e0, const DRAW_MODE& e1);
+DRAW_MODE operator&(const DRAW_MODE& e0, const DRAW_MODE& e1);
+DRAW_MODE& operator&=(DRAW_MODE& e0, const DRAW_MODE& e1);
 #endif
 
 #endif

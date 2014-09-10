@@ -35,13 +35,10 @@
 #include "rendering/rtt.hpp"
 #include "cl/opencl.hpp"
 
-/*! @class scene
- *  @brief a2e scene manager
- */
-
 class particle_manager;
 
-class A2E_API scene {
+//! a2e scene manager
+class scene {
 protected:
 	struct frame_buffers {
 		rtt::fbo* scene_buffer { nullptr }; // final output buffer

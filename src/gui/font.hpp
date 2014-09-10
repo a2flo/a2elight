@@ -24,13 +24,11 @@
 #include "gui/font_manager.hpp"
 #include "rendering/renderer/gl_shader_fwd.hpp"
 
-/*! @class font
- *  @brief stores a font and can be used for drawing
- */
-
 class shader;
 typedef struct FT_FaceRec_* FT_Face;
-class A2E_API a2e_font {
+
+//! stores a font and can be used for drawing
+class a2e_font {
 public:
 	//! single font file or font collection
 	a2e_font(font_manager* fm, const string& filename);

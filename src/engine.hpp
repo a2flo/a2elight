@@ -34,14 +34,12 @@
 
 #define A2M_VERSION 2
 
-/*! @class engine
- *  @brief main engine
- */
-
 class shader;
 class gui;
 class scene;
-class A2E_API engine {
+
+//! main engine
+class engine {
 public:
 	engine() = delete;
 	~engine() = delete;

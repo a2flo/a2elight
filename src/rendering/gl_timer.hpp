@@ -22,12 +22,9 @@
 #include "global.hpp"
 #include "math/vector_lib.hpp"
 
-/*! @class gl_timer
- *  @brief arb_timer_query wrapper + additional functionality
- */
-
-// NOTE: this is not supported on iOS
-class A2E_API gl_timer {
+//! arb_timer_query wrapper + additional functionality
+//! NOTE: this is not supported on iOS
+class gl_timer {
 public:
 	gl_timer() = delete;
 	~gl_timer() = delete;

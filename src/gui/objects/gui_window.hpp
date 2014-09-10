@@ -22,7 +22,7 @@
 #include "gui/objects/gui_object.hpp"
 #include "gui/style/gui_surface.hpp"
 
-class A2E_API gui_window : public gui_object, public gui_surface {
+class gui_window : public gui_object, public gui_surface {
 public:
 	gui_window(const float2& buffer_size, const float2& position, const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
 	virtual ~gui_window();
