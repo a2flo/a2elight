@@ -115,9 +115,9 @@ void gfx2d::compute_ellipsoid_points(vector<float2>& dst_points, const float& ra
 	const float angle_size = (end_angle >= start_angle ? (end_angle - start_angle) : (360.0f + end_angle - start_angle)) / 360.0f;
 	const float steps_per_quadrant_lr = ceilf(radius_lr); // "per 90° or 0.25 angle size"
 	const float steps_per_quadrant_tb = ceilf(radius_tb);
-	const float angle_offset = start_angle * float(PI_DIV_180);
+	const float angle_offset = start_angle * const_math::PI_DIV_180<float>;
 	const size_t steps = (size_t)(std::max(steps_per_quadrant_lr, steps_per_quadrant_tb) * (angle_size * 4.0f));
-	const float steps_div = float((_2_MUL_PI * (long double)angle_size) / (long double)(steps-1));
+	const float steps_div = float((const_math::PI_MUL_2<long double> * (long double)angle_size) / (long double)(steps-1));
 	
 	dst_points.reserve(dst_points.size() + steps);
 	for(size_t i = 0; i < steps; i++) {

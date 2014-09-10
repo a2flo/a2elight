@@ -737,7 +737,7 @@ float engine::get_upscaling() {
 }
 
 void engine::set_upscaling(const float& factor) {
-	if(FLOAT_EQ(factor, config.upscaling)) return;
+	if(const_math::is_equal(factor, config.upscaling)) return;
 	config.upscaling = factor;
 	evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
 				   make_shared<window_resize_event>(SDL_GetTicks(),
@@ -749,7 +749,7 @@ float engine::get_geometry_light_scaling() {
 }
 
 void engine::set_geometry_light_scaling(const float& factor) {
-	if(FLOAT_EQ(factor, config.geometry_light_scaling)) return;
+	if(const_math::is_equal(factor, config.geometry_light_scaling)) return;
 	config.geometry_light_scaling = factor;
 	evt->add_event(EVENT_TYPE::WINDOW_RESIZE,
 				   make_shared<window_resize_event>(SDL_GetTicks(),

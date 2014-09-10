@@ -21,7 +21,6 @@
 
 #include "global.hpp"
 #include "core/core.hpp"
-#include "math/basic_math.hpp"
 
 #include "rendering/shader.hpp"
 #include "rendering/extensions.hpp"
@@ -227,11 +226,11 @@ struct gfx2d::point_compute_line {
 		
 		// add half a pixel if this is a horizontal/vertical line - this is necessary to get
 		// sharp lines (anti-aliasing would 50/50 distribute the color to two pixels otherwise)
-		if(FLOAT_EQ(x1, x2)) {
+		if(const_math::is_equal(x1, x2)) {
 			x1 += 0.5f;
 			x2 += 0.5f;
 		}
-		else if(FLOAT_EQ(y1, y2)) {
+		else if(const_math::is_equal(y1, y2)) {
 			y1 += 0.5f;
 			y2 += 0.5f;
 		}
