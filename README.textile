@@ -12,7 +12,7 @@ Linux:
 * run "./install.sh" (this will install a2elight to /usr/local/) or copy/link all files manually (*.so to /usr/local/lib and a2elight/src to /usr/local/include/a2elight)
 
 OS X:
-* install Xcode 6.1+
+* install Xcode 6.2+
 * install XQuartz http://xquartz.macosforge.org (needed for zlib, libxml2, freetype2)
 * clone the SDL2 and SDL2_image repositories: hg clone http://hg.libsdl.org/SDL && hg clone http://hg.libsdl.org/SDL_image
 * build both of them and install them to /Library/Frameworks
@@ -24,7 +24,7 @@ OS X:
 ** sudo ln -sf /path/to/a2elight/lib/liba2elightd.dylib /usr/local/lib/liba2elightd.dylib
 
 on iOS:
-* install Xcode 6.1+
+* install Xcode 6.2+
 * install floor: https://github.com/a2flo/floor
 * compile a2elight.xcodeproj (a2elight_ios target)
 * install/symlink a2elight .a and lib folder:
