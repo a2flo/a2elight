@@ -17,6 +17,7 @@
  */
 
 #include <floor/floor/floor.hpp>
+#include <floor/core/gl_support.hpp>
 
 #include "engine.hpp"
 #include "global.hpp"
@@ -52,9 +53,6 @@
 #include "rendering/shader.hpp"
 #include "rendering/texman.hpp"
 #include "rendering/texture_object.hpp"
-#if !defined(FLOOR_IOS)
-#include "rendering/gl_funcs.hpp"
-#endif
 #include "rendering/renderer/shader_base.hpp"
 #include "rendering/renderer/shader_object.hpp"
 #include "rendering/renderer/a2e_shader.hpp"

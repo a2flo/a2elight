@@ -93,10 +93,6 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 	ext::force_device = force_device_;
 	ext::force_vendor = force_vendor_;
 	
-#if !defined(FLOOR_IOS)
-	init_gl_funcs();
-#endif
-	
 	// get supported extensions
 #if !defined(FLOOR_IOS)
 	unsigned int ext_count = 0;
@@ -301,7 +297,7 @@ ext::ext(string* disabled_extensions_, string* force_device_, string* force_vend
 	}
 
 	// get max multi-sampling samples
-#if !defined(FLOOR_IOS)
+#if !defined(FLOOR_IOS) && 0 // TODO: fix or remove this
 	if(fbo_multisample_coverage_support) {
 		glGetIntegerv(GL_MAX_MULTISAMPLE_COVERAGE_MODES_NV, (GLint*)&max_multisample_coverage_modes);
 		multisample_coverage_modes.clear();

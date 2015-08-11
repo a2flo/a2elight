@@ -22,13 +22,7 @@
 #include "global.hpp"
 
 #include <floor/core/core.hpp>
-#if !(defined(A2E_EXTENSIONS_DONT_INCLUDE_GL_FUNCS) || defined(FLOOR_IOS))
-#include "rendering/gl_funcs.hpp"
-#endif
-
-#if defined(FLOOR_IOS)
 #include <floor/core/gl_support.hpp>
-#endif
 
 #if !defined(__APPLE__)
 #define A2E_DEFINE_EXTENSIONS
@@ -150,9 +144,6 @@ public:
 protected:
 	OPENGL_VERSION opengl_version;
 	GLSL_VERSION glsl_version;
-	
-	void init_gl_funcs();
-	void check_gl_funcs();
 
 	bool shader_support { false };
 	bool shader_model_5_0_support { false };

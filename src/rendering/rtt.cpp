@@ -339,7 +339,7 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 				check_fbo(current_buffer);
 			}
 			break;
-#if !defined(FLOOR_IOS)
+#if !defined(FLOOR_IOS) && 0 // TODO: fix or remove this
 			case TEXTURE_ANTI_ALIASING::CSAA_8:
 			case TEXTURE_ANTI_ALIASING::CSAA_8Q:
 			case TEXTURE_ANTI_ALIASING::CSAA_16:
@@ -394,6 +394,15 @@ rtt::fbo* rtt::add_buffer(const unsigned int width_, const unsigned int height_,
 				check_fbo(current_buffer);
 			}
 			break;
+#else
+			case TEXTURE_ANTI_ALIASING::CSAA_8:
+			case TEXTURE_ANTI_ALIASING::CSAA_8Q:
+			case TEXTURE_ANTI_ALIASING::CSAA_16:
+			case TEXTURE_ANTI_ALIASING::CSAA_16Q:
+			case TEXTURE_ANTI_ALIASING::CSAA_32:
+			case TEXTURE_ANTI_ALIASING::CSAA_32Q:
+				log_error("CSAA not supported right now");
+				break;
 #endif
 		}
 	}
