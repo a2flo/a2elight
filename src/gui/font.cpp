@@ -16,8 +16,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "font.hpp"
-#include "font_manager.hpp"
+#include "gui/font.hpp"
+#include "gui/font_manager.hpp"
 #include <floor/math/vector_lib.hpp>
 #include <floor/core/unicode.hpp>
 #include <floor/core/event_objects.hpp>

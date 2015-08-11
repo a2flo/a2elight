@@ -17,7 +17,7 @@
  */
 
 #include "rtt.hpp"
-#include "scene.hpp" // TODO: remove this again when cl inferred rendering is std
+#include "scene/scene.hpp" // TODO: remove this again when cl inferred rendering is std
 #include "engine.hpp"
 
 const char* rtt::TEXTURE_ANTI_ALIASING_STR[] = {

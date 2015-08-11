@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gui.hpp"
+#include "gui/gui.hpp"
 #include "engine.hpp"
 #include "rendering/shader.hpp"
 #include "rendering/gfx2d.hpp"

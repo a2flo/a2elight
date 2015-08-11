@@ -19,7 +19,7 @@
 #include "gui_object.hpp"
 #include "engine.hpp"
 #include "gui/gui.hpp"
-#include "font_manager.hpp"
+#include "gui/font_manager.hpp"
 
 gui_object::gui_object(const float2& size_, const float2& position_) noexcept :
 gui_object_event(),

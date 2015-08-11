@@ -20,9 +20,9 @@
 #include "gui_window.hpp"
 #include "engine.hpp"
 #include <floor/core/event.hpp>
-#include "gui.hpp"
+#include "gui/gui.hpp"
 #include <floor/threading/task.hpp>
-#include "font.hpp"
+#include "gui/font.hpp"
 #include "gui_window.hpp"
 
 ////

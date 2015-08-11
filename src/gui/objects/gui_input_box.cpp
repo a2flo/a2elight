@@ -18,8 +18,8 @@
 
 #include "gui_input_box.hpp"
 #include "engine.hpp"
-#include "font.hpp"
-#include "gui.hpp"
+#include "gui/font.hpp"
+#include "gui/gui.hpp"
 #include <floor/threading/task.hpp>
 #include "gui_window.hpp"
 

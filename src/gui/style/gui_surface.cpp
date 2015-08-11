@@ -17,7 +17,7 @@
  */
 
 #include "gui_surface.hpp"
-#include "gui.hpp"
+#include "gui/gui.hpp"
 #include "engine.hpp"
 #include "rendering/gfx2d.hpp"
 #include "rendering/shader.hpp"

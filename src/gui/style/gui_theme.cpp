@@ -18,8 +18,8 @@
 
 #include "gui_theme.hpp"
 #include "engine.hpp"
-#include "font_manager.hpp"
-#include "font.hpp"
+#include "gui/font_manager.hpp"
+#include "gui/font.hpp"
 
 #define A2E_THEME_VERSION 1
 #define A2E_UI_OBJECT_VERSION 1

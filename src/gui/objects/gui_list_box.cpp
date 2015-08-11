@@ -18,8 +18,8 @@
 
 #include "gui_list_box.hpp"
 #include "engine.hpp"
-#include "gui.hpp"
-#include "font.hpp"
+#include "gui/gui.hpp"
+#include "gui/font.hpp"
 #include "gui_window.hpp"
 
 gui_list_box::gui_list_box(const float2& size_, const float2& position_) :

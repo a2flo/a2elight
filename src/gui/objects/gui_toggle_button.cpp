@@ -18,7 +18,7 @@
 
 #include "gui_toggle_button.hpp"
 #include "engine.hpp"
-#include "gui.hpp"
+#include "gui/gui.hpp"
 #include "gui_window.hpp"
 
 void gui_toggle_button::draw() {
