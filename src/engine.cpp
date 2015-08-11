@@ -116,7 +116,7 @@ void engine::init(const char* callpath_, const char* datapath_,
 	const auto& config_doc = floor::get_config_doc();
 	if(config_doc.valid) {
 		// ui anti-aliasing should at least be 2x msaa
-		config.ui_anti_aliasing = std::max(config_doc.get<uint64_t>("gui.anti_aliasing", 8), 2ull);
+		config.ui_anti_aliasing = std::max(config_doc.get<uint64_t>("gui.anti_aliasing", 8), uint64_t(2));
 		
 		config.fps_limit = config_doc.get<uint64_t>("sleep.time", 0);
 		
