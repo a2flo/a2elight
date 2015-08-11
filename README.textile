@@ -6,7 +6,10 @@
 
 *Build Instructions (Linux):*
 * run "./build.sh"
-* run "./install.sh" (this will install a2elight to /usr/local/) or copy/link all files manually (*.so to /usr/local/lib and a2elight/src to /usr/local/include/a2elight)
+* install a2elight (alternatively, copy these files/folders there):
+** sudo ln -sf /path/to/a2elight/src /usr/local/include/a2elight
+** sudo ln -sf /path/to/a2elight/lib/liba2elight.dylib /usr/local/lib/liba2elight.so
+** sudo ln -sf /path/to/a2elight/lib/liba2elightd.dylib /usr/local/lib/liba2elightd.so
 
 *Build Instructions (OS X / iOS):*
 * open src/a2elight.xcodeproj and build it

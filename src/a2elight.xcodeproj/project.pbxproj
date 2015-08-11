@@ -185,8 +185,6 @@
 		5C61BDAA1231D32000FD3451 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = /System/Library/Frameworks/OpenCL.framework; sourceTree = "<absolute>"; };
 		5C61BDAB1231D32000FD3451 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		5C7173C618D7530500DDF097 /* OpenALSoft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenALSoft.framework; path = ../../../../../../Library/Frameworks/OpenALSoft.framework; sourceTree = "<group>"; };
-		5C7A8FF614B398B2004AA18B /* premake.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = premake.sh; path = ../premake.sh; sourceTree = "<group>"; };
-		5C7A8FF714B398B2004AA18B /* premake4.lua */ = {isa = PBXFileReference; lastKnownFileType = text; name = premake4.lua; path = ../premake4.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.python; };
 		5C7B325017E726E700153798 /* a2e_version.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = a2e_version.hpp; sourceTree = SOURCE_ROOT; };
 		5C7B325117E726E700153798 /* a2e.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = a2e.hpp; sourceTree = SOURCE_ROOT; };
 		5C7B325217E726E700153798 /* engine.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = engine.hpp; sourceTree = SOURCE_ROOT; };
@@ -271,6 +269,7 @@
 		5C7B32F117E7276C00153798 /* a2emodel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = a2emodel.hpp; sourceTree = "<group>"; };
 		5C7B32F217E7276C00153798 /* a2estatic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = a2estatic.cpp; sourceTree = "<group>"; };
 		5C7B32F317E7276C00153798 /* a2estatic.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = a2estatic.hpp; sourceTree = "<group>"; };
+		5C8D43F21B7A75EE0027F4AD /* build.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = build.sh; path = ../build.sh; sourceTree = "<group>"; };
 		5CAEC27C1867B66700BEC3A3 /* liba2elightd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liba2elightd.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5CAEC27D1867B66700BEC3A3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5CAEC28B1867B66800BEC3A3 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -366,8 +365,7 @@
 		5C05F78A123171DA00D122BF /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				5C7A8FF614B398B2004AA18B /* premake.sh */,
-				5C7A8FF714B398B2004AA18B /* premake4.lua */,
+				5C8D43F21B7A75EE0027F4AD /* build.sh */,
 				5C47242915E3CCE5000CA003 /* install.sh */,
 				5CD2FD8A1872286D00FC56C8 /* a2e_prefix.pch */,
 			);
