@@ -23,14 +23,14 @@ a2e_image::a2e_image(const string& filename, const TEXTURE_FILTERING filter) {
 	open_image(filename, filter);
 }
 
-void a2e_image::draw(const pnt& scale_xy, const bool flip_y) {
+void a2e_image::draw(const uint2& scale_xy, const bool flip_y) {
 	if(!gui_img) engine::start_2d_draw();
 	
 	if(tex->alpha) {
 		glEnable(GL_BLEND);
 	}
 	
-	coord bottom_left, top_right;
+	float2 bottom_left, top_right;
 	if(flip_y) {
 		bottom_left.set(0.0f, 1.0f);
 		top_right.set(1.0f, 0.0f);
@@ -87,13 +87,13 @@ void a2e_image::set_position(const unsigned int& x, const unsigned int& y) {
 /*! sets the position (pnt) of the image
  *  @param position the (new) position of the image
  */
-void a2e_image::set_position(const pnt& position_) {
+void a2e_image::set_position(const uint2& position_) {
 	set_position(position_.x, position_.y);
 }
 
 /*! returns the position (pnt) of the image
  */
-const pnt& a2e_image::get_position() const {
+const uint2& a2e_image::get_position() const {
 	return position;
 }
 

@@ -40,16 +40,16 @@ static pair<float, gui_theme::VALUE_TYPE> str_to_ui_float_pair(const string& val
 	const auto perc_pos(val_str.find("%"));
 	if(perc_pos != string::npos) {
 		// [0, 100] -> [0, 1]
-		const float scaled_value(string2float(val_str.substr(0, perc_pos)) * 0.01f);
+		const float scaled_value(stof(val_str.substr(0, perc_pos)) * 0.01f);
 		return { scaled_value, gui_theme::VALUE_TYPE::PERCENTAGE };
 	}
 	
 	const auto pt_pos(val_str.find("pt"));
 	if(pt_pos != string::npos) {
-		return { string2float(val_str), gui_theme::VALUE_TYPE::POINT };
+		return { stof(val_str), gui_theme::VALUE_TYPE::POINT };
 	}
 	
-	return { string2float(val_str), gui_theme::VALUE_TYPE::PIXEL };
+	return { stof(val_str), gui_theme::VALUE_TYPE::PIXEL };
 };
 static gui_theme::ui_float str_to_ui_float(const pair<float, gui_theme::VALUE_TYPE>& uif_pair) {
 	return gui_theme::ui_float { uif_pair.first, uif_pair.second };
@@ -73,7 +73,7 @@ static gui_theme::ui_float2 str_to_ui_float2(const string& str) {
 
 //
 gui_theme::gui_theme(font_manager* fm_) :
-fm(fm_), x(floor::get_xml()), r(engine::get_rtt()), scheme() {
+fm(fm_), x(engine::get_xml()), r(engine::get_rtt()), scheme() {
 	fnt = fm->get_font("SYSTEM_SANS_SERIF");
 	screen_dpi = floor::get_dpi();
 }
@@ -331,10 +331,10 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 			log_error("invalid float4 token count: %u!", float4_tokens.size());
 			return float4(0.0f, 1.0f, 0.0f, 1.0f); // green -> invalid color/float4
 		}
-		return float4(string2float(float4_tokens[0]),
-					  string2float(float4_tokens[1]),
-					  string2float(float4_tokens[2]),
-					  string2float(float4_tokens[3]));
+		return float4(stof(float4_tokens[0]),
+					  stof(float4_tokens[1]),
+					  stof(float4_tokens[2]),
+					  stof(float4_tokens[3]));
 	};
 	const auto str_to_ui_color = [&str_to_float4](const string& color_str) -> ui_color {
 		const auto comma_pos(color_str.find(","));
@@ -370,7 +370,7 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 		const auto tokens = core::tokenize(stops_str, ',');
 		float4 ret(0.0f);
 		for(size_t i = 0; i < std::min(tokens.size(), (size_t)4); i++) {
-			ret[i] = string2float(tokens[i]);
+			ret[i] = stof(tokens[i]);
 		}
 		return ret;
 	};
@@ -397,11 +397,11 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 		const auto bottom_left_tokens = core::tokenize(coords_tokens[0], ',');
 		const auto top_right_tokens = core::tokenize(coords_tokens[1], ',');
 		return make_pair(bottom_left_tokens.size() >= 2 ?
-						 float2(string2float(bottom_left_tokens[0]), string2float(bottom_left_tokens[1])) :
-						 float2(string2float(bottom_left_tokens[0])),
+						 float2(stof(bottom_left_tokens[0]), stof(bottom_left_tokens[1])) :
+						 float2(stof(bottom_left_tokens[0])),
 						 top_right_tokens.size() >= 2 ?
-						 float2(string2float(top_right_tokens[0]), string2float(top_right_tokens[1])) :
-						 float2(string2float(top_right_tokens[0])));
+						 float2(stof(top_right_tokens[0]), stof(top_right_tokens[1])) :
+						 float2(stof(top_right_tokens[0])));
 	};
 	
 	//
@@ -431,8 +431,8 @@ unique_ptr<gui_theme::draw_style_data> gui_theme::process_draw_style_data(const 
 				tex_name = "";
 			}
 			auto coords = str_to_coords((*node)["coords"]);
-			float depth = ((*node)["depth"] == "INVALID" ? 0.0f : string2float((*node)["depth"]));
-			bool passthrough = ((*node)["passthrough"] == "INVALID" ? false : string2bool((*node)["passthrough"]));
+			float depth = ((*node)["depth"] == "INVALID" ? 0.0f : stof((*node)["depth"]));
+			bool passthrough = ((*node)["passthrough"] == "INVALID" ? false : stob((*node)["passthrough"]));
 			bool is_gradient = ((*node)["gradient"] != "INVALID");
 			const bool is_mul_color = ((*node)["mul"] != "INVALID");
 			const bool is_add_color = ((*node)["add"] != "INVALID");
@@ -805,7 +805,7 @@ void gui_theme::draw(const string& type, const string& state,
 	
 	// reset scissor rect
 	if(scissor) {
-		glScissor(0, 0, (GLsizei)floor::get_width(), (GLsizei)floor::get_height());
+		glScissor(0, 0, (GLsizei)floor::get_physical_width(), (GLsizei)floor::get_physical_height());
 	}
 }
 

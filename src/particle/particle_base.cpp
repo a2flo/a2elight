@@ -17,7 +17,7 @@
  */
 
 #include "particle_base.hpp"
-#include "cl/opencl.hpp"
+#include <floor/compute/compute_base.hpp>
 
 particle_manager_base::particle_manager_base() :
 s(engine::get_shader()), r(engine::get_rtt()), exts(engine::get_ext()), t(engine::get_texman()) {

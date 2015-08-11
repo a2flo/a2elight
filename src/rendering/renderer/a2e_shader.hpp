@@ -24,7 +24,7 @@
 #include "engine.hpp"
 #include "rendering/extensions.hpp"
 #include "rendering/rtt.hpp"
-#include "core/xml.hpp"
+#include <floor/core/xml.hpp>
 
 #define A2E_SHADER_VERSION 2
 

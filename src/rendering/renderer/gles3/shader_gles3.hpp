@@ -22,7 +22,7 @@
 #if defined(FLOOR_IOS) && defined(PLATFORM_X64)
 
 #include "global.hpp"
-#include "math/matrix4.hpp"
+#include <floor/math/matrix4.hpp>
 #include "engine.hpp"
 #include "rendering/extensions.hpp"
 #include "rendering/rtt.hpp"

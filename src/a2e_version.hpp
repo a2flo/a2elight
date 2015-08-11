@@ -21,11 +21,11 @@
 
 // engine version and build/compiler info
 #include "build_version.hpp"
-#include "core/util.hpp"
+#include <floor/core/util.hpp>
 #define A2E_MAJOR_VERSION "0"
 #define A2E_MINOR_VERSION "3"
 #define A2E_REVISION_VERSION "1"
-#define A2E_DEV_STAGE_VERSION "d3"
+#define A2E_DEV_STAGE_VERSION "d4"
 #define A2E_BUILD_TIME __TIME__
 #define A2E_BUILD_DATE __DATE__
 
@@ -36,7 +36,7 @@
 #endif
 
 #if defined(_MSC_VER)
-#define A2E_COMPILER "VC++ "+size_t2string(_MSC_VER)
+#define A2E_COMPILER "VC++ "+to_string(_MSC_VER)
 #elif (defined(__GNUC__) && !defined(__llvm__) && !defined(__clang__))
 #define A2E_COMPILER string("GCC ")+__VERSION__
 #elif (defined(__GNUC__) && defined(__llvm__) && !defined(__clang__))
@@ -49,9 +49,9 @@
 
 #define A2E_LIBCXX_PREFIX " and "
 #if defined(_LIBCPP_VERSION)
-#define A2E_LIBCXX A2E_LIBCXX_PREFIX+"libc++ "+size_t2string(_LIBCPP_VERSION)
+#define A2E_LIBCXX A2E_LIBCXX_PREFIX+"libc++ "+to_string(_LIBCPP_VERSION)
 #elif defined(__GLIBCXX__)
-#define A2E_LIBCXX A2E_LIBCXX_PREFIX+"libstdc++ "+size_t2string(__GLIBCXX__)
+#define A2E_LIBCXX A2E_LIBCXX_PREFIX+"libstdc++ "+to_string(__GLIBCXX__)
 #else
 #define A2E_LIBCXX ""
 #endif
@@ -63,7 +63,7 @@
 #endif
 
 #define A2E_VERSION_STRING (string("A2E::light ")+A2E_PLATFORM+A2E_DEBUG_STR \
-" v"+(A2E_MAJOR_VERSION)+"."+(A2E_MINOR_VERSION)+"."+(A2E_REVISION_VERSION)+(A2E_DEV_STAGE_VERSION)+"-"+size_t2string(A2E_BUILD_VERSION)+\
+" v"+(A2E_MAJOR_VERSION)+"."+(A2E_MINOR_VERSION)+"."+(A2E_REVISION_VERSION)+(A2E_DEV_STAGE_VERSION)+"-"+to_string(A2E_BUILD_VERSION)+\
 " ("+A2E_BUILD_DATE+" "+A2E_BUILD_TIME+") built with "+string(A2E_COMPILER+A2E_LIBCXX))
 
 #define A2E_SOURCE_URL "https://www.albion2.org"

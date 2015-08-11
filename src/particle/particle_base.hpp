@@ -21,7 +21,7 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 #include "engine.hpp"
 #include "rendering/rtt.hpp"
 #include "rendering/shader.hpp"

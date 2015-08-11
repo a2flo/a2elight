@@ -20,7 +20,7 @@
 #define __A2E_GUI_FILE_DIALOG_HPP__
 
 #include "global.hpp"
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 #include "gui/gui_fwd.hpp"
 #include "gui/objects/gui_object_event.hpp"
 

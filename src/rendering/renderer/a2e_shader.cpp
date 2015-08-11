@@ -19,11 +19,11 @@
 
 #include "a2e_shader.hpp"
 #include "rendering/shader.hpp"
-#include "core/xml.hpp"
+#include <floor/core/xml.hpp>
 #include <regex>
 
 a2e_shader::a2e_shader() :
-exts(engine::get_ext()), x(floor::get_xml()),
+exts(engine::get_ext()), x(engine::get_xml()),
 conditions({
 	// add graphic card specific conditions
 	{ ext::GRAPHICS_CARD_VENDOR_DEFINE_STR[(unsigned int)exts->get_vendor()], true },

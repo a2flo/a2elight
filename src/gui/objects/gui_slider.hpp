@@ -34,8 +34,8 @@ public:
 	float get_knob_position() const;
 	
 	//
-	virtual bool should_handle_mouse_event(const EVENT_TYPE& type, const ipnt& point) const;
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
+	virtual bool should_handle_mouse_event(const EVENT_TYPE& type, const int2& point) const;
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point);
 	
 protected:
 	float knob_radius { gui_theme::point_to_pixel(6.0f) }; // in pt
@@ -43,7 +43,7 @@ protected:
 	atomic<float> knob_position { 0.5f };
 	float slider_width { 0.0f };
 	
-	bool move_knob(const ipnt& point);
+	bool move_knob(const int2& point);
 
 };
 

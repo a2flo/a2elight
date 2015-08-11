@@ -36,11 +36,11 @@ public:
 	void open_image(const string& filename, const TEXTURE_FILTERING filter = TEXTURE_FILTERING::POINT);
 
 	void draw();
-	void draw(const pnt& scale_xy, const bool flip_y = false);
+	void draw(const uint2& scale_xy, const bool flip_y = false);
 
 	void set_position(const unsigned int& x, const unsigned int& y);
-	void set_position(const pnt& position);
-	const pnt& get_position() const;
+	void set_position(const uint2& position);
+	const uint2& get_position() const;
 
 	const a2e_texture& get_texture() const;
 	void set_texture(const a2e_texture& new_tex);
@@ -57,7 +57,7 @@ public:
 	const float4& get_color() const;
 
 protected:
-	pnt position;
+	uint2 position;
 	float4 color { 1.0f };
 
 	bool scale { true };

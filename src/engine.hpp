@@ -20,17 +20,17 @@
 #define __A2E_ENGINE_HPP__
 
 #include "global.hpp"
-#include "floor/floor.hpp"
-#include "core/core.hpp"
-#include "core/file_io.hpp"
-#include "core/event.hpp"
+#include <floor/floor/floor.hpp>
+#include <floor/core/core.hpp>
+#include <floor/core/file_io.hpp>
+#include <floor/core/event.hpp>
 #include "rendering/texman.hpp"
 #include "rendering/extensions.hpp"
-#include "core/xml.hpp"
+#include <floor/core/xml.hpp>
 #include "rendering/rtt.hpp"
-#include "math/vector_lib.hpp"
-#include "math/matrix4.hpp"
-#include "core/unicode.hpp"
+#include <floor/math/vector_lib.hpp>
+#include <floor/math/matrix4.hpp>
+#include <floor/core/unicode.hpp>
 
 #define A2M_VERSION 2
 
@@ -53,7 +53,7 @@ public:
 	
 	// graphic control functions
 	static void init(const char* callpath, const char* datapath,
-					 const bool console_only = false, const string config_name = "config.xml",
+					 const bool console_only = false, const string config_name = "config.json",
 					 const char* ico = nullptr);
 	static void destroy();
 	
@@ -75,6 +75,7 @@ public:
 	static shader* get_shader();
 	static gui* get_gui();
 	static scene* get_scene();
+	static xml* get_xml();
 
 	// miscellaneous control functions
 	static SDL_Cursor* add_cursor(const char* name, const char** raw_data, unsigned int xsize, unsigned int ysize, unsigned int hotx, unsigned int hoty);
@@ -139,6 +140,7 @@ protected:
 	static gui* ui;
 	static scene* sce;
 	static event* evt;
+	static xml* x;
 	
 	static void load_ico(const char* ico);
 	

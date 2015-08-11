@@ -21,11 +21,11 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 #include "engine.hpp"
-#include "math/bbox.hpp"
+#include <floor/math/bbox.hpp>
 #include "rendering/gfx2d.hpp"
-#include "cl/opencl.hpp"
+#include <floor/compute/compute_base.hpp>
 
 #define A2E_MAX_PARTICLE_LIGHTS 4ULL
 
@@ -136,7 +136,7 @@ public:
 		unsigned int particle_indices_swap = 0; // either 0 or 1
 		bool do_reset = false;
 		
-#if !defined(FLOOR_NO_OPENCL)
+#if !defined(FLOOR_NO_OPENCL) && 0 // TODO: update compute stuff
 		// for opencl computed particle systems
 		opencl_base::buffer_object* ocl_pos_time_buffer = nullptr;
 		opencl_base::buffer_object* ocl_dir_buffer = nullptr;

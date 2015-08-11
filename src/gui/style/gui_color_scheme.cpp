@@ -21,7 +21,7 @@
 
 #define A2E_COLOR_SCHEME_VERSION 1
 
-gui_color_scheme::gui_color_scheme() : x(floor::get_xml()) {
+gui_color_scheme::gui_color_scheme() : x(engine::get_xml()) {
 }
 
 gui_color_scheme::~gui_color_scheme() {
@@ -84,7 +84,7 @@ void gui_color_scheme::process_node(const xml::xml_node* node, const xml::xml_no
 	}
 	else {
 		// second: an unsinged int/hex color (ARGB)
-		const unsigned int conv_color = string2uint("0x"+color);
+		const unsigned int conv_color = stou("0x"+color);
 		colors.insert(make_pair(name, float4((conv_color >> 16) & 0xFF,
 											 (conv_color >> 8) & 0xFF,
 											 conv_color & 0xFF,

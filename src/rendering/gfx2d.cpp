@@ -19,8 +19,8 @@
 #include "gfx2d.hpp"
 #include "engine.hpp"
 #include "rendering/shader.hpp"
-#include "core/event.hpp"
-#include "core/event_objects.hpp"
+#include <floor/core/event.hpp>
+#include <floor/core/event_objects.hpp>
 #include "rendering/extensions.hpp"
 
 gl_shader gfx2d::simple_shd = nullptr;
@@ -167,7 +167,7 @@ void gfx2d::set_blend_mode(const BLEND_MODE mode) {
  *  @param rectangle the rectangle
  *  @param point the point we want to test
  */
-bool gfx2d::is_pnt_in_rectangle(const rect& rectangle, const pnt& point) {
+bool gfx2d::is_pnt_in_rectangle(const rect& rectangle, const uint2& point) {
 	if(point.x >= rectangle.x1 && point.x <= rectangle.x2 &&
 	   point.y >= rectangle.y1 && point.y <= rectangle.y2) {
 		return true;
@@ -179,7 +179,7 @@ bool gfx2d::is_pnt_in_rectangle(const rect& rectangle, const pnt& point) {
  *  @param rectangle the rectangle
  *  @param point the point we want to test
  */
-bool gfx2d::is_pnt_in_rectangle(const rect& rectangle, const ipnt& point) {
+bool gfx2d::is_pnt_in_rectangle(const rect& rectangle, const int2& point) {
 	if(point.x < 0 || point.y < 0) return false;
 	
 	if(point.x >= (int)rectangle.x1 && point.x <= (int)rectangle.x2 &&

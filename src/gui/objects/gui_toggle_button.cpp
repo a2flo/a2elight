@@ -32,7 +32,7 @@ void gui_toggle_button::draw() {
 				[this](const string& str floor_unused) { return toggled ? toggled_label : untoggled_label; });
 }
 
-bool gui_toggle_button::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point floor_unused) {
+bool gui_toggle_button::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point floor_unused) {
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
 		case EVENT_TYPE::MOUSE_LEFT_DOWN:
@@ -46,7 +46,7 @@ bool gui_toggle_button::handle_mouse_event(const EVENT_TYPE& type, const shared_
 				// down position has already been checked (we wouldn't be in here otherwise)
 				// -> check if the up position is also within the button, if so, we have a button click
 				const auto& click_event = (const mouse_left_click_event&)*obj;
-				const ipnt up_position(abs_to_rel_position(click_event.up->position));
+				const int2 up_position(abs_to_rel_position(click_event.up->position));
 				if(gfx2d::is_pnt_in_rectangle(rectangle_abs, up_position)) {
 					// handle click
 					set_toggled(toggled ^ true);

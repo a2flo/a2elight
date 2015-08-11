@@ -21,13 +21,13 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 #if !(defined(A2E_EXTENSIONS_DONT_INCLUDE_GL_FUNCS) || defined(FLOOR_IOS))
 #include "rendering/gl_funcs.hpp"
 #endif
 
 #if defined(FLOOR_IOS)
-#include "core/gl_support.hpp"
+#include <floor/core/gl_support.hpp>
 #endif
 
 #if !defined(__APPLE__)

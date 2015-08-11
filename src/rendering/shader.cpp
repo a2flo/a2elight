@@ -23,7 +23,7 @@
 
 /*! create and initialize the shader class
  */
-shader::shader() : exts(engine::get_ext()), r(engine::get_rtt()), x(floor::get_xml()) {
+shader::shader() : exts(engine::get_ext()), r(engine::get_rtt()), x(engine::get_xml()) {
 	a2e_shd = new a2e_shader();
 	a2e_shd->set_shader_class(this);
 	
@@ -263,7 +263,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 	const unsigned int max_draw_buffers = exts->get_max_draw_buffers();
 	for(unsigned int i = 0; i < max_draw_buffers; i++) {
 		string name = "frag_color";
-		if(i >= 1) name += "_"+uint2string(i+1);
+		if(i >= 1) name += "_"+to_string(i+1);
 		const GLint location = glGetFragDataLocation(shd_obj.program, name.c_str());
 		
 		// check if the frag color exists and must be bound to a different location
@@ -294,7 +294,7 @@ shader_object* shader::add_shader_src(const string& identifier, const string& op
 		GLenum binary_format = 0;
 		glGetProgramBinary(shd_obj.program, binary_length, nullptr, &binary_format, binary);
 
-		string binary_fname = "shader_binary_"+identifier+"_"+size_t2string(shaders[identifier]->programs.size()-1)+".dat";
+		string binary_fname = "shader_binary_"+identifier+"_"+to_string(shaders[identifier]->programs.size()-1)+".dat";
 		f->open_file(binary_fname.c_str(), file_io::OT_WRITE_BINARY);
 		f->write_block((const char*)binary, binary_length, false);
 		f->close_file();
@@ -442,7 +442,7 @@ void shader::log_pretty_print(const char* log, const char* code) const {
 		
 		// find code line and print it (+/- 1 line)
 		if(regex_match(line, regex_result, rx_log_line)) {
-			const size_t src_line_num = string2size_t(regex_result[1]) - 1;
+			const size_t src_line_num = stosize(regex_result[1]) - 1;
 			if(src_line_num < code_lines.size()) {
 				if(src_line_num != 0) {
 					log_undecorated("\033[37m%s\033[m", code_lines[src_line_num-1]);

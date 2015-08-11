@@ -19,7 +19,7 @@
 #include "gui/objects/gui_object_event.hpp"
 #include "engine.hpp"
 #include "gui/gui.hpp"
-#include "threading/task.hpp"
+#include <floor/threading/task.hpp>
 
 gui_object_event::gui_object_event() noexcept : evt(floor::get_event()) {
 }
@@ -68,7 +68,7 @@ void gui_object_event::remove_handlers() {
 	unlock();
 }
 
-bool gui_object_event::handle_mouse_event(const EVENT_TYPE& type floor_unused, const shared_ptr<event_object>& obj floor_unused, const ipnt& point floor_unused) {
+bool gui_object_event::handle_mouse_event(const EVENT_TYPE& type floor_unused, const shared_ptr<event_object>& obj floor_unused, const int2& point floor_unused) {
 	return false;
 }
 

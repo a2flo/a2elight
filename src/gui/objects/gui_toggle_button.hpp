@@ -28,7 +28,7 @@ public:
 	
 	virtual void draw();
 	
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point);
 	
 	void set_label(const string& toggled_label, const string& untoggled_label);
 	pair<const string&, const string&> get_label() const;

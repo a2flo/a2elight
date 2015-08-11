@@ -21,14 +21,14 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
-#include "math/vector_lib.hpp"
-#include "math/bbox.hpp"
-#include "core/file_io.hpp"
+#include <floor/core/core.hpp>
+#include <floor/math/vector_lib.hpp>
+#include <floor/math/bbox.hpp>
+#include <floor/core/file_io.hpp>
 #include "engine.hpp"
 #include "scene/model/a2ematerial.hpp"
 #include "rendering/shader.hpp"
-#include "math/matrix4.hpp"
+#include <floor/math/matrix4.hpp>
 #include "scene/light.hpp"
 #include "scene/model/a2emodel.hpp"
 
@@ -41,15 +41,15 @@ public:
 	virtual void draw(const DRAW_MODE draw_mode);
 	virtual void load_model(const string& filename);
 	void load_from_memory(unsigned int object_count, unsigned int vertex_count,
-						  float3* vertices, coord* tex_coords,
-						  unsigned int* index_count, index3** indices);
+						  float3* vertices, float2* tex_coords,
+						  unsigned int* index_count, uint3** indices);
 	
 	virtual void set_hard_scale(const float x, const float y, const float z);
 	virtual void set_hard_position(const float x, const float y, const float z);
 	virtual void scale_tex_coords(const float su, const float sv);
 
 	float3* get_col_vertices();
-	index3* get_col_indices();
+	uint3* get_col_indices();
 	unsigned int get_col_vertex_count();
 	unsigned int get_col_index_count();
 
@@ -63,9 +63,9 @@ public:
 
 protected:
 	float3* vertices;
-	coord* tex_coords;
-	index3** indices;
-	index3** tex_indices;
+	float2* tex_coords;
+	uint3** indices;
+	uint3** tex_indices;
 	unsigned int vertex_count;
 	unsigned int tex_coord_count;
 	unsigned int* index_count;

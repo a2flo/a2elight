@@ -72,7 +72,7 @@ window_handler_fnctr(bind(&gui::window_handler, this, placeholders::_1, placehol
 									EVENT_TYPE::MOUSE_WHEEL_UP,
 									EVENT_TYPE::MOUSE_WHEEL_DOWN);
 	
-	recreate_buffers(size2(floor::get_width(), floor::get_height()));
+	recreate_buffers(size2(floor::get_physical_width(), floor::get_physical_height()));
 	
 	// load theme
 	theme->load("gui/"+theme_name+"/"+theme_name+".a2etheme");
@@ -266,7 +266,7 @@ void gui::run() {
 		if((gevt.first & EVENT_TYPE::__MOUSE_EVENT) == EVENT_TYPE::__MOUSE_EVENT) {
 			// note: mouse down/up events only affect the draw state, mouse clicks do the actual
 			// logic checking (e.g. a button was pressed), since they contain both positions
-			ipnt check_point(-1, -1);
+			int2 check_point(-1, -1);
 			switch(gevt.first) {
 				case EVENT_TYPE::MOUSE_LEFT_DOWN:
 				case EVENT_TYPE::MOUSE_LEFT_UP:

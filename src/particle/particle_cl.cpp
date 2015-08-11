@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#if !defined(FLOOR_NO_OPENCL)
+#if !defined(FLOOR_NO_OPENCL) && 0 // TODO: update compute stuff
 
 #include "particle_cl.hpp"
 #include "scene/light.hpp"

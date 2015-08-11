@@ -35,7 +35,7 @@ window_handler(bind(&scene::window_event_handler, this, placeholders::_1, placeh
 	//
 	stereo = floor::get_stereo();
 	
-	recreate_buffers(frames[0], size2(floor::get_width(), floor::get_height()));
+	recreate_buffers(frames[0], size2(floor::get_physical_width(), floor::get_physical_height()));
 	
 	floor::get_event()->add_internal_event_handler(window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
@@ -381,8 +381,8 @@ void scene::sort_alpha_objects() {
 	}
 	
 	// third, project corners onto current near plane
-	ipnt (*bbox_proj)[8] = new ipnt[obj_count][8];
-	int4 viewport(0, 0, (int)floor::get_width(), (int)floor::get_height());
+	int2 (*bbox_proj)[8] = new int2[obj_count][8];
+	int4 viewport(0, 0, (int)floor::get_physical_width(), (int)floor::get_physical_height());
 	matrix4f mviewt = engine::get_modelview_matrix();
 	matrix4f mprojt = engine::get_projection_matrix();
 	for(size_t i = 0; i < obj_count; i++) {
@@ -394,12 +394,12 @@ void scene::sort_alpha_objects() {
 	// fourth, check projected bbox overlap, TODO: use polygon/polygon intersection/overlap test
 	// TODO: http://stackoverflow.com/questions/115426/algorithm-to-detect-intersection-of-two-rectangles
 	// for the moment, do a simple rectangle/rectangle overlap test
-	ipnt screen_dim((int)floor::get_width(), (int)floor::get_height());
-	ipnt (*bbox_rects)[2] = new ipnt[obj_count][2];
+	int2 screen_dim((int)floor::get_physical_width(), (int)floor::get_physical_height());
+	int2 (*bbox_rects)[2] = new int2[obj_count][2];
 	for(size_t i = 0; i < obj_count; i++) {
 		// compute rectangle
-		bbox_rects[i][0] = ipnt(numeric_limits<int>::max()); // pmin
-		bbox_rects[i][1] = ipnt(numeric_limits<int>::min()); // pmax
+		bbox_rects[i][0] = int2(numeric_limits<int>::max()); // pmin
+		bbox_rects[i][1] = int2(numeric_limits<int>::min()); // pmax
 		for(size_t j = 0; j < 8; j++) {
 			if(bbox_proj[i][j].x == numeric_limits<int>::min()) continue;
 			bbox_rects[i][0].min(bbox_proj[i][j]);
@@ -411,8 +411,8 @@ void scene::sort_alpha_objects() {
 		}
 		
 		// clamp to screen
-		bbox_rects[i][0].clamp(ipnt(0, 0), screen_dim);
-		bbox_rects[i][1].clamp(ipnt(0, 0), screen_dim);
+		bbox_rects[i][0].clamp(int2(0, 0), screen_dim);
+		bbox_rects[i][1].clamp(int2(0, 0), screen_dim);
 	}
 	for(size_t i = 0; i < obj_count; i++) {
 		if(bbox_rects[i][0].x == numeric_limits<int>::max() || bbox_rects[i][1].x == numeric_limits<int>::min()) {
@@ -884,7 +884,7 @@ void scene::light_and_material_pass(frame_buffers& buffers, const DRAW_MODE draw
 			iter->set_ir_buffers(buffers.g_buffer[0], buffers.l_buffer[0],
 								 buffers.g_buffer[1], buffers.l_buffer[1]);
 			iter->draw(mat_pass_masked);
-			gl_timer::mark("MDL #"+size_t2string(model_counter));
+			gl_timer::mark("MDL #"+to_string(model_counter));
 			model_counter++;
 		}
 	}
@@ -1099,7 +1099,7 @@ void scene::set_enabled(const bool& status) {
 		else {
 			// recreate buffers again if the scene gets reenabled
 			for(size_t i = 0; i < A2E_CONCURRENT_FRAMES; i++) {
-				recreate_buffers(frames[i], size2(floor::get_width(), floor::get_height()));
+				recreate_buffers(frames[i], size2(floor::get_physical_width(), floor::get_physical_height()));
 			}
 		}
 	}

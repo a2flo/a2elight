@@ -19,12 +19,12 @@
 #include "particle.hpp"
 #include "particle/particle_base.hpp"
 #include "particle/particle_cl.hpp"
-#include "cl/opencl.hpp"
+#include <floor/compute/compute_base.hpp>
 
 particle_manager::particle_manager() :
 s(engine::get_shader()), r(engine::get_rtt()), exts(engine::get_ext()), t(engine::get_texman()) {
 	//
-#if !defined(FLOOR_NO_OPENCL)
+#if !defined(FLOOR_NO_OPENCL) && 0 // TODO: update compute stuff
 	if(ocl->is_supported()) {
 		log_debug("using OpenCL render path!");
 		pm = new particle_manager_cl();

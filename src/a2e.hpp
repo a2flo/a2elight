@@ -16,7 +16,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "floor/floor.hpp"
+#include <floor/floor/floor.hpp>
 
 #include "engine.hpp"
 #include "global.hpp"

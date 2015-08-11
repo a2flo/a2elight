@@ -19,11 +19,11 @@
 #ifndef __A2E_PARTICLE_CL_HPP__
 #define __A2E_PARTICLE_CL_HPP__
 
-#if !defined(FLOOR_NO_OPENCL)
+#if !defined(FLOOR_NO_OPENCL) && 0 // TODO: update compute stuff
 
 #include "global.hpp"
 
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 #include "engine.hpp"
 #include "rendering/rtt.hpp"
 #include "rendering/shader.hpp"

@@ -20,7 +20,7 @@
 #define __A2E_LIGHT_HPP__
 
 #include "global.hpp"
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 
 //! lighting routines
 class light {

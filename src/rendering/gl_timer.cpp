@@ -18,7 +18,7 @@
 
 #include "gl_timer.hpp"
 #include "rendering/extensions.hpp"
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 
 constexpr size_t gl_timer::stored_frames;
 array<gl_timer::frame_info, gl_timer::stored_frames> gl_timer::frames;

@@ -24,16 +24,15 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 #include "engine.hpp"
 #include "scene/model/a2estatic.hpp"
 #include "scene/model/a2emodel.hpp"
 #include "scene/light.hpp"
 #include "rendering/shader.hpp"
-#include "math/matrix4.hpp"
-#include "math/bbox.hpp"
+#include <floor/math/matrix4.hpp>
+#include <floor/math/bbox.hpp>
 #include "rendering/rtt.hpp"
-#include "cl/opencl.hpp"
 
 class particle_manager;
 

@@ -24,14 +24,10 @@
 #include "gui/objects/gui_pop_up_button.hpp"
 #include "gui/objects/gui_list_box.hpp"
 #include "gui/objects/gui_input_box.hpp"
-#include "threading/task.hpp"
+#include <floor/threading/task.hpp>
 
 #if defined(__APPLE__)
-#if !defined(FLOOR_IOS)
-#include "osx/osx_helper.hpp"
-#else
-#include "ios/ios_helper.hpp"
-#endif
+#include <floor/darwin/darwin_helper.hpp>
 #endif
 
 struct file_extension_info {
@@ -302,13 +298,7 @@ void gui_file_dialog::open(const string directory, const bool write_history) {
 	
 	// host/root
 #if defined(__APPLE__)
-	volumes_list->add_item("/",
-#if !defined(FLOOR_IOS)
-						   osx_helper::get_computer_name()
-#else
-						   ios_helper::get_computer_name()
-#endif
-						   );
+	volumes_list->add_item("/", darwin_helper::get_computer_name());
 #else
 #if defined(HOST_NAME_MAX)
 #define A2E_HOST_NAME_SIZE (HOST_NAME_MAX + 1)

@@ -20,7 +20,7 @@
 #define __A2E_A2EUI_HPP__
 
 #include "global.hpp"
-#include "core/xml.hpp"
+#include <floor/core/xml.hpp>
 
 #if 0
 // TODO: implement this

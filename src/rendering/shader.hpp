@@ -24,7 +24,7 @@
 #include "engine.hpp"
 #include "rendering/extensions.hpp"
 #include "rendering/rtt.hpp"
-#include "core/xml.hpp"
+#include <floor/core/xml.hpp>
 #include "rendering/renderer/a2e_shader.hpp"
 #include "rendering/renderer/shader_object.hpp"
 #include "rendering/renderer/shader_base.hpp"

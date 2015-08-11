@@ -228,7 +228,7 @@ a2e_texture texman::add_texture(void* pixel_data, GLsizei width, GLsizei height,
 	tex->wrap_t = wrap_t;
 	tex->type = type;
 	
-	// if "automatic filtering" is specified, use standard filtering (as set in config.xml)
+	// if "automatic filtering" is specified, use standard filtering (as set in config.json)
 	if(filtering == TEXTURE_FILTERING::AUTOMATIC) filtering = standard_filtering;
 	
 	// now create/generate an opengl texture and bind it
@@ -294,7 +294,7 @@ a2e_texture texman::add_cubemap_texture(void** pixel_data, GLsizei width, GLsize
 	tex->wrap_r = wrap_r;
 	tex->type = type;
 	
-	// if "automatic filtering" is specified, use standard filtering (as set in config.xml)
+	// if "automatic filtering" is specified, use standard filtering (as set in config.json)
 	if(filtering == TEXTURE_FILTERING::AUTOMATIC) filtering = standard_filtering;
 	
 	// now create/generate an opengl texture and bind it

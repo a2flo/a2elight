@@ -18,15 +18,14 @@
 #include "engine.hpp"
 #include "a2e_version.hpp"
 #include "rendering/shader.hpp"
-#include "cl/opencl.hpp"
 #include "gui/gui.hpp"
 #include "rendering/gfx2d.hpp"
 #include "scene/scene.hpp"
 #include "rendering/gl_timer.hpp"
-#include "audio/audio_controller.hpp"
+#include <floor/audio/audio_controller.hpp>
 
 #if defined(__APPLE__)
-#include "osx/osx_helper.hpp"
+#include <floor/darwin/darwin_helper.hpp>
 #endif
 
 // init engine static vars
@@ -37,6 +36,7 @@ shader* engine::shd { nullptr };
 gui* engine::ui { nullptr };
 scene* engine::sce { nullptr };
 event* engine::evt { nullptr };
+xml* engine::x { nullptr };
 
 struct engine::engine_config engine::config;
 
@@ -110,24 +110,26 @@ void engine::init(const char* callpath_, const char* datapath_,
 	window_handler = new event::handler(&engine::window_event_handler);
 	evt->add_internal_event_handler(*window_handler, EVENT_TYPE::WINDOW_RESIZE);
 	
+	x = new xml();
+	
 	// load config (that aren't already part of floor)
 	const auto& config_doc = floor::get_config_doc();
 	if(config_doc.valid) {
 		// ui anti-aliasing should at least be 2x msaa
-		config.ui_anti_aliasing = std::max(config_doc.get<size_t>("config.gui.anti_aliasing", 8), (size_t)2);
+		config.ui_anti_aliasing = std::max(config_doc.get<uint64_t>("gui.anti_aliasing", 8), 2ull);
 		
-		config.fps_limit = config_doc.get<size_t>("config.sleep.time", 0);
+		config.fps_limit = config_doc.get<uint64_t>("sleep.time", 0);
 		
-		string filtering_str = config_doc.get<string>("config.graphic.filtering", "");
+		string filtering_str = config_doc.get<string>("graphic.filtering", "");
 		if(filtering_str == "POINT") config.filtering = TEXTURE_FILTERING::POINT;
 		else if(filtering_str == "LINEAR") config.filtering = TEXTURE_FILTERING::LINEAR;
 		else if(filtering_str == "BILINEAR") config.filtering = TEXTURE_FILTERING::BILINEAR;
 		else if(filtering_str == "TRILINEAR") config.filtering = TEXTURE_FILTERING::TRILINEAR;
 		else config.filtering = TEXTURE_FILTERING::POINT;
 		
-		config.anisotropic = config_doc.get<size_t>("config.graphic.anisotropic", 0);
+		config.anisotropic = config_doc.get<uint64_t>("graphic.anisotropic", 0);
 		
-		string anti_aliasing_str = config_doc.get<string>("config.graphic.anti_aliasing", "");
+		string anti_aliasing_str = config_doc.get<string>("graphic.anti_aliasing", "");
 		if(anti_aliasing_str == "NONE") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::NONE;
 		else if(anti_aliasing_str == "FXAA") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::FXAA;
 		else if(anti_aliasing_str == "2xSSAA") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::SSAA_2;
@@ -136,12 +138,12 @@ void engine::init(const char* callpath_, const char* datapath_,
 		else if(anti_aliasing_str == "2xSSAA+FXAA") config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::SSAA_2_FXAA;
 		else config.anti_aliasing = rtt::TEXTURE_ANTI_ALIASING::NONE;
 		
-		config.disabled_extensions = config_doc.get<string>("config.graphic_device.disabled_extensions", "");
-		config.force_device = config_doc.get<string>("config.graphic_device.force_device", "");
-		config.force_vendor = config_doc.get<string>("config.graphic_device.force_vendor", "");
+		config.disabled_extensions = config_doc.get<string>("graphic_device.disabled_extensions", "");
+		config.force_device = config_doc.get<string>("graphic_device.force_device", "");
+		config.force_vendor = config_doc.get<string>("graphic_device.force_vendor", "");
 		
-		config.upscaling = config_doc.get<float>("config.inferred.upscaling", 1.0f);
-		config.geometry_light_scaling = config_doc.get<float>("config.inferred.geometry_light_scaling", 1.0f);
+		config.upscaling = config_doc.get<float>("inferred.upscaling", 1.0f);
+		config.geometry_light_scaling = config_doc.get<float>("inferred.geometry_light_scaling", 1.0f);
 		config.geometry_light_scaling = const_math::clamp(config.geometry_light_scaling, 0.5f, 1.0f);
 	}
 	
@@ -252,14 +254,14 @@ void engine::init(const char* callpath_, const char* datapath_,
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		a2e_texture load_tex = t->add_texture(floor::data_path("loading.png"), TEXTURE_FILTERING::LINEAR, 0, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 		const uint2 load_tex_draw_size((unsigned int)load_tex->width/2, (unsigned int)load_tex->height/2);
-		const uint2 img_offset(floor::get_width()/2 - load_tex_draw_size.x/2,
-							   floor::get_height()/2 - load_tex_draw_size.y/2);
+		const uint2 img_offset(floor::get_physical_width()/2 - load_tex_draw_size.x/2,
+							   floor::get_physical_height()/2 - load_tex_draw_size.y/2);
 		gfx2d::set_blend_mode(gfx2d::BLEND_MODE::PRE_MUL);
 		gfx2d::draw_rectangle_texture(rect(img_offset.x, img_offset.y,
 										   img_offset.x + load_tex_draw_size.x,
 										   img_offset.y + load_tex_draw_size.y),
 									  load_tex->tex(),
-									  coord(0.0f, 1.0f), coord(1.0f, 0.0f));
+									  float2(0.0f, 1.0f), float2(1.0f, 0.0f));
 		stop_2d_draw();
 		stop_draw();
 		
@@ -317,6 +319,7 @@ void engine::destroy() {
 	if(sce != nullptr) delete sce;
 	if(r != nullptr) delete r;
 	if(exts != nullptr) delete exts;
+	if(x != nullptr) delete x;
 	
 #if defined(A2E_DEBUG)
 	gl_timer::destroy();
@@ -340,7 +343,7 @@ void engine::start_draw() {
 		// draws ogl stuff
 		glBindFramebuffer(GL_FRAMEBUFFER, A2E_DEFAULT_FRAMEBUFFER);
 		glBindRenderbuffer(GL_RENDERBUFFER, A2E_DEFAULT_RENDERBUFFER);
-		glViewport(0, 0, (GLsizei)floor::get_width(), (GLsizei)floor::get_height());
+		glViewport(0, 0, (GLsizei)floor::get_physical_width(), (GLsizei)floor::get_physical_height());
 		
 		// clear the color and depth buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -442,7 +445,7 @@ void engine::init_gl() {
  */
 void engine::resize_window() {
 	// set the viewport
-	glViewport(0, 0, (GLsizei)floor::get_width(), (GLsizei)floor::get_height());
+	glViewport(0, 0, (GLsizei)floor::get_physical_width(), (GLsizei)floor::get_physical_height());
 
 	// projection matrix
 	// set perspective with fov (default = 72) and near/far plane value (default = 1.0f/1000.0f)
@@ -497,7 +500,7 @@ float3* engine::get_rotation() {
 /*! starts drawing the 2d elements and initializes the opengl functions for that
  */
 void engine::start_2d_draw() {
-	start_2d_draw((unsigned int)floor::get_width(), (unsigned int)floor::get_height());
+	start_2d_draw((unsigned int)floor::get_physical_width(), (unsigned int)floor::get_physical_height());
 }
 
 void engine::start_2d_draw(const unsigned int width, const unsigned int height) {
@@ -567,6 +570,10 @@ gui* engine::get_gui() {
  */
 scene* engine::get_scene() {
 	return engine::sce;
+}
+
+xml* engine::get_xml() {
+	return x;
 }
 
 /*! returns data path + shader path + str

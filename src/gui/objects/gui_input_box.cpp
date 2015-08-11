@@ -20,7 +20,7 @@
 #include "engine.hpp"
 #include "font.hpp"
 #include "gui.hpp"
-#include "threading/task.hpp"
+#include <floor/threading/task.hpp>
 #include "gui_window.hpp"
 
 gui_input_box::gui_input_box(const float2& size_, const float2& position_) :
@@ -132,7 +132,7 @@ void gui_input_box::set_active(const bool& active_state) {
 	redraw();
 }
 
-bool gui_input_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const ipnt& point) {
+bool gui_input_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const int2& point) {
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
 		// left and right mouse button will have the same behavior for now

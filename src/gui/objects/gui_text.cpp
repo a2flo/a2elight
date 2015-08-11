@@ -18,7 +18,7 @@
 
 #include "gui_text.hpp"
 #include "engine.hpp"
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 #include "gui_window.hpp"
 
 void gui_text::draw() {

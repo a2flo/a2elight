@@ -89,7 +89,7 @@ bool gui_object::is_active() const {
 void gui_object::compute_abs_values() {
 	const float2 parent_size(parent != nullptr ?
 							 parent->get_size_abs() :
-							 float2(floor::get_width(), floor::get_height()));
+							 float2(floor::get_physical_width(), floor::get_physical_height()));
 	position_abs = position * parent_size;
 	size_abs = size * parent_size;
 	
@@ -212,7 +212,7 @@ void gui_object::compute_attachment_values() {
 	
 	const float2 parent_size(parent != nullptr ?
 							 parent->get_size_abs() :
-							 float2(floor::get_width(), floor::get_height()));
+							 float2(floor::get_physical_width(), floor::get_physical_height()));
 	
 	if(attachment_relative_margin) {
 		switch(attachment_side) {
@@ -314,19 +314,19 @@ const vector<gui_object*>& gui_object::get_children() const {
 	return children;
 }
 
-ipnt gui_object::abs_to_rel_position(const ipnt& point) const {
+int2 gui_object::abs_to_rel_position(const int2& point) const {
 	// override this in objects that contain other objects (e.g. gui_window)
 	if(parent != nullptr) return parent->abs_to_rel_position(point);
 	return point;
 }
 
-ipnt gui_object::rel_to_abs_position(const ipnt& point) const {
+int2 gui_object::rel_to_abs_position(const int2& point) const {
 	// override this in objects that contain other objects (e.g. gui_window)
 	if(parent != nullptr) return parent->rel_to_abs_position(point);
 	return point;
 }
 
-bool gui_object::should_handle_mouse_event(const EVENT_TYPE& type floor_unused, const ipnt& point) const {
+bool gui_object::should_handle_mouse_event(const EVENT_TYPE& type floor_unused, const int2& point) const {
 	return gfx2d::is_pnt_in_rectangle(get_rectangle_abs(), point);
 }
 

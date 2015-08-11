@@ -21,7 +21,7 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 #include "rendering/extensions.hpp"
 #include "rendering/texture_object.hpp"
 

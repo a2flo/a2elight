@@ -20,7 +20,7 @@
 #include "engine.hpp"
 
 // i won't add quadro or firegl cards here, since their naming scheme is inscrutable.
-// users will have to use the "force profile" option in the config.xml (set to the
+// users will have to use the "force profile" option in the config.json (set to the
 // appropriate geforce or radeon card) or simply use the "Generic SM x.0" profile.
 // i won't add older cards here, b/c they are incapable of doing shaders and don't
 // need any specific render paths which aren't already used via standard extension

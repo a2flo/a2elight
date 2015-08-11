@@ -20,7 +20,7 @@
 #define __A2E_GUI_SURFACE_HPP__
 
 #include "global.hpp"
-#include "math/vector_lib.hpp"
+#include <floor/math/vector_lib.hpp>
 #include "rendering/rtt.hpp"
 #include "rendering/renderer/gl_shader_fwd.hpp"
 

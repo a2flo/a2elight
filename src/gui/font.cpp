@@ -18,9 +18,9 @@
 
 #include "font.hpp"
 #include "font_manager.hpp"
-#include "math/vector_lib.hpp"
-#include "core/unicode.hpp"
-#include "core/event_objects.hpp"
+#include <floor/math/vector_lib.hpp>
+#include <floor/core/unicode.hpp>
+#include <floor/core/event_objects.hpp>
 #include "engine.hpp"
 #include "rendering/shader.hpp"
 #if !defined(FLOOR_IOS)

@@ -20,7 +20,7 @@
 #define __A2E_GUI_COLOR_SCHEME_HPP__
 
 #include "global.hpp"
-#include "core/xml.hpp"
+#include <floor/core/xml.hpp>
 
 class xml;
 class gui_color_scheme {

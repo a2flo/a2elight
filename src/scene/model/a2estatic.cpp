@@ -157,7 +157,7 @@ void a2estatic::load_model(const string& filename_) {
 	normals = new float3[vertex_count];
 	binormals = new float3[vertex_count];
 	tangents = new float3[vertex_count];
-	tex_coords = new coord[tex_coord_count];
+	tex_coords = new float2[tex_coord_count];
 
 	for(unsigned int i = 0; i < vertex_count; i++) {
 		vertices[i].x = file.get_float();
@@ -179,8 +179,8 @@ void a2estatic::load_model(const string& filename_) {
 		file.get_terminated_block(object_names[i], 0xFF);
 	}
 
-	indices = new index3*[object_count];
-	tex_indices = new index3*[object_count];
+	indices = new uint3*[object_count];
+	tex_indices = new uint3*[object_count];
 	index_count = new unsigned int[object_count];
 	min_index = new unsigned int[object_count];
 	max_index = new unsigned int[object_count];
@@ -188,8 +188,8 @@ void a2estatic::load_model(const string& filename_) {
 	memset(max_index, 0, sizeof(unsigned int)*object_count);
 	for(unsigned int i = 0; i < object_count; i++) {
 		index_count[i] = file.get_uint();
-		indices[i] = new index3[index_count[i]];
-		tex_indices[i] = new index3[index_count[i]];
+		indices[i] = new uint3[index_count[i]];
+		tex_indices[i] = new uint3[index_count[i]];
 		for(unsigned int j = 0; j < index_count[i]; j++) {
 			indices[i][j].x = file.get_uint();
 			indices[i][j].y = file.get_uint();
@@ -212,7 +212,7 @@ void a2estatic::load_model(const string& filename_) {
 		}
 
 		col_index_count = file.get_uint();
-		col_indices = new index3[col_index_count];
+		col_indices = new uint3[col_index_count];
 		for(unsigned int i = 0; i < col_index_count; i++) {
 			col_indices[i].x = file.get_uint();
 			col_indices[i].y = file.get_uint();
@@ -234,7 +234,7 @@ void a2estatic::load_model(const string& filename_) {
 	model_index_count = index_count;
 	
 	model_vertices = new float3*[object_count];
-	model_tex_coords = new coord*[object_count];
+	model_tex_coords = new float2*[object_count];
 	model_vertex_count = new unsigned int[object_count];
 	for(unsigned int i = 0; i < object_count; i++) {
 		model_vertices[i] = &vertices[min_index[i]];
@@ -284,8 +284,8 @@ void a2estatic::load_model(const string& filename_) {
 }
 
 void a2estatic::load_from_memory(unsigned int object_count_, unsigned int vertex_count_,
-								 float3* vertices_, coord* tex_coords_,
-								 unsigned int* index_count_, index3** indices_) {
+								 float3* vertices_, float2* tex_coords_,
+								 unsigned int* index_count_, uint3** indices_) {
 	filename = "<memory>";
 	a2estatic::vertex_count = vertex_count_;
 	a2estatic::vertices = vertices_;
@@ -327,7 +327,7 @@ void a2estatic::load_from_memory(unsigned int object_count_, unsigned int vertex
 	object_names.clear();
 	object_names.resize(object_count);
 	for(unsigned int i = 0; i < object_count; i++) {
-		object_names[i] = "object #" + uint2string(i);
+		object_names[i] = "object #" + to_string(i);
 	}
 	
 	// set this stuff for normal generating
@@ -549,7 +549,7 @@ float3* a2estatic::get_col_vertices() {
 
 /*! returns a pointer to the models collision model indices
  */
-index3* a2estatic::get_col_indices() {
+uint3* a2estatic::get_col_indices() {
 	return col_indices;
 }
 

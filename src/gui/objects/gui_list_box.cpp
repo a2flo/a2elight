@@ -61,16 +61,16 @@ void gui_list_box::draw() {
 					[&item](const string&) -> string { return item->second; });
 	}
 	
-	glScissor(0, 0, (GLsizei)floor::get_width(), (GLsizei)floor::get_height());
+	glScissor(0, 0, (GLsizei)floor::get_physical_width(), (GLsizei)floor::get_physical_height());
 }
 
-bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point) {
+bool gui_list_box::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point) {
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
 		case EVENT_TYPE::MOUSE_LEFT_DOUBLE_CLICK:
 		case EVENT_TYPE::MOUSE_LEFT_DOWN: {
 			ui->set_active_object(this);
-			const ipnt pos_in_box = point - position_abs;
+			const int2 pos_in_box = point - position_abs;
 			const size_t select_item = (size_t)floorf((float(pos_in_box.y) + scroll_position) / item_height);
 			// this check is also done in set_selected_item, but since the item number can legitimately
 			// be out of range, do this check here to avoid the log error

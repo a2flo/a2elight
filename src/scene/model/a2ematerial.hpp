@@ -21,9 +21,9 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
-#include "core/file_io.hpp"
-#include "core/xml.hpp"
+#include <floor/core/core.hpp>
+#include <floor/core/file_io.hpp>
+#include <floor/core/xml.hpp>
 #include "engine.hpp"
 #include "rendering/extensions.hpp"
 #include "rendering/shader.hpp"

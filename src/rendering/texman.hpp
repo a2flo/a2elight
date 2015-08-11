@@ -21,11 +21,11 @@
 
 #include "global.hpp"
 
-#include "core/file_io.hpp"
-#include "math/vector_lib.hpp"
+#include <floor/core/file_io.hpp>
+#include <floor/math/vector_lib.hpp>
 #include "rendering/extensions.hpp"
 #include "rendering/texture_object.hpp"
-#include "core/unicode.hpp"
+#include <floor/core/unicode.hpp>
 
 struct texture;
 

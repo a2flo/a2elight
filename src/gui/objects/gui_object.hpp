@@ -20,7 +20,7 @@
 #define __A2E_GUI_OBJECT_HPP__
 
 #include "global.hpp"
-#include "math/vector_lib.hpp"
+#include <floor/math/vector_lib.hpp>
 #include "gui/objects/gui_object_event.hpp"
 
 // since all inheriting classes will need this, include it here:
@@ -105,8 +105,8 @@ public:
 	virtual void add_child(gui_object* child);
 	virtual void remove_child(gui_object* child);
 	virtual const vector<gui_object*>& get_children() const;
-	virtual ipnt abs_to_rel_position(const ipnt& point) const;
-	virtual ipnt rel_to_abs_position(const ipnt& point) const;
+	virtual int2 abs_to_rel_position(const int2& point) const;
+	virtual int2 rel_to_abs_position(const int2& point) const;
 	
 	//! sets the image associated with "identifier" for this object.
 	//! NOTE: "#" is the default identifier that is used in most ui object layouts
@@ -114,7 +114,7 @@ public:
 	virtual a2e_image* get_image(const string& identifier) const;
 	
 	// must return true if event was handled, false if not!
-	virtual bool should_handle_mouse_event(const EVENT_TYPE& type, const ipnt& point) const;
+	virtual bool should_handle_mouse_event(const EVENT_TYPE& type, const int2& point) const;
 
 protected:
 	gui* ui;

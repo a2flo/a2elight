@@ -21,16 +21,15 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
-#include "math/vector_lib.hpp"
-#include "math/bbox.hpp"
-#include "core/file_io.hpp"
+#include <floor/core/core.hpp>
+#include <floor/math/vector_lib.hpp>
+#include <floor/math/bbox.hpp>
+#include <floor/core/file_io.hpp>
 #include "engine.hpp"
 #include "scene/model/a2ematerial.hpp"
 #include "rendering/shader.hpp"
-#include "math/matrix4.hpp"
+#include <floor/math/matrix4.hpp>
 #include "scene/light.hpp"
-#include "cl/opencl.hpp"
 #include "rendering/extensions.hpp"
 
 #define A2E_MAX_MASK_ID 3
@@ -101,10 +100,10 @@ public:
 	// model data functions
 	virtual float3** get_vertices() const;
 	virtual const float3* get_vertices(unsigned int obj_num) const;
-	virtual coord** get_tex_coords() const;
-	virtual const coord* get_tex_coords(unsigned int obj_num) const;
-	virtual index3** get_indices() const;
-	virtual const index3* get_indices(unsigned int obj_num) const;
+	virtual float2** get_tex_coords() const;
+	virtual const float2* get_tex_coords(unsigned int obj_num) const;
+	virtual uint3** get_indices() const;
+	virtual const uint3* get_indices(unsigned int obj_num) const;
 	virtual unsigned int get_vertex_count() const;
 	virtual unsigned int get_vertex_count(unsigned int obj_num) const;
 	virtual unsigned int get_index_count() const;
@@ -122,7 +121,7 @@ public:
 	virtual float3* get_phys_scale();
 	
 	virtual float3* get_col_vertices();
-	virtual index3* get_col_indices();
+	virtual uint3* get_col_indices();
 	virtual unsigned int get_col_vertex_count();
 	virtual unsigned int get_col_index_count();
 	
@@ -146,8 +145,8 @@ protected:
 	// by the derived class (probably in the load_model() function)
 	// -> 2D array, containing a pointer for each sub-object
 	float3** model_vertices;
-	coord** model_tex_coords;
-	index3** model_indices;
+	float2** model_tex_coords;
+	uint3** model_indices;
 	unsigned int* model_vertex_count;
 	unsigned int* model_index_count;
 	
@@ -158,7 +157,7 @@ protected:
 	unsigned int col_vertex_count;
 	unsigned int col_index_count;
 	float3* col_vertices;
-	index3* col_indices;
+	uint3* col_indices;
 	
 	
 	// drawing variables (vbos/buffers), these have to be set by the derived class before calling draw()

@@ -20,7 +20,7 @@
 #define __A2E_GUI_THEME_HPP__
 
 #include "global.hpp"
-#include "core/xml.hpp"
+#include <floor/core/xml.hpp>
 #include "gui_color_scheme.hpp"
 #include "rendering/gfx2d.hpp"
 #include "gui/image.hpp"
@@ -269,7 +269,7 @@ protected:
 	string filename = "";
 	
 	//
-	typedef std::function<void(const pnt& offset, const size2& size)> gui_ui_object_draw_function;
+	typedef std::function<void(const uint2& offset, const size2& size)> gui_ui_object_draw_function;
 	struct gui_ui_object {
 		const string type;
 		struct state {

@@ -18,7 +18,7 @@
 
 #include "a2emodel.hpp"
 #include "scene/scene.hpp"
-#include "math/quaternion.hpp"
+#include <floor/math/quaternion.hpp>
 
 static size_t _initial_model_id = 0;
 static size_t _create_model_id() {
@@ -671,26 +671,26 @@ const float3* a2emodel::get_vertices(unsigned int obj_num) const {
 
 /*! returns a pointer to the tex coords
  */
-coord** a2emodel::get_tex_coords() const {
+float2** a2emodel::get_tex_coords() const {
 	return model_tex_coords;
 }
 
 /*! returns a pointer to the tex coords
  */
-const coord* a2emodel::get_tex_coords(unsigned int obj_num) const {
+const float2* a2emodel::get_tex_coords(unsigned int obj_num) const {
 	return model_tex_coords[obj_num];
 }
 
 /*! returns a pointer to all the indices
  */
-index3** a2emodel::get_indices() const {
+uint3** a2emodel::get_indices() const {
 	return model_indices;
 }
 
 /*! returns a pointer to the specified (by obj_num) indices
  *  @param obj_num sub-object number we want the indices from
  */
-const index3* a2emodel::get_indices(unsigned int obj_num) const {
+const uint3* a2emodel::get_indices(unsigned int obj_num) const {
 	return model_indices[obj_num];
 }
 
@@ -799,7 +799,7 @@ float3* a2emodel::get_col_vertices() {
 
 /*! returns a pointer to the models collision model indices
  */
-index3* a2emodel::get_col_indices() {
+uint3* a2emodel::get_col_indices() {
 	return col_indices;
 }
 

@@ -20,7 +20,7 @@
 #define __A2E_GL_TIMER_HPP__
 
 #include "global.hpp"
-#include "math/vector_lib.hpp"
+#include <floor/math/vector_lib.hpp>
 
 //! arb_timer_query wrapper + additional functionality
 //! NOTE: this is not supported on iOS

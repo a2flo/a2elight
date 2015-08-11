@@ -929,16 +929,14 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
-					"-mllvm",
-					"-force-vector-width=4",
-					"-mllvm",
-					"-force-vector-unroll=4",
 					"-isystem",
 					"$(DT_TOOLCHAIN_DIR)/usr/include",
 					"-isystem",
 					"$(DT_TOOLCHAIN_DIR)/usr/lib/c++/v1",
 					"-isystem",
 					/usr/include/libxml2,
+					"-isystem",
+					/usr/include,
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -959,6 +957,10 @@
 				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = (
 					"-Weverything",
+					"-Wthread-safety",
+					"-Wthread-safety-negative",
+					"-Wthread-safety-beta",
+					"-Wthread-safety-verbose",
 					"-Wno-c++98-compat",
 					"-Wno-c++98-compat-pedantic",
 					"-Wno-c99-extensions",
@@ -975,6 +977,8 @@
 					"-Wno-nested-anon-types",
 					"-Wno-old-style-cast",
 					"-Wno-date-time",
+					"-Wno-reserved-id-macro",
+					"-Wno-documentation-unknown-command",
 				);
 			};
 			name = Debug;
@@ -1042,16 +1046,14 @@
 				LLVM_VECTORIZE_LOOPS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
-					"-mllvm",
-					"-force-vector-width=4",
-					"-mllvm",
-					"-force-vector-unroll=4",
 					"-isystem",
 					"$(DT_TOOLCHAIN_DIR)/usr/include",
 					"-isystem",
 					"$(DT_TOOLCHAIN_DIR)/usr/lib/c++/v1",
 					"-isystem",
 					/usr/include/libxml2,
+					"-isystem",
+					/usr/include,
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -1072,6 +1074,10 @@
 				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = (
 					"-Weverything",
+					"-Wthread-safety",
+					"-Wthread-safety-negative",
+					"-Wthread-safety-beta",
+					"-Wthread-safety-verbose",
 					"-Wno-c++98-compat",
 					"-Wno-c++98-compat-pedantic",
 					"-Wno-c99-extensions",
@@ -1088,6 +1094,8 @@
 					"-Wno-nested-anon-types",
 					"-Wno-old-style-cast",
 					"-Wno-date-time",
+					"-Wno-reserved-id-macro",
+					"-Wno-documentation-unknown-command",
 				);
 			};
 			name = Release;
@@ -1114,6 +1122,7 @@
 					/usr/lib,
 					/usr/local/lib,
 					/usr/X11/lib,
+					/usr/include/floor/bin,
 				);
 				OTHER_CFLAGS = (
 					"$(inherited)",
@@ -1154,6 +1163,7 @@
 					/usr/lib,
 					/usr/local/lib,
 					/usr/X11/lib,
+					/usr/include/floor/bin,
 				);
 				OTHER_CFLAGS = (
 					"$(inherited)",

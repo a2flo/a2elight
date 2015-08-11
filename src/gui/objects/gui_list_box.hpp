@@ -35,7 +35,7 @@ public:
 	virtual void scroll_to_item(const string& identifier);
 	
 	//
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point);
 	
 protected:
 	float item_height { 0.0f };

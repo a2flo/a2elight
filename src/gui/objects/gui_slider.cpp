@@ -41,7 +41,7 @@ void gui_slider::compute_abs_values() {
 	slider_width = float(rectangle_abs.x2 - rectangle_abs.x1) - (knob_offset * 2.0f);
 }
 
-bool gui_slider::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const ipnt& point) {
+bool gui_slider::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const int2& point) {
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
 		case EVENT_TYPE::MOUSE_LEFT_DOWN:
@@ -62,7 +62,7 @@ bool gui_slider::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<eve
 	return false;
 }
 
-bool gui_slider::move_knob(const ipnt& point) {
+bool gui_slider::move_knob(const int2& point) {
 	const int iknob_offset = (int)ceilf(knob_offset);
 	const int2 slider_x_pos((int)rectangle_abs.x1 + iknob_offset,
 							(int)rectangle_abs.x2 - iknob_offset);
@@ -83,7 +83,7 @@ bool gui_slider::move_knob(const ipnt& point) {
 	return true;
 }
 
-bool gui_slider::should_handle_mouse_event(const EVENT_TYPE& type, const ipnt& point) const {
+bool gui_slider::should_handle_mouse_event(const EVENT_TYPE& type, const int2& point) const {
 	if(state.active && (type == EVENT_TYPE::MOUSE_LEFT_UP || type == EVENT_TYPE::MOUSE_MOVE)) return true;
 	return gui_object::should_handle_mouse_event(type, point);
 }

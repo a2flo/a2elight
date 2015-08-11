@@ -18,7 +18,7 @@
 
 #include "camera.hpp"
 #include "engine.hpp"
-#include "core/event.hpp"
+#include <floor/core/event.hpp>
 
 camera::camera() : evt(floor::get_event()),
 keyboard_handler(bind(&camera::key_handler, this, placeholders::_1, placeholders::_2)) {

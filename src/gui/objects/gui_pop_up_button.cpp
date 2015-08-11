@@ -19,9 +19,9 @@
 #include "gui_pop_up_button.hpp"
 #include "gui_window.hpp"
 #include "engine.hpp"
-#include "core/event.hpp"
+#include <floor/core/event.hpp>
 #include "gui.hpp"
-#include "threading/task.hpp"
+#include <floor/threading/task.hpp>
 #include "font.hpp"
 #include "gui_window.hpp"
 
@@ -43,7 +43,7 @@ public:
 	}
 	virtual void draw();
 	
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point);
 	
 protected:
 	gui_pop_up_button* pop_up_button;
@@ -112,7 +112,7 @@ void gui_pop_up_window::draw() {
 				images);
 	
 	// draw items
-	const pnt mouse_pos { floor::get_event()->get_mouse_pos() };
+	const uint2 mouse_pos { floor::get_event()->get_mouse_pos() };
 	float y_offset = margin + overlay_position.y;
 	const float4 font_color(theme->get_color_scheme().get("TEXT_INVERSE"));
 	const float4 font_color_active(theme->get_color_scheme().get("TEXT"));
@@ -148,7 +148,7 @@ void gui_pop_up_window::draw() {
 	stop_draw();
 }
 
-bool gui_pop_up_window::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const ipnt& point) {
+bool gui_pop_up_window::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const int2& point) {
 	// handle select
 	if(type == EVENT_TYPE::MOUSE_LEFT_UP &&
 	   point.x >= 0 &&
@@ -201,7 +201,7 @@ void gui_pop_up_button::draw() {
 }
 
 
-bool gui_pop_up_button::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const ipnt& point floor_unused) {
+bool gui_pop_up_button::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj floor_unused, const int2& point floor_unused) {
 	if(!state.visible || !state.enabled) return false;
 	switch(type) {
 		case EVENT_TYPE::MOUSE_LEFT_DOWN:

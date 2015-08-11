@@ -20,7 +20,7 @@
 #define __A2E_FONT_HPP__
 
 #include "global.hpp"
-#include "core/event.hpp"
+#include <floor/core/event.hpp>
 #include "gui/font_manager.hpp"
 #include "rendering/renderer/gl_shader_fwd.hpp"
 

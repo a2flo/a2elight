@@ -20,7 +20,7 @@
 #define __A2E_FONT_MANAGER_HPP__
 
 #include "global.hpp"
-#include "threading/thread_base.hpp"
+#include <floor/threading/thread_base.hpp>
 
 class rtt;
 struct FT_LibraryRec_;

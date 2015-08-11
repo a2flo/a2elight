@@ -149,9 +149,9 @@ void gui_window::set_position(const float2& position_) {
 	compute_attachment_values();
 }
 
-bool gui_window::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point) {
+bool gui_window::handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point) {
 	// substract window position (all childs positions/sizes are relative to the window position)
-	const ipnt point_in_window { point - ipnt((int)floorf(position_abs.x), (int)floorf(position_abs.y)) };
+	const int2 point_in_window { point - int2((int)floorf(position_abs.x), (int)floorf(position_abs.y)) };
 	for(const auto& child : children) {
 		if(child->should_handle_mouse_event(type, point_in_window)) {
 			child->lock();
@@ -176,14 +176,14 @@ bool gui_window::handle_key_event(const EVENT_TYPE& type, const shared_ptr<event
 	return false;
 }
 
-ipnt gui_window::abs_to_rel_position(const ipnt& point) const {
-	ipnt p = (parent != nullptr ? parent->abs_to_rel_position(point) : point);
+int2 gui_window::abs_to_rel_position(const int2& point) const {
+	int2 p = (parent != nullptr ? parent->abs_to_rel_position(point) : point);
 	p -= position_abs;
 	return p;
 }
 
-ipnt gui_window::rel_to_abs_position(const ipnt& point) const {
-	ipnt p = (parent != nullptr ? parent->rel_to_abs_position(point) : point);
+int2 gui_window::rel_to_abs_position(const int2& point) const {
+	int2 p = (parent != nullptr ? parent->rel_to_abs_position(point) : point);
 	p += position_abs;
 	return p;
 }

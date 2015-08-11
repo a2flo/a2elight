@@ -20,7 +20,7 @@
 #define __A2E_GFX2D_HPP__
 
 #include "global.hpp"
-#include "core/core.hpp"
+#include <floor/core/core.hpp>
 
 #include "rendering/shader.hpp"
 #include "rendering/extensions.hpp"
@@ -154,8 +154,8 @@ public:
 	// helper functions
 	static void set_blend_mode(const BLEND_MODE mode);
 			
-	static bool is_pnt_in_rectangle(const rect& rectangle, const pnt& point);
-	static bool is_pnt_in_rectangle(const rect& rectangle, const ipnt& point);
+	static bool is_pnt_in_rectangle(const rect& rectangle, const uint2& point);
+	static bool is_pnt_in_rectangle(const rect& rectangle, const int2& point);
 	
 	static GLuint get_fullscreen_triangle_vbo();
 	static GLuint get_fullscreen_quad_vbo();
@@ -439,16 +439,16 @@ struct gfx2d::draw_style_texture {
 	// texture 2d
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
-					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f),
+					 const float2 bottom_left = float2(0.0f),
+					 const float2 top_right = float2(1.0f),
 					 const float draw_depth = 0.0f) {
 		draw(props, texture, false, 0.0f, bottom_left, top_right, draw_depth, "#");
 	}
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
 					 const bool passthrough,
-					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f),
+					 const float2 bottom_left = float2(0.0f),
+					 const float2 top_right = float2(1.0f),
 					 const float draw_depth = 0.0f) {
 		draw(props, texture, false, 0.0f, bottom_left, top_right, draw_depth,
 			 (passthrough ? "passthrough" : "#"));
@@ -457,8 +457,8 @@ struct gfx2d::draw_style_texture {
 					 const GLuint texture,
 					 const float4 mul_color,
 					 const float4 add_color,
-					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f),
+					 const float2 bottom_left = float2(0.0f),
+					 const float2 top_right = float2(1.0f),
 					 const float draw_depth = 0.0f) {
 		draw(props, texture, false, 0.0f, mul_color, add_color, bottom_left, top_right, draw_depth, "madd_color");
 	}
@@ -471,8 +471,8 @@ struct gfx2d::draw_style_texture {
 					 const vector<float4>& gradient_colors,
 					 const float4 gradient_mul_interpolator = float4(0.5f),
 					 const float4 gradient_add_interpolator = float4(0.0f),
-					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f),
+					 const float2 bottom_left = float2(0.0f),
+					 const float2 top_right = float2(1.0f),
 					 const float draw_depth = 0.0f) {
 		const string option = gradient_type_to_string(type);
 		draw(props, texture, false, 0.0f, mul_color, add_color, gradient_stops, gradient_colors, gradient_mul_interpolator,
@@ -483,8 +483,8 @@ struct gfx2d::draw_style_texture {
 	static void draw(const primitive_properties& props,
 					 const GLuint texture,
 					 const float layer,
-					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f),
+					 const float2 bottom_left = float2(0.0f),
+					 const float2 top_right = float2(1.0f),
 					 const float draw_depth = 0.0f) {
 		draw(props, texture, true, layer, bottom_left, top_right, draw_depth, "#");
 	}
@@ -492,8 +492,8 @@ struct gfx2d::draw_style_texture {
 					 const GLuint texture,
 					 const float layer,
 					 const bool passthrough,
-					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f),
+					 const float2 bottom_left = float2(0.0f),
+					 const float2 top_right = float2(1.0f),
 					 const float draw_depth = 0.0f) {
 		draw(props, texture, true, layer, bottom_left, top_right, draw_depth,
 			 (passthrough ? "passthrough" : "#"));
@@ -503,8 +503,8 @@ struct gfx2d::draw_style_texture {
 					 const float layer,
 					 const float4 mul_color,
 					 const float4 add_color,
-					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f),
+					 const float2 bottom_left = float2(0.0f),
+					 const float2 top_right = float2(1.0f),
 					 const float draw_depth = 0.0f) {
 		draw(props, texture, true, layer, mul_color, add_color, bottom_left, top_right, draw_depth, "madd_color");
 	}
@@ -518,8 +518,8 @@ struct gfx2d::draw_style_texture {
 					 const vector<float4>& gradient_colors,
 					 const float4 gradient_mul_interpolator = float4(0.5f),
 					 const float4 gradient_add_interpolator = float4(0.0f),
-					 const coord bottom_left = coord(0.0f),
-					 const coord top_right = coord(1.0f),
+					 const float2 bottom_left = float2(0.0f),
+					 const float2 top_right = float2(1.0f),
 					 const float draw_depth = 0.0f) {
 		const string option = gradient_type_to_string(type);
 		draw(props, texture, true, layer, mul_color, add_color, gradient_stops, gradient_colors, gradient_mul_interpolator,
@@ -531,8 +531,8 @@ protected:
 					 const GLuint texture,
 					 const bool is_tex_array,
 					 const float layer,
-					 const coord bottom_left,
-					 const coord top_right,
+					 const float2 bottom_left,
+					 const float2 top_right,
 					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));
@@ -552,8 +552,8 @@ protected:
 					 const float layer,
 					 const float4 mul_color,
 					 const float4 add_color,
-					 const coord bottom_left,
-					 const coord top_right,
+					 const float2 bottom_left,
+					 const float2 top_right,
 					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));
@@ -580,8 +580,8 @@ protected:
 					 const vector<float4>& gradient_colors,
 					 const float4 gradient_mul_interpolator,
 					 const float4 gradient_add_interpolator,
-					 const coord bottom_left,
-					 const coord top_right,
+					 const float2 bottom_left,
+					 const float2 top_right,
 					 const float draw_depth,
 					 const string& option) {
 		texture_shd->use(option, (is_tex_array ? set<string> { "*tex_array" } : set<string> {}));

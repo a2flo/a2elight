@@ -21,7 +21,7 @@
 
 #include "global.hpp"
 #include "gui/gui_event.hpp"
-#include "core/event.hpp"
+#include <floor/core/event.hpp>
 
 class gui;
 class gui_object_event {
@@ -46,7 +46,7 @@ public:
 	bool has_handler(const GUI_EVENT& type) const;
 	
 	// must return true if event was handled, false if not!
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point);
 	virtual bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj);
 
 protected:

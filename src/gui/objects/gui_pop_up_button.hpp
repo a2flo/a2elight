@@ -30,7 +30,7 @@ public:
 	
 	virtual void draw();
 	
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
+	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point);
 
 	virtual void set_active(const bool& state);
 	

@@ -20,7 +20,7 @@
 
 /*! a2ematerial constructor
  */
-a2ematerial::a2ematerial() : t(engine::get_texman()), exts(engine::get_ext()), x(floor::get_xml()) {
+a2ematerial::a2ematerial() : t(engine::get_texman()), exts(engine::get_ext()), x(engine::get_xml()) {
 	dummy_texture = t->add_texture(floor::data_path("none.png"), TEXTURE_FILTERING::LINEAR, engine::get_anisotropic(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	default_specular = t->add_texture(floor::data_path("white.png"), TEXTURE_FILTERING::LINEAR, engine::get_anisotropic(), GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 }
@@ -273,7 +273,7 @@ void a2ematerial::load_material(const string& filename_) {
 							
 							if(cur_material->lm_type == LIGHTING_MODEL::ASHIKHMIN_SHIRLEY) {
 								ashikhmin_shirley_model* as_model = (ashikhmin_shirley_model*)cur_material->model;
-								as_model->anisotropic_roughness.set(string2float(roughness_arr[0]), string2float(roughness_arr[1]));
+								as_model->anisotropic_roughness.set(stof(roughness_arr[0]), stof(roughness_arr[1]));
 							}
 							else {
 								log_error("invalid lighting model type for \"const_anisotropic\"!");
@@ -369,10 +369,10 @@ float4 a2ematerial::get_color(const string& color_str) {
 		return float4(0.0f);
 	}
 	
-	return float4(string2float(colors[0]),
-				  string2float(colors[1]),
-				  string2float(colors[2]),
-				  alpha ? string2float(colors[3]) : 0.0f);
+	return float4(stof(colors[0]),
+				  stof(colors[1]),
+				  stof(colors[2]),
+				  alpha ? stof(colors[3]) : 0.0f);
 }
 
 const a2ematerial::object_mapping* a2ematerial::get_object_mapping(const size_t& object_id) const {

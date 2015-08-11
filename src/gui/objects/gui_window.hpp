@@ -27,24 +27,24 @@ public:
 	gui_window(const float2& buffer_size, const float2& position, const SURFACE_FLAGS flags = SURFACE_FLAGS::NONE);
 	virtual ~gui_window();
 	
-	virtual void draw();
+	void draw() override;
 	
 	// takes care of both gui_object and gui_surface functions,
 	// which serve the same purpose in case of gui_window
-	virtual void redraw();
-	virtual bool needs_redraw() const;
+	void redraw() override;
+	bool needs_redraw() const override;
 	
-	virtual void resize(const float2& buffer_size); // from gui_surface
-	virtual void set_size(const float2& size); // from gui_object
-	virtual void set_position(const float2& position); // from gui_object
+	void resize(const float2& buffer_size) override; // from gui_surface
+	void set_size(const float2& size) override; // from gui_object
+	void set_position(const float2& position) override; // from gui_object
 	
-	virtual ipnt abs_to_rel_position(const ipnt& point) const;
-	virtual ipnt rel_to_abs_position(const ipnt& point) const;
+	int2 abs_to_rel_position(const int2& point) const override;
+	int2 rel_to_abs_position(const int2& point) const override;
 	
-	virtual bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const ipnt& point);
-	virtual bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj);
+	bool handle_mouse_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj, const int2& point) override;
+	bool handle_key_event(const EVENT_TYPE& type, const shared_ptr<event_object>& obj) override;
 	
-	virtual void clear(const bool delete_children = true);
+	void clear(const bool delete_children = true);
 	
 	//! sets the window background color (the default is a fully transparent background)
 	virtual void set_background_color(const float4& color);

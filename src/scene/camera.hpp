@@ -21,8 +21,8 @@
 
 #include "global.hpp"
 
-#include "core/core.hpp"
-#include "core/event.hpp"
+#include <floor/core/core.hpp>
+#include <floor/core/event.hpp>
 
 //! a2e camera functions
 class camera {

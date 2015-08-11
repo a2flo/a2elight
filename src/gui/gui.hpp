@@ -20,9 +20,9 @@
 #define __A2E_GUI_HPP__
 
 #include "global.hpp"
-#include "threading/thread_base.hpp"
+#include <floor/threading/thread_base.hpp>
 #include "rendering/rtt.hpp"
-#include "core/event.hpp"
+#include <floor/core/event.hpp>
 #include "gui/objects/gui_object.hpp"
 #include "gui/style/gui_surface.hpp"
 #include "rendering/renderer/gl_shader_fwd.hpp"

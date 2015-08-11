@@ -49,7 +49,7 @@ particle_system::particle_system() {
 	
 	blend_mode = gfx2d::BLEND_MODE::ADD;
 	
-#if !defined(FLOOR_NO_OPENCL)
+#if !defined(FLOOR_NO_OPENCL) && 0 // TODO: update compute stuff
 	// init data for opencl computed particle systems
 	data.ocl_range_global.set(0);
 #endif
@@ -58,7 +58,7 @@ particle_system::particle_system() {
 particle_system::~particle_system() {
 	if(glIsBuffer(lights_ubo)) glDeleteBuffers(1, &lights_ubo);
 	
-#if !defined(FLOOR_NO_OPENCL)
+#if !defined(FLOOR_NO_OPENCL) && 0 // TODO: update compute stuff
 	if(data.ocl_pos_time_buffer != nullptr) ocl->delete_buffer(data.ocl_pos_time_buffer);
 	if(data.ocl_dir_buffer != nullptr) ocl->delete_buffer(data.ocl_dir_buffer);
 	if(data.ocl_distances != nullptr) ocl->delete_buffer(data.ocl_distances);
