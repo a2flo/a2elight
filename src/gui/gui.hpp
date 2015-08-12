@@ -98,7 +98,7 @@ protected:
 	
 	// note: this must be ordered
 	array<vector<ui_draw_callback*>, 2> draw_callbacks; // pre and post
-	unordered_map<ui_draw_callback*, gui_simple_callback*> cb_surfaces;
+	array<vector<pair<ui_draw_callback*, gui_simple_callback*>>, 2> cb_surfaces;
 	
 	rtt::fbo main_fbo;
 	rtt::fbo* aa_fbo = nullptr;

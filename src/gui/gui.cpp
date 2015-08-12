@@ -101,7 +101,10 @@ gui::~gui() {
 	
 	finish();
 	
-	for(const auto& surface : cb_surfaces) {
+	for(const auto& surface : cb_surfaces[0]) {
+		delete surface.second;
+	}
+	for(const auto& surface : cb_surfaces[1]) {
 		delete surface.second;
 	}
 	
@@ -142,7 +145,10 @@ void gui::draw() {
 	// draw individual surfaces
 	
 	// draw surfaces that need a redraw
-	for(const auto& cb_surface : cb_surfaces) {
+	for(const auto& cb_surface : cb_surfaces[0]) {
+		if(cb_surface.second->needs_redraw()) cb_surface.second->draw();
+	}
+	for(const auto& cb_surface : cb_surfaces[1]) {
 		if(cb_surface.second->needs_redraw()) cb_surface.second->draw();
 	}
 	
@@ -170,8 +176,8 @@ void gui::draw() {
 	texture_shd->uniform("orientation", float4(0.0f, 0.0f, 1.0f, 1.0f));
 	
 	// pre ui callbacks
-	for(auto& cb : draw_callbacks[0]) {
-		cb_surfaces[cb]->blit(texture_shd);
+	for(auto& surf : cb_surfaces[0]) {
+		surf.second->blit(texture_shd);
 	}
 	
 	// blit windows (in reverse order)
@@ -182,8 +188,8 @@ void gui::draw() {
 	}
 	
 	// post ui callbacks
-	for(auto& cb : draw_callbacks[1]) {
-		cb_surfaces[cb]->blit(texture_shd);
+	for(auto& surf : cb_surfaces[1]) {
+		surf.second->blit(texture_shd);
 	}
 	
 	glDisableVertexAttribArray(0);
@@ -378,10 +384,9 @@ bool gui::shader_reload_handler(EVENT_TYPE type, shared_ptr<event_object> obj fl
 	return true;
 }
 
-bool gui::window_handler(EVENT_TYPE type, shared_ptr<event_object> obj) {
+bool gui::window_handler(EVENT_TYPE type, shared_ptr<event_object> obj floor_unused) {
 	if(type == EVENT_TYPE::WINDOW_RESIZE) {
-		const window_resize_event& evtobj = (const window_resize_event&)*obj;
-		recreate_buffers(evtobj.size);
+		recreate_buffers(floor::get_physical_screen_size());
 	}
 	return true;
 }
@@ -402,10 +407,21 @@ bool gui::get_mouse_input() const {
 	return mouse_input;
 }
 
+static auto find_draw_callback(const vector<pair<ui_draw_callback*, gui_simple_callback*>>& cb_store,
+							   const ui_draw_callback* cb) {
+	for(auto iter = begin(cb_store); iter != end(cb_store); ++iter) {
+		if(iter->first == cb) {
+			return iter;
+		}
+	}
+	return end(cb_store);
+}
+
 gui_simple_callback* gui::add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_callback& cb,
 											const float2& size, const float2& offset,
 											const gui_surface::SURFACE_FLAGS flags) {
-	auto& callbacks = draw_callbacks[mode == DRAW_MODE_UI::PRE_UI ? 0 : 1];
+	const size_t index = (mode == DRAW_MODE_UI::PRE_UI ? 0 : 1);
+	auto& callbacks = draw_callbacks[index];
 	const auto iter = find(begin(callbacks), end(callbacks), &cb);
 	if(iter != end(callbacks)) {
 		log_error("this ui draw callback already exists!");
@@ -413,11 +429,11 @@ gui_simple_callback* gui::add_draw_callback(const DRAW_MODE_UI& mode, ui_draw_ca
 	}
 	callbacks.emplace_back(&cb);
 	
-	const auto surface_iter = cb_surfaces.find(&cb);
-	if(surface_iter != cb_surfaces.end()) return surface_iter->second;
+	const auto surface_iter = find_draw_callback(cb_surfaces[index], &cb);
+	if(surface_iter != cb_surfaces[index].end()) return surface_iter->second;
 	
 	gui_simple_callback* surface = new gui_simple_callback(cb, mode, size, offset, flags);
-	cb_surfaces.insert(make_pair(&cb, surface));
+	cb_surfaces[index].emplace_back(&cb, surface);
 	return surface;
 }
 
@@ -430,13 +446,17 @@ void gui::delete_draw_callback(ui_draw_callback& cb) {
 		return;
 	}
 	
+	size_t index = 0;
 	if(iter_0 != end(draw_callbacks[0])) draw_callbacks[0].erase(iter_0);
-	if(iter_1 != end(draw_callbacks[1])) draw_callbacks[1].erase(iter_1);
+	if(iter_1 != end(draw_callbacks[1])) {
+		draw_callbacks[1].erase(iter_1);
+		index = 1;
+	}
 	
-	const auto surface_iter = cb_surfaces.find(&cb);
-	if(surface_iter != cb_surfaces.end()) {
+	const auto surface_iter = find_draw_callback(cb_surfaces[index], &cb);
+	if(surface_iter != cb_surfaces[index].end()) {
 		delete surface_iter->second;
-		cb_surfaces.erase(surface_iter);
+		cb_surfaces[index].erase(surface_iter);
 	}
 }
 
@@ -462,7 +482,10 @@ void gui::recreate_buffers(const size2 size) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
 	// resize/recreate surfaces
-	for(const auto& surface : cb_surfaces) {
+	for(const auto& surface : cb_surfaces[0]) {
+		surface.second->resize(surface.second->get_buffer_size());
+	}
+	for(const auto& surface : cb_surfaces[1]) {
 		surface.second->resize(surface.second->get_buffer_size());
 	}
 	
